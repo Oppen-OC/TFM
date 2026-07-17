@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    command: uv run uvicorn project.api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+
+  ui:
+    build: .
+    command: uv run streamlit run src/project/ui/streamlit_app.py --server.address 0.0.0.0 --server.port 8501
+    ports:
+      - "8501:8501"
+    environment:
+      - API_HOST=api
+      - API_PORT=8000
+    depends_on:
+      - api
