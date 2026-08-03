@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run pytest:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(uv run dvc status:*)",
+      "Bash(uv run dvc dag:*)",
+      "Bash(uv run dvc repro:*)",
+      "Bash(uv run python:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv lock:*)",
+      "Bash(uv tree:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Bash(pip install:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -Command \"$p = ($input | Out-String | ConvertFrom-Json).tool_input.file_path; if ($p -like '*.py') { uv run ruff format $p; uv run ruff check --fix $p }\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,4 +1,27 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+
+# Data (gestionado por DVC)
+data/raw/
+data/interim/
+data/processed/
+
+# Modelos (gestionados por DVC)
+models/*.pkl
+models/*.joblib
+
+# MLflow
+mlruns/
+mlartifacts/
+mlflow.db
+
+# DVC
+/.dvc/cache
+/.dvc/tmp

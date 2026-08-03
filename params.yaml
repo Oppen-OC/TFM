@@ -1,0 +1,32 @@
+stages:
+  features:
+    cmd: uv run python -m project.features
+    deps:
+      - data/raw/dataset.csv
+      - src/project/features.py
+    params:
+      - features
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+
+  train:
+    cmd: uv run python -m project.train
+    deps:
+      - data/processed/train.csv
+      - src/project/train.py
+      - src/project/features.py
+    params:
+      - train
+    outs:
+      - models/model.pkl
+
+  evaluate:
+    cmd: uv run python -m project.evaluate
+    deps:
+      - data/processed/test.csv
+      - models/model.pkl
+      - src/project/predict.py
+    metrics:
+      - metrics/eval.json:
+          cache: false

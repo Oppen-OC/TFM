@@ -7,7 +7,7 @@ services:
 
   ui:
     build: .
-    command: uv run streamlit run src/project/ui/streamlit_app.py --server.address 0.0.0.0 --server.port 8501
+    command: uv run streamlit run src/project/ui/app.py --server.address 0.0.0.0 --server.port 8501
     ports:
       - "8501:8501"
     environment:

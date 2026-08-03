@@ -1,0 +1,28 @@
+{
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    ".venv": true,
+    ".ruff_cache": true,
+    ".pytest_cache": true,
+    ".mypy_cache": true,
+    ".dvc/tmp": true,
+    ".dvc/cache": true,
+    "mlruns": true,
+    "mlartifacts": true,
+    "mlflow.db": true,
+    "*.egg-info": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    ".venv": true,
+    "mlruns": true,
+    "uv.lock": true,
+    "dvc.lock": true
+  },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/mlruns/**": true,
+    "**/.dvc/cache/**": true
+  }
+}
