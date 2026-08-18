@@ -20,7 +20,7 @@ MODO=${2:-}
 
 # --- disco del sistema, que es intocable -------------------------------------
 RAIZ_PART=$(findmnt -no SOURCE /)
-RAIZ_DISCO="/dev/$(lsblk -no PKNAME "$RAIZ_PART" 2>/dev/null || true)"
+RAIZ_DISCO="/dev/$(lsblk -dno PKNAME "$RAIZ_PART" 2>/dev/null || true)"
 [[ "$RAIZ_DISCO" == "/dev/" ]] && RAIZ_DISCO="$RAIZ_PART"
 
 if [[ -z "$OBJETIVO" ]]; then
@@ -45,7 +45,7 @@ fi
 [[ -b "$OBJETIVO" ]] || { echo "!! $OBJETIVO no es un dispositivo de bloques."; exit 1; }
 
 # --- comprobar que no es el disco del sistema --------------------------------
-BASE="/dev/$(lsblk -no PKNAME "$OBJETIVO" 2>/dev/null || true)"
+BASE="/dev/$(lsblk -dno PKNAME "$OBJETIVO" 2>/dev/null || true)"
 [[ "$BASE" == "/dev/" ]] && BASE="$OBJETIVO"
 if [[ "$BASE" == "$RAIZ_DISCO" || "$OBJETIVO" == "$RAIZ_DISCO" || "$OBJETIVO" == "$RAIZ_PART" ]]; then
   echo "!! $OBJETIVO pertenece al disco del sistema ($RAIZ_DISCO). Abortado."
