@@ -52,7 +52,7 @@ echo "==> instalando dependencias de Python (en arm64 tarda unos minutos)"
 sudo -u "$USUARIO" "$DESTINO/.venv/bin/pip" install -q --upgrade pip
 sudo -u "$USUARIO" "$DESTINO/.venv/bin/pip" install -q \
      --extra-index-url https://www.piwheels.org/simple \
-     httpx pandas pyarrow
+     httpx pandas pyarrow scipy
 
 # --- almacén de datos --------------------------------------------------------
 mkdir -p "$DATOS"
