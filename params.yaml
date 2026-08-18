@@ -1,32 +1,42 @@
-stages:
-  features:
-    cmd: uv run python -m project.features
-    deps:
-      - data/raw/dataset.csv
-      - src/project/features.py
-    params:
-      - features
-    outs:
-      - data/processed/train.csv
-      - data/processed/test.csv
+# Hiperparámetros del pipeline.
+#
+# Las claves de primer nivel son exactamente las que referencian los `params:`
+# de cada stage en dvc.yaml. Si añades una clave aquí, DVC la considera una
+# dependencia y reejecuta el stage cuando cambie.
+#
+# Este archivo NO contiene definiciones de stages. Eso vive en dvc.yaml.
 
-  train:
-    cmd: uv run python -m project.train
-    deps:
-      - data/processed/train.csv
-      - src/project/train.py
-      - src/project/features.py
-    params:
-      - train
-    outs:
-      - models/model.pkl
+prepare:
+  # Reconstrucción de identidad de vehículo. La capa de la EMT no publica id de
+  # vehículo: `gid` es un autoincrement que se reinicia en cada refresco.
+  # Ver demo/track.py y docs/01_viabilidad_fuentes_valencia.md.
+  vel_max_kmh: 70            # por encima de esto el emparejamiento es un error
+  salto_max_m: 800           # techo duro de desplazamiento entre snapshots
+  predictivo: true           # extrapolar con velocidad constante antes de asignar
+  min_posiciones_viaje: 10   # trayectorias más cortas se descartan
+  gtfs_zip: data/raw/gtfs/emt_google_transit.zip
+  tz_origen: Europe/Madrid   # el campo `fecha` viene en hora local naive
 
-  evaluate:
-    cmd: uv run python -m project.evaluate
-    deps:
-      - data/processed/test.csv
-      - models/model.pkl
-      - src/project/predict.py
-    metrics:
-      - metrics/eval.json:
-          cache: false
+features:
+  objetivo: retraso_siguiente_parada_s
+  horizonte_paradas: 1
+  lags_min: [1, 5, 15]
+  ventana_trafico_min: 10
+  incluir_trafico: true
+  incluir_meteo: true
+  umbral_retraso_s: 300      # para la variante de clasificación binaria
+  # Split TEMPORAL, nunca aleatorio: con series de posiciones, un split
+  # aleatorio filtra el futuro en el entrenamiento y te da métricas falsas.
+  test_desde: "2026-12-01"
+
+train:
+  objective: reg:squarederror
+  n_estimators: 800
+  max_depth: 8
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.8
+  min_child_weight: 10
+  early_stopping_rounds: 50
+  n_jobs: -1
+  random_state: 42

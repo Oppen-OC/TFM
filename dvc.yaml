@@ -1,36 +1,60 @@
-# Pipeline DVC — rellenar cuando features.py/train.py tengan entrypoint
-# y haya datos en data/raw/. Descomentar stage a stage, no todo de golpe:
-# un `deps` que apunte a un archivo inexistente rompe `dvc repro`.
+# Pipeline DVC del TFM.
 #
-# stages:
-#   features:
-#     cmd: uv run python -m project.features
-#     deps:
-#       - data/raw/dataset.csv
-#       - src/project/features.py
-#     params:
-#       - features
-#     outs:
-#       - data/processed/train.csv
-#       - data/processed/test.csv
+# La INGESTA no es un stage y no debe serlo: capturar un stream en vivo no es
+# idempotente ni reejecutable, que es justo lo que DVC asume de cada stage. El
+# colector (`demo/collect.py`) corre como proceso aparte y deja los datos
+# crudos en `data/raw/`. El pipeline reproducible empieza ahí.
 #
-#   train:
-#     cmd: uv run python -m project.train
-#     deps:
-#       - data/processed/train.csv
-#       - src/project/train.py
-#       - src/project/features.py
-#     params:
-#       - train
-#     outs:
-#       - models/model.pkl
+#   demo/collect.py  ──(fuera de DVC, proceso largo)──>  data/raw/
+#                                                            │
+#                       prepare ──> features ──> train ──> evaluate
 #
-#   evaluate:
-#     cmd: uv run python -m project.evaluate
-#     deps:
-#       - data/processed/test.csv
-#       - models/model.pkl
-#       - src/project/predict.py
-#     metrics:
-#       - metrics/eval.json:
-#           cache: false
+# `dvc repro` fallará hasta que (a) exista `data/raw/` con captura real y
+# (b) los módulos de `src/project/` dejen de estar vacíos. Ese fallo es el
+# comportamiento correcto, no el bug que había antes: hasta 08/2026 el bloque
+# `stages:` vivía en params.yaml y `dvc repro` simplemente no ejecutaba nada.
+
+stages:
+  prepare:
+    # Crudo capturado + GTFS estático -> trayectorias con identidad de vehículo
+    # y retraso etiquetado por paso por parada.
+    cmd: uv run python -m project.prepare
+    deps:
+      - data/raw
+      - src/project/prepare.py
+    params:
+      - prepare
+    outs:
+      - data/interim/emt_tracked.parquet
+
+  features:
+    cmd: uv run python -m project.features
+    deps:
+      - data/interim/emt_tracked.parquet
+      - src/project/features.py
+    params:
+      - features
+    outs:
+      - data/processed/train.parquet
+      - data/processed/test.parquet
+
+  train:
+    cmd: uv run python -m project.train
+    deps:
+      - data/processed/train.parquet
+      - src/project/train.py
+      - src/project/features.py
+    params:
+      - train
+    outs:
+      - models/model.pkl
+
+  evaluate:
+    cmd: uv run python -m project.evaluate
+    deps:
+      - data/processed/test.parquet
+      - models/model.pkl
+      - src/project/predict.py
+    metrics:
+      - metrics/eval.json:
+          cache: false

@@ -14,7 +14,11 @@
       "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git show:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(gh pr *)",
+      "PowerShell(gh pr list --repo Oppen-OC/TFM --state all)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://api.github.com/repos/Oppen-OC/TFM/pulls)",
+      "Bash(curl -s https://api.github.com/repos/Oppen-OC/TFM/pulls?state=all)"
     ],
     "deny": [
       "Read(./.env)",

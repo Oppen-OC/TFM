@@ -8,10 +8,13 @@ __pycache__/
 # Secrets
 .env
 
-# Data (gestionado por DVC)
-data/raw/
-data/interim/
-data/processed/
+# Datos — los gestionan DVC y el colector, nunca git.
+# OJO: antes sólo se ignoraban raw/, interim/ y processed/, así que curated/,
+# reference/, logs/ y _status.json se colaban en `git add -A`. Son cientos de
+# megas de Parquet: GitHub rechaza ficheros de más de 100 MB y el historial
+# quedaría inflado para siempre. Se ignora data/ entero.
+data/
+# Los .gitkeep ya están en el índice y siguen versionados aunque data/ esté aquí.
 
 # Modelos (gestionados por DVC)
 models/*.pkl
@@ -25,3 +28,6 @@ mlflow.db
 # DVC
 /.dvc/cache
 /.dvc/tmp
+
+# Ajustes locales de Claude Code (por máquina, no se comparten)
+.claude/settings.local.json

@@ -1,0 +1,59 @@
+{
+  "_nota": "Payloads con la forma EXACTA observada en vivo el 15/08/2026 ~21:10 CEST. Recortados a unas pocas filas; los esquemas son reales.",
+  "emt_buses": {
+    "spatialReference": {"wkid": 4326},
+    "features": [
+      {"attributes": {"gid": 1659987635, "linea": "70", "trayecto": "Alboraia - La Fontsanta", "fecha": 1786827994000},
+       "geometry": {"x": -0.354420851, "y": 39.495978568}},
+      {"attributes": {"gid": 1659987637, "linea": "70", "trayecto": "La Fontsanta - Alboraia", "fecha": 1786828006000},
+       "geometry": {"x": -0.409985936, "y": 39.465699553}},
+      {"attributes": {"gid": 1659987639, "linea": "12", "trayecto": "C.Art.Faller - Pl. America", "fecha": 1786828012000},
+       "geometry": {"x": -0.381234500, "y": 39.470112000}},
+      {"attributes": {"gid": 1659987641, "linea": "C3", "trayecto": "Natzaret - Pl.Ajuntament", "fecha": 1786828132000},
+       "geometry": {"x": -0.343210000, "y": 39.451230000}}
+    ]
+  },
+  "trafico_estado": {
+    "features": [
+      {"attributes": {"gid": 1859, "denominacion": "MAURO GUILLEN", "estado": 0, "idtramo": 383, "fiwareid": "EstadoTrafico_383"},
+       "geometry": {"paths": [[[-0.3712, 39.4681], [-0.3705, 39.4688]]]}},
+      {"attributes": {"gid": 1860, "denominacion": "RUSSAFA", "estado": 3, "idtramo": 158, "fiwareid": "EstadoTrafico_158"},
+       "geometry": {"paths": [[[-0.3742, 39.4601], [-0.3730, 39.4612]]]}},
+      {"attributes": {"gid": 1861, "denominacion": "BLASCO IBAÑEZ", "estado": null, "idtramo": 201, "fiwareid": "EstadoTrafico_201"},
+       "geometry": {"paths": [[[-0.3550, 39.4770], [-0.3520, 39.4775]]]}}
+    ]
+  },
+  "trafico_intensidad": {
+    "features": [
+      {"attributes": {"gid": 793, "idtramo": "B47", "lectura": -1, "des_tramo": "FUERTEVENTURA", "estado": "0", "observaciones": null, "imv": null, "tipo_vehiculo": null, "fiwareid": "IntensidadTrafico_B47"},
+       "geometry": {"paths": [[[-0.3812, 39.4901], [-0.3805, 39.4910]]]}},
+      {"attributes": {"gid": 794, "idtramo": "B48", "lectura": 555, "des_tramo": "PERIODISTA AZZATI", "estado": "1099", "observaciones": null, "imv": null, "tipo_vehiculo": null, "fiwareid": "IntensidadTrafico_B48"},
+       "geometry": {"paths": [[[-0.3776, 39.4712], [-0.3760, 39.4720]]]}},
+      {"attributes": {"gid": 795, "idtramo": "B49", "lectura": 6012, "des_tramo": "PISTA DE SILLA", "estado": "6519", "observaciones": null, "imv": null, "tipo_vehiculo": null, "fiwareid": "IntensidadTrafico_B49"},
+       "geometry": {"paths": [[[-0.3760, 39.4400], [-0.3750, 39.4380]]]}}
+    ]
+  },
+  "valenbisi": {
+    "features": [
+      {"attributes": {"gid": 902133, "name": "001_GUILLEN_DE_CASTRO", "number": 1, "address": "C/GUILLEM DE CASTRO esquina con C/NA JORDANA", "open": "T", "available": 5, "free": 20, "total": 25, "ticket": "F", "updated_at": "15/08/2026 21:10:55", "update_jcd": 1786820686000},
+       "geometry": {"x": -0.3841, "y": 39.4752}},
+      {"attributes": {"gid": 902134, "name": "002_CALLE_SALVADOR_GINER_CALLE_MUSEO", "number": 2, "address": "Salvador Giner - C. Museo", "open": "T", "available": 7, "free": 7, "total": 15, "ticket": "F", "updated_at": "15/08/2026 21:10:55", "update_jcd": 1786820767000},
+       "geometry": {"x": -0.3812, "y": 39.4791}},
+      {"attributes": {"gid": 902135, "name": "003_PLAZA_MUSICO_LOPEZ_CHAVARRI", "number": 3, "address": "Plaza del Musico Lopez Chavarri", "open": "F", "available": 3, "free": 16, "total": 20, "ticket": "F", "updated_at": "15/08/2026 21:10:55", "update_jcd": 1786820625000},
+       "geometry": {"x": -0.3795, "y": 39.4780}}
+    ]
+  },
+  "renfe_cercanias": {
+    "fechaActualizacion": "2026-08-15T21:11:56",
+    "trenes": [
+      {"tripId": "3025S23661C4", "codTren": "23661", "codLinea": "C4", "retrasoMin": "6", "codEstAct": "51009", "codEstSig": "51010", "horaLlegadaSigEst": "2026-08-15T21:14:12", "codEstDest": "51100", "codEstOrig": "00000", "porAvanc": "A", "latitud": 37.370792, "longitud": -5.939321, "nucleo": "30", "accesible": false, "via": "", "nextVia": "2"},
+      {"tripId": "4025S24266C1", "codTren": "24266", "codLinea": "C1", "retrasoMin": "0", "codEstAct": "69110", "codEstSig": "69107", "horaLlegadaSigEst": "2026-08-15T21:19:00", "codEstDest": "65000", "codEstOrig": "69110", "porAvanc": "A", "latitud": 39.02619, "longitud": -0.21494265, "nucleo": "40", "accesible": false, "via": "1", "nextVia": ""},
+      {"tripId": "4025S24363C6", "codTren": "24363", "codLinea": "C6", "retrasoMin": "7", "codEstAct": "62103", "codEstSig": "62104", "horaLlegadaSigEst": "2026-08-15T21:22:00", "codEstDest": "62200", "codEstOrig": "65000", "porAvanc": "67.0", "latitud": 39.954987, "longitud": -0.07685744, "nucleo": "40", "accesible": false, "via": "", "nextVia": "1"}
+    ]
+  },
+  "bloques_gid": {
+    "_nota": "Rangos gid observados en dos sondeos separados 35 s. Disjuntos y contiguos.",
+    "t0": [1659987635, 1659987700, 1659987800],
+    "t1": [1659987801, 1659987900, 1659987967]
+  }
+}

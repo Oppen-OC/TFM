@@ -1,0 +1,42 @@
+[Unit]
+Description=TFM · colector de datos abiertos de movilidad de Valencia
+Documentation=file:///opt/tfm/docs/00_tema_y_alcance.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/opt/tfm
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/tfm/.venv/bin/python /opt/tfm/demo/collect.py --minutes 0 --out /srv/tfm-data
+
+# Reinicio incondicional: si el proceso muere por lo que sea, vuelve solo.
+Restart=always
+RestartSec=20
+# Sin límite de reintentos: en tres meses habrá cortes de red y no quiero
+# que systemd se rinda tras cinco fallos seguidos.
+StartLimitIntervalSec=0
+
+# El colector atiende SIGTERM y hace flush antes de salir (ver collect.py).
+KillSignal=SIGTERM
+TimeoutStopSec=60
+
+# La Pi también sirve DNS de la casa: el colector nunca debe competir con eso.
+Nice=10
+IOSchedulingClass=idle
+CPUWeight=20
+MemoryMax=512M
+
+# Endurecimiento básico
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/srv/tfm-data
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target
