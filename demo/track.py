@@ -64,7 +64,7 @@ def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
                          ingenuo (medido en el autotest: de ~5 % de posiciones
                          mal asignadas a prácticamente cero).
     """
-    df = df.sort_values(["snapshot_id"]).reset_index(drop=True).copy()
+    df = df.sort_values(["snapshot_id"], kind="stable").reset_index(drop=True).copy()
     df["vehicle_id"] = pd.NA
     df["dist_m"] = np.nan
     df["dt_s"] = np.nan
