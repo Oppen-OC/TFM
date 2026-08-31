@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
 
-from sources import haversine_m
+from project.ingest.sources import haversine_m
 
 VEL_MAX_KMH = 70.0  # un bus urbano por encima de esto es un error de asignación
 SALTO_MAX_M = 800.0  # techo duro de desplazamiento entre snapshots
@@ -158,13 +158,17 @@ if __name__ == "__main__":
     import sys
     from pathlib import Path
 
-    ruta = Path(sys.argv[1] if len(sys.argv) > 1 else "data/curated/source=emt_buses")
+    from project.config import settings
+
+    ruta = Path(
+        sys.argv[1] if len(sys.argv) > 1 else settings.curated_dir / "source=emt_buses"
+    )
     df = pd.read_parquet(ruta)
     out = rastrear(df)
     for k, v in resumen(out).items():
         print(f"  {k:26} {v}")
     # Mismo nombre que el `outs` del stage `prepare` en dvc.yaml
-    destino = Path("data/interim/emt_tracked.parquet")
+    destino = settings.interim_dir / "emt_tracked.parquet"
     destino.parent.mkdir(parents=True, exist_ok=True)
     out.to_parquet(destino, index=False)
     print(f"\n  -> {destino}")

@@ -1,7 +1,7 @@
 """Diagnóstico go/no-go de la hipótesis central del TFM.
 
-    python demo/diagnose.py                 # sobre data/ capturado por collect.py
-    python demo/diagnose.py --data mi_data --umbral-m 50
+    uv run python -m project.analysis.diagnose                 # sobre data/ capturado por collect.py
+    uv run python -m project.analysis.diagnose --data mi_data --umbral-m 50
 
 Responde a cuatro preguntas, en orden creciente de importancia. Si la cuarta
 sale plana, la fusión bus-tráfico no tiene señal y hay que cambiar de enfoque.
@@ -28,16 +28,13 @@ ciudad.
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-AQUI = Path(__file__).resolve().parent
-sys.path.insert(0, str(AQUI))
-
-from track import rastrear  # noqa: E402
+from project.config import settings
+from project.tracking import rastrear
 
 LAT0, LON0 = 39.47, -0.376  # centro de València, origen de la proyección local
 
@@ -219,7 +216,7 @@ def main(root: Path, umbral_m: float) -> int:
 
     if buses.empty:
         print(
-            "No hay datos de emt_buses. Lanza antes:  python demo/collect.py --minutes 1440"
+            "No hay datos de emt_buses. Lanza antes:  uv run python -m project.ingest.collect --minutes 1440"
         )
         return 1
     if trafico.empty or not ref.exists():
@@ -447,7 +444,7 @@ def main(root: Path, umbral_m: float) -> int:
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--data", type=Path, default=Path("data"))
+    p.add_argument("--data", type=Path, default=settings.data_root)
     p.add_argument("--umbral-m", type=float, default=50.0)
     a = p.parse_args()
     raise SystemExit(main(a.data, a.umbral_m))
