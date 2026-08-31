@@ -22,6 +22,12 @@
     ],
     "deny": [
       "Read(./.env)",
+      "Write(./.env)",
+      "Edit(./.env)",
+      "Edit(./dvc.lock)",
+      "Write(./dvc.lock)",
+      "Edit(./uv.lock)",
+      "Write(./uv.lock)",
       "Bash(pip install:*)"
     ]
   },
