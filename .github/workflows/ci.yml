@@ -36,4 +36,4 @@ jobs:
       # 30 comprobaciones sin red sobre parseo de fuentes y tracking. Guarda las
       # trampas cerradas del registro: si una cae, la ficha que la cita miente.
       - name: Selftest del demostrador
-        run: python demo/selftest.py
+        run: uv run python demo/selftest.py
