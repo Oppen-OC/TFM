@@ -15,7 +15,7 @@ import sys
 import httpx
 import pandas as pd
 
-from sources import SOURCES, now_utc, parse
+from project.ingest.sources import SOURCES, now_utc, parse
 
 pd.set_option("display.width", 160)
 pd.set_option("display.max_columns", 40)

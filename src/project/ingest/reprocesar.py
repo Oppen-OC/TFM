@@ -1,8 +1,8 @@
 """Reconstruye `curated/` desde `raw/`. La razón de guardar el crudo.
 
-    python demo/reprocesar.py                       # todas las fuentes
-    python demo/reprocesar.py --sources emt_buses   # una concreta
-    python demo/reprocesar.py --dry-run             # sin escribir nada
+    uv run python -m project.ingest.reprocesar                       # todas las fuentes
+    uv run python -m project.ingest.reprocesar --sources emt_buses   # una concreta
+    uv run python -m project.ingest.reprocesar --dry-run             # sin escribir nada
 
 Cuando descubres que el parser estaba mal (y descubrirás que lo estaba: el
 16/08/2026 resultó que el servicio de la EMT alterna entre dos convenciones
@@ -23,7 +23,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from sources import SOURCES, parse, read_raw
+from project.config import settings
+from project.ingest.sources import SOURCES, parse, read_raw
 
 
 def reprocesar(root: Path, source: str, dry: bool) -> dict:
@@ -107,7 +108,7 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--data", type=Path, default=Path("data"))
+    p.add_argument("--data", type=Path, default=settings.data_root)
     p.add_argument("--sources", nargs="*", default=list(SOURCES))
     p.add_argument("--dry-run", action="store_true")
     a = p.parse_args()

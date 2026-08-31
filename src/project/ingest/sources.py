@@ -22,11 +22,12 @@ import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-TZ_LOCAL = ZoneInfo("Europe/Madrid")
+from project.config import settings
+
+TZ_LOCAL = settings.zona_horaria
 
 ARCGIS = "https://geoportal.valencia.es/server/rest/services"
 EMT_LAYER = f"{ARCGIS}/EMT/Seguimiento_EMT/MapServer/384"

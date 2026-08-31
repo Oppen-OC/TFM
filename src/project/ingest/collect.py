@@ -1,8 +1,8 @@
 """Colector: sondea las fuentes a su cadencia y persiste crudo + Parquet.
 
-    python demo/collect.py --minutes 1440       # captura acotada de 24 h
-    python demo/collect.py --minutes 0          # indefinida (para meses)
-    python demo/collect.py --status             # ¿sigue vivo? sin tocar el proceso
+    uv run python -m project.ingest.collect --minutes 1440       # captura acotada de 24 h
+    uv run python -m project.ingest.collect --minutes 0          # indefinida (para meses)
+    uv run python -m project.ingest.collect --status             # ¿sigue vivo? sin tocar el proceso
 
 Diseño deliberado:
 
@@ -40,7 +40,8 @@ from pathlib import Path
 import httpx
 import pandas as pd
 
-from sources import SOURCES, append_raw, now_utc, parse
+from project.config import settings
+from project.ingest.sources import SOURCES, append_raw, now_utc, parse
 
 log = logging.getLogger("collect")
 HEADERS = {"User-Agent": "TFM-UPV-BigData/0.1 (investigacion academica)"}
@@ -333,7 +334,7 @@ if __name__ == "__main__":
             "valenbisi",
         ],
     )
-    p.add_argument("--out", type=Path, default=Path("data"))
+    p.add_argument("--out", type=Path, default=settings.data_root)
     p.add_argument(
         "--status", action="store_true", help="mostrar el latido del colector y salir"
     )
