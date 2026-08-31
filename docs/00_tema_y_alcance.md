@@ -38,16 +38,10 @@ aguas abajo de su ruta, y con cuánta antelación puede anticiparse?
 
 ## Decisiones cerradas
 
-| Decisión | Elección | Motivo |
-|---|---|---|
-| Orquestador | DVC | ya estaba en el esqueleto; suficiente para 4 stages |
-| Ingesta | **fuera de DVC** | capturar un stream no es idempotente ni reejecutable |
-| Formato intermedio | Parquet + zstd | el volumen hace inviable el CSV |
-| Motor analítico | DuckDB / Polars | sin cluster, sobre el portátil |
-| Modelo | XGBoost | restricción del trabajo; además es el adecuado para tabular |
-| Objetivo | regresión sobre segundos de retraso | + variante binaria para la API |
-| Split | **temporal** | un split aleatorio filtra el futuro y da métricas falsas |
-| Metrovalencia | descartado como dato observado | no publica tiempo real |
+Registro completo, con consecuencias y condiciones de reapertura, en
+[`07_decisiones.md`](07_decisiones.md). Resumen: DVC como orquestador, ingesta
+fuera de DVC, Parquet + zstd, DuckDB/Polars, XGBoost, split temporal,
+Metrovalencia descartado, Renfe capturado desde el día 1 como plan B.
 
 ## Alcance
 
@@ -111,7 +105,7 @@ municipal. **Descubrir en enero que la captura no aguanta no tiene arreglo.**
 | El endpoint de Renfe cambia o desaparece | media | no documentado oficialmente; se guarda payload crudo para reprocesar |
 | El GTFS cambia y corrompe etiquetas antiguas | media | descargar el GTFS semanalmente y versionarlo con DVC; etiquetar cada captura con el GTFS vigente en esa fecha |
 | Intercambios de identidad en el tracking | media | asignación húngara + predicción de movimiento (100 % vs 97,8 % del vecino más cercano en el autotest) |
-| Sesgo por el cambio de hora de octubre | alta si se ignora | corrección con `zoneinfo` por fecha, ya implementada |
+| Convención horaria de la EMT | alta si se ignora | **la fuente alterna UTC y local naive entre sondeos**, no hay desfase fijo: se resuelve por snapshot en `resolver_convencion()`. Ficha [002](../.claude/trampas/002-emt-alterna-convencion-horaria.md) |
 
 ## Plan B
 

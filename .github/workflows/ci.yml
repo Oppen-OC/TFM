@@ -27,3 +27,13 @@ jobs:
 
       - name: Tests
         run: uv run pytest
+
+      # Pytest no recorre directorios con punto: hay que darle la ruta. Valida el
+      # registro de trampas y la deriva entre documentación y código.
+      - name: Andamiaje de agentes
+        run: uv run pytest .claude/tests
+
+      # 30 comprobaciones sin red sobre parseo de fuentes y tracking. Guarda las
+      # trampas cerradas del registro: si una cae, la ficha que la cita miente.
+      - name: Selftest del demostrador
+        run: python demo/selftest.py
