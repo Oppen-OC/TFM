@@ -1,9 +1,11 @@
-import os
-
 import requests
 import streamlit as st
 
-API_URL = f"http://{os.getenv('API_HOST', '127.0.0.1')}:{os.getenv('API_PORT', '8000')}"
+from project.config import settings
+
+# La UI habla con la API por HTTP y nada más: no importa `services/` ni carga el
+# modelo. Si Streamlit necesita un dato nuevo, se añade un endpoint.
+API_URL = settings.api_url
 
 st.title("TFM")
 
