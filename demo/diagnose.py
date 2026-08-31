@@ -145,7 +145,7 @@ def asignar_tramo(buses: pd.DataFrame, tramos: pd.DataFrame) -> pd.DataFrame:
     a = S[:, 0, :]
     ab = S[:, 1, :] - a
     L2 = np.maximum((ab**2).sum(axis=1), 1e-9)
-    HOLGURA = 21.0   # media longitud del sub-segmento densificado (40 m) + margen
+    HOLGURA = 21.0  # media longitud del sub-segmento densificado (40 m) + margen
 
     def exacta(i: int, j: np.ndarray) -> tuple[float, object]:
         apx = P[i, 0] - a[j, 0]
@@ -218,7 +218,9 @@ def main(root: Path, umbral_m: float) -> int:
     ref = root / "reference" / "trafico_estado_geometria.parquet"
 
     if buses.empty:
-        print("No hay datos de emt_buses. Lanza antes:  python demo/collect.py --minutes 1440")
+        print(
+            "No hay datos de emt_buses. Lanza antes:  python demo/collect.py --minutes 1440"
+        )
         return 1
     if trafico.empty or not ref.exists():
         print("Faltan datos de trafico_estado o su fichero de geometría.")
@@ -230,11 +232,15 @@ def main(root: Path, umbral_m: float) -> int:
     trafico["ts_utc"] = pd.to_datetime(trafico["ts_utc"], utc=True)
 
     horas = (buses["ts_utc"].max() - buses["ts_utc"].min()).total_seconds() / 3600
-    print(f"\nCaptura: {horas:.1f} h  |  {len(buses):,} posiciones de bus  "
-          f"|  {len(trafico):,} lecturas de tráfico  |  {len(tramos)} tramos")
+    print(
+        f"\nCaptura: {horas:.1f} h  |  {len(buses):,} posiciones de bus  "
+        f"|  {len(trafico):,} lecturas de tráfico  |  {len(tramos)} tramos"
+    )
     if horas < 12:
-        print("  AVISO: menos de 12 h capturadas. Sin hora punta de laborable los\n"
-              "  resultados 2 y 4 no son concluyentes. Repite con --minutes 1440.")
+        print(
+            "  AVISO: menos de 12 h capturadas. Sin hora punta de laborable los\n"
+            "  resultados 2 y 4 no son concluyentes. Repite con --minutes 1440."
+        )
 
     veredictos = {}
 
@@ -249,16 +255,21 @@ def main(root: Path, umbral_m: float) -> int:
     lineas_tot = b.groupby("linea").size()
     frac_linea = (lineas_cub / lineas_tot).dropna().sort_values()
     print(f"\n  Cobertura a {umbral_m:.0f} m: {cob:.1%} de las posiciones")
-    print(f"  Líneas con >50 % de cobertura: {(frac_linea > 0.5).sum()} de {len(lineas_tot)}")
+    print(
+        f"  Líneas con >50 % de cobertura: {(frac_linea > 0.5).sum()} de {len(lineas_tot)}"
+    )
     if len(frac_linea):
         peor = ", ".join(f"{i}({v:.0%})" for i, v in frac_linea.head(5).items())
         mejor = ", ".join(f"{i}({v:.0%})" for i, v in frac_linea.tail(5).items())
         print(f"  Peor cubiertas : {peor}")
         print(f"  Mejor cubiertas: {mejor}")
     veredictos["cobertura"] = (
-        "OK" if cob >= 0.6 else "PARCIAL" if cob >= 0.3 else "MALA")
-    print(f"\n  --> {veredictos['cobertura']}"
-          + ("" if cob >= 0.6 else "  (limita el alcance a los corredores cubiertos)"))
+        "OK" if cob >= 0.6 else "PARCIAL" if cob >= 0.3 else "MALA"
+    )
+    print(
+        f"\n  --> {veredictos['cobertura']}"
+        + ("" if cob >= 0.6 else "  (limita el alcance a los corredores cubiertos)")
+    )
 
     # ---------------------------------------------------------------- 2
     h("2. VARIANZA — ¿el `estado` varía o está congelado?")
@@ -272,25 +283,38 @@ def main(root: Path, umbral_m: float) -> int:
     print(f"  Nulos: {nulos:.1%} de las lecturas")
 
     print("\n  Fracción NO fluida (estado != 0) por hora local:")
-    por_hora = tr.groupby("hora_local")["estado"].apply(lambda s: float((s != 0).mean()))
+    por_hora = tr.groupby("hora_local")["estado"].apply(
+        lambda s: float((s != 0).mean())
+    )
     for hh, f in por_hora.items():
         marca = "  <-- punta" if f == por_hora.max() and f > 0 else ""
         print(f"    {hh:02d}h  {barra(f, 24)}  {f:6.1%}{marca}")
     pico = float(por_hora.max()) if len(por_hora) else 0.0
     veredictos["varianza"] = (
-        "OK" if pico >= 0.15 else "DEBIL" if pico >= 0.05 else "SIN VARIANZA")
-    print(f"\n  Máximo horario de congestión: {pico:.1%}  -->  {veredictos['varianza']}")
+        "OK" if pico >= 0.15 else "DEBIL" if pico >= 0.05 else "SIN VARIANZA"
+    )
+    print(
+        f"\n  Máximo horario de congestión: {pico:.1%}  -->  {veredictos['varianza']}"
+    )
 
     # ---------------------------------------------------------------- 3
     h("3. DINÁMICA — ¿hay tramos congelados que finjan ser dato?")
     tr = tr.sort_values("ts_utc")
-    cambios = tr.groupby("idtramo")["estado"].apply(lambda s: int((s.diff() != 0).sum() - 1))
+    cambios = tr.groupby("idtramo")["estado"].apply(
+        lambda s: int((s.diff() != 0).sum() - 1)
+    )
     congelados = int((cambios <= 0).sum())
-    print(f"  Tramos que nunca cambian de estado : {congelados} de {len(cambios)} "
-          f"({congelados/max(len(cambios),1):.0%})")
-    print(f"  Cambios por tramo: mediana {cambios.median():.0f}, "
-          f"p90 {cambios.quantile(0.9):.0f}, máx {cambios.max():.0f}")
-    veredictos["dinamica"] = "OK" if congelados / max(len(cambios), 1) < 0.5 else "SOSPECHOSA"
+    print(
+        f"  Tramos que nunca cambian de estado : {congelados} de {len(cambios)} "
+        f"({congelados / max(len(cambios), 1):.0%})"
+    )
+    print(
+        f"  Cambios por tramo: mediana {cambios.median():.0f}, "
+        f"p90 {cambios.quantile(0.9):.0f}, máx {cambios.max():.0f}"
+    )
+    veredictos["dinamica"] = (
+        "OK" if congelados / max(len(cambios), 1) < 0.5 else "SOSPECHOSA"
+    )
     print(f"\n  --> {veredictos['dinamica']}")
 
     # ---------------------------------------------------------------- 4
@@ -303,13 +327,22 @@ def main(root: Path, umbral_m: float) -> int:
         print("  Sin posiciones emparejadas con velocidad. Captura más tiempo.")
         return 1
 
-    izq = b[["ts_utc", "idtramo_cercano", "vel_kmh"]].rename(
-        columns={"idtramo_cercano": "idtramo"}).sort_values("ts_utc")
+    izq = (
+        b[["ts_utc", "idtramo_cercano", "vel_kmh"]]
+        .rename(columns={"idtramo_cercano": "idtramo"})
+        .sort_values("ts_utc")
+    )
     der = tr[["ts_utc", "idtramo", "estado"]].sort_values("ts_utc")
     izq["idtramo"] = izq["idtramo"].astype(str)
     der["idtramo"] = der["idtramo"].astype(str)
-    m = pd.merge_asof(izq, der, on="ts_utc", by="idtramo",
-                      tolerance=pd.Timedelta("3min"), direction="nearest").dropna(subset=["estado"])
+    m = pd.merge_asof(
+        izq,
+        der,
+        on="ts_utc",
+        by="idtramo",
+        tolerance=pd.Timedelta("3min"),
+        direction="nearest",
+    ).dropna(subset=["estado"])
 
     print(f"  Posiciones bus emparejadas con estado de tramo: {len(m):,}\n")
     if len(m) < 200:
@@ -320,7 +353,9 @@ def main(root: Path, umbral_m: float) -> int:
         print("  Velocidad de los buses según el estado del tramo que pisan:")
         print("    estado      n    mediana    media")
         for e, r in g.iterrows():
-            print(f"      {int(e)}   {int(r['count']):7,}   {r['median']:6.1f}   {r['mean']:6.1f} km/h")
+            print(
+                f"      {int(e)}   {int(r['count']):7,}   {r['median']:6.1f}   {r['mean']:6.1f} km/h"
+            )
 
         base = g.loc[g.index.min(), "median"]
         peor = g.loc[g.index.max(), "median"]
@@ -329,19 +364,28 @@ def main(root: Path, umbral_m: float) -> int:
 
         try:
             from scipy import stats
-            grupos = [v["vel_kmh"].to_numpy() for _, v in m.groupby("estado") if len(v) > 20]
+
+            grupos = [
+                v["vel_kmh"].to_numpy() for _, v in m.groupby("estado") if len(v) > 20
+            ]
             if len(grupos) >= 2:
                 kw = stats.kruskal(*grupos)
                 rho = stats.spearmanr(m["estado"], m["vel_kmh"])
                 print(f"  Kruskal-Wallis  H={kw.statistic:.1f}  p={kw.pvalue:.2e}")
-                print(f"  Spearman estado vs velocidad  rho={rho.statistic:+.3f}  "
-                      f"p={rho.pvalue:.2e}")
+                print(
+                    f"  Spearman estado vs velocidad  rho={rho.statistic:+.3f}  "
+                    f"p={rho.pvalue:.2e}"
+                )
         except ImportError:
             print("  (instala scipy para los contrastes estadísticos)")
 
         veredictos["senal"] = (
-            "SEÑAL CLARA" if caida >= 0.20 else
-            "SEÑAL DEBIL" if caida >= 0.08 else "SIN SEÑAL")
+            "SEÑAL CLARA"
+            if caida >= 0.20
+            else "SEÑAL DEBIL"
+            if caida >= 0.08
+            else "SIN SEÑAL"
+        )
         print(f"\n  --> {veredictos['senal']}")
 
     # ------------------------------------------------ 4b: intensidad continua
@@ -350,16 +394,26 @@ def main(root: Path, umbral_m: float) -> int:
         intens["ts_utc"] = pd.to_datetime(intens["ts_utc"], utc=True)
         di = intens.dropna(subset=["lectura"])[["ts_utc", "idtramo", "lectura"]].copy()
         di["idtramo"] = di["idtramo"].astype(str)
-        mi = pd.merge_asof(izq, di.sort_values("ts_utc"), on="ts_utc", by="idtramo",
-                           tolerance=pd.Timedelta("6min"),
-                           direction="nearest").dropna(subset=["lectura"])
+        mi = pd.merge_asof(
+            izq,
+            di.sort_values("ts_utc"),
+            on="ts_utc",
+            by="idtramo",
+            tolerance=pd.Timedelta("6min"),
+            direction="nearest",
+        ).dropna(subset=["lectura"])
         if len(mi) >= 200:
             try:
                 from scipy import stats
+
                 r = stats.spearmanr(mi["lectura"], mi["vel_kmh"])
-                print(f"  n={len(mi):,}   Spearman intensidad vs velocidad  "
-                      f"rho={r.statistic:+.3f}  p={r.pvalue:.2e}")
-                print("  (una rho negativa y significativa es exactamente lo que buscas)")
+                print(
+                    f"  n={len(mi):,}   Spearman intensidad vs velocidad  "
+                    f"rho={r.statistic:+.3f}  p={r.pvalue:.2e}"
+                )
+                print(
+                    "  (una rho negativa y significativa es exactamente lo que buscas)"
+                )
             except ImportError:
                 print(f"  n={len(mi):,}  (instala scipy para la correlación)")
         else:

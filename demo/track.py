@@ -27,12 +27,13 @@ from scipy.optimize import linear_sum_assignment
 
 from sources import haversine_m
 
-VEL_MAX_KMH = 70.0     # un bus urbano por encima de esto es un error de asignación
-SALTO_MAX_M = 800.0    # techo duro de desplazamiento entre snapshots
+VEL_MAX_KMH = 70.0  # un bus urbano por encima de esto es un error de asignación
+SALTO_MAX_M = 800.0  # techo duro de desplazamiento entre snapshots
 
 
-def _emparejar_grupo(a: pd.DataFrame, b: pd.DataFrame, dt_s: float
-                     ) -> list[tuple[int, int, float]]:
+def _emparejar_grupo(
+    a: pd.DataFrame, b: pd.DataFrame, dt_s: float
+) -> list[tuple[int, int, float]]:
     """Asignación óptima entre los vehículos de a y los de b (misma línea/trayecto)."""
     if a.empty or b.empty:
         return []
@@ -40,15 +41,19 @@ def _emparejar_grupo(a: pd.DataFrame, b: pd.DataFrame, dt_s: float
     # Se empareja contra la posición PREDICHA de a (si el llamante la aportó)
     alat = a.get("lat_pred", a["lat"]).to_numpy()[:, None]
     alon = a.get("lon_pred", a["lon"]).to_numpy()[:, None]
-    d = haversine_m(alat, alon,
-                    b["lat"].to_numpy()[None, :], b["lon"].to_numpy()[None, :])
+    d = haversine_m(
+        alat, alon, b["lat"].to_numpy()[None, :], b["lon"].to_numpy()[None, :]
+    )
 
     tope = min(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * max(dt_s, 1.0))
     coste = np.where(d <= tope, d, 1e9)
 
     fi, ci = linear_sum_assignment(coste)
-    return [(int(a.index[i]), int(b.index[j]), float(d[i, j]))
-            for i, j in zip(fi, ci) if coste[i, j] < 1e9]
+    return [
+        (int(a.index[i]), int(b.index[j]), float(d[i, j]))
+        for i, j in zip(fi, ci)
+        if coste[i, j] < 1e9
+    ]
 
 
 def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
@@ -89,8 +94,12 @@ def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
             tiene = prev["_plat"].notna()
             prev["lat_pred"] = prev["lat"]
             prev["lon_pred"] = prev["lon"]
-            prev.loc[tiene, "lat_pred"] = 2 * prev.loc[tiene, "lat"] - prev.loc[tiene, "_plat"]
-            prev.loc[tiene, "lon_pred"] = 2 * prev.loc[tiene, "lon"] - prev.loc[tiene, "_plon"]
+            prev.loc[tiene, "lat_pred"] = (
+                2 * prev.loc[tiene, "lat"] - prev.loc[tiene, "_plat"]
+            )
+            prev.loc[tiene, "lon_pred"] = (
+                2 * prev.loc[tiene, "lon"] - prev.loc[tiene, "_plon"]
+            )
         else:
             prev["lat_pred"] = prev["lat"]
             prev["lon_pred"] = prev["lon"]
@@ -101,8 +110,12 @@ def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
             for ia, ib, _ in _emparejar_grupo(ga, gb, dt):
                 df.at[ib, "vehicle_id"] = df.at[ia, "vehicle_id"]
                 df.at[ib, "dist_m"] = float(
-                    haversine_m(df.at[ia, "lat"], df.at[ia, "lon"],
-                                df.at[ib, "lat"], df.at[ib, "lon"])
+                    haversine_m(
+                        df.at[ia, "lat"],
+                        df.at[ia, "lon"],
+                        df.at[ib, "lat"],
+                        df.at[ib, "lon"],
+                    )
                 )
                 df.at[ib, "dt_s"] = dt
                 df.at[ib, "_plat"] = df.at[ia, "lat"]
@@ -128,11 +141,15 @@ def resumen(df: pd.DataFrame) -> dict:
         "trayectorias": df["vehicle_id"].nunique(),
         "long_media_trayectoria": round(float(largo.mean()), 1),
         "long_max_trayectoria": int(largo.max()),
-        "tasa_emparejamiento": round(len(tr) / max(len(df) - df["snapshot_id"].nunique(), 1), 3),
+        "tasa_emparejamiento": round(
+            len(tr) / max(len(df) - df["snapshot_id"].nunique(), 1), 3
+        ),
         "dist_m_p50": round(float(tr["dist_m"].median()), 1) if len(tr) else None,
         "dist_m_p90": round(float(tr["dist_m"].quantile(0.9)), 1) if len(tr) else None,
         "vel_kmh_p50": round(float(tr["vel_kmh"].median()), 1) if len(tr) else None,
-        "vel_kmh_p90": round(float(tr["vel_kmh"].quantile(0.9)), 1) if len(tr) else None,
+        "vel_kmh_p90": round(float(tr["vel_kmh"].quantile(0.9)), 1)
+        if len(tr)
+        else None,
         "vel_kmh_max": round(float(tr["vel_kmh"].max()), 1) if len(tr) else None,
     }
 

@@ -47,17 +47,33 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
                 continue
             if "geom_wkt" in df.columns:
                 if geo is None:
-                    cols = [c for c in ("idtramo", "denominacion", "des_tramo",
-                                        "fiwareid", "lat", "lon", "geom_wkt")
-                            if c in df.columns]
+                    cols = [
+                        c
+                        for c in (
+                            "idtramo",
+                            "denominacion",
+                            "des_tramo",
+                            "fiwareid",
+                            "lat",
+                            "lon",
+                            "geom_wkt",
+                        )
+                        if c in df.columns
+                    ]
                     geo = df[cols].drop_duplicates(subset=["idtramo"])
                 df = df.drop(columns=["geom_wkt"])
             por_dia[ts_ingest.strftime("%Y-%m-%d")].append(df)
 
     filas = sum(len(d) for v in por_dia.values() for d in v)
     if dry:
-        return {"fuente": source, "payloads": n_payloads, "dias": len(por_dia),
-                "filas": filas, "errores": errores, "estado": "simulado"}
+        return {
+            "fuente": source,
+            "payloads": n_payloads,
+            "dias": len(por_dia),
+            "filas": filas,
+            "errores": errores,
+            "estado": "simulado",
+        }
 
     destino = root / "curated" / f"source={source}"
     if destino.exists():
@@ -71,15 +87,22 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
         d = destino / f"date={dia}"
         d.mkdir(parents=True, exist_ok=True)
         pd.concat(trozos, ignore_index=True).to_parquet(
-            d / "part-reprocesado.parquet", index=False, compression="zstd")
+            d / "part-reprocesado.parquet", index=False, compression="zstd"
+        )
 
     if geo is not None:
         ref = root / "reference" / f"{source}_geometria.parquet"
         ref.parent.mkdir(parents=True, exist_ok=True)
         geo.to_parquet(ref, index=False, compression="zstd")
 
-    return {"fuente": source, "payloads": n_payloads, "dias": len(por_dia),
-            "filas": filas, "errores": errores, "estado": "reescrito"}
+    return {
+        "fuente": source,
+        "payloads": n_payloads,
+        "dias": len(por_dia),
+        "filas": filas,
+        "errores": errores,
+        "estado": "reescrito",
+    }
 
 
 if __name__ == "__main__":
@@ -95,8 +118,12 @@ if __name__ == "__main__":
         if r["estado"] == "sin crudo":
             print(f"  {s:22} sin datos crudos")
         else:
-            print(f"  {s:22} {r['payloads']:6,} payloads -> {r['filas']:9,} filas "
-                  f"en {r['dias']} día(s), {r['errores']} errores  [{r['estado']}]")
+            print(
+                f"  {s:22} {r['payloads']:6,} payloads -> {r['filas']:9,} filas "
+                f"en {r['dias']} día(s), {r['errores']} errores  [{r['estado']}]"
+            )
     if not a.dry_run:
-        print(f"\n  El curated anterior está en {a.data / '_curated_previo'} "
-              f"(bórralo cuando compruebes que todo está bien).\n")
+        print(
+            f"\n  El curated anterior está en {a.data / '_curated_previo'} "
+            f"(bórralo cuando compruebes que todo está bien).\n"
+        )

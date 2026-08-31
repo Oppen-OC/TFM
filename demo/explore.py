@@ -49,7 +49,7 @@ def explore(key: str) -> None:
     raw_bytes = len(json.dumps(payload))
     df = parse(key, payload, ts)
 
-    print(f"\nPayload   : {raw_bytes/1024:,.1f} KiB")
+    print(f"\nPayload   : {raw_bytes / 1024:,.1f} KiB")
     print(f"Filas     : {len(df)}")
     if df.empty:
         print("  (sin filas: puede ser horario nocturno o servicio caído)\n")
@@ -59,7 +59,9 @@ def explore(key: str) -> None:
 
     if "latencia_s" in df:
         lat = df["latencia_s"].describe(percentiles=[0.5, 0.9])
-        print(f"Latencia  : p50={lat['50%']:.0f}s  p90={lat['90%']:.0f}s  max={lat['max']:.0f}s")
+        print(
+            f"Latencia  : p50={lat['50%']:.0f}s  p90={lat['90%']:.0f}s  max={lat['max']:.0f}s"
+        )
     elif "ts_utc" in df and df["ts_utc"].notna().any():
         lag = (ts - pd.to_datetime(df["ts_utc"], utc=True)).dt.total_seconds()
         print(f"Latencia  : p50={lag.median():.0f}s  max={lag.max():.0f}s")
@@ -71,7 +73,9 @@ def explore(key: str) -> None:
 
     # Volumen proyectado si capturas a la cadencia recomendada
     por_dia = len(df) * (86400 / src.period_s)
-    print(f"Volumen   : ~{por_dia:,.0f} filas/día  ->  ~{por_dia*90/1e6:,.1f} M filas en 3 meses")
+    print(
+        f"Volumen   : ~{por_dia:,.0f} filas/día  ->  ~{por_dia * 90 / 1e6:,.1f} M filas en 3 meses"
+    )
 
     print("\nMuestra:")
     print(df.head(3).to_string(index=False, max_colwidth=26))

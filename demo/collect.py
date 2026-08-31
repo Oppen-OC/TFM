@@ -46,16 +46,23 @@ log = logging.getLogger("collect")
 HEADERS = {"User-Agent": "TFM-UPV-BigData/0.1 (investigacion academica)"}
 
 FLUSH_FILAS = 50_000
-FLUSH_SEG = 1800          # media hora
+FLUSH_SEG = 1800  # media hora
 LATIDO_SEG = 60
-MAX_VISTOS = 20_000       # cota del deduplicador, para no crecer sin fin en meses
+MAX_VISTOS = 20_000  # cota del deduplicador, para no crecer sin fin en meses
 
 BUFFER: dict[str, list[pd.DataFrame]] = defaultdict(list)
 VISTOS: dict[str, deque] = defaultdict(lambda: deque(maxlen=MAX_VISTOS))
 VISTOS_SET: dict[str, set] = defaultdict(set)
 STATS: dict[str, dict] = defaultdict(
-    lambda: {"ok": 0, "dup": 0, "err": 0, "filas": 0, "ultimo_ok": None,
-             "ultimo_error": None})
+    lambda: {
+        "ok": 0,
+        "dup": 0,
+        "err": 0,
+        "filas": 0,
+        "ultimo_ok": None,
+        "ultimo_error": None,
+    }
+)
 ULTIMO_FLUSH: dict[str, pd.Timestamp] = {}
 PARAR = asyncio.Event()
 INICIO = None
@@ -88,9 +95,19 @@ def flush(root: Path, source: str) -> None:
         ref = root / "reference" / f"{source}_geometria.parquet"
         if not ref.exists():
             ref.parent.mkdir(parents=True, exist_ok=True)
-            cols = [c for c in ("idtramo", "denominacion", "des_tramo",
-                                "fiwareid", "lat", "lon", "geom_wkt")
-                    if c in df.columns]
+            cols = [
+                c
+                for c in (
+                    "idtramo",
+                    "denominacion",
+                    "des_tramo",
+                    "fiwareid",
+                    "lat",
+                    "lon",
+                    "geom_wkt",
+                )
+                if c in df.columns
+            ]
             geo = df[cols].drop_duplicates(subset=["idtramo"])
             geo.to_parquet(ref, index=False, compression="zstd")
             log.info("geometría de %s -> %s (%d tramos)", source, ref.name, len(geo))
@@ -114,10 +131,15 @@ def escribir_latido(root: Path) -> None:
         "vivo_utc": ahora.isoformat(),
         "vivo_local": ahora.tz_convert("Europe/Madrid").isoformat(),
         "arrancado_utc": INICIO.isoformat() if INICIO else None,
-        "horas_en_marcha": round((ahora - INICIO).total_seconds() / 3600, 2) if INICIO else 0,
+        "horas_en_marcha": round((ahora - INICIO).total_seconds() / 3600, 2)
+        if INICIO
+        else 0,
         "disco_mb": round(tamano_mb(root), 1),
         "fuentes": {
-            k: {**v, "ultimo_ok": v["ultimo_ok"].isoformat() if v["ultimo_ok"] else None}
+            k: {
+                **v,
+                "ultimo_ok": v["ultimo_ok"].isoformat() if v["ultimo_ok"] else None,
+            }
             for k, v in STATS.items()
         },
     }
@@ -135,15 +157,21 @@ def mostrar_estado(root: Path) -> int:
     e = json.loads(p.read_text(encoding="utf-8"))
     vivo = pd.Timestamp(e["vivo_utc"])
     edad = (pd.Timestamp.now(tz="UTC") - vivo).total_seconds()
-    salud = "VIVO" if edad < 180 else f"PARADO (sin latido desde hace {edad/60:.0f} min)"
+    salud = (
+        "VIVO" if edad < 180 else f"PARADO (sin latido desde hace {edad / 60:.0f} min)"
+    )
     print(f"\n  Estado      : {salud}")
     print(f"  Último latido: {e['vivo_local'][:19]}")
     print(f"  En marcha   : {e['horas_en_marcha']} h")
     print(f"  En disco    : {e['disco_mb']} MB\n")
-    print(f"  {'fuente':22} {'snapshots':>10} {'filas':>12} {'dup':>7} {'err':>6}  último ok")
+    print(
+        f"  {'fuente':22} {'snapshots':>10} {'filas':>12} {'dup':>7} {'err':>6}  último ok"
+    )
     for k, v in e["fuentes"].items():
         ult = (v["ultimo_ok"] or "")[11:19]
-        print(f"  {k:22} {v['ok']:>10,} {v['filas']:>12,} {v['dup']:>7} {v['err']:>6}  {ult}")
+        print(
+            f"  {k:22} {v['ok']:>10,} {v['filas']:>12,} {v['dup']:>7} {v['err']:>6}  {ult}"
+        )
     print()
     return 0 if edad < 180 else 2
 
@@ -157,16 +185,16 @@ async def asegurar_geometria(client: httpx.AsyncClient, key: str, root: Path) ->
     if ref.exists():
         return
     try:
-        r = await client.get(src.url)          # esta sí con geometría
+        r = await client.get(src.url)  # esta sí con geometría
         r.raise_for_status()
         ts = now_utc()
         append_raw(root, key, r.json(), ts)
         df = parse(key, r.json(), ts)
         if not df.empty and "geom_wkt" in df.columns:
             BUFFER[key].append(df)
-            flush(root, key)                    # flush() ya separa la geometría
+            flush(root, key)  # flush() ya separa la geometría
             log.info("geometría inicial de %s descargada", key)
-    except Exception as exc:                    # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
         log.warning("no pude descargar la geometría de %s: %s", key, exc)
 
 
@@ -178,8 +206,11 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
         ts = now_utc()
         # Con la geometría ya en reference/, se pide sin ella: en la capa 192
         # eso recorta ~90 % del payload.
-        url = src.url_sin_geometria if (
-            root / "reference" / f"{key}_geometria.parquet").exists() else src.url
+        url = (
+            src.url_sin_geometria
+            if (root / "reference" / f"{key}_geometria.parquet").exists()
+            else src.url
+        )
         try:
             r = await client.get(url)
             r.raise_for_status()
@@ -238,9 +269,13 @@ async def latir(root: Path) -> None:
             escribir_latido(root)
         except Exception as exc:  # noqa: BLE001
             log.warning("latido: %s", exc)
-        log.info("ESTADO  %s", " | ".join(
-            f"{k}: {v['ok']}ok/{v['dup']}dup/{v['err']}err {v['filas']:,}f"
-            for k, v in STATS.items()))
+        log.info(
+            "ESTADO  %s",
+            " | ".join(
+                f"{k}: {v['ok']}ok/{v['dup']}dup/{v['err']}err {v['filas']:,}f"
+                for k, v in STATS.items()
+            ),
+        )
 
 
 async def main(minutos: int, claves: list[str], root: Path) -> None:
@@ -248,8 +283,9 @@ async def main(minutos: int, claves: list[str], root: Path) -> None:
     INICIO = now_utc()
     root.mkdir(parents=True, exist_ok=True)
     limites = httpx.Limits(max_connections=8)
-    async with httpx.AsyncClient(timeout=20, headers=HEADERS,
-                                 limits=limites, follow_redirects=True) as client:
+    async with httpx.AsyncClient(
+        timeout=20, headers=HEADERS, limits=limites, follow_redirects=True
+    ) as client:
         for k in claves:
             await asegurar_geometria(client, k, root)
         tareas = [asyncio.create_task(sondear(client, k, root)) for k in claves]
@@ -258,7 +294,7 @@ async def main(minutos: int, claves: list[str], root: Path) -> None:
             if minutos > 0:
                 await asyncio.wait_for(PARAR.wait(), timeout=minutos * 60)
             else:
-                await PARAR.wait()          # indefinido
+                await PARAR.wait()  # indefinido
         except asyncio.TimeoutError:
             pass
         PARAR.set()
@@ -276,23 +312,37 @@ async def main(minutos: int, claves: list[str], root: Path) -> None:
     for k, v in STATS.items():
         total = v["ok"] + v["dup"]
         pct = 100 * v["dup"] / total if total else 0
-        print(f"  {k:22} {v['ok']:6,} snapshots  {v['filas']:10,} filas  "
-              f"{v['dup']:5} dup ({pct:.0f}%)  {v['err']} err")
+        print(
+            f"  {k:22} {v['ok']:6,} snapshots  {v['filas']:10,} filas  "
+            f"{v['dup']:5} dup ({pct:.0f}%)  {v['err']} err"
+        )
     print(f"\n  {tamano_mb(root):,.1f} MB en {root.resolve()}")
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--minutes", type=int, default=1440,
-                   help="0 = indefinido")
-    p.add_argument("--sources", nargs="*", default=["emt_buses", "trafico_estado",
-                                                    "trafico_intensidad",
-                                                    "renfe_cercanias", "valenbisi"])
+    p.add_argument("--minutes", type=int, default=1440, help="0 = indefinido")
+    p.add_argument(
+        "--sources",
+        nargs="*",
+        default=[
+            "emt_buses",
+            "trafico_estado",
+            "trafico_intensidad",
+            "renfe_cercanias",
+            "valenbisi",
+        ],
+    )
     p.add_argument("--out", type=Path, default=Path("data"))
-    p.add_argument("--status", action="store_true",
-                   help="mostrar el latido del colector y salir")
-    p.add_argument("--log", type=Path, default=None,
-                   help="además de consola, escribir el log a este fichero")
+    p.add_argument(
+        "--status", action="store_true", help="mostrar el latido del colector y salir"
+    )
+    p.add_argument(
+        "--log",
+        type=Path,
+        default=None,
+        help="además de consola, escribir el log a este fichero",
+    )
     a = p.parse_args()
 
     if a.status:
@@ -303,12 +353,19 @@ if __name__ == "__main__":
         a.log.parent.mkdir(parents=True, exist_ok=True)
         # Rotación: en meses de captura un log sin límite acaba siendo el
         # fichero más grande del proyecto.
-        handlers.append(RotatingFileHandler(
-            a.log, maxBytes=10_000_000, backupCount=5, encoding="utf-8"))
-    logging.basicConfig(level=logging.INFO, handlers=handlers,
-                        format="%(asctime)s UTC %(levelname)-7s %(message)s")
+        handlers.append(
+            RotatingFileHandler(
+                a.log, maxBytes=10_000_000, backupCount=5, encoding="utf-8"
+            )
+        )
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=handlers,
+        format="%(asctime)s UTC %(levelname)-7s %(message)s",
+    )
     logging.Formatter.converter = lambda *args: pd.Timestamp.now(
-        tz=timezone.utc).timetuple()
+        tz=timezone.utc
+    ).timetuple()
 
     # httpx registra una línea INFO por petición: 5 fuentes cada 30 s son
     # ~14.000 líneas al día sin una sola información útil.

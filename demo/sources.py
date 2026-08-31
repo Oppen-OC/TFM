@@ -65,8 +65,9 @@ def now_utc() -> pd.Timestamp:
 LAT_MIN_S, LAT_MAX_S = -180.0, 900.0
 
 
-def resolver_convencion(epoch_ms: pd.Series, ts_ingest: pd.Timestamp,
-                        lat_max: float = LAT_MAX_S) -> tuple[pd.Series, str]:
+def resolver_convencion(
+    epoch_ms: pd.Series, ts_ingest: pd.Timestamp, lat_max: float = LAT_MAX_S
+) -> tuple[pd.Series, str]:
     """Decide, POR SNAPSHOT, si el timestamp viene en UTC o en local naive.
 
     Medido el 16/08/2026 sobre 12,5 h de captura real: el servicio de la EMT
@@ -80,11 +81,12 @@ def resolver_convencion(epoch_ms: pd.Series, ts_ingest: pd.Timestamp,
     no asumir: probar las dos interpretaciones y quedarse con la que produce
     una latencia plausible. Se autocalibra además en el cambio de hora.
     """
-    crudo = pd.to_datetime(epoch_ms, unit="ms", utc=True)          # leído tal cual
+    crudo = pd.to_datetime(epoch_ms, unit="ms", utc=True)  # leído tal cual
     # Reinterpretar esa hora de pared en Europe/Madrid y volver a UTC.
     naive = crudo.dt.tz_localize(None)
-    local = naive.dt.tz_localize(TZ_LOCAL, ambiguous=True,
-                                 nonexistent="shift_forward").dt.tz_convert("UTC")
+    local = naive.dt.tz_localize(
+        TZ_LOCAL, ambiguous=True, nonexistent="shift_forward"
+    ).dt.tz_convert("UTC")
 
     med_utc = float((ts_ingest - crudo).dt.total_seconds().median())
     med_loc = float((ts_ingest - local).dt.total_seconds().median())
@@ -96,8 +98,12 @@ def resolver_convencion(epoch_ms: pd.Series, ts_ingest: pd.Timestamp,
         return local, "LOCAL_NAIVE"
     if ok_utc and not ok_loc:
         return crudo, "YA_EN_UTC"
-    if ok_utc and ok_loc:                       # sólo si el desfase fuese 0
-        return (crudo, "YA_EN_UTC") if abs(med_utc) <= abs(med_loc) else (local, "LOCAL_NAIVE")
+    if ok_utc and ok_loc:  # sólo si el desfase fuese 0
+        return (
+            (crudo, "YA_EN_UTC")
+            if abs(med_utc) <= abs(med_loc)
+            else (local, "LOCAL_NAIVE")
+        )
     # Ninguna cuadra: dato rancio o reloj desajustado. Se marca y no se descarta.
     return (local, "DUDOSA") if abs(med_loc) < abs(med_utc) else (crudo, "DUDOSA")
 
@@ -185,7 +191,9 @@ SOURCES: dict[str, Source] = {
 # --------------------------------------------------------------------------- #
 def _wkt_paths(paths: list) -> str:
     """Polilínea de ArcGIS -> WKT. Necesario para el join espacial punto-tramo."""
-    partes = [", ".join(f"{p[0]:.6f} {p[1]:.6f}" for p in path) for path in paths if path]
+    partes = [
+        ", ".join(f"{p[0]:.6f} {p[1]:.6f}" for p in path) for path in paths if path
+    ]
     if not partes:
         return ""
     if len(partes) == 1:
@@ -227,8 +235,18 @@ def parse_emt(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
     df["snapshot_id"] = int(df["gid"].min())
     df["latencia_s"] = (df["ts_ingest_utc"] - df["ts_utc"]).dt.total_seconds()
     return df[
-        ["snapshot_id", "gid", "linea", "trayecto", "lat", "lon",
-         "ts_utc", "ts_ingest_utc", "latencia_s", "tz_convencion"]
+        [
+            "snapshot_id",
+            "gid",
+            "linea",
+            "trayecto",
+            "lat",
+            "lon",
+            "ts_utc",
+            "ts_ingest_utc",
+            "latencia_s",
+            "tz_convencion",
+        ]
     ]
 
 
@@ -244,9 +262,21 @@ def parse_trafico_estado(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame
     # que faltan.
     df = df[df["idtramo"].notna()]
     # Tras el primer sondeo se pide sin geometría: lat/lon/geom_wkt no vienen.
-    return _solo_existentes(df, ["idtramo", "denominacion", "estado", "fiwareid",
-                                 "lat", "lon", "n_vertices", "geom_wkt",
-                                 "ts_utc", "ts_ingest_utc"])
+    return _solo_existentes(
+        df,
+        [
+            "idtramo",
+            "denominacion",
+            "estado",
+            "fiwareid",
+            "lat",
+            "lon",
+            "n_vertices",
+            "geom_wkt",
+            "ts_utc",
+            "ts_ingest_utc",
+        ],
+    )
 
 
 def parse_trafico_intensidad(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
@@ -257,10 +287,22 @@ def parse_trafico_intensidad(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataF
     df["ts_utc"] = ts_ingest
     df["lectura"] = pd.to_numeric(df["lectura"], errors="coerce")
     df.loc[df["lectura"] < 0, "lectura"] = pd.NA  # -1 = sin dato
-    df = df[df["idtramo"].notna()]                # filas hueco, ver capa 192
-    return _solo_existentes(df, ["idtramo", "des_tramo", "lectura", "tipo_vehiculo",
-                                 "fiwareid", "lat", "lon", "geom_wkt",
-                                 "ts_utc", "ts_ingest_utc"])
+    df = df[df["idtramo"].notna()]  # filas hueco, ver capa 192
+    return _solo_existentes(
+        df,
+        [
+            "idtramo",
+            "des_tramo",
+            "lectura",
+            "tipo_vehiculo",
+            "fiwareid",
+            "lat",
+            "lon",
+            "geom_wkt",
+            "ts_utc",
+            "ts_ingest_utc",
+        ],
+    )
 
 
 def parse_valenbisi(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
@@ -272,11 +314,26 @@ def parse_valenbisi(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
     df["ts_utc"], _ = resolver_convencion(df["update_jcd"], ts_ingest, lat_max=2400)
     df["ts_ingest_utc"] = ts_ingest
     df["abierta"] = df["open"].eq("T")
-    return df[["number", "name", "address", "abierta", "available", "free",
-               "total", "lat", "lon", "ts_utc", "ts_ingest_utc"]]
+    return df[
+        [
+            "number",
+            "name",
+            "address",
+            "abierta",
+            "available",
+            "free",
+            "total",
+            "lat",
+            "lon",
+            "ts_utc",
+            "ts_ingest_utc",
+        ]
+    ]
 
 
-def parse_renfe(payload: dict, ts_ingest: pd.Timestamp, nucleo: str = "40") -> pd.DataFrame:
+def parse_renfe(
+    payload: dict, ts_ingest: pd.Timestamp, nucleo: str = "40"
+) -> pd.DataFrame:
     # OJO: la raíz es un objeto {fechaActualizacion, trenes:[...]}, no un array.
     trenes = payload.get("trenes", []) if isinstance(payload, dict) else payload
     df = pd.DataFrame(trenes)
@@ -284,15 +341,34 @@ def parse_renfe(payload: dict, ts_ingest: pd.Timestamp, nucleo: str = "40") -> p
         return df
     if nucleo:
         df = df[df["nucleo"] == nucleo].copy()
-    df["ts_utc"] = local_naive_iso_to_utc(payload.get("fechaActualizacion")) \
-        if isinstance(payload, dict) else ts_ingest
+    df["ts_utc"] = (
+        local_naive_iso_to_utc(payload.get("fechaActualizacion"))
+        if isinstance(payload, dict)
+        else ts_ingest
+    )
     df["ts_ingest_utc"] = ts_ingest
     df["retraso_min"] = pd.to_numeric(df["retrasoMin"], errors="coerce")
     df["eta_sig_est_utc"] = df["horaLlegadaSigEst"].map(local_naive_iso_to_utc)
     df = df.rename(columns={"latitud": "lat", "longitud": "lon"})
-    return df[["tripId", "codTren", "codLinea", "retraso_min", "codEstAct",
-               "codEstSig", "eta_sig_est_utc", "codEstOrig", "codEstDest",
-               "porAvanc", "via", "lat", "lon", "ts_utc", "ts_ingest_utc"]]
+    return df[
+        [
+            "tripId",
+            "codTren",
+            "codLinea",
+            "retraso_min",
+            "codEstAct",
+            "codEstSig",
+            "eta_sig_est_utc",
+            "codEstOrig",
+            "codEstDest",
+            "porAvanc",
+            "via",
+            "lat",
+            "lon",
+            "ts_utc",
+            "ts_ingest_utc",
+        ]
+    ]
 
 
 PARSERS = {
@@ -332,8 +408,11 @@ def append_raw(root: Path, source: str, payload: dict, ts_ingest: pd.Timestamp) 
     day = ts_ingest.strftime("%Y-%m-%d")
     path = root / "raw" / f"source={source}" / f"date={day}" / "payloads.ndjson.gz"
     path.parent.mkdir(parents=True, exist_ok=True)
-    line = json.dumps({"ts_ingest_utc": ts_ingest.isoformat(), "payload": payload},
-                      ensure_ascii=False, separators=(",", ":"))
+    line = json.dumps(
+        {"ts_ingest_utc": ts_ingest.isoformat(), "payload": payload},
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
     with gzip.open(path, "at", encoding="utf-8") as fh:
         fh.write(line + "\n")
     return path
