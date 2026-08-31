@@ -4,7 +4,7 @@ titulo: gid identifica al refresco, no al vehículo
 estado: cerrada
 capa: fuentes
 detectada: 2026-08-19
-test: demo/selftest.py::"gids de dos sondeos consecutivos son disjuntos"
+test: tests/test_ingest.py::test_gids_de_sondeos_consecutivos_son_disjuntos
 ---
 
 ## Síntoma
@@ -40,13 +40,13 @@ un punto, que parece un problema de filtrado y no de identidad.
 Es la trampa que define el trabajo del TFM: la capa de la EMT publica posición,
 línea y sentido, pero ni `trip_id`, ni id de vehículo, ni retraso. **La identidad
 hay que inferirla** — asignación húngara con predicción de movimiento,
-`rastrear()` en `demo/track.py:54`.
+`rastrear()` en `src/project/tracking.py:59`.
 
 ## Guardia
 
-`demo/selftest.py`, checks *"gids de dos sondeos consecutivos son disjuntos"* y
-*"los bloques son contiguos (truncate + reinsert)"*.
+`tests/test_ingest.py::test_gids_de_sondeos_consecutivos_son_disjuntos` y
+`tests/test_ingest.py::test_los_bloques_de_gid_son_contiguos`.
 
 Uso legítimo de `gid`: como `snapshot_id`, tomando el mínimo del bloque para
-identificar el refresco y deduplicar. Cubierto por el check *"emt: snapshot_id =
-gid mínimo del bloque"*.
+identificar el refresco y deduplicar. Cubierto por
+`tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque`.

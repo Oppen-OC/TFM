@@ -21,7 +21,6 @@ import pytest
 
 RAIZ = Path(__file__).resolve().parents[2]
 TRAMPAS = RAIZ / ".claude" / "trampas"
-SELFTEST = RAIZ / "demo" / "selftest.py"
 
 CAMPOS = ("id", "titulo", "estado", "capa", "detectada", "test")
 ESTADOS = {"vigente", "mitigada", "cerrada"}
@@ -30,8 +29,10 @@ CAPAS = {"fuentes", "tracking", "etiquetado", "pipeline", "serving"}
 RE_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 RE_CAMPO = re.compile(r"^([a-z_]+):\s*(.*)$")
 RE_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# `demo/selftest.py::"nombre del check"` o node id de pytest `tests/x.py::test_y`
-RE_TEST_SELFTEST = re.compile(r'^demo/selftest\.py::"(.+)"$')
+# Node id de pytest: `tests/x.py::test_y`. Hasta 08/2026 se admitía además
+# `demo/selftest.py::"<check>"`, con un arnés casero de `check()`. Al portar
+# `demo/` a `src/project/` esos checks pasaron a pytest sin cambiar umbrales,
+# y con ellos desapareció el segundo formato: ahora hay un solo arnés.
 RE_TEST_PYTEST = re.compile(r"^(tests/[\w/]+\.py)::([\w\[\]-]+)$")
 
 
@@ -50,16 +51,6 @@ def _frontmatter(ruta: Path) -> dict[str, str]:
         assert c, f"{ruta.name}: línea de frontmatter no es `clave: valor`: {linea!r}"
         campos[c.group(1)] = c.group(2).strip()
     return campos
-
-
-def _checks_de_selftest() -> set[str]:
-    """Nombres declarados con check("...") en demo/selftest.py.
-
-    Solo literales: los `check(f"{x}: ...")` dentro de bucles no se pueden
-    resolver estáticamente y no deben referenciarse desde una ficha.
-    """
-    texto = SELFTEST.read_text(encoding="utf-8")
-    return set(re.findall(r'\bcheck\(\s*"([^"]+)"', texto))
 
 
 # Recolectado una vez: si el directorio no existe, todo el módulo debe fallar
@@ -124,25 +115,19 @@ def test_el_test_citado_existe(ruta: Path):
     if ref == "ninguno":
         return
 
-    if m := RE_TEST_SELFTEST.match(ref):
-        nombre = m.group(1)
-        disponibles = _checks_de_selftest()
-        assert nombre in disponibles, (
-            f"{ruta.name}: el check {nombre!r} no existe en demo/selftest.py"
-        )
-        return
-
     if m := RE_TEST_PYTEST.match(ref):
         fichero = RAIZ / m.group(1)
         assert fichero.is_file(), f"{ruta.name}: {m.group(1)} no existe"
-        assert f"def {m.group(2)}" in fichero.read_text(encoding="utf-8"), (
-            f"{ruta.name}: {m.group(2)} no está definido en {m.group(1)}"
+        # El nombre base, sin el `[param]` de una parametrización.
+        nombre = m.group(2).split("[", 1)[0]
+        assert f"def {nombre}" in fichero.read_text(encoding="utf-8"), (
+            f"{ruta.name}: {nombre} no está definido en {m.group(1)}"
         )
         return
 
     pytest.fail(
         f"{ruta.name}: test {ref!r} no tiene formato reconocible. "
-        'Usa demo/selftest.py::"<nombre del check>" o tests/<f>.py::<test_x>.'
+        "Usa tests/<fichero>.py::<test_x>."
     )
 
 

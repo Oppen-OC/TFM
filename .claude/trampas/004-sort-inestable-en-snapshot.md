@@ -4,7 +4,7 @@ titulo: Sort inestable reordena filas dentro del snapshot y falsea la métrica d
 estado: cerrada
 capa: tracking
 detectada: 2026-08-19
-test: demo/selftest.py::"tracker predictivo: identidad correcta >= 99 %"
+test: tests/test_tracking.py::test_tracker_predictivo_identidad_correcta
 ---
 
 ## Síntoma
@@ -19,7 +19,7 @@ filas que comparten `snapshot_id` se reordenan silenciosamente aunque la entrada
 ya viniera bien ordenada.
 
 El emparejamiento húngaro en sí es por índice y no se ve afectado. El daño estaba
-en el arnés: `demo/selftest.py` reengancha las etiquetas de verdad-terreno **por
+en el arnés: reengancha las etiquetas de verdad-terreno **por
 posición de fila** después de llamar a `rastrear()`. Con el orden barajado, cada
 verdad se pegaba a la fila equivocada.
 
@@ -41,6 +41,6 @@ hacerlo, `kind="stable"` explícito y una clave de desempate en el sort.
 
 ## Guardia
 
-`demo/selftest.py`, checks *"tracker predictivo: identidad correcta >= 99 %"* y
-*"tracker predictivo mejora al ingenuo"*. Ambos vuelven a caer si el orden se
-corrompe.
+`tests/test_tracking.py::test_tracker_predictivo_identidad_correcta` y
+`tests/test_tracking.py::test_predictivo_mejora_al_ingenuo`. Ambos vuelven a caer
+si el orden se corrompe.

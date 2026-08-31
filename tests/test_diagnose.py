@@ -10,11 +10,12 @@ El diagnóstico debe decir "SEÑAL CLARA" en A y "SIN SEÑAL" en B. Si dice lo
 mismo en los dos, la herramienta no vale y no puedes fiarte de su veredicto
 sobre los datos reales.
 
-    python demo/test_diagnose.py
+    uv run pytest tests/test_diagnose.py
 """
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -22,8 +23,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
-AQUI = Path(__file__).resolve().parent
 
 N_TRAMOS = 40
 N_LINEAS = 12
@@ -144,15 +145,28 @@ def construir(root: Path, con_senal: bool, semilla: int) -> None:
 
 
 def ejecutar(root: Path) -> str:
+    """Lanza el diagnóstico como proceso aparte, igual que lo lanzarías tú.
+
+    Por subprocess y no importando `main()`: así se valida también que el
+    módulo sea invocable con `-m` y que su veredicto llegue por stdout, que es
+    como se consume de verdad.
+    """
+    # PYTHONIOENCODING explícito: en Windows, el stdout de un hijo redirigido a
+    # tubería usa cp1252, y el diagnóstico imprime '≤' y '→'. Sin esto el hijo
+    # muere con UnicodeEncodeError y el fallo aparenta ser del diagnóstico.
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
     r = subprocess.run(
-        [sys.executable, str(AQUI / "diagnose.py"), "--data", str(root)],
+        [sys.executable, "-m", "project.analysis.diagnose", "--data", str(root)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
     )
-    if r.returncode != 0:
-        print(r.stdout[-3000:])
-        print(r.stderr[-3000:])
-        raise SystemExit(f"diagnose.py falló con código {r.returncode}")
+    assert r.returncode == 0, (
+        f"diagnose falló con código {r.returncode}\n"
+        f"{r.stdout[-2000:]}\n{r.stderr[-2000:]}"
+    )
     return r.stdout
 
 
@@ -163,37 +177,24 @@ def veredicto(salida: str) -> str:
     return "?"
 
 
-if __name__ == "__main__":
-    fallos = []
-    for nombre, con_senal, esperado in [
-        ("A (con señal)", True, "SEÑAL CLARA"),
-        ("B (sin señal)", False, "SIN SEÑAL"),
-    ]:
-        root = AQUI / f"_tmp_diag_{'a' if con_senal else 'b'}"
-        construir(root, con_senal, semilla=11 if con_senal else 22)
-        salida = ejecutar(root)
-        v = veredicto(salida)
-        ok = v == esperado
-        print(
-            f"  [{'ok' if ok else 'FALLO'}]  escenario {nombre}: "
-            f"esperado {esperado}, obtenido {v}"
-        )
-        if not ok:
-            fallos.append(nombre)
-            print(salida[salida.find("4. SEÑAL") :][:1400])
-        # extracto útil aunque pase
-        for linea in salida.splitlines():
-            if (
-                "Cobertura a" in linea
-                or "Máximo horario" in linea
-                or "Caída de velocidad" in linea
-                or "Spearman estado" in linea
-            ):
-                print("        " + linea.strip())
-        shutil.rmtree(root, ignore_errors=True)
+@pytest.mark.parametrize(
+    ("con_senal", "semilla", "esperado"),
+    [
+        (True, 11, "SEÑAL CLARA"),
+        (False, 22, "SIN SEÑAL"),
+    ],
+    ids=["escenario-A-con-senal", "escenario-B-sin-senal"],
+)
+def test_diagnose_discrimina(
+    tmp_path: Path, con_senal: bool, semilla: int, esperado: str
+):
+    """Si dice lo mismo en los dos escenarios, la herramienta no vale.
 
-    print()
-    if fallos:
-        print(f"  {len(fallos)} escenario(s) mal clasificados: {fallos}")
-        raise SystemExit(1)
-    print("  diagnose.py discrimina correctamente entre señal y ruido.")
+    Es el test del test: sin esto, un `diagnose.py` que devolviera siempre
+    "SEÑAL CLARA" pasaría por bueno sobre los datos reales y validaría la
+    hipótesis del TFM por accidente.
+    """
+    root = tmp_path / ("a" if con_senal else "b")
+    construir(root, con_senal, semilla=semilla)
+    salida = ejecutar(root)
+    assert veredicto(salida) == esperado, salida[salida.find("4. SEÑAL") :][:1500]

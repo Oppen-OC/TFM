@@ -37,10 +37,10 @@ está calculado sobre 410.
 
 ## Guardia
 
-Falta. `parse_trafico_estado()` en `demo/sources.py:235` las descarta, pero no hay
+Falta. `parse_trafico_estado()` en `src/project/ingest/sources.py:254` las descarta, pero no hay
 test que lo fije: si alguien reescribe el parser, vuelven a colarse sin que nada
 avise.
 
-**Pendiente:** test en `demo/selftest.py` con un payload de fixture que incluya
+**Pendiente:** test en `tests/test_ingest.py` con un payload de fixture que incluya
 filas hueco, comprobando que el parser devuelve solo las filas con `idtramo`.
 Mientras no exista, esta ficha no pasa a `cerrada`.

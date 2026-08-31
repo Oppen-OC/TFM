@@ -4,7 +4,7 @@ titulo: La EMT alterna entre UTC y hora local naive de un sondeo al siguiente
 estado: cerrada
 capa: fuentes
 detectada: 2026-08-16
-test: demo/selftest.py::"serie con convenciones alternas: ninguna fila desplazada >1 h"
+test: tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila_desplazada
 ---
 
 ## Síntoma
@@ -46,7 +46,7 @@ Mismo riesgo con `fechaActualizacion` de Renfe, que llega como ISO naive.
 
 ## Guardia
 
-`resolver_convencion()` en `demo/sources.py:68`. No asume: por cada snapshot
+`resolver_convencion()` en `src/project/ingest/sources.py:69`. No asume: por cada snapshot
 prueba las dos interpretaciones y se queda con la que produce una latencia
 plausible. Se autocalibra en el cambio de hora de octubre, porque no codifica el
 desfase — lo deduce.
@@ -58,7 +58,7 @@ Efecto medido sobre los mismos payloads crudos:
 | Antes | 26 s | 7.222 s | 7.241 s | 7.348 s | 12.335 (20,3 %) |
 | Después | 23 s | 39 s | 76 s | 477 s | **0** |
 
-Test: `demo/selftest.py`, check *"serie con convenciones alternas: ninguna fila
+Test: `tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila
 desplazada >1 h"*. Ver también *"dato rancio -> se marca DUDOSA en vez de
 adivinar"*: cuando ninguna de las dos interpretaciones da latencia plausible, no
 se elige a ciegas.

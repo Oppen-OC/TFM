@@ -4,7 +4,7 @@ titulo: La raíz del JSON de Renfe es un objeto, no un array
 estado: cerrada
 capa: fuentes
 detectada: 2026-08-19
-test: demo/selftest.py::"renfe: filtra sólo núcleo 40 (València)"
+test: tests/test_ingest.py::test_renfe_filtra_solo_nucleo_40
 ---
 
 ## Síntoma
@@ -40,7 +40,7 @@ horaria que [002](002-emt-alterna-convencion-horaria.md).
 
 ## Guardia
 
-`parse_renfe()` en `demo/sources.py:279`, con `nucleo="40"` por defecto.
+`parse_renfe()` en `src/project/ingest/sources.py:335`, con `nucleo="40"` por defecto.
 
-Tests en `demo/selftest.py`: *"renfe: filtra sólo núcleo 40 (València)"* y
-*"renfe: retraso_min es numérico"*.
+`tests/test_ingest.py::test_renfe_filtra_solo_nucleo_40` y
+`tests/test_ingest.py::test_renfe_retraso_min_es_numerico`.
