@@ -25,6 +25,10 @@ jobs:
       - name: Format check
         run: uv run ruff format --check .
 
+      # Incluye las 30 comprobaciones sin red sobre parseo de fuentes y tracking
+      # que guardan las trampas 001-004 del registro: si una cae, la ficha que
+      # la cita miente. Hasta 08/2026 eran un paso aparte (`demo/selftest.py`,
+      # arnés casero con `check()`); al portar demo/ pasaron a pytest.
       - name: Tests
         run: uv run pytest
 
@@ -32,8 +36,3 @@ jobs:
       # registro de trampas y la deriva entre documentación y código.
       - name: Andamiaje de agentes
         run: uv run pytest .claude/tests
-
-      # 30 comprobaciones sin red sobre parseo de fuentes y tracking. Guarda las
-      # trampas cerradas del registro: si una cae, la ficha que la cita miente.
-      - name: Selftest del demostrador
-        run: uv run python demo/selftest.py
