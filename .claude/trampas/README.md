@@ -12,6 +12,7 @@ completa antes de tocar la capa correspondiente.**
 | [004](004-sort-inestable-en-snapshot.md) | cerrada | tracking | `sort_values` usa quicksort, no estable. Reordena filas del mismo snapshot y rompe todo lo que reenganche **por posición de fila**. Reportó 11 % de precisión siendo 99 % | `test_tracker_predictivo_identidad_correcta` |
 | [005](005-filas-hueco-capa-trafico.md) | mitigada | fuentes | ~35 de las 446 filas de la capa 192 llegan sin `idtramo`, sin geometría y sin `estado`. No son tramos desconocidos: no son tramos. Denominador real **410** | ⚠ ninguna |
 | [006](006-posiciones-fuera-de-caja-no-son-error.md) | vigente | etiquetado | Posiciones al sur de 39,36° **no son error de GPS**: son las líneas 24 y 25 bajando a El Perellonet. Filtrar por caja geográfica sesga la muestra hacia corredores bien cubiertos | ⚠ ninguna |
+| [007](007-arranque-en-frio-del-tracker.md) | cerrada | tracking | La 1ª transición de cada trayectoria empareja **sin predicción**: con buses de la misma línea a menos de un paso (55 % de los reales), el coste correcto y el intercambiado **empatan exacto** y Hungarian desempata por orden de fila. Propaga: 35 % de acierto en convoy. Romper la cadena ante la duda es PEOR | `test_convoy_en_fila_india_…` |
 
 ## Cómo se usa
 

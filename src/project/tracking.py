@@ -15,6 +15,18 @@ snapshots consecutivos, restringida a la misma (línea, trayecto) y con una
 puerta de velocidad máxima. Sobre datos reales de un sábado a las 21:15 da
 0 huérfanos y un desplazamiento mediano de ~50 m por refresco de 30 s.
 
+La asignación necesita una predicción de dónde estará cada vehículo, y la
+predicción necesita una velocidad que en la PRIMERA transición de cada
+trayectoria todavía no existe. Ese arranque en frío es el punto débil del
+método, no el cruce de dos buses: ver `_sembrar_por_centroide`. Sobre la
+captura del 16/08/2026, el 55 % de los vehículos tiene un compañero de su
+misma (línea, trayecto) a menos de un paso de refresco, así que la
+configuración degenerada que lo rompe es el caso normal, no el raro.
+
+Límite conocido, no resoluble con posiciones: si los vehículos de un grupo
+están equiespaciados sobre una ruta en anillo, permutar sus identidades es una
+simetría de lo observado. Ningún método que sólo mire posiciones lo distingue.
+
 Esto es ETL de verdad, no un `pd.read_csv`. Es el capítulo de la memoria que
 convierte el trabajo en un TFM.
 """
@@ -38,15 +50,26 @@ def _emparejar_grupo(
     if a.empty or b.empty:
         return []
 
+    blat = b["lat"].to_numpy()[None, :]
+    blon = b["lon"].to_numpy()[None, :]
+
     # Se empareja contra la posición PREDICHA de a (si el llamante la aportó)
-    alat = a.get("lat_pred", a["lat"]).to_numpy()[:, None]
-    alon = a.get("lon_pred", a["lon"]).to_numpy()[:, None]
     d = haversine_m(
-        alat, alon, b["lat"].to_numpy()[None, :], b["lon"].to_numpy()[None, :]
+        a.get("lat_pred", a["lat"]).to_numpy()[:, None],
+        a.get("lon_pred", a["lon"]).to_numpy()[:, None],
+        blat,
+        blon,
+    )
+    # ...pero la puerta física se mide sobre el desplazamiento REAL. Aplicarla
+    # sobre `d` deja pasar saltos que el tope prohíbe en cuanto la predicción
+    # está lejos: sobre 150 snapshots reales colaban 10 por encima de
+    # SALTO_MAX_M, el mayor de 957 m, con `vel_kmh` de hasta 100.
+    d_real = haversine_m(
+        a["lat"].to_numpy()[:, None], a["lon"].to_numpy()[:, None], blat, blon
     )
 
     tope = min(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * max(dt_s, 1.0))
-    coste = np.where(d <= tope, d, 1e9)
+    coste = np.where((d <= tope) & (d_real <= tope), d, 1e9)
 
     fi, ci = linear_sum_assignment(coste)
     return [
@@ -54,6 +77,37 @@ def _emparejar_grupo(
         for i, j in zip(fi, ci)
         if coste[i, j] < 1e9
     ]
+
+
+def _sembrar_por_centroide(a: pd.DataFrame, b: pd.DataFrame) -> pd.DataFrame:
+    """Predice las filas de `a` que todavía no tienen velocidad propia.
+
+    En su primera transición un vehículo no tiene paso anterior, así que la
+    predicción cae a su posición actual y el emparejamiento vuelve a ser vecino
+    más cercano puro. Con buses colineales a velocidad parecida eso no es un
+    caso difícil: es un EMPATE EXACTO. Convoy a 15 km/h separado 120 m, paso de
+    125 m -> correcto 125+125 = 250, intercambio 5+245 = 250. Hungarian
+    desempata por orden de fila, y el error no se queda ahí: escribe un `_plat`
+    equivocado que envenena la predicción del paso siguiente.
+
+    El desplazamiento del centroide estima el movimiento de conjunto del grupo
+    SIN conocer la correspondencia, que es justo lo que rompe el empate. Solo se
+    aplica cuando el grupo no cambia de tamaño: si entran o salen vehículos, el
+    centroide se mueve por el censo y no por el tráfico.
+    """
+    if a.empty or len(a) != len(b):
+        return a
+    sin_velocidad = a["_plat"].isna()
+    if not sin_velocidad.any():
+        return a
+    a = a.copy()
+    a.loc[sin_velocidad, "lat_pred"] = a.loc[sin_velocidad, "lat"] + (
+        b["lat"].mean() - a["lat"].mean()
+    )
+    a.loc[sin_velocidad, "lon_pred"] = a.loc[sin_velocidad, "lon"] + (
+        b["lon"].mean() - a["lon"].mean()
+    )
+    return a
 
 
 def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
@@ -107,6 +161,8 @@ def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
         emparejados_b: set[int] = set()
         for clave, gb in cur.groupby(["linea", "trayecto"], sort=False):
             ga = prev[(prev["linea"] == clave[0]) & (prev["trayecto"] == clave[1])]
+            if predictivo:
+                ga = _sembrar_por_centroide(ga, gb)
             for ia, ib, _ in _emparejar_grupo(ga, gb, dt):
                 df.at[ib, "vehicle_id"] = df.at[ia, "vehicle_id"]
                 df.at[ib, "dist_m"] = float(
