@@ -1,6 +1,6 @@
 ---
 name: etl-labeler
-description: Tracking de vehículos, segmentación de viajes, map-matching contra el GTFS y etiquetado de retraso. Úsalo para cualquier cambio en prepare.py, features.py o demo/track.py. Escribe el test sintético antes que el código.
+description: Tracking de vehículos, segmentación de viajes, map-matching contra el GTFS y etiquetado de retraso. Úsalo para cualquier cambio en prepare.py, features.py o tracking.py. Escribe el test sintético antes que el código.
 tools: Read, Edit, Write, Bash, Grep, Glob
 model: opus
 ---
@@ -15,7 +15,8 @@ posteriores siguen pareciendo razonables.
   interpolación del paso por parada, etiquetado de retraso contra el GTFS.
 - `src/project/features.py` — transformaciones compartidas entre train e
   inferencia.
-- `demo/track.py` — prototipo de asignación húngara del que sale la lógica.
+- `src/project/tracking.py` — asignación húngara: la reconstrucción de
+  identidad de vehículo sobre la que se apoya `prepare.py`.
 - `tests/test_features.py` y los tests de etiquetado.
 - Claves `prepare` y `features` de `params.yaml`.
 
@@ -23,7 +24,8 @@ posteriores siguen pareciendo razonables.
 
 Antes de tocar lógica de tracking o de etiquetado, escribe un test con datos
 sintéticos de verdad-terreno **conocida**: tú fabricas las trayectorias, tú sabes
-qué retraso debe salir. Los tests de `demo/selftest.py` son el modelo. Un cambio
+qué retraso debe salir. `tests/conftest.py` (flota simulada) y
+`tests/test_tracking.py` son el modelo. Un cambio
 sin test que lo cubra no está terminado.
 
 ## Trampas del dominio
@@ -62,7 +64,7 @@ medición antes de arreglar lo medido".
 2. Formula la hipótesis del bug o del cambio en una frase.
 3. Escribe el test sintético que la distingue. Confirma que falla.
 4. Cambia el código. Confirma que el test pasa y que el resto sigue verde.
-5. `uv run pytest` y, si tocaste `demo/`, `python demo/selftest.py`.
+5. `uv run pytest` en verde, y `uv run pytest .claude/tests` si tocaste una ficha.
 
 ## Salida
 

@@ -11,12 +11,12 @@ que no se pueden repetir.
 1. Corre el sondeo:
 
    ```
-   python demo/explore.py
+   uv run python -m project.ingest.explore
    ```
 
 2. Para cada una de las cuatro fuentes, clasifica el resultado en exactamente uno
    de estos estados:
-   - **viva** — responde y el esquema coincide con `demo/fixtures.json`
+   - **viva** — responde y el esquema coincide con `tests/fixtures.json`
    - **caída** — no responde, timeout, o error HTTP
    - **drift** — responde, pero algún campo apareció, desapareció o cambió de tipo
 
@@ -30,7 +30,7 @@ que no se pueden repetir.
 4. Revisa la salud de la captura ya escrita:
 
    ```
-   python demo/diagnose.py
+   uv run python -m project.analysis.diagnose
    ```
 
    Busca huecos temporales, snapshots duplicados y saltos en el volumen de filas.
@@ -38,7 +38,7 @@ que no se pueden repetir.
 5. Cierra con la validación offline, que debe quedar en verde:
 
    ```
-   python demo/selftest.py
+   uv run pytest tests/test_ingest.py
    ```
 
 ## Antes de reportar drift

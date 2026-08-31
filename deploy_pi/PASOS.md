@@ -132,7 +132,7 @@ sudo env DATOS=/srv/tfm-data bash deploy_pi/instalar.sh
 
 ```bash
 systemctl status tfm-colector
-/opt/tfm/.venv/bin/python /opt/tfm/demo/collect.py --status --out /srv/tfm-data
+/opt/tfm/.venv/bin/python -m project.ingest.collect --status --out /srv/tfm-data
 ```
 
 Debe decir **VIVO**, con filas subiendo en las cinco fuentes.
@@ -140,14 +140,14 @@ Debe decir **VIVO**, con filas subiendo en las cinco fuentes.
 ## 7 · Parar el de Windows y llevarte lo capturado
 
 ```powershell
-.\demo\supervisar.ps1 -Modo Parar
+.\scripts\supervisar.ps1 -Modo Parar
 scp -r C:\Users\oppen\Code\TFM\data\raw pi@pi:/srv/tfm-data/
 ```
 
 Y en la Pi, reconstruir `curated/` con el parser actual:
 
 ```bash
-cd /opt/tfm && sudo -u $USER .venv/bin/python demo/reprocesar.py --data /srv/tfm-data
+cd /opt/tfm && sudo -u $USER .venv/bin/python src/project/ingest/reprocesar.py --data /srv/tfm-data
 ```
 
 ---

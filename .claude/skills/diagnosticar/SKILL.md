@@ -28,7 +28,7 @@ instrumento miente.
 ## Bucle
 
 1. **Construye la señal más estrecha que reproduzca el síntoma.** Un test
-   enfocado, una invocación de `demo/`, un snapshot concreto de `data/raw/`
+   enfocado, una invocación de `project.ingest`, un snapshot de `data/raw/`
    reprocesado. Cuanto más rápido el ciclo, más hipótesis caben.
 
 2. **Reproduce el fallo real y minimiza la entrada** manteniéndolo en rojo. Si
@@ -42,7 +42,8 @@ instrumento miente.
    diagnósticos temporales para poder quitarlos todos después.
 
 5. **Convierte la reproducción mínima en test de regresión**, en la costura
-   correcta: `demo/selftest.py` si es parseo de fuentes o tracking (sin red,
+   correcta: `tests/test_ingest.py` o `tests/test_tracking.py` si es parseo de
+   fuentes o tracking (sin red,
    determinista), `tests/` si es features, API o el registro de trampas. Solo
    entonces aplica el arreglo mínimo de causa raíz.
 

@@ -43,7 +43,7 @@ journalctl -u tfm-colector -f          # registro en directo
 sudo systemctl restart tfm-colector    # reiniciar
 sudo systemctl stop tfm-colector       # parar
 
-/opt/tfm/.venv/bin/python /opt/tfm/demo/collect.py --status --out /srv/tfm-data
+/opt/tfm/.venv/bin/python -m project.ingest.collect --status --out /srv/tfm-data
 ```
 
 ## Copia de seguridad, semanal y no negociable

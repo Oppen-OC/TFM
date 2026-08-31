@@ -1,5 +1,5 @@
 ---
-description: Audita las violaciones de la arquitectura del repo (dirección de dependencias, config, aislamiento de demo/)
+description: Audita las violaciones de la arquitectura del repo (dirección de dependencias, config, aislamiento de ingest/ y analysis/)
 ---
 
 Audita el repositorio contra las reglas duras de arquitectura. Cada una tiene una
@@ -37,12 +37,14 @@ comprobación mecánica: córrelas todas y reporta lo que salte.
    grep -rn "os\.getenv\|os\.environ" src/project/ --include=*.py
    ```
 
-5. **`src/project/` no importa de `demo/`, ni al revés.** La separación es
-   deliberada; si se rompe, el prototipo deja de ser prototipo.
+5. **`ingest/` no importa de aguas abajo, y nada del pipeline importa de
+   `analysis/`.** La ingesta corre en una Raspberry: si empieza a depender de
+   sklearn o FastAPI, deja de poder correr ahí. Y `analysis/diagnose.py` es
+   exploración, no produce entradas de `train`.
 
    ```
-   grep -rn "import demo\|from demo" src/
-   grep -rn "import project\|from project" demo/
+   grep -rn "from project\.\(features\|train\|predict\|api\|services\|ui\)" src/project/ingest/
+   grep -rn "from project\.analysis" src/project/ --include=*.py | grep -v "^src/project/analysis/"
    ```
 
 6. **Sin rutas hardcodeadas.** `MODEL_PATH` y las rutas de datos vienen de

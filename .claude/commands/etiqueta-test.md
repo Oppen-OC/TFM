@@ -29,7 +29,7 @@ razonables. Por eso el test va **antes** que el código.
 
 3. Coloca el test donde corresponda: `tests/test_features.py` si toca la
    transformación, un test junto a `prepare.py` si toca tracking o etiquetado.
-   Sigue el estilo de `demo/selftest.py`: sin red, determinista, verdad-terreno
+   Sigue el estilo de `tests/conftest.py`: sin red, determinista, verdad-terreno
    explícita en el propio test.
 
 4. **Confirma que el test falla** antes de tocar el código. Un test que pasa
@@ -39,7 +39,7 @@ razonables. Por eso el test va **antes** que el código.
 
    ```
    uv run pytest
-   python demo/selftest.py
+   uv run pytest tests/test_tracking.py
    ```
 
 6. Si el test cierra la guardia de una ficha en estado `vigente` o `mitigada`,

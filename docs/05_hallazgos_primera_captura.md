@@ -37,7 +37,7 @@ visible.
 
 **Solución.** No asumir. Por cada snapshot se prueban las dos interpretaciones y
 se elige la que produce una latencia plausible (`resolver_convencion` en
-`demo/sources.py`). Efecto medido sobre los mismos payloads crudos:
+`src/project/ingest/sources.py`). Efecto medido sobre los mismos payloads crudos:
 
 | | p50 | p90 | p99 | máx | filas desplazadas > 1 h |
 |---|---|---|---|---|---|
@@ -162,4 +162,4 @@ casi toda noche de sábado a domingo, sin hora punta de laborable. La cobertura
 (pregunta 1) ya está medida y no depende del día.
 
 Repetir con una captura que incluya un lunes o martes de 07:00 a 10:00, y
-entonces lanzar `python demo/diagnose.py`.
+entonces lanzar `uv run python -m project.analysis.diagnose`.

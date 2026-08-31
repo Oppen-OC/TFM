@@ -2,10 +2,10 @@
 #
 # La INGESTA no es un stage y no debe serlo: capturar un stream en vivo no es
 # idempotente ni reejecutable, que es justo lo que DVC asume de cada stage. El
-# colector (`demo/collect.py`) corre como proceso aparte y deja los datos
+# colector (`project/ingest/collect.py`) corre como proceso aparte y deja los datos
 # crudos en `data/raw/`. El pipeline reproducible empieza ahí.
 #
-#   demo/collect.py  ──(fuera de DVC, proceso largo)──>  data/raw/
+#   project/ingest/collect.py  ──(fuera de DVC, proceso largo)──>  data/raw/
 #                                                            │
 #                       prepare ──> features ──> train ──> evaluate
 #

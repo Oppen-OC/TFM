@@ -9,7 +9,7 @@
 prepare:
   # Reconstrucción de identidad de vehículo. La capa de la EMT no publica id de
   # vehículo: `gid` es un autoincrement que se reinicia en cada refresco.
-  # Ver demo/track.py y docs/01_viabilidad_fuentes_valencia.md.
+  # Ver src/project/tracking.py y docs/01_viabilidad_fuentes_valencia.md.
   vel_max_kmh: 70            # por encima de esto el emparejamiento es un error
   salto_max_m: 800           # techo duro de desplazamiento entre snapshots
   predictivo: true           # extrapolar con velocidad constante antes de asignar

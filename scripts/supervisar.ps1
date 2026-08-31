@@ -16,10 +16,10 @@
       -Modo Parar      lo detiene.
 
 .EXAMPLE
-    .\demo\supervisar.ps1 -Modo Detach
-    .\demo\supervisar.ps1 -Modo Estado
-    .\demo\supervisar.ps1 -Modo Tarea
-    .\demo\supervisar.ps1 -Modo Parar
+    .\scripts\supervisar.ps1 -Modo Detach
+    .\scripts\supervisar.ps1 -Modo Estado
+    .\scripts\supervisar.ps1 -Modo Tarea
+    .\scripts\supervisar.ps1 -Modo Parar
 
 .NOTES
     Lánzalo desde la raíz del repo. Para el modo Tarea hace falta una consola
@@ -52,16 +52,18 @@ $Python = $Candidatos[0]
 
 # Comprobación temprana: un colector lanzado con el Python equivocado muere en
 # silencio en segundo plano y te enteras al día siguiente.
-& $Python -c "import httpx, pandas, pyarrow" 2>$null
+& $Python -c "import httpx, pandas, pyarrow, project" 2>$null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Ese Python no tiene las dependencias:" -ForegroundColor Red
     Write-Host "  $Python`n"
-    Write-Host "Instálalas con:  uv add httpx pandas pyarrow scipy duckdb"
+    Write-Host "Instala el proyecto con:  uv sync"
     Write-Host "o activa el entorno:  .\.venv\Scripts\Activate.ps1"
     exit 1
 }
 
-$Script  = Join-Path $Raiz 'demo\collect.py'
+# El colector ya no es un script suelto: es un modulo del paquete. PowerShell
+# aplana este array al pasarlo, asi que llega como dos argumentos separados.
+$Script  = @('-m', 'project.ingest.collect')
 $LogDir  = Join-Path $Raiz 'data\logs'
 $Log     = Join-Path $LogDir 'colector.log'
 $PidFile = Join-Path $Raiz 'data\colector.pid'
@@ -82,7 +84,7 @@ switch ($Modo) {
     'Detach' {
         if (Get-ColectorPid) {
             Write-Host "Ya hay un colector corriendo (PID $(Get-ColectorPid))." -ForegroundColor Yellow
-            Write-Host "Detenlo antes con:  .\demo\supervisar.ps1 -Modo Parar"
+            Write-Host "Detenlo antes con:  .\scripts\supervisar.ps1 -Modo Parar"
             break
         }
         Write-Host "Python : $Python"
@@ -93,16 +95,16 @@ switch ($Modo) {
         $proc.Id | Set-Content $PidFile
         Write-Host "`nColector arrancado en segundo plano. PID $($proc.Id)." -ForegroundColor Green
         Write-Host "Ya puedes cerrar este terminal.`n"
-        Write-Host "  Ver estado :  .\demo\supervisar.ps1 -Modo Estado"
+        Write-Host "  Ver estado :  .\scripts\supervisar.ps1 -Modo Estado"
         Write-Host "  Ver log    :  Get-Content '$Log' -Tail 20 -Wait"
-        Write-Host "  Parar      :  .\demo\supervisar.ps1 -Modo Parar"
+        Write-Host "  Parar      :  .\scripts\supervisar.ps1 -Modo Parar"
         Write-Host "`nOJO: esto NO sobrevive a un reinicio de Windows." -ForegroundColor Yellow
         Write-Host "Para capturar durante meses usa:  -Modo Tarea"
     }
 
     'Tarea' {
         $accion = New-ScheduledTaskAction -Execute $Python `
-            -Argument "`"$Script`" --minutes 0 --log `"$Log`"" `
+            -Argument "-m project.ingest.collect --minutes 0 --log `"$Log`"" `
             -WorkingDirectory $Raiz
         $disparador = New-ScheduledTaskTrigger -AtLogOn
         $ajustes = New-ScheduledTaskSettingsSet `

@@ -51,7 +51,7 @@ la versión escrita.
 Dirección de dependencias (nunca al revés):
 
 ```
-ingesta (proceso aparte) ──> data/raw/
+ingest/ (proceso aparte) ──> data/raw/ ──> tracking.py ──> prepare.py
 ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py / features.py  ──>  config.py
 ```
 
@@ -68,10 +68,14 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
   bug clásico (train/serve skew).
 - **Endpoints nuevos van en `api/routers/`**, uno por dominio, incluidos con
   `include_router` en `main.py`.
-- **`demo/` está deliberadamente aislado** de `src/project/`: no se importan
-  mutuamente. Es el prototipo de exploración y el arnés de verdad-terreno del que
-  dependen varias fichas de trampas. Cuando su lógica se consolide, se porta a
-  `src/project/ingest/`.
+- **`ingest/` no importa de aguas abajo.** Captura y parsea; no sabe nada de
+  `features.py`, del modelo ni de la API. Es lo que permite que el colector corra
+  en una Raspberry sin arrastrar sklearn ni FastAPI.
+- **`analysis/` está fuera del grafo de DVC.** `diagnose.py` es exploración: no
+  produce entradas de `train`. Nada del pipeline importa de `analysis/`.
+- **`tracking.py` es la reconstrucción de identidad de vehículo.** Lo consume
+  `prepare.py`. La EMT no publica id de vehículo, así que se infiere: cualquier
+  error aquí contamina todas las etiquetas sin dar la cara (trampa 004).
 
 ## Configuración
 
@@ -107,30 +111,45 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 ## Estado
 
-**El paquete `src/project/` está casi todo vacío.** `config.py`, `prepare.py`,
-`features.py`, `train.py`, `predict.py`, `evaluate.py` y `services/model_service.py`
-son ficheros de 0 líneas. Lo que funciona hoy vive en `demo/`: captura, parseo,
-tracking y diagnóstico.
+**La mitad de aguas arriba existe; la de aguas abajo no.**
+
+Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
+explore), `tracking.py` y `analysis/diagnose.py`. Salieron de `demo/` en 08/2026,
+que desapareció en ese porte.
+
+Vacíos, 0 líneas: `prepare.py`, `features.py`, `train.py`, `predict.py`,
+`evaluate.py` y `services/model_service.py`. `dvc repro` falla en `prepare`, y ese
+fallo es correcto: **falta el GTFS estático de la EMT**, que es de donde sale el
+horario teórico y por tanto la etiqueta de retraso. Sin él no hay variable
+objetivo.
 
 Las reglas de este fichero son **prescriptivas**, no descriptivas: dicen cómo debe
-escribirse ese código cuando se escriba. No asumas que ya está implementado —
-comprueba antes de importar.
+escribirse el código que falta. No asumas que ya está implementado — comprueba
+antes de importar.
 
 ## Tests
 
-- `demo/selftest.py` corre sin red y debe seguir en verde. Es el arnés real del
-  proyecto y del que dependen las guardias del registro de trampas.
+- `tests/test_ingest.py` y `tests/test_tracking.py` corren **sin red** y deben
+  seguir en verde: son las guardias de las trampas 001-004. Los fixtures de
+  `tests/fixtures.json` tienen la forma exacta de los payloads reales, con sus
+  rarezas dentro; un mock limpio no detectaría las regresiones que detectan ellos.
+- `tests/conftest.py` genera la **flota simulada con verdad-terreno conocida**. Sin
+  verdad conocida no se puede distinguir "60 trayectorias" de "60 trayectorias
+  correctas", que es justo lo que escondió la trampa 004.
+- `tests/test_diagnose.py` valida que el diagnóstico **discrimina**: señal en el
+  escenario A, nada en el B. Si dijera lo mismo en los dos, validaría la hipótesis
+  del TFM por accidente.
 - `tests/test_api.py` usa `httpx` + `TestClient`; mockea `services/`, no carga el
   modelo real. Endpoint nuevo ⇒ test nuevo.
 - `tests/test_features.py` **está vacío**: se escribirá con `features.py`. Cubrirá
   las transformaciones, que es la capa donde un bug es silencioso.
-- **El etiquetado y el tracking necesitarán tests con datos sintéticos de
-  verdad-terreno conocida**, como los de `demo/selftest.py`. Un bug ahí contamina
-  todas las etiquetas sin dar la cara.
+- **El etiquetado necesitará tests con datos sintéticos de verdad-terreno
+  conocida**, como los de `tests/conftest.py`. Un bug ahí contamina todas las
+  etiquetas sin dar la cara.
 
 `tests/` es el software del TFM. El andamiaje de agentes se valida aparte, en
 `.claude/tests/`: `test_trampas.py` (frontmatter, `cerrada` sin guardia, `test:`
-que cita checks inexistentes, índice desincronizado) y `test_memoria.py` (deriva
+que cita un node id inexistente, índice desincronizado) y `test_memoria.py` (deriva
 entre la documentación y el código). Pytest no los recoge solo — los directorios
 con punto quedan fuera — así que corren con ruta explícita:
 
@@ -151,9 +170,11 @@ uv run mlflow ui
 uv run uvicorn project.api.main:app --reload --port 8000
 uv run streamlit run src/project/ui/app.py
 
-python demo/explore.py       # ¿siguen vivas las fuentes?
-python demo/selftest.py      # validación offline del demostrador
-python demo/collect.py --minutes 1440
+uv run python -m project.ingest.explore              # ¿siguen vivas las fuentes?
+uv run python -m project.ingest.collect --minutes 1440   # captura (fuera de DVC)
+uv run python -m project.ingest.collect --status     # estado del colector
+uv run python -m project.ingest.reprocesar           # reconstruye curated/ desde raw/
+uv run python -m project.analysis.diagnose           # GO / NO-GO de la hipótesis
 ```
 
 Dependencias todavía por añadir: `xgboost`, `shap`, `polars`.

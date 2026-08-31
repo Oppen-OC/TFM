@@ -9,7 +9,7 @@ Type=simple
 User=%i
 WorkingDirectory=/opt/tfm
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/opt/tfm/.venv/bin/python /opt/tfm/demo/collect.py --minutes 0 --out /srv/tfm-data
+ExecStart=/opt/tfm/.venv/bin/python -m project.ingest.collect --minutes 0 --out /srv/tfm-data
 
 # Reinicio incondicional: si el proceso muere por lo que sea, vuelve solo.
 Restart=always

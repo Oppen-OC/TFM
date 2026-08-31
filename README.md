@@ -81,26 +81,27 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 ```text
 .
-├── demo/                    # prototipo de exploración de las fuentes (aislado)
-│   ├── sources.py           # endpoints, parsers y corrección de zona horaria
-│   ├── explore.py           # sondeo one-shot: esquema, latencia, volumen
-│   ├── collect.py           # colector asíncrono -> NDJSON crudo + Parquet
-│   ├── track.py             # reconstrucción de identidad de vehículo
-│   ├── selftest.py          # 24 comprobaciones sin red
-│   └── fixtures.json        # payloads reales del 15/08/2026
 ├── docs/
 │   ├── 00_tema_y_alcance.md # decisiones tomadas y estado del trabajo
 │   ├── 01_viabilidad_fuentes_valencia.md
 │   └── 02_exploracion_de_temas.md
 ├── src/project/
 │   ├── config.py            # Pydantic Settings (.env) — única fuente de configuración
+│   ├── ingest/              # captura y parseo — fuera del grafo de DVC
+│   │   ├── sources.py       # endpoints, parsers y corrección de zona horaria
+│   │   ├── explore.py       # sondeo one-shot: esquema, latencia, volumen
+│   │   ├── collect.py       # colector asíncrono -> NDJSON crudo + Parquet
+│   │   └── reprocesar.py    # reconstruye curated/ desde raw/
+│   ├── tracking.py          # reconstrucción de identidad de vehículo
+│   ├── analysis/diagnose.py # GO / NO-GO de la hipótesis (fuera de DVC)
 │   ├── features.py          # transformaciones compartidas train/inferencia
 │   ├── prepare.py           # tracking + etiquetado de retraso desde data/raw
 │   ├── train.py             # entrenamiento XGBoost + logging a MLflow
 │   ├── evaluate.py          # métricas sobre test → metrics/eval.json
 │   ├── predict.py           # inferencia sobre modelo entrenado
 │   ├── api/ · services/ · ui/
-├── tests/
+├── tests/                   # fixtures.json: payloads reales del 15/08/2026
+├── scripts/                 # supervisar.ps1 — arranque/parada del colector
 ├── data/                    # raw/ interim/ processed/ — versionado por DVC
 ├── models/ · metrics/ · mlruns/ · notebooks/
 ├── dvc.yaml · params.yaml
@@ -129,14 +130,14 @@ uv add xgboost shap httpx scipy pyarrow duckdb
 ### 1. Comprobar que las fuentes siguen vivas
 
 ```powershell
-python demo\explore.py
-python demo\selftest.py
+uv run python -m project.ingest.explore
+uv run pytest
 ```
 
 ### 2. Capturar
 
 ```powershell
-python demo\collect.py --minutes 1440
+uv run python -m project.ingest.collect --minutes 1440
 ```
 
 **Esto es lo urgente.** Los datos no tienen histórico recuperable: la tabla de la
@@ -172,7 +173,7 @@ idempotente ni reejecutable, que es justo lo que DVC asume. El colector corre
 aparte y deja el crudo en `data/raw/`; el pipeline reproducible empieza ahí.
 
 ```text
-demo/collect.py ──(fuera de DVC)──> data/raw/
+project/ingest/collect.py ──(fuera de DVC)──> data/raw/
                                         │
 prepare   ──> data/interim/emt_tracked.parquet
 features  ──> data/processed/{train,test}.parquet

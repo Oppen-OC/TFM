@@ -84,7 +84,7 @@ fi
 
 # --- comprobación en seco ----------------------------------------------------
 echo "==> comprobando el código"
-sudo -u "$USUARIO" "$DESTINO/.venv/bin/python" "$DESTINO/demo/selftest.py" | tail -3
+sudo -u "$USUARIO" "$DESTINO/.venv/bin/python" -m pytest "$DESTINO/tests" -q | tail -3
 
 # --- servicio ----------------------------------------------------------------
 echo "==> instalando el servicio systemd"
@@ -102,7 +102,7 @@ cat <<FIN
 
     Estado  : systemctl status tfm-colector
     Registro: journalctl -u tfm-colector -f
-    Latido  : $DESTINO/.venv/bin/python $DESTINO/demo/collect.py --status --out $DATOS
+    Latido  : $DESTINO/.venv/bin/python -m project.ingest.collect --status --out $DATOS
     Parar   : sudo systemctl stop tfm-colector
     Datos   : $DATOS
 

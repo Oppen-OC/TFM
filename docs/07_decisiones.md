@@ -46,7 +46,7 @@ justo lo que DVC asume de cada stage. Un `dvc repro` no puede volver a capturar 
 martes pasado.
 
 **Consecuencias.** La captura no está versionada como stage y su calidad se vigila
-aparte (`demo/diagnose.py`). A cambio, **el colector guarda siempre el payload
+aparte (`src/project/analysis/diagnose.py`). A cambio, **el colector guarda siempre el payload
 crudo antes de parsear**, lo que permitió arreglar la trampa 002 sin recapturar
 nada. Capturar es irreversible; procesar es reintentable.
 
@@ -141,20 +141,41 @@ es multimodal completo, y así debe describirse.
 
 ---
 
-## ADR-009 · `demo/` aislado de `src/project/` · cerrada
+## ADR-009 · `demo/` aislado de `src/project/` · cerrada por consumación (31/08/2026)
 
-**Decisión.** El prototipo de exploración vive en `demo/` y no importa nada de
-`project`, ni al revés.
+**Decisión original.** El prototipo de exploración vivía en `demo/` y no importaba
+nada de `project`, ni al revés.
 
-**Por qué.** Permite validar que las fuentes siguen vivas y capturar mientras el
-pipeline se construye, sin arrastrar el prototipo a la arquitectura definitiva.
+**Por qué.** Permitió validar que las fuentes siguen vivas y capturar mientras el
+pipeline se construía, sin arrastrar el prototipo a la arquitectura definitiva.
 
-**Consecuencias.** Hay lógica de parseo que acabará portándose a
-`src/project/ingest/`. Mientras tanto, `demo/selftest.py` es el arnés de
-verdad-terreno del proyecto y varias fichas de `.claude/trampas/` dependen de él.
+**Cómo se cerró.** Por consumación, que es exactamente lo que esta ficha decía que
+la cerraría. `demo/` se portó entero y desapareció:
 
-**Qué la reabriría.** El porte de `demo/sources.py` a `src/project/ingest/`, que
-es cuándo se cierra esta decisión por consumación.
+| origen (ya no existe) | destino |
+|---|---|
+| demo/sources.py | `src/project/ingest/sources.py` |
+| demo/collect.py | `src/project/ingest/collect.py` |
+| demo/reprocesar.py, demo/explore.py | `src/project/ingest/` |
+| demo/track.py | `src/project/tracking.py` |
+| demo/diagnose.py | `src/project/analysis/diagnose.py` |
+| demo/selftest.py | `tests/test_ingest.py` + `tests/test_tracking.py` |
+
+**Consecuencias.** Los 30 checks del arnés casero pasaron a pytest sin cambiar un
+solo umbral, y se verificó que el recuento coincide. Las fichas 001-004
+dejan de citar `demo/selftest.py::"<check>"` y citan node ids; el validador
+`.claude/tests/test_trampas.py` ya solo admite ese formato. Con el porte apareció
+`config.py`, que hasta entonces tenía 0 líneas: las rutas dejan de estar
+hardcodeadas y `DATA_ROOT` es lo único que hay que cambiar para que el colector
+escriba en `/srv/tfm-data` en vez de en `data/`.
+
+**Lo que no cambió.** La ingesta sigue fuera del grafo de DVC (ADR-003), y
+`analysis/` tampoco entra: `diagnose.py` no produce entradas de `train`.
+
+**Deuda que deja.** La Raspberry sigue ejecutando su copia de `/opt/tfm/demo/` y
+no se tocó para no interrumpir la captura — no hay histórico recuperable. El
+redespliegue a `-m project.ingest.collect` está documentado en `deploy_pi/` y
+pendiente de una ventana controlada.
 
 ---
 

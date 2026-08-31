@@ -25,7 +25,7 @@ Objetivo:
   3. Instalar el colector como servicio systemd:
      sudo env DATOS=/srv/tfm-data bash deploy_pi/instalar.sh
   4. Verificar que captura: systemctl status tfm-colector, y luego
-     /opt/tfm/.venv/bin/python /opt/tfm/demo/collect.py --status --out /srv/tfm-data
+     /opt/tfm/.venv/bin/python -m project.ingest.collect --status --out /srv/tfm-data
      Debe decir VIVO y con filas subiendo en las cinco fuentes.
 
 REGLAS:
@@ -52,12 +52,12 @@ real está consiguiendo cada fuente.
 Traer lo ya capturado en el portátil, para no perderlo:
 
 ```powershell
-.\demo\supervisar.ps1 -Modo Parar
+.\scripts\supervisar.ps1 -Modo Parar
 scp -r C:\Users\oppen\Code\TFM\data\raw <usuario>@<ip>:/srv/tfm-data/
 ```
 
 Y en la Pi, reconstruir `curated/` con el parser actual:
 
 ```bash
-cd /opt/tfm && sudo -u $USER .venv/bin/python demo/reprocesar.py --data /srv/tfm-data
+cd /opt/tfm && sudo -u $USER .venv/bin/python src/project/ingest/reprocesar.py --data /srv/tfm-data
 ```

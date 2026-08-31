@@ -67,11 +67,12 @@ Metrovalencia descartado, Renfe capturado desde el día 1 como plan B.
 ## Estado actual
 
 - [x] Tema elegido y fuentes verificadas en vivo (15/08/2026)
-- [x] Demostrador de exploración funcionando (`demo/`, 24 tests en verde)
+- [x] Demostrador de exploración funcionando, portado a `src/project/` (31/08/2026)
 - [x] Bug de DVC resuelto: stages en `dvc.yaml`, hiperparámetros en `params.yaml`
 - [ ] **Captura de 24 h ejecutada y medida** ← lo siguiente, y es urgente
 - [ ] Dependencias añadidas: `xgboost shap httpx scipy pyarrow duckdb`
-- [ ] `src/project/prepare.py` — tracking + etiquetado (portar desde `demo/track.py`)
+- [ ] **GTFS estático de la EMT descargado** ← bloquea la etiqueta de retraso
+- [ ] `src/project/prepare.py` — map-matching + etiquetado sobre `tracking.py`
 - [ ] `src/project/features.py` — features de bus, tráfico, calendario y meteo
 - [ ] `src/project/train.py` — XGBoost + MLflow
 - [ ] `src/project/evaluate.py` — métricas + baselines
@@ -87,7 +88,7 @@ anteriores devuelve cero filas. Lo que no se capture hoy no se puede recuperar
 nunca.
 
 ```powershell
-python demo\collect.py --minutes 1440
+uv run python -m project.ingest.collect --minutes 1440
 ```
 
 Con 24 horas mides el ciclo diario completo: hora punta, valle, servicio
@@ -125,5 +126,4 @@ colector captura las dos fuentes desde el primer día: cuesta lo mismo.
 - [`02_exploracion_de_temas.md`](02_exploracion_de_temas.md) — las diez
   propuestas evaluadas y por qué se descartaron las otras nueve. Material para
   la sección de justificación del tema en la memoria.
-- [`../demo/README.md`](../demo/README.md) — cómo usar el demostrador.
 - [`../CLAUDE.md`](../CLAUDE.md) — reglas de arquitectura del repo.
