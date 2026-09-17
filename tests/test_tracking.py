@@ -17,6 +17,8 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
+from project.analysis.medir_tracking import medir
+from project.analysis.simulacion import simular_flota
 from project.tracking import rastrear, resumen
 
 
@@ -76,3 +78,84 @@ def test_velocidades_dentro_del_rango_simulado(predictivo):
     """La simulación usa 3-30 km/h. Fuera de ahí el emparejamiento inventó saltos."""
     r, _ = predictivo
     assert 2.0 <= r["vel_kmh_p50"] <= 32.0, f"p50={r['vel_kmh_p50']}"
+
+
+def test_sin_saltos_de_identidad(flota_simulada):
+    """La guardia en la unidad que NO se diluye.
+
+    `test_tracker_predictivo_identidad_correcta` cuenta posiciones mal asignadas
+    sobre el total de posiciones, y ese denominador crece con la captura: a 80
+    snapshots, cuatro saltos de identidad dan un 0,7 % de error y pasarían el
+    umbral del 99 % sin haberse corregido ninguno (`docs/bitacora/001-...`).
+
+    Un salto no se corrige solo: a partir de él la trayectoria mezcla dos buses.
+    Por eso se cuentan saltos y trayectorias contaminadas, no posiciones.
+    """
+    m = medir(flota_simulada, predictivo=True)
+    assert m["saltos"] == 0, f"{m['saltos']} saltos de identidad"
+    assert m["contaminadas"] == 0.0, (
+        f"{m['contaminadas']:.1%} de trayectorias con dos buses dentro"
+    )
+
+
+def test_captura_larga_no_esconde_saltos():
+    """Ocho veces más snapshots: es donde la métrica por posición se diluye."""
+    m = medir(simular_flota(n_snaps=160), predictivo=True)
+    assert m["saltos"] == 0, f"{m['saltos']} saltos en 160 snapshots"
+
+
+def test_un_sondeo_que_falta_no_rompe_la_identidad():
+    """TRAMPA 009: el predictor extrapolaba en pasos de snapshot, no en segundos.
+
+    `2*lat - _plat` es el movimiento rectilíneo uniforme en diferencias finitas y
+    es correcto mientras todos los pasos duren lo mismo. En cuanto falta un
+    sondeo, `_plat` queda dos pasos atrás mientras la predicción sigue siendo de
+    uno: el desplazamiento leído es el doble del real y la extrapolación se pasa
+    de largo. Con el bug, este escenario da 4 saltos y 3,3 % de contaminadas.
+
+    Los saltos NO caen en la transición que salta el hueco, sino en las una o dos
+    siguientes. Esa distancia entre síntoma y causa es lo que hace que se le
+    atribuya al cambio que lo destapó: `docs/bitacora/010-plat-sin-su-dt.md`.
+    """
+    m = medir(simular_flota(huecos=(7,)), predictivo=True)
+    assert m["saltos"] == 0, f"{m['saltos']} saltos tras el hueco"
+    assert m["contaminadas"] == 0.0, f"{m['contaminadas']:.1%} contaminadas"
+
+
+def test_el_hueco_discrimina_de_verdad():
+    """Sin el arreglo este escenario falla; sin el hueco, ninguno de los dos.
+
+    Fija que el escenario ejercita el defecto en vez de pasar por casualidad. La
+    fragmentación se queda en 1,00 en los dos casos: la trampa 009 es fusión
+    pura, y el eje que se añadió para medir la partición es ciego a ella.
+    """
+    con_hueco = medir(simular_flota(huecos=(7,)), predictivo=True)
+    sin_hueco = medir(simular_flota(), predictivo=True)
+    assert con_hueco["fragmentacion"] == sin_hueco["fragmentacion"] == 1.0, (
+        "el hueco fragmenta: este escenario ya no aísla la fusión"
+    )
+    dt = (
+        simular_flota(huecos=(7,))
+        .groupby("snapshot_id")["ts_utc"]
+        .max()
+        .diff()
+        .dt.total_seconds()
+        .dropna()
+    )
+    assert dt.nunique() > 1, "la cadencia es uniforme: el escenario no ejercita nada"
+    assert dt.max() == 2 * dt.min()
+
+
+def test_la_metrica_por_posicion_no_delataria_el_fallo():
+    """Test de discriminación: fija POR QUÉ existen los dos de arriba.
+
+    El tracker ingenuo a 80 snapshots contamina el 5 % de las trayectorias y aun
+    así saca un 99,3 % de precisión por posición. Si esta combinación deja de
+    darse, la afirmación de la bitácora ha caducado y hay que volver a medirla,
+    no borrar el test.
+    """
+    m = medir(simular_flota(n_snaps=80), predictivo=False)
+    assert m["err_ident"] < 0.01, f"err por posición {m['err_ident']:.3%}"
+    assert m["saltos"] > 0 and m["contaminadas"] > 0.0, (
+        "el ingenuo ya no falla en esta configuración: remide la bitácora 001"
+    )

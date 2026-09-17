@@ -8,7 +8,9 @@ El caso que destapó los dos defectos de `tracking.py` es el convoy en fila
 india: cuando la separación entre buses de una misma (línea, trayecto) es
 comparable al paso por refresco, la asignación por vecino más cercano no es
 "difícil", es un EMPATE EXACTO, y Hungarian desempata por orden de fila. Sobre
-la captura real del 16/08/2026 el 55 % de los vehículos está en esa situación.
+la captura real del 16/08/2026 está en esa situación el 1,9 % de las posiciones
+en horario de servicio, y el 58 % está en grupos de tres o más vehículos, donde
+puede darse (`docs/bitacora/002-el-empate-de-grupo-es-raro-no-normal.md`).
 
 Las posiciones se construyen en metros sobre un eje recto y se convierten a
 grados al final: así el escenario se lee y se razona en las mismas unidades en

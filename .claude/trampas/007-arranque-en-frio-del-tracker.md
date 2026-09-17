@@ -43,7 +43,7 @@ equivocado, que envenena la predicción del paso siguiente, que vuelve a fallar.
 Por eso los 10 snapshots salen contaminados y no solo el primero.
 
 No es un caso de laboratorio. Sobre la captura del 16/08/2026 (280.586 filas,
-2.740 snapshots), **el 55 % de los vehículos tiene un compañero de su misma
+2.740 snapshots), **el 1,9 % de las posiciones en horario de servicio tiene un compañero de su misma
 (línea, trayecto) a menos de un paso de refresco, y el 44 % a menos de 60 m**.
 Mediana del vecino más cercano de la misma línea: 100 m. La configuración
 degenerada es el caso normal.

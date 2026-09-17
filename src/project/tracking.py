@@ -19,9 +19,14 @@ La asignación necesita una predicción de dónde estará cada vehículo, y la
 predicción necesita una velocidad que en la PRIMERA transición de cada
 trayectoria todavía no existe. Ese arranque en frío es el punto débil del
 método, no el cruce de dos buses: ver `_sembrar_por_centroide`. Sobre la
-captura del 16/08/2026, el 55 % de los vehículos tiene un compañero de su
-misma (línea, trayecto) a menos de un paso de refresco, así que la
-configuración degenerada que lo rompe es el caso normal, no el raro.
+captura del 16/08/2026, en horario de servicio, el 1,9 % de las posiciones
+tiene un compañero de su misma (línea, trayecto) a menos de un paso de
+refresco (125 m a 15 km/h) y el 58 % está en grupos de tres o más vehículos:
+raro por posición, pero unas 7.000 situaciones ambiguas al día, y cada una mal
+resuelta contamina la trayectoria entera. El 55 % que decía esta nota era con
+vecino de CUALQUIER línea a 250 m, que el emparejador no puede confundir
+porque agrupa por (línea, trayecto):
+`docs/bitacora/002-el-empate-de-grupo-es-raro-no-normal.md`.
 
 Límite conocido, no resoluble con posiciones: si los vehículos de un grupo
 están equiespaciados sobre una ruta en anillo, permutar sus identidades es una
@@ -41,12 +46,24 @@ from project.ingest.sources import haversine_m
 
 VEL_MAX_KMH = 70.0  # un bus urbano por encima de esto es un error de asignación
 SALTO_MAX_M = 800.0  # techo duro de desplazamiento entre snapshots
+# Tope EN SEGUNDOS de lo que `tolerar_hueco` puede puentear. La tolerancia se
+# expresa en sondeos, pero un sondeo no siempre dura 30 s: durante la parada de
+# 445 s del colector del 27/08/2026, «dos sondeos» eran 7,5 min, y la puerta
+# física satura en SALTO_MAX_M a partir de 41 s, así que a partir de ahí deja de
+# restringir nada. 120 s es lo que dura el hueco que se quiere puentear a
+# cadencia nominal.
+HUECO_MAX_S = 120.0
 
 
 def _emparejar_grupo(
-    a: pd.DataFrame, b: pd.DataFrame, dt_s: float
+    a: pd.DataFrame, b: pd.DataFrame, tope: np.ndarray
 ) -> list[tuple[int, int, float]]:
-    """Asignación óptima entre los vehículos de a y los de b (misma línea/trayecto)."""
+    """Asignación óptima entre los vehículos de a y los de b (misma línea/trayecto).
+
+    `tope` es el desplazamiento máximo admisible de CADA fila de `a`, no un
+    escalar: con `tolerar_hueco` cada candidato arrastra un hueco distinto y por
+    tanto una puerta distinta.
+    """
     if a.empty or b.empty:
         return []
 
@@ -68,8 +85,8 @@ def _emparejar_grupo(
         a["lat"].to_numpy()[:, None], a["lon"].to_numpy()[:, None], blat, blon
     )
 
-    tope = min(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * max(dt_s, 1.0))
-    coste = np.where((d <= tope) & (d_real <= tope), d, 1e9)
+    t = tope[:, None]
+    coste = np.where((d <= t) & (d_real <= t), d, 1e9)
 
     fi, ci = linear_sum_assignment(coste)
     return [
@@ -110,7 +127,9 @@ def _sembrar_por_centroide(a: pd.DataFrame, b: pd.DataFrame) -> pd.DataFrame:
     return a
 
 
-def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
+def rastrear(
+    df: pd.DataFrame, predictivo: bool = True, tolerar_hueco: int = 2
+) -> pd.DataFrame:
     """Añade `vehicle_id`, `dist_m`, `dt_s` y `vel_kmh` a las posiciones de la EMT.
 
     df debe traer: snapshot_id, linea, trayecto, lat, lon, ts_utc.
@@ -122,37 +141,101 @@ def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
                          línea se cruzan, que es el fallo dominante del método
                          ingenuo (medido en el autotest: de ~5 % de posiciones
                          mal asignadas a prácticamente cero).
+
+    tolerar_hueco     sondeos que un vehículo puede faltar sin perder su
+                      identidad. Con 0 se exige presencia en el sondeo anterior,
+                      que es el comportamiento histórico.
+
+                      Un vehículo ausente NO es un vehículo que se va: la fuente
+                      publica sondeos truncados (`data/raw/_TRUNCADOS.txt`) y
+                      pierde vehículos sueltos. Tratar cada ausencia como una
+                      baja partía el autobús medio en trozos de 10,5 min frente a
+                      servicios de 30-60. Sobre la jornada del 27/08/2026, pasar
+                      de 0 a 2 baja de 12.709 a 7.632 trayectorias y sube la
+                      mediana a 21,1 min, sin descartar ninguna posición y sin
+                      desplazamientos por encima de la puerta física.
+                      Medición completa en `docs/bitacora/008-...`.
+
+                      El puente se acota también en segundos (`HUECO_MAX_S`),
+                      porque dos sondeos no siempre son 60 s.
     """
     df = df.sort_values(["snapshot_id"], kind="stable").reset_index(drop=True).copy()
     df["vehicle_id"] = pd.NA
     df["dist_m"] = np.nan
     df["dt_s"] = np.nan
-    # Posición del paso anterior, para poder extrapolar
+    # Posición del paso anterior, para poder extrapolar, y cuánto duró ese paso.
+    # La duración no es decorativa: sin ella la extrapolación se mide en pasos de
+    # snapshot en vez de en segundos, y basta un sondeo que falte para que el
+    # predictor lea un desplazamiento de dos pasos como si fuera de uno
+    # (trampa 009).
     df["_plat"] = np.nan
     df["_plon"] = np.nan
+    df["_pdt"] = np.nan
 
     snaps = sorted(df["snapshot_id"].unique())
+    # Reloj POR SONDEO, no por fila: con `tolerar_hueco` el dt de un candidato es
+    # el que va desde el sondeo en que se le vio por última vez, que ya no tiene
+    # por qué ser el anterior.
+    reloj = df.groupby("snapshot_id")["ts_utc"].max()
 
     primero = df["snapshot_id"] == snaps[0]
     n0 = int(primero.sum())
     df.loc[primero, "vehicle_id"] = [f"v{i:05d}" for i in range(n0)]
     siguiente_id = n0
 
+    # Candidatos vivos: índice de fila -> índice del sondeo en que se le vio.
+    vivos: dict[int, int] = dict.fromkeys(df.index[primero], 0)
+
     for k in range(1, len(snaps)):
-        prev = df[df["snapshot_id"] == snaps[k - 1]].copy()
         cur = df[df["snapshot_id"] == snaps[k]]
-        dt = (cur["ts_utc"].max() - prev["ts_utc"].max()).total_seconds() or 30.0
+        ahora = reloj[snaps[k]]
+        # El predecesor inmediato compite SIEMPRE, pase lo que pase con el reloj:
+        # así `tolerar_hueco=0` reproduce exactamente el comportamiento previo.
+        # El tope en segundos solo acota el puente adicional.
+        candidatos = [
+            i
+            for i, kk in vivos.items()
+            if kk == k - 1
+            or (
+                k - kk <= 1 + tolerar_hueco
+                and (ahora - reloj[snaps[kk]]).total_seconds() <= HUECO_MAX_S
+            )
+        ]
+        prev = df.loc[candidatos].copy()
+        if prev.empty:
+            for ib in cur.index:
+                df.at[ib, "vehicle_id"] = f"v{siguiente_id:05d}"
+                siguiente_id += 1
+                vivos[ib] = k
+            continue
+
+        dt_fila = np.array(
+            [
+                (ahora - reloj[snaps[vivos[i]]]).total_seconds() or 30.0
+                for i in prev.index
+            ],
+            dtype=float,
+        )
+        prev["_dt"] = dt_fila
+        prev["_tope"] = np.minimum(
+            SALTO_MAX_M, VEL_MAX_KMH / 3.6 * np.maximum(dt_fila, 1.0)
+        )
 
         if predictivo:
-            # Modelo de velocidad constante: si venía moviéndose, seguirá.
+            # Modelo de velocidad constante: si venía moviéndose, seguirá. El
+            # factor es la razón entre el paso que viene y el que produjo _plat,
+            # no un 1 implícito: con la cadencia regular vale 1 y da el clásico
+            # `2*lat - _plat`, pero ante un sondeo que falta evita extrapolar el
+            # doble de lo que toca (trampa 009).
             tiene = prev["_plat"].notna()
             prev["lat_pred"] = prev["lat"]
             prev["lon_pred"] = prev["lon"]
-            prev.loc[tiene, "lat_pred"] = (
-                2 * prev.loc[tiene, "lat"] - prev.loc[tiene, "_plat"]
+            f = prev.loc[tiene, "_dt"] / prev.loc[tiene, "_pdt"]
+            prev.loc[tiene, "lat_pred"] = prev.loc[tiene, "lat"] + f * (
+                prev.loc[tiene, "lat"] - prev.loc[tiene, "_plat"]
             )
-            prev.loc[tiene, "lon_pred"] = (
-                2 * prev.loc[tiene, "lon"] - prev.loc[tiene, "_plon"]
+            prev.loc[tiene, "lon_pred"] = prev.loc[tiene, "lon"] + f * (
+                prev.loc[tiene, "lon"] - prev.loc[tiene, "_plon"]
             )
         else:
             prev["lat_pred"] = prev["lat"]
@@ -163,7 +246,7 @@ def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
             ga = prev[(prev["linea"] == clave[0]) & (prev["trayecto"] == clave[1])]
             if predictivo:
                 ga = _sembrar_por_centroide(ga, gb)
-            for ia, ib, _ in _emparejar_grupo(ga, gb, dt):
+            for ia, ib, _ in _emparejar_grupo(ga, gb, ga["_tope"].to_numpy()):
                 df.at[ib, "vehicle_id"] = df.at[ia, "vehicle_id"]
                 df.at[ib, "dist_m"] = float(
                     haversine_m(
@@ -173,19 +256,26 @@ def rastrear(df: pd.DataFrame, predictivo: bool = True) -> pd.DataFrame:
                         df.at[ib, "lon"],
                     )
                 )
-                df.at[ib, "dt_s"] = dt
+                df.at[ib, "dt_s"] = float(prev.at[ia, "_dt"])
                 df.at[ib, "_plat"] = df.at[ia, "lat"]
                 df.at[ib, "_plon"] = df.at[ia, "lon"]
+                df.at[ib, "_pdt"] = float(prev.at[ia, "_dt"])
                 emparejados_b.add(ib)
+                vivos.pop(ia, None)
+                vivos[ib] = k
 
         # Los no emparejados son vehículos que entran en servicio (o huérfanos)
         for ib in cur.index:
             if ib not in emparejados_b:
                 df.at[ib, "vehicle_id"] = f"v{siguiente_id:05d}"
                 siguiente_id += 1
+                vivos[ib] = k
+
+        # Los candidatos que agotaron su tolerancia dejan de competir.
+        vivos = {i: kk for i, kk in vivos.items() if k - kk <= tolerar_hueco}
 
     df["vel_kmh"] = df["dist_m"] / df["dt_s"] * 3.6
-    return df.drop(columns=["_plat", "_plon"])
+    return df.drop(columns=["_plat", "_plon", "_pdt"])
 
 
 def resumen(df: pd.DataFrame) -> dict:
