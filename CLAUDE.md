@@ -46,6 +46,29 @@ de los agentes:** la copia diverge, y ya divergió tres veces con la trampa 002.
 código.** Señala la discrepancia y corrige la fuente de verdad, en vez de seguir
 la versión escrita.
 
+### Bitácora de hallazgos
+
+`docs/bitacora/` guarda lo que se mide, se descarta o se acepta durante el
+desarrollo, con la cifra, el comando que la reproduce y el párrafo ya redactado
+para la memoria. El formato y la tabla de encaminamiento —qué va a la bitácora,
+qué a `.claude/trampas/`, qué a `docs/07_decisiones.md` y qué a GitHub Issues—
+están en `docs/bitacora/README.md`. No los dupliques aquí.
+
+**Ofrécelo tú.** Cuando en una sesión aparezca alguna de estas cosas, propón
+fichar en una línea y sigue con lo que estabas haciendo si la respuesta es no:
+
+- una cifra medida sobre datos propios (calidad, cobertura, error, latencia),
+- una hipótesis descartada con evidencia,
+- una anomalía de la fuente o un workaround que se acepta,
+- un límite del alcance descubierto sobre la marcha,
+- una decisión técnica tomada porque la alternativa se probó y falló.
+
+No es lo mismo que documentar el código: aquí entra el *porqué* y el número, que
+es justo lo que no se recuerda tres semanas después y lo que pregunta el tribunal.
+El comando `/bitacora <suceso>` hace la investigación y escribe la entrada;
+verifica la cifra antes de escribirla, porque el instrumento también miente
+(trampa 004).
+
 ## Arquitectura — reglas duras
 
 Dirección de dependencias (nunca al revés):
@@ -184,8 +207,40 @@ lanzar API y UI en terminales separadas.
 
 ## Comportamiento del agente
 
-1. Entiende el objetivo. Pregunta lo que no esté claro en vez de asumirlo.
+1. Entiende el objetivo **y complétalo**: el encargo llega corto y las
+   restricciones se callan (ver *Encargos incompletos*).
 2. **Presenta un plan escrito y espera aprobación** antes de una tarea multipaso.
    También en las tareas que parezcan simples.
 3. Ejecútalo paso a paso, revisa la salida y refuerza lo débil.
 4. Nunca priorices velocidad sobre calidad.
+5. Si por el camino aparece un hallazgo de los que lista la bitácora, ofrécelo
+   antes de cerrar la tarea. Lo que no se ficha el día que pasa, se pierde.
+
+## Encargos incompletos
+
+Los prompts de este repo llegan cortos: piden el *qué* y callan las restricciones
+que lo condicionan. Completar ese hueco es trabajo tuyo, no descuido del usuario.
+
+**Antes del plan**, en tareas multipaso, devuelve el encargo reformulado:
+objetivo, entradas, salidas, criterio de aceptación, **no-objetivos** y supuestos.
+Un hueco se rellena con **supuesto marcado**, nunca con silencio. Pregunta solo lo
+que, supuesto al revés, daría un trabajo distinto; lo demás se asume en voz alta y
+se sigue. Un supuesto explícito es defendible, uno tácito no.
+
+Recorre estas ocho dimensiones y nombra **solo las que muerden** en este encargo:
+
+- **dato** — ¿existe ya capturado, o supone capturar N semanas más? Nada de esto
+  es recuperable a posteriori.
+- **alcance** — qué queda explícitamente fuera. Sin no-objetivos se desborda solo.
+- **acoplamiento** — qué invalida aguas abajo: etiquetas ya generadas, `dvc.lock`,
+  una captura en curso, los fixtures.
+- **temporalidad** — split temporal, orden de los eventos, convención horaria.
+- **evidencia** — qué test o qué cifra lo demuestra, y cuál lo falsaría.
+- **frontera** — dirección de dependencias, `config.py`, aislamiento de `ingest/`
+  y de `analysis/`.
+- **trampa** — ficha aplicable del índice, leída antes de tocar esa capa.
+- **entrega** — qué queda escrito y dónde: bitácora, `docs/07_decisiones.md`,
+  ficha de trampa o issue.
+
+La lista vive aquí y solo aquí. `/encargo` la aplica a una petición cruda y
+`/grill-me` a un plan ya formado; ninguno de los dos la copia.

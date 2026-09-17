@@ -22,7 +22,10 @@ from pathlib import Path
 import pytest
 
 RAIZ = Path(__file__).resolve().parents[2]
-DOCS = sorted((RAIZ / "docs").glob("*.md"))
+DOCS = sorted((RAIZ / "docs").rglob("*.md"))
+# `rglob` para que entren las entradas de `docs/bitacora/`: citan ficheros y
+# funciones igual que el resto de la documentación, y de ellas salen párrafos
+# que se pegan tal cual en la memoria. Una ruta podrida ahí llega a la entrega.
 # Las fichas de trampas citan funciones y ficheros igual que la documentación, y
 # rotan igual: la 002 apunta a `resolver_convencion()`.
 TRAMPAS = sorted((RAIZ / ".claude" / "trampas").glob("*.md"))

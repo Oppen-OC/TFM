@@ -7,6 +7,11 @@ Presiona esto antes de que se convierta en código: **$ARGUMENTS**
 
 Adaptado de `grill-me` (`grp06/useful-codex-skills`, MIT).
 
+**Frontera con `/encargo`:** aquí se interroga un *plan ya formado*; allí se
+completa una *petición cruda* antes de que haya plan. Si lo que traes todavía no
+tiene método ni pasos, empieza por `/encargo`. Y si lo que falla no es el plan
+sino tu comprensión del código ya escrito, eso es `/examen`.
+
 Tu trabajo es resolver las decisiones importantes, las dependencias, los supuestos
 y los modos de fallo — o registrarlos explícitamente como riesgo aceptado. **No
 implementes nada** hasta que el usuario cambie de modo. Preguntar sale barato
