@@ -1,0 +1,127 @@
+{
+  "etiqueta": "abscisa_v3",
+  "tracker": "src/project/tracking.py",
+  "semillas": "ajuste",
+  "simulacion": [
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "saltos": 98,
+      "semillas_con_saltos": 5,
+      "contaminadas_max": 0.2222222222222222,
+      "cola_media": 0.055409299448971806,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "saltos": 74,
+      "semillas_con_saltos": 5,
+      "contaminadas_max": 0.1746031746031746,
+      "cola_media": 0.05106487203423702,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    }
+  ],
+  "detalle": [
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 7,
+      "saltos": 24,
+      "contaminadas": 0.125,
+      "cola": 0.052093023255813956,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 11,
+      "saltos": 42,
+      "contaminadas": 0.2222222222222222,
+      "cola": 0.12180746561886051,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 23,
+      "saltos": 14,
+      "contaminadas": 0.125,
+      "cola": 0.03631010794896958,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 42,
+      "saltos": 10,
+      "contaminadas": 0.0625,
+      "cola": 0.018984337921214997,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 101,
+      "saltos": 8,
+      "contaminadas": 0.0625,
+      "cola": 0.0478515625,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 7,
+      "saltos": 12,
+      "contaminadas": 0.09375,
+      "cola": 0.045581395348837206,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 11,
+      "saltos": 36,
+      "contaminadas": 0.1746031746031746,
+      "cola": 0.12229862475442044,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 23,
+      "saltos": 10,
+      "contaminadas": 0.09375,
+      "cola": 0.020608439646712464,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 42,
+      "saltos": 8,
+      "contaminadas": 0.0625,
+      "cola": 0.018984337921214997,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 101,
+      "saltos": 8,
+      "contaminadas": 0.0625,
+      "cola": 0.0478515625,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    }
+  ]
+}

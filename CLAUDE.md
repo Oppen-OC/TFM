@@ -74,7 +74,8 @@ verifica la cifra antes de escribirla, porque el instrumento también miente
 Dirección de dependencias (nunca al revés):
 
 ```
-ingest/ (proceso aparte) ──> data/raw/ ──> tracking.py ──> prepare.py
+ingest/ (proceso aparte) ──> data/raw/ ──> tracking.py ──┐
+                            gtfs.py ──> mapmatching.py ──┴──> prepare.py
 ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py / features.py  ──>  config.py
 ```
 
@@ -99,6 +100,14 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 - **`tracking.py` es la reconstrucción de identidad de vehículo.** Lo consume
   `prepare.py`. La EMT no publica id de vehículo, así que se infiere: cualquier
   error aquí contamina todas las etiquetas sin dar la cara (trampa 004).
+- **`tracking.py` NO importa el GTFS.** Recibe la abscisa sobre el recorrido como
+  columna opcional y `prepare.py` orquesta las dos pasadas: rastrear,
+  `mapmatching.emparejar`, rastrear con abscisa. Al revés la dependencia sería
+  circular, porque el map-matching necesita identidad para decidir el sentido
+  (ADR-012).
+- **`mapmatching.py` filtra por distancia al trazado, nunca por caja geográfica**
+  (trampa 006), y la abscisa se proyecta sobre la geometría: el
+  `shape_dist_traveled` del feed es el horario reescalado (trampa 010).
 
 ## Configuración
 

@@ -43,12 +43,21 @@ import pandas as pd
 
 from project.analysis import medir_tracking
 from project.analysis.simulacion import simular_flota
+from project.analysis.simulacion_gtfs import simular_sobre_gtfs
+from project.gtfs import cargar_trazados
+from project.mapmatching import emparejar
 from project.config import settings
 
 AQUI = Path(__file__).resolve().parent
 
 SEMILLAS_AJUSTE = (7, 11, 23, 42, 101)
 SEMILLAS_RESERVADAS = tuple(range(9001, 9021))
+# Reservadas para la evaluación con abscisa: las 9001-9020 se miraron al medir el
+# suavizado de intercambios (bitácora 015) y dejaron de ser ciegas.
+# Las 9101-9120 se gastaron en una variante que no generalizó (la abscisa sin
+# suavizado sobre los pares que ya la tenían): mirar dos veces el mismo conjunto
+# lo convierte en conjunto de ajuste.
+SEMILLAS_RESERVADAS_GTFS = tuple(range(9201, 9221))
 LONGITUDES = (20, 80)
 
 ESCENARIOS: dict[str, dict] = {
@@ -102,6 +111,46 @@ def ida_vuelta(out: pd.DataFrame) -> int:
         n1, n2
     )
     return int((mismo & con_paso & (cos < IDA_VUELTA_COS) & vuelve).sum())
+
+
+def medir_gtfs(
+    tracker: ModuleType, semillas: tuple[int, ...], con_abscisa: bool
+) -> pd.DataFrame:
+    """Flota sobre trazados REALES del GTFS, con y sin la abscisa del recorrido.
+
+    Con abscisa son dos pasadas, que es como lo hará `prepare.py`: rastrear para
+    tener identidad aproximada, map-matching para la abscisa y rastrear otra vez
+    con ella. Las posiciones fuera de ruta o ambiguas entran como `NaN`: ahí el
+    tracker vuelve al criterio del plano. `tracking.py` no importa el GTFS.
+    """
+    trazados = cargar_trazados()
+    filas = []
+    for sem in semillas:
+        sim = simular_sobre_gtfs(semilla=sem, trazados=trazados)
+        entrada = sim.drop(columns=["verdad", "abscisa_verdad", "shape_verdad"])
+        if con_abscisa:
+            casada = emparejar(tracker.rastrear(entrada), trazados)
+            fiable = ~casada["fuera_de_ruta"].fillna(True).astype(bool) & ~casada[
+                "ambigua"
+            ].fillna(True).astype(bool)
+            entrada = entrada.assign(
+                abscisa_m=np.where(fiable, casada["abscisa_m"], np.nan)
+            )
+        medir_tracking.rastrear = tracker.rastrear
+        m = medir_tracking.medir(entrada.assign(verdad=sim["verdad"]), predictivo=True)
+        filas.append(
+            {
+                "escenario": "gtfs_con_abscisa" if con_abscisa else "gtfs_sin_abscisa",
+                "snaps": int(sim["snapshot_id"].nunique()),
+                "semilla": sem,
+                "saltos": m["saltos"],
+                "contaminadas": m["contaminadas"],
+                "cola": m["cola"],
+                "fragmentacion": m["fragmentacion"],
+                "ida_vuelta": 0,
+            }
+        )
+    return pd.DataFrame(filas)
 
 
 def medir_sim(tracker: ModuleType, semillas: tuple[int, ...]) -> pd.DataFrame:
@@ -196,6 +245,7 @@ def main() -> None:
     p.add_argument("--real", nargs="*", default=[])
     p.add_argument("--sin-sim", action="store_true")
     p.add_argument("--validar-indicador", action="store_true")
+    p.add_argument("--gtfs", action="store_true", help="flota sobre trazados reales")
     p.add_argument("--salida", type=Path, default=AQUI / "resultados")
     a = p.parse_args()
 
@@ -209,9 +259,16 @@ def main() -> None:
         "tracker": str(a.tracker or "src/project/tracking.py"),
         "semillas": "RESERVADAS" if a.reservadas else "ajuste",
     }
-    if not a.sin_sim:
-        semillas = SEMILLAS_RESERVADAS if a.reservadas else SEMILLAS_AJUSTE
-        df = medir_sim(tracker, semillas)
+    if a.gtfs or not a.sin_sim:
+        if a.gtfs:
+            semillas = SEMILLAS_RESERVADAS_GTFS if a.reservadas else SEMILLAS_AJUSTE
+            df = pd.concat(
+                [medir_gtfs(tracker, semillas, con) for con in (False, True)],
+                ignore_index=True,
+            )
+        else:
+            semillas = SEMILLAS_RESERVADAS if a.reservadas else SEMILLAS_AJUSTE
+            df = medir_sim(tracker, semillas)
         resumen = resumir_sim(df)
         with pd.option_context(
             "display.width", 160, "display.float_format", "{:.4f}".format

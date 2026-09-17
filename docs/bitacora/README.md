@@ -28,6 +28,7 @@ pasa.
 | [014](014-la-capa-192-duplica-los-tramos-211-y-216.md) | 2026-09-17 | anomalia | calidad-dato | La capa 192 da **412** filas con `idtramo` para **410** tramos: el 211 y el 216 llegan duplicados en cada sondeo, con el mismo estado |
 | [015](015-el-sondeo-siguiente-delata-el-intercambio.md) | 2026-09-17 | tecnica | metodologia | Ajustar el coste de un paso no deshace los intercambios en paradas y giros: la información está en el sondeo **siguiente**. Suavizar con un sondeo de retardo los reduce un **58-100 %** en semillas reservadas sin partir ni una trayectoria real; quedan 46 saltos en 40 ejecuciones del escenario completo |
 | [016](016-el-map-matching-casa-con-el-gtfs.md) | 2026-09-17 | medicion | calidad-dato | Las posiciones casan con los trazados del GTFS a **4 m** de mediana (5,16 M de posiciones). El sentido lo decide el avance: **0,998** sobre el trazado elegido frente a **0,018** sobre el contrario. Lo que queda fuera de ruta son buses en cochera: 4,8 % en servicio frente a >50 % de madrugada |
+| [017](017-la-abscisa-mejora-la-identidad-un-8-por-ciento.md) | 2026-09-18 | medicion | metodologia | Emparejar sobre el recorrido quita el **7,6 %** de los intercambios con semillas reservadas, no el 35 % que aparentaban cinco de ajuste. Hicieron falta la hipótesis de parada y penalizar los adelantamientos, con techo puesto por los adelantamientos reales |
 
 ## Qué va aquí y qué no
 

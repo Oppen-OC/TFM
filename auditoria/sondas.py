@@ -189,6 +189,38 @@ def _escenarios() -> dict[str, pd.DataFrame]:
     esc["estres"] = simular_flota(
         semilla=11, p_parada=0.30, p_giro=0.20, ruido_gps_m=5.0, jitter_dt_s=6.0
     )
+    # Identidad sobre el recorrido: mismo escenario que los tests de la abscisa,
+    # dos buses en una horquilla donde el criterio del plano se equivoca.
+    calle = np.array(
+        [(x, 0.0) for x in range(0, 701, 20)]
+        + [(700.0, y) for y in range(0, 31, 10)]
+        + [(x, 30.0) for x in range(700, -1, -20)]
+    )
+    acum = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(calle, axis=0).T))])
+    filas = []
+    t0 = pd.Timestamp("2026-08-26T08:00:00Z")
+    rutas = {
+        "para": [500.0, 650.0, 800.0, 800.0, 800.0, 950.0, 1100.0, 1250.0],
+        "pasa": [440.0, 590.0, 740.0, 890.0, 1040.0, 1190.0, 1340.0, 1490.0],
+    }
+    rng = np.random.default_rng(5)
+    for bus, abscisas in rutas.items():
+        for k, s_bus in enumerate(abscisas):
+            x = np.interp(s_bus, acum, calle[:, 0]) + rng.normal(0, 2)
+            y = np.interp(s_bus, acum, calle[:, 1]) + rng.normal(0, 2)
+            filas.append(
+                {
+                    "snapshot_id": 2000 + k,
+                    "linea": "L9",
+                    "trayecto": "Ida",
+                    "lat": 39.46 + y / 111_320,
+                    "lon": -0.37 + x / (111_320 * np.cos(np.radians(39.46))),
+                    "ts_utc": t0 + pd.Timedelta(seconds=30 * k),
+                    "abscisa_m": s_bus,
+                    "verdad": bus,
+                }
+            )
+    esc["abscisa"] = pd.DataFrame(filas)
     return esc
 
 

@@ -61,6 +61,24 @@ RADIO_SUAVIZADO_M = 400.0
 # un intercambio. Por debajo, la diferencia es del orden del ruido de posición
 # (p90 de 6,7 m entre pasos de un bus parado, bitácora 013) y no hay evidencia.
 MEJORA_MIN_M = 10.0
+# Coste extra de suponer que un bus se ha detenido, en metros de recorrido. Lo
+# paga la hipótesis «parado» frente a «sigue a su ritmo» para que, en igualdad,
+# gane la predicción: con 0 el ruido decidiría. Sin esta hipótesis, un bus parado
+# al que otro adelanta se resuelve mal aunque la abscisa esté.
+PENALIZACION_PARADA_M = 15.0
+# Lo que tiene que ahorrar un adelantamiento para aceptarse. Sobre el recorrido,
+# intercambiar dos identidades es ponerlas en el orden contrario: un
+# adelantamiento. Existen —un bus parado al que otro pasa—, pero son raros, y sin
+# este coste ganan por márgenes de metros: un bus que arranca tras una parada
+# «avanza» 187 m de golpe y el intercambio sale 2 m más barato que la verdad.
+#
+# El techo no lo pone el ajuste sino un fenómeno real: en el escenario de
+# adelantamiento de `tests/test_tracking_abscisa.py` la asignación correcta gana
+# por 135 m, así que por encima de eso el tracker dejaría de reconocer
+# adelantamientos. Barrido sobre la flota de trazados reales, semillas de ajuste:
+# 0 m -> 86 saltos, 50 -> 74, 100 -> 64, 120 -> 64 pero ya rompe el
+# adelantamiento. 100 deja margen.
+PENALIZACION_CRUCE_M = 100.0
 _DT_REF_S = 30.0
 
 
@@ -72,6 +90,13 @@ def _emparejar_grupo(
     `tope` es el desplazamiento máximo admisible de CADA fila de `a`, no un
     escalar: con `tolerar_hueco` cada candidato arrastra un hueco distinto y por
     tanto una puerta distinta.
+
+    Si las dos partes traen abscisa sobre el trazado —`abs_pred` en `a`,
+    `abscisa_m` en `b`—, el coste se mide SOBRE EL RECORRIDO y no en el plano.
+    Dos buses de la misma línea y sentido van por la misma calle en el mismo
+    orden: en una horquilla o una curva cerrada, el que va 100 m por delante
+    queda a 30 m en línea recta y la extrapolación plana apunta al vecino. Donde
+    falte la abscisa —fuera de ruta o ambigua— se usa el plano, fila a fila.
     """
     if a.empty or b.empty:
         return []
@@ -94,15 +119,69 @@ def _emparejar_grupo(
         a["lat"].to_numpy()[:, None], a["lon"].to_numpy()[:, None], blat, blon
     )
 
+    plano = d
+    if "abs_pred" in a.columns and "abscisa_m" in b.columns:
+        s_pred = a["abs_pred"].to_numpy()[:, None]
+        s_ahora = a["abscisa_m"].to_numpy()[:, None]
+        s_b = b["abscisa_m"].to_numpy()[None, :]
+        sobre_ruta = ~np.isnan(s_pred) & ~np.isnan(s_ahora) & ~np.isnan(s_b)
+        # Dos hipótesis sobre el recorrido: el bus sigue a su ritmo, o se ha
+        # detenido. Sin la segunda, un bus que para en el instante en que otro lo
+        # alcanza produce un EMPATE EXACTO igual que el del arranque en frío
+        # (trampa 007): correcto 150 + 0, intercambiado 60 + 90. En el plano esta
+        # misma idea no bastaba —la probé y movía los errores de sitio, bitácora
+        # 015—; sobre una recta sí, porque «parado» es una hipótesis limpia.
+        sigue = np.abs(s_b - s_pred)
+        parado = np.abs(s_b - s_ahora) + PENALIZACION_PARADA_M
+        plano = np.where(sobre_ruta, np.minimum(sigue, parado), d)
+
+    # La puerta sigue midiéndose en el plano y sobre el desplazamiento real: es
+    # una afirmación física sobre lo que un autobús puede recorrer (trampa 008).
     t = tope[:, None]
-    coste = np.where((d <= t) & (d_real <= t), d, 1e9)
+    coste = np.where((d <= t) & (d_real <= t), plano, 1e9)
 
     fi, ci = linear_sum_assignment(coste)
+    if "abs_pred" in a.columns and "abscisa_m" in b.columns:
+        fi, ci = _deshacer_cruces(fi, ci, coste, s_ahora.ravel(), s_b.ravel())
     return [
         (int(a.index[i]), int(b.index[j]), float(d[i, j]))
         for i, j in zip(fi, ci)
         if coste[i, j] < 1e9
     ]
+
+
+def _deshacer_cruces(
+    fi: np.ndarray, ci: np.ndarray, coste: np.ndarray, s_a: np.ndarray, s_b: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """Deshace los adelantamientos que no se pagan (`PENALIZACION_CRUCE_M`).
+
+    Dos vehículos del mismo grupo van por la misma calle en un orden. Si la
+    asignación invierte ese orden está afirmando que uno adelantó al otro, y eso
+    hay que pagarlo: se deshace salvo que cruzarse salga más barato por encima
+    del margen. Con el margen a 0 vuelve a decidir la diferencia de metros, que
+    es lo que falla cuando un bus arranca tras una parada.
+    """
+    fi, ci = list(fi), list(ci)
+    for _ in range(len(fi)):
+        mejora = False
+        for u in range(len(fi)):
+            for v in range(u + 1, len(fi)):
+                i, j, k, ell = fi[u], ci[u], fi[v], ci[v]
+                if np.isnan(s_a[i]) or np.isnan(s_a[k]):
+                    continue
+                if np.isnan(s_b[j]) or np.isnan(s_b[ell]):
+                    continue
+                cruzan = (s_a[i] - s_a[k]) * (s_b[j] - s_b[ell]) < 0
+                if not cruzan:
+                    continue
+                actual = coste[i, j] + coste[k, ell]
+                recto = coste[i, ell] + coste[k, j]
+                if recto <= actual + PENALIZACION_CRUCE_M:
+                    ci[u], ci[v] = ell, j
+                    mejora = True
+        if not mejora:
+            break
+    return np.array(fi, dtype=int), np.array(ci, dtype=int)
 
 
 def _sembrar_por_centroide(a: pd.DataFrame, b: pd.DataFrame) -> pd.DataFrame:
@@ -133,6 +212,10 @@ def _sembrar_por_centroide(a: pd.DataFrame, b: pd.DataFrame) -> pd.DataFrame:
     a.loc[sin_velocidad, "lon_pred"] = a.loc[sin_velocidad, "lon"] + (
         b["lon"].mean() - a["lon"].mean()
     )
+    if "abs_pred" in a.columns:
+        a.loc[sin_velocidad, "abs_pred"] = a.loc[sin_velocidad, "abscisa_m"] + (
+            b["abscisa_m"].mean() - a["abscisa_m"].mean()
+        )
     return a
 
 
@@ -200,6 +283,23 @@ def _suavizar_intercambios(df: pd.DataFrame) -> pd.DataFrame:
     reloj = df.groupby("snapshot_id")["ts_utc"].transform("max")
     ts = (reloj - reloj.min()).dt.total_seconds().to_numpy()
     snap = df["snapshot_id"].to_numpy()
+    # Con abscisa, el cambio de velocidad se mide SOBRE EL RECORRIDO. En el plano,
+    # una horquilla —subir por una calle y volver por la paralela— parece un ida y
+    # vuelta y el suavizado deshace emparejamientos correctos.
+    #
+    # Las filas sin abscisa fiable (fuera de ruta o ambiguas, un 7 % en real) se
+    # SALTAN dentro de la ventana en vez de tirar la ventana entera al plano: son
+    # posiciones sueltas, no un corte de la trayectoria, y con el reloj por sondeo
+    # el hueco que dejan ya está contado en segundos.
+    s = df["abscisa_m"].to_numpy() if "abscisa_m" in df.columns else None
+    ceros = np.zeros(len(df))
+
+    def coste(filas: list[int]) -> float:
+        if s is not None:
+            sobre_ruta = [f for f in filas if not np.isnan(s[f])]
+            if len(sobre_ruta) >= 3:
+                return _cambio_de_velocidad(s, ceros, ts, sobre_ruta)
+        return _cambio_de_velocidad(xs, ys, ts, filas)
 
     tray: dict = {}
     for vid, idx in df.groupby("vehicle_id", sort=False).indices.items():
@@ -226,20 +326,14 @@ def _suavizar_intercambios(df: pd.DataFrame) -> pd.DataFrame:
                 tu, tv = tray[u], tray[v]
                 lo_u, hi_u = max(iu - 2, 0), min(iu + 3, len(tu))
                 lo_v, hi_v = max(iv - 2, 0), min(iv + 3, len(tv))
-                antes = _cambio_de_velocidad(
-                    xs, ys, ts, tu[lo_u:hi_u]
-                ) + _cambio_de_velocidad(xs, ys, ts, tv[lo_v:hi_v])
+                antes = coste(tu[lo_u:hi_u]) + coste(tv[lo_v:hi_v])
 
                 punto_u = tu[lo_u:iu] + [b] + tu[iu + 1 : hi_u]
                 punto_v = tv[lo_v:iv] + [a] + tv[iv + 1 : hi_v]
-                punto = _cambio_de_velocidad(
-                    xs, ys, ts, punto_u
-                ) + _cambio_de_velocidad(xs, ys, ts, punto_v)
+                punto = coste(punto_u) + coste(punto_v)
                 cola_u = tu[lo_u:iu] + tv[iv:hi_v]
                 cola_v = tv[lo_v:iv] + tu[iu:hi_u]
-                cola = _cambio_de_velocidad(xs, ys, ts, cola_u) + _cambio_de_velocidad(
-                    xs, ys, ts, cola_v
-                )
+                cola = coste(cola_u) + coste(cola_v)
 
                 if antes - min(punto, cola) <= MEJORA_MIN_M:
                     continue
@@ -287,6 +381,16 @@ def rastrear(
 
     df debe traer: snapshot_id, linea, trayecto, lat, lon, ts_utc.
 
+    Si trae además `abscisa_m` —metros recorridos sobre el trazado de su línea,
+    que calcula `mapmatching.emparejar`—, el emparejamiento se hace sobre el
+    recorrido en vez de sobre el plano. El orden de los buses de una misma
+    (línea, trayecto) a lo largo de su calle es la información que no está en
+    las coordenadas sueltas. Quien llama pone `NaN` donde la abscisa no es de
+    fiar: fuera de ruta o ambigua, un 7 % de las posiciones reales
+    (`docs/bitacora/016-el-map-matching-casa-con-el-gtfs.md`). El tracker no
+    importa el GTFS: sigue funcionando sin esa columna, y ese es el motivo de
+    pedirla en vez de calcularla.
+
     predictivo=False  -> emparejamiento por vecino más cercano puro.
     predictivo=True   -> se extrapola la posición con la velocidad del paso
                          anterior antes de emparejar. Reduce drásticamente los
@@ -326,6 +430,9 @@ def rastrear(
     df["_plat"] = np.nan
     df["_plon"] = np.nan
     df["_pdt"] = np.nan
+    con_abscisa = "abscisa_m" in df.columns
+    if con_abscisa:
+        df["_pabs"] = np.nan
 
     snaps = sorted(df["snapshot_id"].unique())
     # Reloj POR SONDEO, no por fila: con `tolerar_hueco` el dt de un candidato es
@@ -392,9 +499,22 @@ def rastrear(
             prev.loc[tiene, "lon_pred"] = prev.loc[tiene, "lon"] + f * (
                 prev.loc[tiene, "lon"] - prev.loc[tiene, "_plon"]
             )
+            if con_abscisa:
+                # Lo mismo sobre el recorrido: avanza lo que avanzó, escalado por
+                # la duración del paso.
+                sobre_ruta = tiene & prev["_pabs"].notna() & prev["abscisa_m"].notna()
+                prev["abs_pred"] = prev["abscisa_m"]
+                fs = prev.loc[sobre_ruta, "_dt"] / prev.loc[sobre_ruta, "_pdt"]
+                prev.loc[sobre_ruta, "abs_pred"] = prev.loc[
+                    sobre_ruta, "abscisa_m"
+                ] + fs * (
+                    prev.loc[sobre_ruta, "abscisa_m"] - prev.loc[sobre_ruta, "_pabs"]
+                )
         else:
             prev["lat_pred"] = prev["lat"]
             prev["lon_pred"] = prev["lon"]
+            if con_abscisa:
+                prev["abs_pred"] = prev["abscisa_m"]
 
         emparejados_b: set[int] = set()
         for clave, gb in cur.groupby(["linea", "trayecto"], sort=False):
@@ -415,6 +535,8 @@ def rastrear(
                 df.at[ib, "_plat"] = df.at[ia, "lat"]
                 df.at[ib, "_plon"] = df.at[ia, "lon"]
                 df.at[ib, "_pdt"] = float(prev.at[ia, "_dt"])
+                if con_abscisa:
+                    df.at[ib, "_pabs"] = df.at[ia, "abscisa_m"]
                 emparejados_b.add(ib)
                 vivos.pop(ia, None)
                 vivos[ib] = k
@@ -433,7 +555,8 @@ def rastrear(
     if predictivo:
         df = _suavizar_intercambios(df)
     df["vel_kmh"] = df["dist_m"] / df["dt_s"] * 3.6
-    return df.drop(columns=["_plat", "_plon", "_pdt"])
+    internas = ["_plat", "_plon", "_pdt"] + (["_pabs"] if con_abscisa else [])
+    return df.drop(columns=internas)
 
 
 def resumen(df: pd.DataFrame) -> dict:

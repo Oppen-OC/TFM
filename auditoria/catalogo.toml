@@ -572,3 +572,58 @@ buscar = """    out.loc[out["trayecto"].isna(), "motivo"] = "sin_trayecto""""
 reemplazar = """    pass"""
 detector = ["tests/test_mapmatching.py::test_posicion_sin_trayecto_queda_marcada"]
 sondas = ["mapmatching"]
+
+# --------------------------------------------------------------------------- #
+# Identidad sobre el recorrido (abscisa)
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "048"
+nombre = "el coste ignora la abscisa y vuelve al plano"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = """        plano = np.where(sobre_ruta, np.minimum(sigue, parado), d)"""
+reemplazar = """        plano = d"""
+detector = ["tests/test_tracking_abscisa.py::test_la_abscisa_resuelve_el_encuentro_que_las_coordenadas_no"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "049"
+nombre = "sin hipotesis de parada sobre el recorrido"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = """        parado = np.abs(s_b - s_ahora) + PENALIZACION_PARADA_M"""
+reemplazar = """        parado = np.full(sigue.shape, 1e9)"""
+detector = ["tests/test_tracking_abscisa.py::test_la_abscisa_resuelve_el_encuentro_que_las_coordenadas_no"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "050"
+nombre = "los adelantamientos salen gratis"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = """PENALIZACION_CRUCE_M = 100.0"""
+reemplazar = """PENALIZACION_CRUCE_M = 0.0"""
+detector = ["tests/test_tracking_abscisa.py::test_un_bus_que_arranca_no_se_intercambia_con_el_que_lo_sigue"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "051"
+nombre = "la penalizacion de cruce se come los adelantamientos reales"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = """PENALIZACION_CRUCE_M = 100.0"""
+reemplazar = """PENALIZACION_CRUCE_M = 500.0"""
+detector = ["tests/test_tracking_abscisa.py::test_el_adelantamiento_de_verdad_se_sigue_reconociendo"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "052"
+nombre = "el suavizado ignora la abscisa y mide en el plano"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = """        if s is not None:
+            sobre_ruta = [f for f in filas if not np.isnan(s[f])]"""
+reemplazar = """        if False:
+            sobre_ruta = [f for f in filas if not np.isnan(s[f])]"""
+detector = []
+sondas = ["tracking"]

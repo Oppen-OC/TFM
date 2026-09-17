@@ -1,0 +1,427 @@
+{
+  "etiqueta": "abscisa_reservadas_v2",
+  "tracker": "src/project/tracking.py",
+  "semillas": "RESERVADAS",
+  "simulacion": [
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "saltos": 210,
+      "semillas_con_saltos": 19,
+      "contaminadas_max": 0.19047619047619047,
+      "cola_media": 0.04538691808820211,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "saltos": 194,
+      "semillas_con_saltos": 19,
+      "contaminadas_max": 0.19047619047619047,
+      "cola_media": 0.0463128719276776,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    }
+  ],
+  "detalle": [
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9201,
+      "saltos": 11,
+      "contaminadas": 0.09523809523809523,
+      "cola": 0.043961596766043456,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9202,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9203,
+      "saltos": 12,
+      "contaminadas": 0.0625,
+      "cola": 0.04978458592628052,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9204,
+      "saltos": 11,
+      "contaminadas": 0.09375,
+      "cola": 0.044309701492537316,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9205,
+      "saltos": 6,
+      "contaminadas": 0.046875,
+      "cola": 0.027488151658767772,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9206,
+      "saltos": 10,
+      "contaminadas": 0.03125,
+      "cola": 0.019736842105263157,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9207,
+      "saltos": 14,
+      "contaminadas": 0.09375,
+      "cola": 0.03461918892185954,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9208,
+      "saltos": 6,
+      "contaminadas": 0.09523809523809523,
+      "cola": 0.01429275505174963,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9209,
+      "saltos": 6,
+      "contaminadas": 0.03125,
+      "cola": 0.008303061754021795,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9210,
+      "saltos": 13,
+      "contaminadas": 0.19047619047619047,
+      "cola": 0.09579990561585654,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9211,
+      "saltos": 14,
+      "contaminadas": 0.15873015873015872,
+      "cola": 0.05885311871227364,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9212,
+      "saltos": 12,
+      "contaminadas": 0.09375,
+      "cola": 0.0527086383601757,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9213,
+      "saltos": 18,
+      "contaminadas": 0.15873015873015872,
+      "cola": 0.0789873417721519,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9214,
+      "saltos": 24,
+      "contaminadas": 0.19047619047619047,
+      "cola": 0.07651331719128329,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9215,
+      "saltos": 10,
+      "contaminadas": 0.09523809523809523,
+      "cola": 0.06051732552464617,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9216,
+      "saltos": 4,
+      "contaminadas": 0.06349206349206349,
+      "cola": 0.06737053795877325,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9217,
+      "saltos": 11,
+      "contaminadas": 0.12698412698412698,
+      "cola": 0.07740993184031159,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9218,
+      "saltos": 14,
+      "contaminadas": 0.09375,
+      "cola": 0.029382957884427033,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9219,
+      "saltos": 10,
+      "contaminadas": 0.0625,
+      "cola": 0.046009389671361506,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_sin_abscisa",
+      "snaps": 40,
+      "semilla": 9220,
+      "saltos": 4,
+      "contaminadas": 0.03125,
+      "cola": 0.021690013556258474,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9201,
+      "saltos": 10,
+      "contaminadas": 0.1111111111111111,
+      "cola": 0.06619504800404244,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9202,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9203,
+      "saltos": 6,
+      "contaminadas": 0.03125,
+      "cola": 0.023934897079942556,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9204,
+      "saltos": 13,
+      "contaminadas": 0.09375,
+      "cola": 0.044309701492537316,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9205,
+      "saltos": 8,
+      "contaminadas": 0.046875,
+      "cola": 0.027488151658767772,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9206,
+      "saltos": 8,
+      "contaminadas": 0.03125,
+      "cola": 0.018796992481203006,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9207,
+      "saltos": 8,
+      "contaminadas": 0.09375,
+      "cola": 0.03461918892185954,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9208,
+      "saltos": 7,
+      "contaminadas": 0.09523809523809523,
+      "cola": 0.01429275505174963,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9209,
+      "saltos": 3,
+      "contaminadas": 0.046875,
+      "cola": 0.010897768552153606,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9210,
+      "saltos": 17,
+      "contaminadas": 0.19047619047619047,
+      "cola": 0.11609249646059462,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9211,
+      "saltos": 13,
+      "contaminadas": 0.1111111111111111,
+      "cola": 0.0658953722334004,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9212,
+      "saltos": 12,
+      "contaminadas": 0.09375,
+      "cola": 0.07320644216691069,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9213,
+      "saltos": 14,
+      "contaminadas": 0.12698412698412698,
+      "cola": 0.07088607594936709,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9214,
+      "saltos": 22,
+      "contaminadas": 0.12698412698412698,
+      "cola": 0.05423728813559322,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9215,
+      "saltos": 10,
+      "contaminadas": 0.09523809523809523,
+      "cola": 0.06051732552464617,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9216,
+      "saltos": 4,
+      "contaminadas": 0.06349206349206349,
+      "cola": 0.06737053795877325,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9217,
+      "saltos": 10,
+      "contaminadas": 0.09523809523809523,
+      "cola": 0.07156767283349562,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9218,
+      "saltos": 12,
+      "contaminadas": 0.09375,
+      "cola": 0.029382957884427033,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9219,
+      "saltos": 12,
+      "contaminadas": 0.09375,
+      "cola": 0.05352112676056338,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "gtfs_con_abscisa",
+      "snaps": 40,
+      "semilla": 9220,
+      "saltos": 5,
+      "contaminadas": 0.046875,
+      "cola": 0.023045639403524627,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    }
+  ]
+}

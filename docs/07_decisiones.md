@@ -241,6 +241,37 @@ el coste de 40 minutos sea asumible.
 
 ---
 
+## ADR-012 · El tracker recibe la abscisa; no calcula el map-matching · cerrada
+
+**Decisión.** `rastrear()` acepta una columna `abscisa_m` opcional y, donde la
+hay, empareja sobre el recorrido. Quien llama —`prepare.py`— hace dos pasadas:
+rastrear para tener identidad aproximada, `mapmatching.emparejar` para la
+abscisa, y rastrear otra vez con ella. `tracking.py` no importa `gtfs.py` ni
+`mapmatching.py`.
+
+**Por qué.** La dependencia sería circular: el map-matching necesita identidad
+para decidir el sentido de cada (línea, trayecto) —los trazados de ida y vuelta
+van por las mismas calles— y el tracker necesitaría la abscisa. Además el
+tracker sigue siendo utilizable sin el GTFS, que es lo que permite probarlo con
+escenarios construidos a mano y lo que mantiene la capa de ingesta limpia.
+
+**Consecuencias.**
+
+- Dos pasadas de `rastrear` por jornada: unos 7 min de reloj frente a 3,5.
+- Las posiciones sin abscisa fiable (10-12 % en real: fuera de ruta o ambiguas)
+  entran como `NaN` y se emparejan con el criterio del plano, fila a fila.
+- `prepare.py` orquesta; ningún módulo de `src/project/` gana dependencias
+  nuevas hacia abajo.
+
+**Alternativas.** Que `tracking.py` llamara al map-matching: una sola llamada,
+pero dependencia circular y tracker inseparable del GTFS. Descartada.
+
+**Reabrir si** el map-matching deja de necesitar identidad para decidir el
+sentido —por ejemplo, si la fuente publicase `direction_id` o el GTFS trajera
+una correspondencia con el campo `trayecto`.
+
+---
+
 ## Pendientes de decidir
 
 - **Selección de corredores.** `docs/05` mide 57,7 % de cobertura de tráfico y
