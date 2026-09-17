@@ -1,0 +1,5 @@
+outs:
+- md5: a87aa72b12b2fa9c3d63bee454f8e759
+  size: 7161519
+  hash: md5
+  path: emt_google_transit.zip

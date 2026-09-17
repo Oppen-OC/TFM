@@ -13,8 +13,13 @@ __pycache__/
 # reference/, logs/ y _status.json se colaban en `git add -A`. Son cientos de
 # megas de Parquet: GitHub rechaza ficheros de más de 100 MB y el historial
 # quedaría inflado para siempre. Se ignora data/ entero.
-data/
+data/**
 # Los .gitkeep ya están en el índice y siguen versionados aunque data/ esté aquí.
+# Excepciones: git debe poder recorrer los directorios (`!data/**/`) para que
+# lleguen los punteros de DVC (`*.dvc`). Los datos siguen fuera: `data/**` ignora
+# todo fichero a cualquier profundidad, así que ningún Parquet se cuela.
+!data/**/
+!data/**/*.dvc
 
 # Modelos (gestionados por DVC)
 models/*.pkl
