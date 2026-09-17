@@ -580,20 +580,27 @@ sondas = ["mapmatching"]
 id = "048"
 nombre = "el coste ignora la abscisa y vuelve al plano"
 capa = "tracking"
+# Sin guardia unitaria: lo que lo destapa es el banco sobre trazados reales
+# (181 saltos frente a 191, 20 semillas de desarrollo). Los escenarios a mano
+# que se probaron los resuelve igual la corrección de adelantamientos, que
+# también usa la abscisa. Anotado en docs/bitacora/017.
 fichero = "src/project/tracking.py"
 buscar = """        plano = np.where(sobre_ruta, np.minimum(sigue, parado), d)"""
 reemplazar = """        plano = d"""
-detector = ["tests/test_tracking_abscisa.py::test_la_abscisa_resuelve_el_encuentro_que_las_coordenadas_no"]
+detector = []
 sondas = ["tracking"]
 
 [[mutante]]
 id = "049"
 nombre = "sin hipotesis de parada sobre el recorrido"
 capa = "tracking"
+# Tampoco tiene guardia unitaria. En el banco QUITARLA mejora un poco (178
+# frente a 181 saltos), pero pierde el adelantamiento de un bus detenido, que
+# es un caso real; se conserva por eso. Medido en docs/bitacora/017.
 fichero = "src/project/tracking.py"
 buscar = """        parado = np.abs(s_b - s_ahora) + PENALIZACION_PARADA_M"""
 reemplazar = """        parado = np.full(sigue.shape, 1e9)"""
-detector = ["tests/test_tracking_abscisa.py::test_la_abscisa_resuelve_el_encuentro_que_las_coordenadas_no"]
+detector = []
 sondas = ["tracking"]
 
 [[mutante]]

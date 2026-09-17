@@ -132,6 +132,16 @@ Abierto:
   criterio del plano.
 - El banco no cubre el giro en cabecera ni la entrada y salida de servicio: los
   buses de `simulacion_gtfs` dejan de emitir al llegar al final del recorrido.
+- **Dos piezas sin guardia unitaria.** El catálogo da equivalentes los mutantes
+  048 (coste en el plano en vez de sobre el recorrido) y 049 (sin hipótesis de
+  parada): los escenarios construidos a mano los resuelve igual la corrección de
+  adelantamientos, que también usa la abscisa. Quien las distingue hoy es el
+  banco —181 saltos frente a 191 sin el coste de recorrido— y eso no corre en la
+  CI. Extraer un caso de la flota sobre trazados reales y congelarlo como test
+  se intentó y no discriminó: el escenario pierde el contexto del grupo.
+- La hipótesis de parada **resta** en el banco (178 saltos sin ella frente a
+  181) pero es la que permite reconocer el adelantamiento de un bus detenido.
+  Se conserva por eso, no por la cifra.
 
 ## Para la memoria
 
