@@ -37,7 +37,8 @@ COLUMNAS_DEBILIDADES = (
 )
 
 RE_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
-RE_CAMPO = re.compile(r"^([a-z_]+):\s*(.*)$")
+# Guion incluido: el comando usa `argument-hint`, que es justo lo que se comprueba.
+RE_CAMPO = re.compile(r"^([a-z_-]+):\s*(.*)$")
 RE_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 RE_PREGUNTA = re.compile(r"^## P(\d+) · ", re.MULTILINE)
 RE_CONCEPTO = re.compile(r"^<!-- concepto: ([a-z0-9-]+) -->$", re.MULTILINE)
