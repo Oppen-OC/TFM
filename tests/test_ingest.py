@@ -87,11 +87,17 @@ def test_detecta_la_convencion_horaria(fix, convencion, momento, estacion):
     )
 
 
-def test_dato_rancio_se_marca_dudosa_en_vez_de_adivinar(fix):
-    """Un timestamp absurdo no debe elegir en silencio: se marca."""
+@pytest.mark.parametrize("antiguedad_s", [3_600, 86_400], ids=["1h", "1d"])
+def test_dato_rancio_se_marca_dudosa_en_vez_de_adivinar(fix, antiguedad_s):
+    """Un timestamp absurdo no debe elegir en silencio: se marca.
+
+    La hora de antigüedad es la que discrimina: con un día cualquier horquilla
+    lo rechaza, pero una horquilla ensanchada hasta el desfase de 2 h aceptaría
+    un dato de hace una hora como UTC fresco (mutante 004 de la auditoría).
+    """
     pl, ing = _payload_emt(fix, "2026-08-16 09:00:00", "YA_EN_UTC")
     for f in pl["features"]:
-        f["attributes"]["fecha"] -= 86_400_000  # un día de antigüedad
+        f["attributes"]["fecha"] -= antiguedad_s * 1000
     d = parse("emt_buses", pl, ing)
     assert d["tz_convencion"].iloc[0] == "DUDOSA", d["tz_convencion"].iloc[0]
 
@@ -144,6 +150,40 @@ def test_renfe_filtra_solo_nucleo_40(fix):
 def test_renfe_retraso_min_es_numerico(fix):
     df = parse("renfe_cercanias", fix["renfe_cercanias"], now_utc())
     assert pd.api.types.is_numeric_dtype(df["retraso_min"])
+
+
+def test_renfe_ts_utc_es_la_fecha_de_actualizacion_y_no_la_captura(fix):
+    """`ts_utc` es cuándo publicó Renfe, no cuándo lo leímos.
+
+    Con `fechaActualizacion` 21:11:56 local, `ts_utc` debe ser 19:11:56 UTC
+    aunque la captura sea de otro día. Confundirlos borra la latencia de la
+    fuente sin error alguno (mutante 008 de la auditoría).
+    """
+    captura = pd.Timestamp("2026-08-16T09:00:00Z")
+    df = parse("renfe_cercanias", fix["renfe_cercanias"], captura)
+    assert (df["ts_utc"] == pd.Timestamp("2026-08-15T19:11:56Z")).all(), df["ts_utc"]
+    assert (df["ts_ingest_utc"] == captura).all()
+
+
+@pytest.mark.parametrize("clave", ["trafico_estado", "trafico_intensidad"])
+def test_filas_hueco_de_trafico_se_descartan(fix, clave):
+    """TRAMPA 005: 34 de las 446 filas de la capa 192 no son tramos.
+
+    Llegan sin `idtramo`, sin geometría y sin estado. El fixture real está
+    recortado a tres filas y no trae ninguna, así que hasta la auditoría de
+    09/2026 nada comprobaba que el parser las descartase: se inyectan aquí con la
+    forma que tienen en el crudo (atributos a nulo, geometría nula).
+    """
+    limpio = parse(clave, fix[clave], now_utc())
+    p = json.loads(json.dumps(fix[clave]))
+    hueco = json.loads(json.dumps(p["features"][0]))
+    hueco["attributes"] = dict.fromkeys(hueco["attributes"])
+    hueco["geometry"] = None
+    p["features"] += [hueco, json.loads(json.dumps(hueco))]
+
+    df = parse(clave, p, now_utc())
+    assert len(df) == len(limpio), f"{len(df)} filas, esperadas {len(limpio)}"
+    assert df["idtramo"].notna().all()
 
 
 def test_trafico_intensidad_lectura_menos_uno_es_nulo(fix):

@@ -4,22 +4,21 @@ más a la real?
     uv run python auditoria/escenarios.py
     uv run python auditoria/escenarios.py --semillas 7,11 --snaps 40
 
-`project.analysis.simulacion.simular_flota` no se toca: sus valores fijan los
-umbrales de los tests y las cifras de la bitácora. Aquí se reimplementa el mismo
-generador con fenómenos opcionales que la captura real muestra y la simulación
-omite, medidos por `project.analysis.auditar_supuestos`:
+Los fenómenos que la captura real muestra y la flota por defecto omite viven
+como parámetros de `project.analysis.simulacion.simular_flota`, apagados por
+defecto, medidos por `project.analysis.auditar_supuestos`:
 
-  paradas     el bus se detiene 1-3 sondeos (semáforo, parada). Real: ~30 % de
+  paradas     el bus se detiene 1-3 sondeos (semáforo, parada). Real: ~29 % de
               los pasos por debajo de 1,2 km/h; simulado: 0 %.
   ruido_gps   error de posición gaussiano, en metros, sobre lo OBSERVADO; el
               movimiento real sigue limpio. Real: pasos parados de 2 m (p50).
   giros       con probabilidad por paso, giro de 90° como en una esquina.
-              Real: p90 del cambio de rumbo ~58°; simulado: ~14°.
-  jitter_dt   el sondeo no llega cada 30 s exactos. Real: p99 ~34 s.
+              Real: p90 del cambio de rumbo ~57°; simulado: ~14°.
+  jitter_dt   el sondeo no llega cada 30 s exactos. Real: p99 ~33 s.
 
-Con todo apagado, `generar()` es idéntico a `simular_flota()` fila a fila: es
-el control que hace comparables los escenarios. Los fenómenos usan un generador
-aleatorio aparte para no alterar la secuencia del original.
+Hasta 32d78a1 el generador estaba duplicado aquí; al moverlo se comprobó que
+ambos daban la misma flota fila a fila en todas las configuraciones de abajo, y
+que la flota por defecto no cambiaba respecto a fc5d15c.
 
 Criterio de la decisión 2c, por fenómeno y con varias semillas:
   inocuo    0 saltos, 0 trayectorias contaminadas y fragmentación 1,00
@@ -30,7 +29,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -38,92 +36,10 @@ import pandas as pd
 
 from project.analysis.auditar_supuestos import medidas, resumir
 from project.analysis.medir_tracking import medir
-from project.analysis.simulacion import (
-    DT_S,
-    N_BUSES,
-    N_SNAPS,
-    SEMILLA,
-    SEMILLA_BARAJADO,
-    simular_flota,
-)
+from project.analysis.simulacion import simular_flota
 from project.tracking import rastrear
 
 AQUI = Path(__file__).resolve().parent
-
-
-def generar(
-    n_buses: int = N_BUSES,
-    n_snaps: int = N_SNAPS,
-    dt: float = DT_S,
-    semilla: int = SEMILLA,
-    semilla_barajado: int = SEMILLA_BARAJADO,
-    p_parada: float = 0.0,
-    ruido_gps_m: float = 0.0,
-    p_giro: float = 0.0,
-    jitter_dt_s: float = 0.0,
-) -> pd.DataFrame:
-    rng = np.random.default_rng(semilla)
-    extra = np.random.default_rng(semilla + 10_000)
-    lineas = [(f"L{i % 8}", "Ida" if i % 2 else "Vuelta") for i in range(n_buses)]
-    lat = 39.46 + rng.normal(0, 0.02, n_buses)
-    lon = -0.37 + rng.normal(0, 0.02, n_buses)
-    rumbo = rng.uniform(0, 2 * np.pi, n_buses)
-    vel = rng.uniform(3, 30, n_buses)
-    parado_resta = np.zeros(n_buses, dtype=int)
-
-    filas = []
-    t0 = pd.Timestamp("2026-08-15T19:00:00Z")
-    reloj = 0.0
-    for s in range(n_snaps):
-        if p_parada:
-            empieza = (parado_resta == 0) & (extra.random(n_buses) < p_parada)
-            parado_resta[empieza] = extra.integers(1, 4, empieza.sum())
-        moviendo = parado_resta == 0 if p_parada else np.ones(n_buses, bool)
-        paso = vel / 3.6 * dt * moviendo
-        lat = lat + np.cos(rumbo) * paso / 111_320
-        lon = lon + np.sin(rumbo) * paso / (111_320 * np.cos(np.radians(lat)))
-        rumbo += rng.normal(0, 0.15, n_buses)
-        if p_giro:
-            gira = extra.random(n_buses) < p_giro
-            rumbo[gira] += extra.choice([-np.pi / 2, np.pi / 2], gira.sum())
-        if p_parada:
-            parado_resta = np.maximum(parado_resta - 1, 0)
-
-        obs_lat, obs_lon = lat, lon
-        if ruido_gps_m:
-            obs_lat = lat + extra.normal(0, ruido_gps_m, n_buses) / 111_320
-            obs_lon = lon + extra.normal(0, ruido_gps_m, n_buses) / (
-                111_320 * np.cos(np.radians(lat))
-            )
-        instante = s * dt
-        if jitter_dt_s:
-            reloj = max(reloj + 1.0, instante + extra.uniform(0, jitter_dt_s))
-            instante = reloj
-        for i in range(n_buses):
-            filas.append(
-                {
-                    "snapshot_id": 1000 + s,
-                    "gid": 1000 + s * n_buses + i,
-                    "linea": lineas[i][0],
-                    "trayecto": lineas[i][1],
-                    "lat": obs_lat[i],
-                    "lon": obs_lon[i],
-                    "ts_utc": t0 + pd.Timedelta(seconds=instante),
-                    "verdad": f"bus{i:03d}",
-                }
-            )
-    sim = pd.DataFrame(filas)
-    sim = sim.sample(frac=1, random_state=semilla_barajado).sort_values("snapshot_id")
-    return sim.reset_index(drop=True)
-
-
-def control() -> None:
-    a, b = generar(), simular_flota()
-    if not a.equals(b):
-        sys.exit(
-            "CONTROL FALLIDO: generar() sin fenómenos no reproduce simular_flota()"
-        )
-    print("  control: generar() sin fenómenos == simular_flota()")
 
 
 # Calibrado contra `auditoria/resultados/supuestos_fc5d15c.json` (laborables):
@@ -147,12 +63,11 @@ FENOMENOS["estres"] = {
 
 
 def main(semillas: list[int], snaps: list[int], salida: Path | None) -> None:
-    control()
     filas = []
     for nombre, kw in {"ninguno": {}, **FENOMENOS}.items():
         for n in snaps:
             for s in semillas:
-                sim = generar(n_snaps=n, semilla=s, **kw)
+                sim = simular_flota(n_snaps=n, semilla=s, **kw)
                 m = medir(sim, predictivo=True)
                 cal = resumir(medidas(rastrear(sim.drop(columns=["verdad"]))))
                 filas.append(

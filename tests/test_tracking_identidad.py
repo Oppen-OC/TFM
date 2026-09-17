@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from project.analysis.simulacion import simular_flota
 from project.tracking import SALTO_MAX_M, VEL_MAX_KMH, rastrear
 
 LAT0, LON0 = 39.46, -0.37
@@ -241,6 +242,43 @@ def test_la_puerta_fisica_se_respeta_en_la_flota_simulada(flota_simulada):
     assert tr["vel_kmh"].max() <= VEL_MAX_KMH + 1e-6
 
 
+def test_la_puerta_fisica_se_respeta_tras_sondeos_perdidos():
+    """TRAMPA 008, la guardia que de verdad la guarda.
+
+    Los escenarios de arriba van a velocidad constante con pasos de 30 s: la
+    posición predicha y la real nunca se separan lo bastante como para que
+    importe sobre cuál se evalúa la puerta, y volver a evaluarla solo sobre la
+    predicha los deja en verde (`docs/11_auditoria_tests.md`). Con dos sondeos
+    perdidos a cadencia de 60 s el paso dura 180 s, la extrapolación se aleja, y
+    ese código acepta 34 desplazamientos por encima de `SALTO_MAX_M`, hasta
+    1.442 m.
+    """
+    tr = _rastrear_con_verdad(simular_flota(dt=60.0, huecos=(6, 7)))
+    tr = tr.dropna(subset=["dist_m"])
+    tope = np.minimum(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * np.maximum(tr["dt_s"], 1.0))
+    fuera = tr[tr["dist_m"] > tope + 1e-6]
+    assert fuera.empty, (
+        f"{len(fuera)} desplazamientos por encima de la puerta, "
+        f"el mayor de {fuera['dist_m'].max():.0f} m"
+    )
+
+
+def test_rastrear_no_reordena_filas_dentro_del_sondeo():
+    """TRAMPA 004, sin depender de cómo ordene numpy.
+
+    La guardia anterior solo podía caer si quicksort permutaba una entrada YA
+    ordenada, y eso depende de la versión: numpy 2.2.6 lo hace, 2.4.6 no. Aquí la
+    entrada llega desordenada ENTRE sondeos, así que hay que ordenar, y solo un
+    orden estable conserva dentro de cada sondeo el orden de llegada, que es lo
+    que asume todo lo que reengancha por posición de fila.
+    """
+    sim = simular_flota().sample(frac=1, random_state=11).reset_index(drop=True)
+    out = rastrear(sim.drop(columns=["verdad"]))
+    for snap, g in out.groupby("snapshot_id", sort=False):
+        llegada = sim.loc[sim["snapshot_id"] == snap, "gid"].tolist()
+        assert g["gid"].tolist() == llegada, f"sondeo {snap} reordenado"
+
+
 def test_resultado_invariante_al_orden_de_las_filas():
     """TRAMPA 004: barajar dentro del snapshot no puede cambiar la partición.
 
@@ -292,20 +330,43 @@ def test_bus_que_sale_de_servicio_no_cede_su_id():
     assert tras_salir.empty, "otro bus heredó el id del que salió de servicio"
 
 
-def test_salto_imposible_rompe_la_cadena():
+@pytest.mark.parametrize("salto_m", [550.0, 2000.0], ids=["550m", "2km"])
+def test_salto_imposible_rompe_la_cadena(salto_m):
     """Un desplazamiento por encima de la puerta debe abrir trayectoria nueva.
 
-    Emparejarlo sería inventar un viaje de 2 km en 30 s; romper la cadena
+    Emparejarlo sería inventar un viaje imposible en 30 s; romper la cadena
     cuesta longitud de trayectoria pero no contamina la etiqueta de retraso.
+
+    Los 2 km superan cualquier puerta y no discriminan nada. Los 550 m sí: el
+    desplazamiento real es de 675 m, por encima de los 583 m que permiten
+    70 km/h en 30 s y por debajo de `SALTO_MAX_M`; la distancia a la posición
+    predicha es de 550 m, por debajo. Solo la puerta completa lo rechaza: la
+    evaluada sobre la predicha (trampa 008) o con una velocidad máxima más
+    laxa lo aceptan.
     """
     paso = 15 / 3.6 * DT
     tray = {
-        "salton": [(s * paso if s < 5 else s * paso + 2000.0, 0.0) for s in range(10)]
+        "salton": [(s * paso if s < 5 else s * paso + salto_m, 0.0) for s in range(10)]
     }
     out = _rastrear_con_verdad(_construir(tray))
     antes = set(out[out["snapshot_id"] < 1005]["vehicle_id"])
     despues = set(out[out["snapshot_id"] >= 1005]["vehicle_id"])
     assert not (antes & despues), "emparejó por encima de la puerta física"
+
+
+def test_sondeos_con_el_mismo_instante_no_rompen_la_cadena():
+    """Dos sondeos con el mismo `ts_utc` dan `dt = 0`: se trata como un paso de 30 s.
+
+    Si se tratase como 1 s, la puerta se cerraría a 19 m y un bus a 15 km/h
+    saldría partido en dos trayectorias (mutante 025 de la auditoría).
+    """
+    paso = 15 / 3.6 * DT
+    df = _construir({"bus": [(s * paso, 0.0) for s in range(6)]})
+    t2 = df.loc[df["snapshot_id"] == 1002, "ts_utc"].iloc[0]
+    df.loc[df["snapshot_id"] == 1003, "ts_utc"] = t2
+    df.loc[df["snapshot_id"] > 1003, "ts_utc"] -= pd.Timedelta(seconds=DT)
+    out = _rastrear_con_verdad(df)
+    assert out["vehicle_id"].nunique() == 1, "el paso con dt = 0 partió la cadena"
 
 
 # --------------------------------------------------------------------------- #

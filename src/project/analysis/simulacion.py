@@ -40,6 +40,10 @@ def simular_flota(
     flip_en: int | None = None,
     parciales: dict[int, float] | None = None,
     huecos: tuple[int, ...] = (),
+    p_parada: float = 0.0,
+    p_giro: float = 0.0,
+    ruido_gps_m: float = 0.0,
+    jitter_dt_s: float = 0.0,
 ) -> pd.DataFrame:
     """Devuelve posiciones con la forma de la capa de buses, más la columna `verdad`.
 
@@ -48,9 +52,9 @@ def simular_flota(
     reparten en `n_buses % 8` grupos: cuantos menos grupos, más vehículos
     compiten por el mismo emparejamiento y más difícil es el problema.
 
-    Dos escenarios opcionales, apagados por defecto para no mover las cifras ya
-    publicadas. Ambos conservan `verdad`: el bus sigue siendo el mismo, lo que
-    cambia es lo que la fuente cuenta de él.
+    Escenarios opcionales, apagados por defecto para no mover las cifras ya
+    publicadas. Todos conservan `verdad`: el bus sigue siendo el mismo, lo que
+    cambia es lo que la fuente cuenta de él, o cómo se mueve.
 
     `flip_en`  A partir de ese snapshot cada bus invierte su `trayecto`, como al
         llegar a cabecera. El desfase `(3*i) % 7` evita que la línea entera gire
@@ -76,6 +80,23 @@ def simular_flota(
         que el paso que salta el hueco dura el doble. Es el único escenario que
         destapa la trampa 009 — el resto tiene todos los pasos iguales, y con
         pasos iguales el defecto es invisible.
+
+    Cuatro fenómenos cinemáticos, medidos sobre 52 ventanas reales en las que la
+    flota por defecto se queda corta (`docs/bitacora/013-la-flota-simulada-no-para-ni-gira.md`).
+    Sin ellos el movimiento es rectilíneo y uniforme, que es exactamente lo que
+    supone el predictor: el tracker sale perfecto por construcción. Usan un
+    generador aleatorio aparte (`semilla + 10_000`) para que, apagados, la flota
+    sea idéntica bit a bit a la de siempre.
+
+    `p_parada`  Probabilidad por paso de que un bus en marcha se detenga 1-3
+        sondeos (semáforo, parada). Con 0,17 queda parado el ~29 % de los pasos,
+        la cifra real; la flota por defecto, 0 %.
+    `p_giro`  Probabilidad por paso de un giro de 90°, como en una esquina. El
+        p90 real del cambio de rumbo es 57°; por defecto, 14°.
+    `ruido_gps_m`  Error gaussiano de posición, en metros, sobre lo OBSERVADO; el
+        movimiento verdadero sigue limpio.
+    `jitter_dt_s`  El sondeo llega entre 0 y este número de segundos tarde. El
+        p99 real de la duración del paso es 33 s.
     """
     rng = np.random.default_rng(semilla)
     lineas = [(f"L{i % 8}", "Ida" if i % 2 else "Vuelta") for i in range(n_buses)]
@@ -83,14 +104,36 @@ def simular_flota(
     lon = -0.37 + rng.normal(0, 0.02, n_buses)
     rumbo = rng.uniform(0, 2 * np.pi, n_buses)
     vel = rng.uniform(3, 30, n_buses)  # km/h realistas para bus urbano
+    extra = np.random.default_rng(semilla + 10_000)
+    parado_resta = np.zeros(n_buses, dtype=int)
 
     filas = []
     t0 = pd.Timestamp("2026-08-15T19:00:00Z")
+    reloj = 0.0
     for s in range(n_snaps):
         paso = vel / 3.6 * dt
+        if p_parada:
+            empieza = (parado_resta == 0) & (extra.random(n_buses) < p_parada)
+            parado_resta[empieza] = extra.integers(1, 4, empieza.sum())
+            paso = paso * (parado_resta == 0)
         lat = lat + np.cos(rumbo) * paso / 111_320
         lon = lon + np.sin(rumbo) * paso / (111_320 * np.cos(np.radians(lat)))
         rumbo += rng.normal(0, 0.15, n_buses)
+        if p_giro:
+            gira = extra.random(n_buses) < p_giro
+            rumbo[gira] += extra.choice([-np.pi / 2, np.pi / 2], gira.sum())
+        if p_parada:
+            parado_resta = np.maximum(parado_resta - 1, 0)
+        obs_lat, obs_lon = lat, lon
+        if ruido_gps_m:
+            obs_lat = lat + extra.normal(0, ruido_gps_m, n_buses) / 111_320
+            obs_lon = lon + extra.normal(0, ruido_gps_m, n_buses) / (
+                111_320 * np.cos(np.radians(lat))
+            )
+        instante = s * dt
+        if jitter_dt_s:
+            reloj = max(reloj + 1.0, instante + extra.uniform(0, jitter_dt_s))
+            instante = reloj
         for i in range(n_buses):
             trayecto = lineas[i][1]
             if flip_en is not None and s >= flip_en + (3 * i) % 7:
@@ -101,9 +144,9 @@ def simular_flota(
                     "gid": 1000 + s * n_buses + i,
                     "linea": lineas[i][0],
                     "trayecto": trayecto,
-                    "lat": lat[i],
-                    "lon": lon[i],
-                    "ts_utc": t0 + pd.Timedelta(seconds=s * dt),
+                    "lat": obs_lat[i],
+                    "lon": obs_lon[i],
+                    "ts_utc": t0 + pd.Timedelta(seconds=instante),
                     "verdad": f"bus{i:03d}",
                 }
             )

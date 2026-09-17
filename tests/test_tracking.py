@@ -64,9 +64,14 @@ def test_tracker_predictivo_identidad_correcta(predictivo):
 
 
 def test_predictivo_mejora_al_ingenuo(predictivo, ingenuo):
+    """Estrictamente mejor: con `>=` pasaba aunque la predicción no hiciera nada.
+
+    Sobre esta flota el predictivo acierta el 100 % y el ingenuo el 97,8 %. La
+    auditoría de 09/2026 desactivó la predicción y este test seguía verde.
+    """
     _, acc_pred = predictivo
     _, acc_ing = ingenuo
-    assert acc_pred >= acc_ing, f"{acc_pred:.1%} vs {acc_ing:.1%}"
+    assert acc_pred > acc_ing, f"{acc_pred:.1%} vs {acc_ing:.1%}"
 
 
 def test_tasa_de_emparejamiento_por_encima_del_95(predictivo):
