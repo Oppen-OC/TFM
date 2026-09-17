@@ -4,7 +4,7 @@ titulo: Sort inestable reordena filas dentro del snapshot y falsea la métrica d
 estado: cerrada
 capa: tracking
 detectada: 2026-08-19
-test: tests/test_tracking.py::test_tracker_predictivo_identidad_correcta
+test: tests/test_tracking_identidad.py::test_rastrear_no_reordena_filas_dentro_del_sondeo
 ---
 
 ## Síntoma
@@ -41,6 +41,15 @@ hacerlo, `kind="stable"` explícito y una clave de desempate en el sort.
 
 ## Guardia
 
-`tests/test_tracking.py::test_tracker_predictivo_identidad_correcta` y
-`tests/test_tracking.py::test_predictivo_mejora_al_ingenuo`. Ambos vuelven a caer
-si el orden se corrompe.
+`tests/test_tracking_identidad.py::test_rastrear_no_reordena_filas_dentro_del_sondeo`:
+entrada desordenada entre sondeos, y el orden de llegada dentro de cada sondeo
+tiene que sobrevivir a `rastrear()`.
+
+Hasta 09/2026 la guardia era `test_tracker_predictivo_identidad_correcta`, y
+**había dejado de guardar sin que nada cambiase en el código ni en el test**.
+Solo caía si quicksort permutaba una entrada ya ordenada: numpy 2.2.6 lo hace,
+numpy 2.4.6 en la CPU de desarrollo no. Al actualizar `uv.lock`, quitar
+`kind="stable"` dejó de alterar un solo byte de salida
+(`docs/bitacora/012-tres-guardias-de-trampas-cerradas-no-guardan.md`). La
+guardia nueva ordena una entrada desordenada, donde cualquier orden no estable
+permuta.

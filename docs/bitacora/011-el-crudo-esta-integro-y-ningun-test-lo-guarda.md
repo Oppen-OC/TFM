@@ -6,7 +6,7 @@ tipo: medicion
 capa: fuentes
 capitulo: calidad-dato
 impacto: alto
-estado: abierto
+estado: mitigado
 evidencia: uv run python -m project.analysis.auditar_persistencia
 trampa: —
 ---
@@ -36,7 +36,7 @@ Tres cosas:
    capturados entre las 00:00 y las 00:29 UTC. Ninguno duplicado entre
    particiones.
 
-Y la cifra que motiva el estado `abierto`: en la auditoría por mutación
+Y la cifra que obligó a abrir la entrada: en la auditoría por mutación
 ([docs/11](../11_auditoria_tests.md)), **los 9 mutantes de la capa de
 persistencia pasan la suite en verde**: parsear antes de guardar el crudo,
 sobrescribir en vez de añadir, deduplicar mal, `reprocesar` leyendo un solo día.
@@ -78,12 +78,11 @@ cuyo fallo no se puede reparar después.
 ## Qué se hizo / qué queda abierto
 
 Hecho: medición y el instrumento `src/project/analysis/auditar_persistencia.py`.
+Guardias en `tests/test_persistencia.py` (commit `c6e02cc`): los nueve mutantes
+de persistencia caen. Corrección anexada a `data/raw/_TRUNCADOS.txt`.
 
 Abierto:
 
-- Guardias de persistencia (fase 2 de la auditoría), cada una validada contra su
-  mutante del catálogo.
-- Corregir `data/raw/_TRUNCADOS.txt`, que no está en git.
 - Decidir si la partición por primera fila de `flush` se corrige o se documenta
   como trampa; hoy basta con filtrar por `ts_ingest_utc`.
 - Explicar la diferencia entre el 2,7 % de deduplicación medido en la EMT y el

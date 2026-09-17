@@ -52,8 +52,10 @@ uv run python auditoria/escenarios.py --json auditoria/resultados/escenarios_fc5
 
 Las magnitudes se leen de la salida de `rastrear()` en ambos lados. Las ventanas
 se filtran por `ts_ingest_utc` sobre todas las particiones, no por `date=`
-(entrada 011). `escenarios.py` arranca con un control: sin fenómenos, su
-generador debe ser idéntico a `simular_flota()`, o se detiene.
+(entrada 011). Cuando se midió, `escenarios.py` tenía su propio generador y
+arrancaba con un control: sin fenómenos debía ser idéntico a `simular_flota()`.
+En `c6e02cc` los fenómenos pasaron a `simular_flota` después de comprobar que
+ambos generadores daban la misma flota fila a fila.
 
 Cada salto se inspeccionó: separación entre los dos buses intercambiados de 19 a
 103 m, con pasos de 145 a 205 m. En los casos de parada, el predictor extrapola
@@ -80,9 +82,12 @@ orden de existencia, no una estimación de volumen.
 Hecho: `src/project/analysis/auditar_supuestos.py` y `auditoria/escenarios.py`,
 que quedan como herramienta re-ejecutable.
 
+Hecho también, en `c6e02cc`: `simular_flota` gana `p_parada`, `p_giro`,
+`ruido_gps_m` y `jitter_dt_s`, apagados por defecto, y el defecto queda fijado en
+`tests/test_tracking_realismo.py` como `xfail(strict=True)`.
+
 Abierto:
 
-- Escenario con paradas y giros en los tests de tracking (fase 2).
 - Medir los intercambios sobre captura real sin verdad-terreno: por ejemplo,
   pasos con parada seguidos de reanudación en el sondeo siguiente.
 - Decidir si el predictor debe amortiguar la velocidad tras un paso corto; eso

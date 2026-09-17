@@ -4,7 +4,7 @@ titulo: gid identifica al refresco, no al vehículo
 estado: cerrada
 capa: fuentes
 detectada: 2026-08-19
-test: tests/test_ingest.py::test_gids_de_sondeos_consecutivos_son_disjuntos
+test: tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque
 ---
 
 ## Síntoma
@@ -44,9 +44,10 @@ hay que inferirla** — asignación húngara con predicción de movimiento,
 
 ## Guardia
 
-`tests/test_ingest.py::test_gids_de_sondeos_consecutivos_son_disjuntos` y
-`tests/test_ingest.py::test_los_bloques_de_gid_son_contiguos`.
+`tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque`: fija el
+único uso legítimo de `gid`, como `snapshot_id` tomando el mínimo del bloque.
 
-Uso legítimo de `gid`: como `snapshot_id`, tomando el mínimo del bloque para
-identificar el refresco y deduplicar. Cubierto por
-`tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque`.
+Hasta 09/2026 la ficha citaba `test_gids_de_sondeos_consecutivos_son_disjuntos`
+y `test_los_bloques_de_gid_son_contiguos`. Siguen en la suite, pero comprueban
+el **fixture** —documentan el hecho de la fuente—, no el código: ningún cambio en
+`src/` puede ponerlos rojos (auditoría de mutación, `docs/11_auditoria_tests.md`).

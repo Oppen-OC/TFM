@@ -1,8 +1,9 @@
 # 11 · Auditoría de validez de los tests
 
 **Commit auditado:** `fc5d15c` (`src/` y `tests/` limpios) · **Fecha:** 2026-09-17
-· **Alcance:** solo diagnóstico, sin tocar `src/project/` · **Método:**
-[ADR-011](07_decisiones.md)
+· **Método:** [ADR-011](07_decisiones.md) · **Alcance:** fase 1, diagnóstico sin
+tocar `src/project/` (secciones 1-5); fase 2, guardias para los huecos sobre
+`c6e02cc`, sin tocar el código de producción (sección 6)
 
 La pregunta no es si los tests pasan —pasan: 69 `passed`, 4 `xfailed`— sino si
 **detectarían** un fallo real en los tres ejes que sostienen el TFM: validez del
@@ -11,6 +12,10 @@ Un test verde que no discrimina es peor que su ausencia, porque da una garantía
 que no existe.
 
 ## Resumen
+
+Estado en `fc5d15c`, antes de la fase 2. Tras ella: **33 detectados, 0 huecos,
+3 equivalentes**, y las guardias de las trampas 001, 004 y 008 verificadas
+(sección 6).
 
 | Eje | Resultado | Gravedad |
 |---|---|---|
@@ -259,8 +264,8 @@ estos números.
 
 ## 5. Hallazgos y encaminamiento propuesto
 
-Según `docs/bitacora/README.md`. Las fichas de trampa y los issues **quedan
-pendientes de aprobación**; las entradas de bitácora están escritas.
+Según `docs/bitacora/README.md`. Encaminamiento propuesto en la fase 1; lo
+resuelto en la fase 2 está en la sección 6.
 
 | # | hallazgo | destino |
 |---|---|---|
@@ -274,6 +279,56 @@ pendientes de aprobación**; las entradas de bitácora están escritas.
 | H8 | Filas hueco de la 005 sin guardia (confirmado por mutación) | fase 2 |
 | H9 | 410 tramos, 412 filas: 211 y 216 duplicados | bitácora [014](bitacora/014-la-capa-192-duplica-los-tramos-211-y-216.md) |
 | H10 | `test_predictivo_mejora_al_ingenuo` con `>=`; horquilla 2-32 km/h | fase 2 |
+
+## 6. Fase 2: guardias para los huecos
+
+```bash
+uv run python auditoria/mutar.py    # sobre c6e02cc
+```
+
+Cada test se escribió después de comprobar que pasa con el código de producción
+intacto y falla con su mutante; después se volvió a ejecutar el catálogo entero.
+`src/project/` no se tocó salvo `analysis/simulacion.py`, que gana fenómenos
+apagados por defecto (flota por defecto idéntica a la de `fc5d15c`, verificado
+fila a fila).
+
+| | `fc5d15c` | `c6e02cc` |
+|---|---|---|
+| detectados | 16 | **33** |
+| huecos | 16 | **0** |
+| equivalentes | 4 | 3 |
+| tests (passed / xfailed) | 69 / 4 | 91 / 9 |
+
+El mutante 001 pasa de equivalente a detectado: la guardia nueva de la trampa 004
+no depende del algoritmo de ordenación de numpy. Siguen equivalentes el control
+nulo, 005 y 012 (justificados en 2.1).
+
+| hueco | test que lo detecta ahora |
+|---|---|
+| 001 · sort inestable (004) | `test_rastrear_no_reordena_filas_dentro_del_sondeo` |
+| 004 · horquilla de 2 h | `test_dato_rancio_se_marca_dudosa_en_vez_de_adivinar[1h]` |
+| 008 · `ts_utc` de Renfe | `test_renfe_ts_utc_es_la_fecha_de_actualizacion_y_no_la_captura` |
+| 009, 010 · filas hueco (005) | `test_filas_hueco_de_trafico_se_descartan` |
+| 016 · puerta sobre la predicha (008) | `test_la_puerta_fisica_se_respeta_tras_sondeos_perdidos`, `test_salto_imposible_rompe_la_cadena[550m]` |
+| 022 · `VEL_MAX_KMH` = 200 | `test_salto_imposible_rompe_la_cadena[550m]` |
+| 025 · `dt = 0` | `test_sondeos_con_el_mismo_instante_no_rompen_la_cadena` |
+| 027-035 · persistencia | `tests/test_persistencia.py` (8 tests) |
+
+Además:
+
+- `test_predictivo_mejora_al_ingenuo` compara con `>`.
+- `test_read_raw_salta_el_relleno_de_ceros_entre_miembros` fija el hallazgo 1.1,
+  sin mutante: protege un comportamiento de la biblioteca estándar del que
+  depende el corpus.
+- `tests/test_tracking_realismo.py` fija H7 como `xfail(strict=True)` en las
+  semillas medidas, con test de discriminación (sin fenómenos no fallan) y de
+  calibración (29 % parado). El tracker no se corrige: es trabajo aparte.
+- Fichas 001, 004 y 008 apuntan a las guardias verificadas; la 005 pasa a
+  `cerrada`. `_TRUNCADOS.txt` lleva la corrección anexada.
+
+Siguen abiertos H3 (partición por primera fila en `flush`), H7 (el defecto del
+tracker, ahora visible), H9 (duplicados 211 y 216) y la diferencia entre el
+2,7 % de deduplicación medido y el ~15 % del docstring del colector.
 
 ## Limitaciones de esta auditoría
 

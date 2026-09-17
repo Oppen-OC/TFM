@@ -159,6 +159,14 @@ antes de importar.
 - `tests/conftest.py` genera la **flota simulada con verdad-terreno conocida**. Sin
   verdad conocida no se puede distinguir "60 trayectorias" de "60 trayectorias
   correctas", que es justo lo que escondió la trampa 004.
+- `tests/test_persistencia.py` guarda la capa que no se puede arreglar después:
+  crudo antes de parsear, append, partición, deduplicación, `reprocesar`.
+- `tests/test_tracking_realismo.py` prueba el tracker con paradas y giros al
+  ritmo real. Es `xfail(strict=True)`: defecto conocido, no corregido.
+- **Un test en verde no demuestra que guarde nada.** `auditoria/mutar.py` rompe a
+  propósito cada invariante y comprueba que algún test cae (ADR-011). Guardia
+  nueva ⇒ mutante en `auditoria/catalogo.toml` que la ponga roja. Tras actualizar
+  dependencias, se vuelve a ejecutar: la guardia de la trampa 004 caducó con numpy.
 - `tests/test_diagnose.py` valida que el diagnóstico **discrimina**: señal en el
   escenario A, nada en el B. Si dijera lo mismo en los dos, validaría la hipótesis
   del TFM por accidente.
@@ -198,6 +206,7 @@ uv run python -m project.ingest.collect --minutes 1440   # captura (fuera de DVC
 uv run python -m project.ingest.collect --status     # estado del colector
 uv run python -m project.ingest.reprocesar           # reconstruye curated/ desde raw/
 uv run python -m project.analysis.diagnose           # GO / NO-GO de la hipótesis
+uv run python auditoria/mutar.py                     # ¿detectan los tests? (~40 min)
 ```
 
 Dependencias todavía por añadir: `xgboost`, `shap`, `polars`.

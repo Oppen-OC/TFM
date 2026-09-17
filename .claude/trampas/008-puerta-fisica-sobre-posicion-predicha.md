@@ -4,7 +4,7 @@ titulo: La puerta de velocidad se evalúa sobre la posición predicha, no sobre 
 estado: cerrada
 capa: tracking
 detectada: 2026-09-01
-test: tests/test_tracking_identidad.py::test_ningun_desplazamiento_supera_la_puerta_fisica
+test: tests/test_tracking_identidad.py::test_la_puerta_fisica_se_respeta_tras_sondeos_perdidos
 ---
 
 ## Síntoma
@@ -41,11 +41,19 @@ coherencia de rumbo— vuelve a caer aquí si se evalúa sobre la matriz de cost
 
 ## Guardia
 
-`tests/test_tracking_identidad.py::test_ningun_desplazamiento_supera_la_puerta_fisica`
-sobre los cuatro escenarios deterministas, y
-`test_la_puerta_fisica_se_respeta_en_la_flota_simulada` sobre la flota sintética.
-Comprueban `dist_m` y `vel_kmh` contra las constantes del módulo, no contra
-números copiados.
+`tests/test_tracking_identidad.py::test_la_puerta_fisica_se_respeta_tras_sondeos_perdidos`
+—dos sondeos perdidos a cadencia de 60 s— y el caso de 550 m de
+`test_salto_imposible_rompe_la_cadena`. Los dos caen si la puerta vuelve a
+evaluarse solo sobre la predicha.
+
+Hasta 09/2026 la ficha citaba `test_ningun_desplazamiento_supera_la_puerta_fisica`
+y `test_la_puerta_fisica_se_respeta_en_la_flota_simulada`, que **no guardaban**:
+sus escenarios van a velocidad constante con pasos de 30 s, predicción y posición
+real nunca divergen, y deshacer el arreglo los dejaba en verde. Con pasos de
+180 s, ese código acepta 34 desplazamientos por encima de `SALTO_MAX_M`
+(`docs/bitacora/012-tres-guardias-de-trampas-cerradas-no-guardan.md`). Es la
+misma lección que la ficha, un nivel más arriba: el test de una restricción
+tiene que construir el caso en que la restricción importa.
 
 Cifras, comparación antes/después y comando reproducible:
 `docs/bitacora/003-puerta-fisica-sobre-la-posicion-predicha.md`.

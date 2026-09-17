@@ -6,7 +6,7 @@ tipo: anomalia
 capa: tracking
 capitulo: metodologia
 impacto: alto
-estado: abierto
+estado: resuelto
 evidencia: uv run python auditoria/mutar.py
 trampa: 008
 ---
@@ -71,13 +71,15 @@ correcto; lo que dejó de funcionar es la demostración.
 Hecho: el diagnóstico, el catálogo `auditoria/catalogo.toml` y el runner, que
 ahora vuelve a medirlo en 40 minutos.
 
-Abierto, pendiente de aprobación:
+Resuelto en `c6e02cc`, verificado volviendo a ejecutar el catálogo:
 
-- Fichas 004 y 008 de `cerrada` a `mitigada` hasta que tengan guardia efectiva.
-- Ficha 001: citar `test_emt_snapshot_id_es_el_gid_minimo_del_bloque`, que sí cae.
-- Guardia de la 008 con un escenario de paso largo o sondeo perdido.
-- Guardia de la 004 que no dependa del algoritmo de ordenación de numpy: por
-  ejemplo, entrada desordenada entre sondeos con verdad unida por clave.
+- 008: `test_la_puerta_fisica_se_respeta_tras_sondeos_perdidos` y el caso de
+  550 m de `test_salto_imposible_rompe_la_cadena`.
+- 004: `test_rastrear_no_reordena_filas_dentro_del_sondeo`, con entrada
+  desordenada entre sondeos, que no depende de cómo ordene numpy.
+- 001: la ficha cita `test_emt_snapshot_id_es_el_gid_minimo_del_bloque`.
+
+Las tres fichas siguen `cerrada`, ahora con guardias que caen.
 
 ## Para la memoria
 
