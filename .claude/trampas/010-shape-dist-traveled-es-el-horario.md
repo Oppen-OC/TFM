@@ -1,10 +1,10 @@
 ---
 id: 010
 titulo: shape_dist_traveled del GTFS de la EMT no es distancia, es el horario reescalado
-estado: vigente
+estado: cerrada
 capa: etiquetado
 detectada: 2026-09-04
-test: ninguno
+test: tests/test_mapmatching.py::test_la_abscisa_es_geometria_y_no_shape_dist_traveled
 ---
 
 ## Síntoma
@@ -38,8 +38,10 @@ el instrumento miente y el resultado parece excelente.
 
 ## Guardia
 
-Pendiente: el map-matching de `src/project/mapmatching.py` tiene que calcular la
-abscisa proyectando sobre la geometría de `shapes.txt` e ignorar el campo. El
-test debe construir un feed sintético con `shape_dist_traveled` reescalado
-respecto a la geometría y comprobar que la abscisa sale en metros de la
-polilínea. Mientras no exista, la ficha no pasa a `cerrada`.
+`tests/test_mapmatching.py::test_la_abscisa_es_geometria_y_no_shape_dist_traveled`:
+feed sintético con el campo a tres veces la longitud real de la polilínea. La
+abscisa tiene que salir en metros de geometría.
+
+`src/project/gtfs.py` ignora el campo y acumula la longitud de la polilínea.
+Verificado por mutación: hacer que la abscisa use `shape_dist_traveled` pone
+rojos seis tests (mutante 042, `docs/11_auditoria_tests.md`).

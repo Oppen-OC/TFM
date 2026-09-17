@@ -27,6 +27,7 @@ pasa.
 | [013](013-la-flota-simulada-no-para-ni-gira.md) | 2026-09-17 | medicion | metodologia | La flota simulada nunca para; la real está parada el **29 %** de los pasos y gira con p90 de 57°. Con paradas y giros realistas, el tracker pasa de 0 a **2-4 saltos** de identidad |
 | [014](014-la-capa-192-duplica-los-tramos-211-y-216.md) | 2026-09-17 | anomalia | calidad-dato | La capa 192 da **412** filas con `idtramo` para **410** tramos: el 211 y el 216 llegan duplicados en cada sondeo, con el mismo estado |
 | [015](015-el-sondeo-siguiente-delata-el-intercambio.md) | 2026-09-17 | tecnica | metodologia | Ajustar el coste de un paso no deshace los intercambios en paradas y giros: la información está en el sondeo **siguiente**. Suavizar con un sondeo de retardo los reduce un **58-100 %** en semillas reservadas sin partir ni una trayectoria real; quedan 46 saltos en 40 ejecuciones del escenario completo |
+| [016](016-el-map-matching-casa-con-el-gtfs.md) | 2026-09-17 | medicion | calidad-dato | Las posiciones casan con los trazados del GTFS a **4 m** de mediana (5,16 M de posiciones). El sentido lo decide el avance: **0,998** sobre el trazado elegido frente a **0,018** sobre el contrario. Lo que queda fuera de ruta son buses en cochera: 4,8 % en servicio frente a >50 % de madrugada |
 
 ## Qué va aquí y qué no
 

@@ -539,7 +539,7 @@ capa = "etiquetado"
 fichero = "src/project/mapmatching.py"
 buscar = """        cerca = p["dist_m"] <= FUERA_DE_RUTA_M"""
 reemplazar = """        cerca = p["dist_m"] >= 0"""
-detector = ["tests/test_mapmatching.py::test_los_buses_en_cochera_no_deciden_el_trazado"]
+detector = ["tests/test_mapmatching.py::test_los_buses_fuera_de_la_ruta_no_deciden_el_trazado"]
 sondas = ["mapmatching"]
 
 [[mutante]]

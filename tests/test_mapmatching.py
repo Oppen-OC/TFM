@@ -246,31 +246,33 @@ def test_el_sentido_lo_decide_el_movimiento_y_no_la_distancia(tmp_path):
         assert np.abs(g["abscisa_m"] - g["abscisa_verdad"]).max() <= 5.0, tray
 
 
-def test_los_buses_en_cochera_no_deciden_el_trazado(tmp_path):
-    """Los buses aparcados en cochera siguen publicando línea y trayecto.
+def test_los_buses_fuera_de_la_ruta_no_deciden_el_trazado(tmp_path):
+    """Un bus fuera de servicio sigue publicando su línea y su trayecto.
 
-    Son los primeros del día y los primeros `vehicle_id` que asigna el tracker. Si
-    la elección de trazado se hace con ellos, todos los candidatos quedan a
-    kilómetros, el sentido se decide sobre ruido y el trazado sale arbitrario:
-    sobre la captura real, la línea 24 quedó asignada a un trazado a 4 km de
-    mediana cuando sus buses circulan a 2 m del suyo. Solo cuentan las posiciones
-    que están sobre algún candidato.
+    Sobre la captura real son la mayoría de madrugada —45-66 % de las posiciones
+    entre las 0 y las 6 h están fuera de ruta, la mitad de ellas en diez celdas de
+    100 m—, y el tracker les da los primeros `vehicle_id` del día. Elegir el
+    trazado con ellos asignó a la línea 24 uno a 4 km de mediana, cuando sus buses
+    circulan a 2 m del suyo.
 
-    Los que circulan van por "VUELTA", que pierde el desempate alfabético contra
-    "IDA": el test solo pasa si la elección la deciden ellos.
+    Aquí maniobran en una explanada a 150 m de la calle, en el sentido CONTRARIO
+    al de los que circulan, y son doce veces más. Si cuentan, ganan el voto del
+    sentido y el trazado sale invertido: la abscisa correría hacia atrás para
+    todos. Se apoyan además en el desempate alfabético, que favorece a "IDA".
     """
     ida = RECTA_L
     vuelta = RECTA_L[::-1].copy()
     feed = _feed(
         tmp_path / "gtfs.zip", {"IDA": ("R1", "1", ida), "VUELTA": ("R1", "1", vuelta)}
     )
-    cochera = _polilinea([(6000, 6000), (6000, 6400)])
-    aparcados = {
+    # Solo sobre el tramo horizontal: ahí el desplazamiento lateral saca de la
+    # ruta de verdad. Sobre el tramo vertical, 150 m «al lado» es avanzar por ella.
+    maniobrando = {
         f"a{i:03d}": (
             "1",
             "A - B",
-            cochera,
-            list(np.linspace(0, 300, 12)[:: (-1) ** i]),
+            ida,
+            list(np.arange(100 + 10 * i, 700 + 10 * i, 120.0)),
         )
         for i in range(60)
     }
@@ -283,11 +285,14 @@ def test_los_buses_en_cochera_no_deciden_el_trazado(tmp_path):
         )
         for i in range(5)
     }
+    fuera = _posiciones(maniobrando, ruido_m=2.0, lateral_m=150.0)
+    dentro = _posiciones(circulando, ruido_m=2.0)
     out = emparejar(
-        _posiciones({**aparcados, **circulando}, ruido_m=2.0), cargar_trazados(feed)
+        pd.concat([fuera, dentro], ignore_index=True), cargar_trazados(feed)
     )
+
     en_ruta = out[out["vehicle_id"].str.startswith("z")]
-    assert set(out["shape_id"]) == {"VUELTA"}, "eligió con la cochera"
+    assert set(out["shape_id"]) == {"VUELTA"}, "eligió con los que están fuera de ruta"
     assert np.abs(en_ruta["abscisa_m"] - en_ruta["abscisa_verdad"]).max() <= 6.0
     assert out.loc[out["vehicle_id"].str.startswith("a"), "fuera_de_ruta"].all()
 
