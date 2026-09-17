@@ -497,3 +497,78 @@ buscar = '''MEJORA_MIN_M = 10.0'''
 reemplazar = '''MEJORA_MIN_M = 0.0'''
 detector = []
 sondas = ["tracking"]
+
+# --------------------------------------------------------------------------- #
+# Map-matching contra el GTFS
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "041"
+nombre = "shape_pt_sequence se ordena como texto"
+capa = "etiquetado"
+fichero = "src/project/gtfs.py"
+buscar = """        secuencia=pd.to_numeric(shapes["shape_pt_sequence"]),"""
+reemplazar = """        secuencia=shapes["shape_pt_sequence"],"""
+detector = ["tests/test_mapmatching.py::test_la_secuencia_del_trazado_se_ordena_como_numero"]
+sondas = ["mapmatching"]
+
+[[mutante]]
+id = "042"
+nombre = "la abscisa usa shape_dist_traveled en vez de la geometria"
+capa = "etiquetado"
+trampa = "010"
+fichero = "src/project/gtfs.py"
+buscar = """        acum = np.concatenate([[0.0], np.cumsum(np.hypot(np.diff(x), np.diff(y)))])"""
+reemplazar = """        acum = pd.to_numeric(g["shape_dist_traveled"]).to_numpy(dtype=float)"""
+detector = ["tests/test_mapmatching.py::test_la_abscisa_es_geometria_y_no_shape_dist_traveled"]
+sondas = ["mapmatching"]
+
+[[mutante]]
+id = "043"
+nombre = "el sentido no cuenta: se elige solo por distancia"
+capa = "etiquetado"
+fichero = "src/project/mapmatching.py"
+buscar = """        contrario = not np.isnan(c["avanza"]) and c["avanza"] < 0.5"""
+reemplazar = """        contrario = False"""
+detector = ["tests/test_mapmatching.py::test_el_sentido_lo_decide_el_movimiento_y_no_la_distancia"]
+sondas = ["mapmatching"]
+
+[[mutante]]
+id = "044"
+nombre = "las posiciones en cochera cuentan para elegir el trazado"
+capa = "etiquetado"
+fichero = "src/project/mapmatching.py"
+buscar = """        cerca = p["dist_m"] <= FUERA_DE_RUTA_M"""
+reemplazar = """        cerca = p["dist_m"] >= 0"""
+detector = ["tests/test_mapmatching.py::test_los_buses_en_cochera_no_deciden_el_trazado"]
+sondas = ["mapmatching"]
+
+[[mutante]]
+id = "045"
+nombre = "fuera de ruta por caja geografica ademas de por distancia"
+capa = "etiquetado"
+trampa = "006"
+fichero = "src/project/mapmatching.py"
+buscar = """        out.loc[g.index, "fuera_de_ruta"] = p["dist_m"] > FUERA_DE_RUTA_M"""
+reemplazar = """        out.loc[g.index, "fuera_de_ruta"] = (p["dist_m"] > FUERA_DE_RUTA_M) | (g["lat"].to_numpy() < 39.36)"""
+detector = ["tests/test_mapmatching.py::test_lejos_del_centro_pero_sobre_la_ruta_no_se_descarta"]
+sondas = ["mapmatching"]
+
+[[mutante]]
+id = "046"
+nombre = "ninguna proyeccion se marca ambigua"
+capa = "etiquetado"
+fichero = "src/project/mapmatching.py"
+buscar = """        ambigua[i : i + _LOTE] = otra - d1 < AMBIGUEDAD_M"""
+reemplazar = """        ambigua[i : i + _LOTE] = False"""
+detector = ["tests/test_mapmatching.py::test_el_cierre_de_una_circular_es_ambiguo"]
+sondas = ["mapmatching"]
+
+[[mutante]]
+id = "047"
+nombre = "las posiciones sin trayecto no se marcan"
+capa = "etiquetado"
+fichero = "src/project/mapmatching.py"
+buscar = """    out.loc[out["trayecto"].isna(), "motivo"] = "sin_trayecto""""
+reemplazar = """    pass"""
+detector = ["tests/test_mapmatching.py::test_posicion_sin_trayecto_queda_marcada"]
+sondas = ["mapmatching"]

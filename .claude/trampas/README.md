@@ -15,6 +15,7 @@ completa antes de tocar la capa correspondiente.**
 | [007](007-arranque-en-frio-del-tracker.md) | cerrada | tracking | La 1ª transición de cada trayectoria empareja **sin predicción**: con buses de la misma línea a menos de un paso (1,9 % de las posiciones reales), el coste correcto y el intercambiado **empatan exacto** y Hungarian desempata por orden de fila. Propaga: 35 % de acierto en convoy. Romper la cadena ante la duda es PEOR | `test_convoy_en_fila_india_…` |
 | [008](008-puerta-fisica-sobre-posicion-predicha.md) | cerrada | tracking | La puerta `min(SALTO_MAX_M, VEL_MAX_KMH·dt)` se evaluaba sobre la posición **predicha**, no sobre el desplazamiento real: colaban buses a 110 km/h sin error alguno. Coste y restricción no pueden compartir matriz | `test_la_puerta_fisica_se_respeta_tras_sondeos_perdidos` |
 | [009](009-plat-no-arrastra-la-duracion-de-su-paso.md) | cerrada | tracking | `_plat` guarda la posición anterior pero **no cuánto duró el paso que la produjo**. Tras un hueco, el predictor lee un desplazamiento de dos sondeos como si fuera de uno y extrapola el doble. El fallo sale 1-2 sondeos después y se le carga al cambio que lo destapó | `test_un_sondeo_que_falta_…` |
+| [010](010-shape-dist-traveled-es-el-horario.md) | vigente | etiquetado | `shape_dist_traveled` del GTFS de la EMT **no es distancia: es el horario reescalado** ($R^2=1$ contra el tiempo programado). Usado como eje, el retraso sale estructuralmente cero y parece un servicio puntual. La abscisa se proyecta sobre la geometría | ⚠ ninguna |
 
 ## Cómo se usa
 

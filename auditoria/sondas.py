@@ -306,12 +306,122 @@ def sonda_persistencia() -> str:
     return _h(*salidas)
 
 
+def sonda_mapmatching() -> str:
+    """Map-matching sobre un feed sintético con los casos que muerden.
+
+    Secuencia de puntos como texto y desordenada, `shape_dist_traveled` falso,
+    ida y vuelta por la misma calle, una circular que se cierra, buses en
+    cochera que son los primeros del día, una línea sin trazado, una posición
+    sin trayecto y un recorrido 22 km al sur del centro.
+    """
+    import zipfile
+
+    from project.gtfs import a_grados, cargar_trazados
+    from project.mapmatching import emparejar
+
+    def polilinea(vertices, paso=25.0):
+        pts = [np.array(vertices[0], dtype=float)]
+        for a, b in zip(vertices[:-1], vertices[1:]):
+            a, b = np.array(a, dtype=float), np.array(b, dtype=float)
+            n = max(int(np.ceil(np.hypot(*(b - a)) / paso)), 1)
+            pts += [a + (b - a) * k / n for k in range(1, n + 1)]
+        return np.array(pts)
+
+    def en(xy, s):
+        acum = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(xy, axis=0).T))])
+        return np.interp(s, acum, xy[:, 0]), np.interp(s, acum, xy[:, 1])
+
+    ida = polilinea([(0, 0), (2000, 0), (2000, 1500)])
+    trazados = {
+        "IDA": ("R1", "1", ida),
+        "VUELTA": ("R1", "1", ida[::-1].copy()),
+        "CIRC": (
+            "RC",
+            "C3",
+            polilinea([(0, 0), (1000, 0), (1000, 800), (0, 800), (0, 0)]),
+        ),
+        "SUR": ("R25", "25", polilinea([(0, 0), (0, -22000), (500, -23000)])),
+    }
+    rng = np.random.default_rng(0)
+    with tempfile.TemporaryDirectory() as tmp:
+        ruta = Path(tmp) / "gtfs.zip"
+        with zipfile.ZipFile(ruta, "w") as z:
+            rutas = sorted({(r, lin) for r, lin, _ in trazados.values()})
+            z.writestr(
+                "routes.txt",
+                "\n".join(
+                    ["route_id,route_short_name"] + [f"{r},{lin}" for r, lin in rutas]
+                ),
+            )
+            z.writestr(
+                "trips.txt",
+                "\n".join(
+                    ["route_id,service_id,trip_id,shape_id"]
+                    + [f"{r},S,t{sid},{sid}" for sid, (r, _, _) in trazados.items()]
+                ),
+            )
+            filas = [
+                "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled"
+            ]
+            for sid, (_, _, xy) in trazados.items():
+                lat, lon = a_grados(xy[:, 0], xy[:, 1])
+                for i in rng.permutation(len(xy)):
+                    filas.append(f"{sid},{lat[i]:.7f},{lon[i]:.7f},{i + 1},{i * 75.0}")
+            z.writestr("shapes.txt", "\n".join(filas))
+        tz = cargar_trazados(ruta)
+
+    filas = []
+
+    def recorrido(vid, linea, trayecto, xy, abscisas):
+        for k, s in enumerate(abscisas):
+            x, y = en(xy, s)
+            lat, lon = a_grados(x + rng.normal(0, 2), y + rng.normal(0, 2))
+            filas.append(
+                {
+                    "snapshot_id": 1000 + k,
+                    "linea": linea,
+                    "trayecto": trayecto,
+                    "lat": float(lat),
+                    "lon": float(lon),
+                    "vehicle_id": vid,
+                }
+            )
+
+    for i in range(4):
+        recorrido(
+            f"a{i}", "1", "X", polilinea([(6000, 6000), (6000, 6400)]), [0, 100, 200]
+        )
+    for i in range(3):
+        recorrido(
+            f"z{i}",
+            "1",
+            "X",
+            trazados["VUELTA"][2],
+            list(range(100 + 50 * i, 1300, 120)),
+        )
+    recorrido("c", "C3", "Circular", trazados["CIRC"][2], [5, 400, 1400, 3500])
+    recorrido("s", "25", "Sur", trazados["SUR"][2], [21000, 21200, 21400])
+    recorrido("n", "98E", "Sin", ida, [100, 300])
+    recorrido("t", "1", None, ida, [100, 300])
+    out = emparejar(pd.DataFrame(filas), tz)
+    cols = [
+        "shape_id",
+        "abscisa_m",
+        "dist_trazado_m",
+        "fuera_de_ruta",
+        "ambigua",
+        "motivo",
+    ]
+    return _h(out[cols].round(1).astype(str), round(tz["1"][0].largo, 1))
+
+
 SONDAS = {
     "parsers": sonda_parsers,
     "tiempo": sonda_tiempo,
     "haversine": sonda_haversine,
     "tracking": sonda_tracking,
     "persistencia": sonda_persistencia,
+    "mapmatching": sonda_mapmatching,
 }
 
 if __name__ == "__main__":
