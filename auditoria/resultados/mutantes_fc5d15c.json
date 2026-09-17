@@ -1,0 +1,848 @@
+{
+  "rev": "fc5d15c",
+  "segundos": 2302,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 71.4
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_gids_de_sondeos_consecutivos_son_disjuntos",
+      "guardia_ficha_cae": false,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 78.8
+    },
+    {
+      "id": "001",
+      "nombre": "bug histórico d92a9af: sort_values sin kind estable",
+      "capa": "tracking",
+      "trampa": "004",
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_tracking.py::test_tracker_predictivo_identidad_correcta"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": "tests/test_tracking.py::test_tracker_predictivo_identidad_correcta",
+      "guardia_ficha_cae": false,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          "7c17bb27ffb95486"
+        ]
+      },
+      "segundos": 74.7
+    },
+    {
+      "id": "003",
+      "nombre": "resolver_convencion asume siempre hora local naive",
+      "capa": "fuentes",
+      "trampa": "002",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_dato_rancio_se_marca_dudosa_en_vez_de_adivinar",
+        "tests/test_ingest.py::test_detecta_la_convencion_horaria",
+        "tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila_desplazada"
+      ],
+      "n_caidos": 4,
+      "esperados": [
+        "tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila_desplazada",
+        "tests/test_ingest.py::test_detecta_la_convencion_horaria"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila_desplazada",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          null
+        ],
+        "tiempo": [
+          "5fc09df0fba90a70",
+          null
+        ]
+      },
+      "segundos": 65.8
+    },
+    {
+      "id": "004",
+      "nombre": "horquilla de latencia admite el desfase de 2 h",
+      "capa": "fuentes",
+      "trampa": "002",
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_ingest.py::test_detecta_la_convencion_horaria"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": "tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila_desplazada",
+      "guardia_ficha_cae": false,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ],
+        "tiempo": [
+          "5fc09df0fba90a70",
+          "8149d36f61b7b89f"
+        ]
+      },
+      "segundos": 65.1
+    },
+    {
+      "id": "005",
+      "nombre": "desempate UTC/local invertido",
+      "capa": "fuentes",
+      "trampa": "002",
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_ingest.py::test_detecta_la_convencion_horaria"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": "tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila_desplazada",
+      "guardia_ficha_cae": false,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ],
+        "tiempo": [
+          "5fc09df0fba90a70",
+          "5fc09df0fba90a70"
+        ]
+      },
+      "segundos": 65.0
+    },
+    {
+      "id": "006",
+      "nombre": "epoch local naive se devuelve sin reinterpretar",
+      "capa": "fuentes",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_epoch_local_naive_a_utc_en_invierno",
+        "tests/test_ingest.py::test_epoch_local_naive_a_utc_en_verano"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_epoch_local_naive_a_utc_en_verano",
+        "tests/test_ingest.py::test_epoch_local_naive_a_utc_en_invierno"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tiempo": [
+          "5fc09df0fba90a70",
+          null
+        ]
+      },
+      "segundos": 56.7
+    },
+    {
+      "id": "007",
+      "nombre": "Renfe sin filtro de núcleo: flota nacional",
+      "capa": "fuentes",
+      "trampa": "003",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_renfe_filtra_solo_nucleo_40"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_ingest.py::test_renfe_filtra_solo_nucleo_40"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_renfe_filtra_solo_nucleo_40",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          null
+        ]
+      },
+      "segundos": 53.4
+    },
+    {
+      "id": "008",
+      "nombre": "ts_utc de Renfe es el instante de captura, no fechaActualizacion",
+      "capa": "fuentes",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "e23ff5aec4a5acef"
+        ]
+      },
+      "segundos": 63.0
+    },
+    {
+      "id": "009",
+      "nombre": "estado de tráfico no descarta las filas hueco sin idtramo",
+      "capa": "fuentes",
+      "trampa": "005",
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "599a504fad7dc89b"
+        ]
+      },
+      "segundos": 61.3
+    },
+    {
+      "id": "010",
+      "nombre": "intensidad de tráfico no descarta las filas hueco",
+      "capa": "fuentes",
+      "trampa": "005",
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "98af3d925f3361d8"
+        ]
+      },
+      "segundos": 60.5
+    },
+    {
+      "id": "011",
+      "nombre": "centinela -1 de intensidad se trata como lectura",
+      "capa": "fuentes",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_trafico_intensidad_lectura_menos_uno_es_nulo"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_ingest.py::test_trafico_intensidad_lectura_menos_uno_es_nulo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          null
+        ]
+      },
+      "segundos": 46.8
+    },
+    {
+      "id": "012",
+      "nombre": "Valenbisi con la horquilla de latencia de la EMT (900 s)",
+      "capa": "fuentes",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 46.0
+    },
+    {
+      "id": "013",
+      "nombre": "latencia_s con el signo invertido",
+      "capa": "fuentes",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_detecta_la_convencion_horaria"
+      ],
+      "n_caidos": 4,
+      "esperados": [
+        "tests/test_ingest.py::test_detecta_la_convencion_horaria"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          null
+        ]
+      },
+      "segundos": 45.5
+    },
+    {
+      "id": "014",
+      "nombre": "haversine usa longitudes donde van latitudes",
+      "capa": "fuentes",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking.py::test_captura_larga_no_esconde_saltos",
+        "tests/test_tracking.py::test_el_hueco_discrimina_de_verdad",
+        "tests/test_tracking.py::test_la_metrica_por_posicion_no_delataria_el_fallo",
+        "tests/test_tracking.py::test_sin_saltos_de_identidad",
+        "tests/test_tracking.py::test_tracker_predictivo_identidad_correcta",
+        "tests/test_tracking.py::test_un_sondeo_que_falta_no_rompe_la_identidad",
+        "tests/test_tracking_fragmentacion.py::test_el_puente_se_acota_en_segundos_y_no_en_sondeos",
+        "tests/test_tracking_fragmentacion.py::test_la_fragmentacion_y_la_fusion_son_ejes_independientes",
+        "tests/test_tracking_fragmentacion.py::test_snapshot_parcial_no_parte_la_trayectoria"
+      ],
+      "n_caidos": 9,
+      "esperados": [
+        "tests/test_tracking.py::test_velocidades_dentro_del_rango_simulado"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "haversine": [
+          "34a6775a8f453bf6",
+          null
+        ],
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 48.0
+    },
+    {
+      "id": "015",
+      "nombre": "sin siembra por centroide en el arranque en frío",
+      "capa": "tracking",
+      "trampa": "007",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking_identidad.py::test_alcance_no_intercambia_identidad",
+        "tests/test_tracking_identidad.py::test_bus_que_entra_en_servicio_recibe_id_nuevo",
+        "tests/test_tracking_identidad.py::test_bus_que_sale_de_servicio_no_cede_su_id",
+        "tests/test_tracking_identidad.py::test_convoy_en_fila_india_no_intercambia_identidad",
+        "tests/test_tracking_identidad.py::test_el_convoy_discrimina_entre_predictivo_e_ingenuo",
+        "tests/test_tracking_identidad.py::test_resultado_invariante_al_orden_de_las_filas"
+      ],
+      "n_caidos": 9,
+      "esperados": [
+        "tests/test_tracking_identidad.py::test_convoy_en_fila_india_no_intercambia_identidad"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_tracking_identidad.py::test_convoy_en_fila_india_no_intercambia_identidad",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 41.4
+    },
+    {
+      "id": "016",
+      "nombre": "puerta física evaluada solo sobre la posición predicha",
+      "capa": "tracking",
+      "trampa": "008",
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_tracking_identidad.py::test_ningun_desplazamiento_supera_la_puerta_fisica"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": "tests/test_tracking_identidad.py::test_ningun_desplazamiento_supera_la_puerta_fisica",
+      "guardia_ficha_cae": false,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          "29e399678384d0ab"
+        ]
+      },
+      "segundos": 50.5
+    },
+    {
+      "id": "017",
+      "nombre": "extrapolación en pasos de sondeo, no en segundos",
+      "capa": "tracking",
+      "trampa": "009",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking.py::test_un_sondeo_que_falta_no_rompe_la_identidad"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_tracking.py::test_un_sondeo_que_falta_no_rompe_la_identidad"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_tracking.py::test_un_sondeo_que_falta_no_rompe_la_identidad",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 43.5
+    },
+    {
+      "id": "018",
+      "nombre": "predicción por velocidad desactivada aunque predictivo=True",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking.py::test_captura_larga_no_esconde_saltos",
+        "tests/test_tracking.py::test_sin_saltos_de_identidad",
+        "tests/test_tracking.py::test_tracker_predictivo_identidad_correcta",
+        "tests/test_tracking.py::test_un_sondeo_que_falta_no_rompe_la_identidad",
+        "tests/test_tracking_fragmentacion.py::test_la_fragmentacion_y_la_fusion_son_ejes_independientes",
+        "tests/test_tracking_fragmentacion.py::test_snapshot_parcial_no_parte_la_trayectoria",
+        "tests/test_tracking_identidad.py::test_alcance_no_intercambia_identidad",
+        "tests/test_tracking_identidad.py::test_bus_que_entra_en_servicio_recibe_id_nuevo",
+        "tests/test_tracking_identidad.py::test_bus_que_sale_de_servicio_no_cede_su_id",
+        "tests/test_tracking_identidad.py::test_convoy_en_fila_india_no_intercambia_identidad",
+        "tests/test_tracking_identidad.py::test_cruce_frontal_no_intercambia_identidad",
+        "tests/test_tracking_identidad.py::test_el_convoy_discrimina_entre_predictivo_e_ingenuo"
+      ],
+      "n_caidos": 18,
+      "esperados": [
+        "tests/test_tracking_identidad.py::test_el_convoy_discrimina_entre_predictivo_e_ingenuo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 38.9
+    },
+    {
+      "id": "019",
+      "nombre": "candidatos filtrados solo por línea: se mezclan los dos sentidos",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking_fragmentacion.py::test_flip_de_trayecto_en_cabecera_no_mezcla_identidades",
+        "tests/test_tracking_fragmentacion.py::test_flip_de_trayecto_en_cabecera_no_parte_la_trayectoria"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_tracking_identidad.py::test_lineas_distintas_no_se_mezclan"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 42.3
+    },
+    {
+      "id": "020",
+      "nombre": "puente de huecos sin tope en segundos",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking_fragmentacion.py::test_el_paso_inmediato_no_lo_acota_el_tope"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_tracking_fragmentacion.py::test_el_puente_se_acota_en_segundos_y_no_en_sondeos"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 42.8
+    },
+    {
+      "id": "021",
+      "nombre": "tolerar_hueco ignorado: solo compite el sondeo anterior",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking_fragmentacion.py::test_el_puente_se_acota_en_segundos_y_no_en_sondeos",
+        "tests/test_tracking_fragmentacion.py::test_snapshot_parcial_no_parte_la_trayectoria"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_tracking_fragmentacion.py::test_snapshot_parcial_no_parte_la_trayectoria"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 44.1
+    },
+    {
+      "id": "022",
+      "nombre": "velocidad máxima de 200 km/h",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_tracking_identidad.py::test_salto_imposible_rompe_la_cadena"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          "4efac9a203727fb9"
+        ]
+      },
+      "segundos": 51.0
+    },
+    {
+      "id": "023",
+      "nombre": "un candidato emparejado sigue vivo y puede emparejar otra vez",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking.py::test_la_metrica_por_posicion_no_delataria_el_fallo",
+        "tests/test_tracking_identidad.py::test_bus_que_entra_en_servicio_recibe_id_nuevo"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_tracking_identidad.py::test_un_vehicle_id_no_se_repite_dentro_de_un_snapshot"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 61.6
+    },
+    {
+      "id": "024",
+      "nombre": "dist_m medido desde la posición predicha y no la real",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking.py::test_velocidades_dentro_del_rango_simulado"
+      ],
+      "n_caidos": 1,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 63.1
+    },
+    {
+      "id": "025",
+      "nombre": "sondeos con el mismo instante se tratan como paso de 1 s",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          "e3fc9e3b8654f9e5"
+        ]
+      },
+      "segundos": 76.6
+    },
+    {
+      "id": "026",
+      "nombre": "vehículo que entra en servicio hereda el último id emitido",
+      "capa": "tracking",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_tracking_fragmentacion.py::test_la_fragmentacion_y_la_fusion_son_ejes_independientes",
+        "tests/test_tracking_identidad.py::test_bus_que_entra_en_servicio_recibe_id_nuevo",
+        "tests/test_tracking_identidad.py::test_salto_imposible_rompe_la_cadena"
+      ],
+      "n_caidos": 3,
+      "esperados": [
+        "tests/test_tracking_identidad.py::test_bus_que_entra_en_servicio_recibe_id_nuevo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "tracking": [
+          "7c17bb27ffb95486",
+          null
+        ]
+      },
+      "segundos": 69.2
+    },
+    {
+      "id": "027",
+      "nombre": "el colector parsea antes de guardar el crudo",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "2516cd453b61c74c"
+        ]
+      },
+      "segundos": 77.5
+    },
+    {
+      "id": "028",
+      "nombre": "append_raw sobrescribe en vez de añadir",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "bdf15340b5681205"
+        ]
+      },
+      "segundos": 74.9
+    },
+    {
+      "id": "029",
+      "nombre": "partición del crudo por reloj de pared, no por instante de captura",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "0e62906fc6549013"
+        ]
+      },
+      "segundos": 73.4
+    },
+    {
+      "id": "030",
+      "nombre": "deduplicador desactivado: todo snapshot es nuevo",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "3fdfd4a50b0a73fc"
+        ]
+      },
+      "segundos": 75.9
+    },
+    {
+      "id": "031",
+      "nombre": "deduplicador no olvida al desalojar: recuerda para siempre",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "3bea148e44e26211"
+        ]
+      },
+      "segundos": 75.0
+    },
+    {
+      "id": "032",
+      "nombre": "flush escribe la geometría de referencia con tramos repetidos",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "1e0ba5c172a56a74"
+        ]
+      },
+      "segundos": 71.0
+    },
+    {
+      "id": "033",
+      "nombre": "reprocesar solo lee el primer día de crudo",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "1197a28364229264"
+        ]
+      },
+      "segundos": 84.8
+    },
+    {
+      "id": "034",
+      "nombre": "reprocesar no cuenta los payloads que no parsean",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "2bbebf918e79c450"
+        ]
+      },
+      "segundos": 79.4
+    },
+    {
+      "id": "035",
+      "nombre": "read_raw descarta el último payload",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "hueco",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "persistencia": [
+          "005a955100adba70",
+          "7600abefb88d396a"
+        ]
+      },
+      "segundos": 82.4
+    }
+  ]
+}

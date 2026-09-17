@@ -198,6 +198,49 @@ está resuelto, se pivota.
 
 ---
 
+## ADR-011 · Los tests se validan por mutación dirigida y la simulación contra la captura real · cerrada
+
+**Decisión.** Que la suite esté en verde no se acepta como evidencia de que
+guarda algo. La validez de los tests se mide con un catálogo de mutantes
+dirigidos (`auditoria/catalogo.toml`), cada uno atado a una trampa, un invariante
+documentado o una función sin cubrir, y ejecutado sobre un worktree desechable
+por `auditoria/mutar.py`. Los supuestos de la flota simulada se contrastan con la
+captura real usando el mismo instrumento en ambos lados
+(`src/project/analysis/auditar_supuestos.py`), y un supuesto solo se da por
+bueno si inyectar el fenómeno real no cambia el resultado del tracker
+(`auditoria/escenarios.py`).
+
+**Por qué.** El tracker se ajustó contra la misma simulación con la que se
+prueba: validarlo solo ahí es circular. Y una ficha `cerrada` afirma que un test
+impide recaer, afirmación que nadie comprobaba. La primera ejecución
+([docs/11](11_auditoria_tests.md)) encontró tres guardias que no guardaban y una
+simulación que nunca para, frente al 29 % real.
+
+**Consecuencias.**
+
+- Un mutante sin detectar solo cuenta como hueco si una sonda determinista ve
+  salida distinta; si no, es equivalente. Sin esa distinción la auditoría se
+  inventa huecos.
+- El runner se detiene si falla un control: suite de referencia no verde,
+  `import project` fuera del worktree, mutante nulo no equivalente o control
+  positivo no detectado.
+- Se audita un commit, nunca el árbol de trabajo: el runner exige `src/` y
+  `tests/` sin cambios con seguimiento.
+- Fuera de CI: tarda unos 40 minutos. Se ejecuta a mano antes de cerrar un
+  capítulo, tras tocar `tracking.py` y **tras actualizar dependencias** (la
+  guardia de la trampa 004 caducó con numpy).
+- Una guardia nueva no se da por buena hasta que detecta su mutante del catálogo.
+
+**Alternativas.** `mutmut` automático: no funciona bien en Windows nativo y
+genera miles de mutantes sintácticos que ahogan la señal. Revisión por lectura:
+opina sobre la validez en vez de medirla.
+
+**Reabrir si** el catálogo deja de encontrar huecos en dos ejecuciones
+consecutivas con código nuevo, o si la CI pasa a correr en una plataforma donde
+el coste de 40 minutos sea asumible.
+
+---
+
 ## Pendientes de decidir
 
 - **Selección de corredores.** `docs/05` mide 57,7 % de cobertura de tráfico y

@@ -1,0 +1,73 @@
+  2026-08-16 08h (fin_de_semana): 117 sondeos
+  2026-08-16 11h (fin_de_semana): 44 sondeos
+  2026-08-16 14h (fin_de_semana): 115 sondeos
+  2026-08-16 18h (fin_de_semana): 107 sondeos
+  2026-08-17 08h (laborable): 116 sondeos
+  2026-08-17 11h (laborable): 116 sondeos
+  2026-08-17 14h (laborable): 116 sondeos
+  2026-08-17 18h (laborable): 116 sondeos
+  2026-08-19 08h (laborable): 116 sondeos
+  2026-08-19 11h (laborable): 117 sondeos
+  2026-08-19 14h (laborable): 117 sondeos
+  2026-08-19 18h (laborable): 116 sondeos
+  2026-08-20 08h (laborable): 115 sondeos
+  2026-08-20 11h (laborable): 115 sondeos
+  2026-08-20 14h (laborable): 115 sondeos
+  2026-08-20 18h (laborable): 117 sondeos
+  2026-08-22 08h (fin_de_semana): 117 sondeos
+  2026-08-22 11h (fin_de_semana): 117 sondeos
+  2026-08-22 14h (fin_de_semana): 117 sondeos
+  2026-08-22 18h (fin_de_semana): 117 sondeos
+  2026-08-23 08h (fin_de_semana): 117 sondeos
+  2026-08-23 11h (fin_de_semana): 117 sondeos
+  2026-08-23 14h (fin_de_semana): 117 sondeos
+  2026-08-23 18h (fin_de_semana): 116 sondeos
+  2026-08-24 08h (laborable): 116 sondeos
+  2026-08-24 11h (laborable): 116 sondeos
+  2026-08-24 14h (laborable): 117 sondeos
+  2026-08-24 18h (laborable): 117 sondeos
+  2026-08-25 08h (laborable): 116 sondeos
+  2026-08-25 11h (laborable): 117 sondeos
+  2026-08-25 14h (laborable): 117 sondeos
+  2026-08-25 18h (laborable): 117 sondeos
+  2026-08-26 08h (laborable): 116 sondeos
+  2026-08-26 11h (laborable): 117 sondeos
+  2026-08-26 14h (laborable): 117 sondeos
+  2026-08-26 18h (laborable): 116 sondeos
+  2026-08-27 08h (laborable): 115 sondeos
+  2026-08-27 11h (laborable): 117 sondeos
+  2026-08-27 14h (laborable): 117 sondeos
+  2026-08-27 18h (laborable): 117 sondeos
+  2026-08-28 08h (laborable): 116 sondeos
+  2026-08-28 11h (laborable): 117 sondeos
+  2026-08-28 14h (laborable): 116 sondeos
+  2026-08-28 18h (laborable): 116 sondeos
+  2026-08-29 08h (fin_de_semana): 117 sondeos
+  2026-08-29 11h (fin_de_semana): 117 sondeos
+  2026-08-29 14h (fin_de_semana): 117 sondeos
+  2026-08-29 18h (fin_de_semana): 117 sondeos
+  2026-08-30 08h (fin_de_semana): 118 sondeos
+  2026-08-30 11h (fin_de_semana): 118 sondeos
+  2026-08-30 14h (fin_de_semana): 117 sondeos
+  2026-08-30 18h (fin_de_semana): 117 sondeos
+
+              simulacion    laborable  fin_de_semana
+vel_kmh_p10       4.2400       0.1600         0.1600
+vel_kmh_p50      18.4800       7.4500         8.2600
+vel_kmh_p90      26.6800      26.2700        28.0500
+parado            0.0000       0.2918         0.2838
+ruido_m_p50          NaN       2.0000         2.0000
+ruido_m_p90          NaN       6.7100         6.4000
+giro_deg_p50      5.6200       8.7000         8.8500
+giro_deg_p90     13.9300      56.9300        57.5600
+vecino_m_p10    496.3900     611.4200       795.8400
+vecino_m_p50   1388.7500    1719.4600      2129.1700
+empate            0.0088       0.0053         0.0043
+grupo_p50         7.5000       3.0000         2.0000
+grupo_p90         8.0000       6.0000         5.0000
+dt_s_p50         30.0000      31.0000        31.0000
+dt_s_p99         30.0000      33.0000        33.0000
+dt_fuera          0.0000       0.0035         0.0040
+n_pasos        1140.0000  693879.0000    311262.0000
+
+  capa 192: {'payloads': 5961, 'filas_p50': 446.0, 'hueco_p50': 34.0, 'hueco_min': 34, 'hueco_max': 34, 'utiles_p50': 412.0}

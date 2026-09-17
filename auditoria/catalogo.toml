@@ -1,0 +1,441 @@
+# Catálogo de mutantes dirigidos de la auditoría de tests.
+#
+# Cada mutante rompe a propósito UN invariante documentado: una trampa del
+# registro, una regla de la documentación o una función sin cubrir. `mutar.py`
+# lo aplica sobre un worktree desechable, corre la suite y clasifica:
+#
+#   detectado    algún test que pasaba deja de pasar
+#   hueco        ningún test cae, pero una sonda de `sondas.py` ve salida distinta
+#   equivalente  ningún test cae y ninguna sonda ve diferencia
+#   invalido     `buscar` no aparece exactamente una vez: el mutante no se aplicó
+#
+# Campos:
+#   id, nombre      identificador y lo que rompe, en una frase
+#   capa            fuentes | tracking | persistencia | control
+#   trampa          id de ficha en .claude/trampas/ (opcional). El runner lee su
+#                   `test:` y comprueba que la guardia citada es de las que caen
+#   fichero         ruta relativa a la raíz del repo
+#   buscar          texto exacto, con saltos de línea LF; debe aparecer una vez
+#   reemplazar      texto mutado
+#   detector        tests que se ESPERA que lo detecten (sin parámetros). Vacío
+#                   significa que no se espera ninguno: es un hueco previsto
+#   sondas          sondas de `sondas.py` que ejercitan el código mutado
+#   control         "nulo" o "positivo" en los dos controles del runner
+#
+# Añadir un mutante: que rompa algo que importe si se rompe de verdad, no un
+# `<` por `<=` en un mensaje de log. Si nadie lo haría, no ayuda a nada.
+
+# --------------------------------------------------------------------------- #
+# Controles del runner
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "000"
+nombre = "mutante nulo: no cambia nada"
+capa = "control"
+control = "nulo"
+fichero = "src/project/ingest/sources.py"
+buscar = '''def now_utc() -> pd.Timestamp:'''
+reemplazar = '''def now_utc() -> pd.Timestamp:'''
+detector = []
+sondas = ["parsers"]
+
+[[mutante]]
+id = "001"
+nombre = "bug histórico d92a9af: sort_values sin kind estable"
+capa = "tracking"
+trampa = "004"
+# Era el control positivo y resultó equivalente: el quicksort de numpy 2.4.6 no
+# permuta una entrada ya ordenada en esta CPU, el de 2.2.6 sí. Se queda como
+# mutante para registrar que la guardia de la trampa 004 depende de la versión
+# de numpy.
+fichero = "src/project/tracking.py"
+buscar = '''df.sort_values(["snapshot_id"], kind="stable")'''
+reemplazar = '''df.sort_values(["snapshot_id"])'''
+detector = ["tests/test_tracking.py::test_tracker_predictivo_identidad_correcta"]
+sondas = ["tracking"]
+
+# --------------------------------------------------------------------------- #
+# Fuentes
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "002"
+nombre = "snapshot_id toma el gid máximo del bloque"
+capa = "fuentes"
+control = "positivo"
+trampa = "001"
+fichero = "src/project/ingest/sources.py"
+buscar = '''df["snapshot_id"] = int(df["gid"].min())'''
+reemplazar = '''df["snapshot_id"] = int(df["gid"].max())'''
+detector = ["tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"]
+sondas = ["parsers"]
+
+[[mutante]]
+id = "003"
+nombre = "resolver_convencion asume siempre hora local naive"
+capa = "fuentes"
+trampa = "002"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    ok_utc = LAT_MIN_S <= med_utc <= lat_max'''
+reemplazar = '''    return local, "LOCAL_NAIVE"
+    ok_utc = LAT_MIN_S <= med_utc <= lat_max'''
+detector = [
+    "tests/test_ingest.py::test_serie_con_convenciones_alternas_ninguna_fila_desplazada",
+    "tests/test_ingest.py::test_detecta_la_convencion_horaria",
+]
+sondas = ["parsers", "tiempo"]
+
+[[mutante]]
+id = "004"
+nombre = "horquilla de latencia admite el desfase de 2 h"
+capa = "fuentes"
+trampa = "002"
+fichero = "src/project/ingest/sources.py"
+buscar = '''LAT_MIN_S, LAT_MAX_S = -180.0, 900.0'''
+reemplazar = '''LAT_MIN_S, LAT_MAX_S = -180.0, 7300.0'''
+detector = ["tests/test_ingest.py::test_detecta_la_convencion_horaria"]
+sondas = ["parsers", "tiempo"]
+
+[[mutante]]
+id = "005"
+nombre = "desempate UTC/local invertido"
+capa = "fuentes"
+trampa = "002"
+fichero = "src/project/ingest/sources.py"
+buscar = '''            if abs(med_utc) <= abs(med_loc)'''
+reemplazar = '''            if abs(med_utc) > abs(med_loc)'''
+detector = ["tests/test_ingest.py::test_detecta_la_convencion_horaria"]
+sondas = ["parsers", "tiempo"]
+
+[[mutante]]
+id = "006"
+nombre = "epoch local naive se devuelve sin reinterpretar"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    wall = datetime.fromtimestamp(epoch_ms / 1000, tz=timezone.utc).replace(tzinfo=None)'''
+reemplazar = '''    return pd.Timestamp(datetime.fromtimestamp(epoch_ms / 1000, tz=timezone.utc))'''
+detector = [
+    "tests/test_ingest.py::test_epoch_local_naive_a_utc_en_verano",
+    "tests/test_ingest.py::test_epoch_local_naive_a_utc_en_invierno",
+]
+sondas = ["tiempo"]
+
+[[mutante]]
+id = "007"
+nombre = "Renfe sin filtro de núcleo: flota nacional"
+capa = "fuentes"
+trampa = "003"
+fichero = "src/project/ingest/sources.py"
+buscar = '''        df = df[df["nucleo"] == nucleo].copy()'''
+reemplazar = '''        df = df.copy()'''
+detector = ["tests/test_ingest.py::test_renfe_filtra_solo_nucleo_40"]
+sondas = ["parsers"]
+
+[[mutante]]
+id = "008"
+nombre = "ts_utc de Renfe es el instante de captura, no fechaActualizacion"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''        local_naive_iso_to_utc(payload.get("fechaActualizacion"))
+        if isinstance(payload, dict)'''
+reemplazar = '''        ts_ingest
+        if isinstance(payload, dict)'''
+detector = []
+sondas = ["parsers"]
+
+[[mutante]]
+id = "009"
+nombre = "estado de tráfico no descarta las filas hueco sin idtramo"
+capa = "fuentes"
+trampa = "005"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    df = df[df["idtramo"].notna()]
+    # Tras el primer sondeo'''
+reemplazar = '''    # Tras el primer sondeo'''
+detector = []
+sondas = ["parsers"]
+
+[[mutante]]
+id = "010"
+nombre = "intensidad de tráfico no descarta las filas hueco"
+capa = "fuentes"
+trampa = "005"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    df = df[df["idtramo"].notna()]  # filas hueco, ver capa 192'''
+reemplazar = '''    pass  # filas hueco, ver capa 192'''
+detector = []
+sondas = ["parsers"]
+
+[[mutante]]
+id = "011"
+nombre = "centinela -1 de intensidad se trata como lectura"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    df.loc[df["lectura"] < 0, "lectura"] = pd.NA  # -1 = sin dato'''
+reemplazar = '''    pass  # -1 = sin dato'''
+detector = ["tests/test_ingest.py::test_trafico_intensidad_lectura_menos_uno_es_nulo"]
+sondas = ["parsers"]
+
+[[mutante]]
+id = "012"
+nombre = "Valenbisi con la horquilla de latencia de la EMT (900 s)"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''resolver_convencion(df["update_jcd"], ts_ingest, lat_max=2400)'''
+reemplazar = '''resolver_convencion(df["update_jcd"], ts_ingest, lat_max=900)'''
+detector = []
+sondas = ["parsers"]
+
+[[mutante]]
+id = "013"
+nombre = "latencia_s con el signo invertido"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''(df["ts_ingest_utc"] - df["ts_utc"]).dt.total_seconds()'''
+reemplazar = '''(df["ts_utc"] - df["ts_ingest_utc"]).dt.total_seconds()'''
+detector = ["tests/test_ingest.py::test_detecta_la_convencion_horaria"]
+sondas = ["parsers"]
+
+[[mutante]]
+id = "014"
+nombre = "haversine usa longitudes donde van latitudes"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    p1, p2 = np.radians(lat1), np.radians(lat2)'''
+reemplazar = '''    p1, p2 = np.radians(lon1), np.radians(lon2)'''
+detector = ["tests/test_tracking.py::test_velocidades_dentro_del_rango_simulado"]
+sondas = ["haversine", "tracking"]
+
+# --------------------------------------------------------------------------- #
+# Tracking
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "015"
+nombre = "sin siembra por centroide en el arranque en frío"
+capa = "tracking"
+trampa = "007"
+fichero = "src/project/tracking.py"
+buscar = '''    if a.empty or len(a) != len(b):
+        return a'''
+reemplazar = '''    if True:
+        return a'''
+detector = ["tests/test_tracking_identidad.py::test_convoy_en_fila_india_no_intercambia_identidad"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "016"
+nombre = "puerta física evaluada solo sobre la posición predicha"
+capa = "tracking"
+trampa = "008"
+fichero = "src/project/tracking.py"
+buscar = '''(d <= t) & (d_real <= t)'''
+reemplazar = '''(d <= t)'''
+detector = ["tests/test_tracking_identidad.py::test_ningun_desplazamiento_supera_la_puerta_fisica"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "017"
+nombre = "extrapolación en pasos de sondeo, no en segundos"
+capa = "tracking"
+trampa = "009"
+fichero = "src/project/tracking.py"
+buscar = '''f = prev.loc[tiene, "_dt"] / prev.loc[tiene, "_pdt"]'''
+reemplazar = '''f = 1.0'''
+detector = ["tests/test_tracking.py::test_un_sondeo_que_falta_no_rompe_la_identidad"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "018"
+nombre = "predicción por velocidad desactivada aunque predictivo=True"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''        if predictivo:
+            # Modelo de velocidad constante'''
+reemplazar = '''        if False:
+            # Modelo de velocidad constante'''
+detector = ["tests/test_tracking_identidad.py::test_el_convoy_discrimina_entre_predictivo_e_ingenuo"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "019"
+nombre = "candidatos filtrados solo por línea: se mezclan los dos sentidos"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''ga = prev[(prev["linea"] == clave[0]) & (prev["trayecto"] == clave[1])]'''
+reemplazar = '''ga = prev[prev["linea"] == clave[0]]'''
+detector = ["tests/test_tracking_identidad.py::test_lineas_distintas_no_se_mezclan"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "020"
+nombre = "puente de huecos sin tope en segundos"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''HUECO_MAX_S = 120.0'''
+reemplazar = '''HUECO_MAX_S = float("inf")'''
+detector = ["tests/test_tracking_fragmentacion.py::test_el_puente_se_acota_en_segundos_y_no_en_sondeos"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "021"
+nombre = "tolerar_hueco ignorado: solo compite el sondeo anterior"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''k - kk <= 1 + tolerar_hueco'''
+reemplazar = '''k - kk <= 1 + 0'''
+detector = ["tests/test_tracking_fragmentacion.py::test_snapshot_parcial_no_parte_la_trayectoria"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "022"
+nombre = "velocidad máxima de 200 km/h"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''VEL_MAX_KMH = 70.0'''
+reemplazar = '''VEL_MAX_KMH = 200.0'''
+detector = ["tests/test_tracking_identidad.py::test_salto_imposible_rompe_la_cadena"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "023"
+nombre = "un candidato emparejado sigue vivo y puede emparejar otra vez"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''                vivos.pop(ia, None)
+'''
+reemplazar = ''''''
+detector = ["tests/test_tracking_identidad.py::test_un_vehicle_id_no_se_repite_dentro_de_un_snapshot"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "024"
+nombre = "dist_m medido desde la posición predicha y no la real"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''                        df.at[ia, "lat"],
+                        df.at[ia, "lon"],
+                        df.at[ib, "lat"],'''
+reemplazar = '''                        prev.at[ia, "lat_pred"],
+                        prev.at[ia, "lon_pred"],
+                        df.at[ib, "lat"],'''
+detector = []
+sondas = ["tracking"]
+
+[[mutante]]
+id = "025"
+nombre = "sondeos con el mismo instante se tratan como paso de 1 s"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''total_seconds() or 30.0'''
+reemplazar = '''total_seconds() or 1.0'''
+detector = []
+sondas = ["tracking"]
+
+[[mutante]]
+id = "026"
+nombre = "vehículo que entra en servicio hereda el último id emitido"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''            if ib not in emparejados_b:
+                df.at[ib, "vehicle_id"] = f"v{siguiente_id:05d}"'''
+reemplazar = '''            if ib not in emparejados_b:
+                df.at[ib, "vehicle_id"] = f"v{max(siguiente_id - 1, 0):05d}"'''
+detector = ["tests/test_tracking_identidad.py::test_bus_que_entra_en_servicio_recibe_id_nuevo"]
+sondas = ["tracking"]
+
+# --------------------------------------------------------------------------- #
+# Persistencia
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "027"
+nombre = "el colector parsea antes de guardar el crudo"
+capa = "persistencia"
+fichero = "src/project/ingest/collect.py"
+buscar = '''            append_raw(root, key, payload, ts)
+
+            df = parse(key, payload, ts)'''
+reemplazar = '''            df = parse(key, payload, ts)
+            append_raw(root, key, payload, ts)'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "028"
+nombre = "append_raw sobrescribe en vez de añadir"
+capa = "persistencia"
+fichero = "src/project/ingest/sources.py"
+buscar = '''gzip.open(path, "at", encoding="utf-8")'''
+reemplazar = '''gzip.open(path, "wt", encoding="utf-8")'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "029"
+nombre = "partición del crudo por reloj de pared, no por instante de captura"
+capa = "persistencia"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    day = ts_ingest.strftime("%Y-%m-%d")'''
+reemplazar = '''    day = now_utc().strftime("%Y-%m-%d")'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "030"
+nombre = "deduplicador desactivado: todo snapshot es nuevo"
+capa = "persistencia"
+fichero = "src/project/ingest/collect.py"
+buscar = '''    if sid in s:
+        return False'''
+reemplazar = '''    if False:
+        return False'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "031"
+nombre = "deduplicador no olvida al desalojar: recuerda para siempre"
+capa = "persistencia"
+fichero = "src/project/ingest/collect.py"
+buscar = '''        s.discard(d[0])'''
+reemplazar = '''        pass'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "032"
+nombre = "flush escribe la geometría de referencia con tramos repetidos"
+capa = "persistencia"
+fichero = "src/project/ingest/collect.py"
+buscar = '''geo = df[cols].drop_duplicates(subset=["idtramo"])'''
+reemplazar = '''geo = df[cols]'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "033"
+nombre = "reprocesar solo lee el primer día de crudo"
+capa = "persistencia"
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''for fichero in sorted(dir_raw.rglob("*.ndjson.gz")):'''
+reemplazar = '''for fichero in sorted(dir_raw.rglob("*.ndjson.gz"))[:1]:'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "034"
+nombre = "reprocesar no cuenta los payloads que no parsean"
+capa = "persistencia"
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''                errores += 1'''
+reemplazar = '''                errores += 0'''
+detector = []
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "035"
+nombre = "read_raw descarta el último payload"
+capa = "persistencia"
+fichero = "src/project/ingest/sources.py"
+buscar = '''        for line in fh:'''
+reemplazar = '''        for line in list(fh)[:-1]:'''
+detector = []
+sondas = ["persistencia"]

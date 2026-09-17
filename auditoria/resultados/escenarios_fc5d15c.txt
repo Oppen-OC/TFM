@@ -1,0 +1,81 @@
+  control: generar() sin fenómenos == simular_flota()
+  ninguno    snaps=20   semilla=7    saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=20   semilla=11   saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=20   semilla=23   saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=20   semilla=42   saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=20   semilla=101  saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=80   semilla=7    saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=80   semilla=11   saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=80   semilla=23   saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=80   semilla=42   saltos=0   contam=0.0% frag=1.00
+  ninguno    snaps=80   semilla=101  saltos=0   contam=0.0% frag=1.00
+  paradas    snaps=20   semilla=7    saltos=0   contam=0.0% frag=1.00
+  paradas    snaps=20   semilla=11   saltos=0   contam=0.0% frag=1.00
+  paradas    snaps=20   semilla=23   saltos=2   contam=3.3% frag=1.00
+  paradas    snaps=20   semilla=42   saltos=4   contam=3.3% frag=1.00
+  paradas    snaps=20   semilla=101  saltos=4   contam=3.3% frag=1.00
+  paradas    snaps=80   semilla=7    saltos=0   contam=0.0% frag=1.00
+  paradas    snaps=80   semilla=11   saltos=0   contam=0.0% frag=1.00
+  paradas    snaps=80   semilla=23   saltos=2   contam=3.3% frag=1.00
+  paradas    snaps=80   semilla=42   saltos=4   contam=3.3% frag=1.00
+  paradas    snaps=80   semilla=101  saltos=4   contam=3.3% frag=1.00
+  ruido_gps  snaps=20   semilla=7    saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=20   semilla=11   saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=20   semilla=23   saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=20   semilla=42   saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=20   semilla=101  saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=80   semilla=7    saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=80   semilla=11   saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=80   semilla=23   saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=80   semilla=42   saltos=0   contam=0.0% frag=1.00
+  ruido_gps  snaps=80   semilla=101  saltos=0   contam=0.0% frag=1.00
+  giros      snaps=20   semilla=7    saltos=4   contam=3.3% frag=1.00
+  giros      snaps=20   semilla=11   saltos=0   contam=0.0% frag=1.00
+  giros      snaps=20   semilla=23   saltos=0   contam=0.0% frag=1.00
+  giros      snaps=20   semilla=42   saltos=4   contam=3.3% frag=1.00
+  giros      snaps=20   semilla=101  saltos=0   contam=0.0% frag=1.00
+  giros      snaps=80   semilla=7    saltos=4   contam=3.3% frag=1.00
+  giros      snaps=80   semilla=11   saltos=2   contam=3.3% frag=1.00
+  giros      snaps=80   semilla=23   saltos=2   contam=3.3% frag=1.00
+  giros      snaps=80   semilla=42   saltos=4   contam=3.3% frag=1.00
+  giros      snaps=80   semilla=101  saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=20   semilla=7    saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=20   semilla=11   saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=20   semilla=23   saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=20   semilla=42   saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=20   semilla=101  saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=80   semilla=7    saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=80   semilla=11   saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=80   semilla=23   saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=80   semilla=42   saltos=0   contam=0.0% frag=1.00
+  jitter_dt  snaps=80   semilla=101  saltos=0   contam=0.0% frag=1.00
+  todos      snaps=20   semilla=7    saltos=0   contam=0.0% frag=1.00
+  todos      snaps=20   semilla=11   saltos=0   contam=0.0% frag=1.00
+  todos      snaps=20   semilla=23   saltos=0   contam=0.0% frag=1.00
+  todos      snaps=20   semilla=42   saltos=4   contam=3.3% frag=1.00
+  todos      snaps=20   semilla=101  saltos=0   contam=0.0% frag=1.00
+  todos      snaps=80   semilla=7    saltos=0   contam=0.0% frag=1.00
+  todos      snaps=80   semilla=11   saltos=0   contam=0.0% frag=1.00
+  todos      snaps=80   semilla=23   saltos=2   contam=3.3% frag=1.00
+  todos      snaps=80   semilla=42   saltos=4   contam=3.3% frag=1.00
+  todos      snaps=80   semilla=101  saltos=0   contam=0.0% frag=1.00
+  estres     snaps=20   semilla=7    saltos=2   contam=3.3% frag=1.00
+  estres     snaps=20   semilla=11   saltos=2   contam=3.3% frag=1.00
+  estres     snaps=20   semilla=23   saltos=4   contam=3.3% frag=1.00
+  estres     snaps=20   semilla=42   saltos=2   contam=3.3% frag=1.00
+  estres     snaps=20   semilla=101  saltos=0   contam=0.0% frag=1.00
+  estres     snaps=80   semilla=7    saltos=6   contam=6.7% frag=1.00
+  estres     snaps=80   semilla=11   saltos=12  contam=13.3% frag=1.00
+  estres     snaps=80   semilla=23   saltos=12  contam=13.3% frag=1.00
+  estres     snaps=80   semilla=42   saltos=10  contam=13.3% frag=1.00
+  estres     snaps=80   semilla=101  saltos=2   contam=3.3% frag=1.00
+
+           saltos  contaminadas_max  fragmentacion_max   parado  ruido_m_p50  giro_deg_p90  dt_s_p99 veredicto
+escenario                                                                                                     
+estres         52            0.1333                1.0  0.29610        6.162        91.690    34.556  hallazgo
+giros          20            0.0333                1.0  0.00000          NaN        23.948    30.000  hallazgo
+jitter_dt       0            0.0000                1.0  0.00000          NaN        14.190    32.066    inocuo
+ninguno         0            0.0000                1.0  0.00000          NaN        14.190    30.000    inocuo
+paradas        20            0.0333                1.0  0.28561        0.000        14.126    30.000  hallazgo
+ruido_gps       0            0.0000                1.0  0.00000          NaN        15.485    30.000    inocuo
+todos          10            0.0333                1.0  0.29500        3.349        27.801    32.253  hallazgo

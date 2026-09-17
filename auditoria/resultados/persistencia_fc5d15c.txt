@@ -1,0 +1,100 @@
+  emt_buses auditada
+  trafico_estado auditada
+  trafico_intensidad auditada
+  valenbisi auditada
+  renfe_cercanias auditada
+            fuente        dia  miembros_ok  miembros_rotos  huecos_cero  bytes_basura  legibles fin  curated  perdida_reproc  recuperables  huerfanos_cur  cruce_particion
+         emt_buses 2026-08-15          449               0            0             0       449 EOF      439               0             0              0                0
+         emt_buses 2026-08-16         2778               0            0             0      2778 EOF     2732               0             0              0                0
+         emt_buses 2026-08-17         2860               0            0             0      2860 EOF     2784               0             0              0               32
+         emt_buses 2026-08-18         1102               0            0             0      1102 EOF     1056               0             0              0               51
+         emt_buses 2026-08-19         2851               0            0             0      2851 EOF     2782               0             0              0                0
+         emt_buses 2026-08-20         2851               0            0             0      2851 EOF     2785               0             0              0               35
+         emt_buses 2026-08-21         1600               0            0             0      1600 EOF     1533               0             0              0                4
+         emt_buses 2026-08-22         2850               0            0             0      2850 EOF     2776               0             0              0                9
+         emt_buses 2026-08-23         2853               0            0             0      2853 EOF     2801               0             0              0               51
+         emt_buses 2026-08-24         2819               0            1             0      2819 EOF     2682               0             0              0               18
+         emt_buses 2026-08-25         2806               0            0             0      2806 EOF     2741               0             0              0               32
+         emt_buses 2026-08-26         2852               0            0             0      2852 EOF     2771               0             0              0               32
+         emt_buses 2026-08-27         2854               0            0             0      2854 EOF     2784               0             0              0               58
+         emt_buses 2026-08-28         2852               0            0             0      2852 EOF     2784               0             0              0               24
+         emt_buses 2026-08-29         2854               0            0             0      2854 EOF     2794               0             0              0               51
+         emt_buses 2026-08-30         2855               0            0             0      2855 EOF     2801               0             0              0               18
+         emt_buses 2026-08-31         1994               0            0             0      1994 EOF     1898               0             0              0               43
+    trafico_estado 2026-08-15          225               0            0             0       225 EOF      219               0             0              0                0
+    trafico_estado 2026-08-16         1384               0            0             0      1384 EOF     1384               0             0              0                0
+    trafico_estado 2026-08-17         1427               0            0             0      1427 EOF     1427               0             0              0               25
+    trafico_estado 2026-08-18          187               0            0             0       187 EOF      157               0             0              0                6
+    trafico_estado 2026-08-19          288               0            0             0       288 EOF      287               0             0              0                0
+    trafico_estado 2026-08-20          287               0            0             0       287 EOF      287               0             0              0                1
+    trafico_estado 2026-08-21          162               0            0             0       162 EOF      159               0             0              0                2
+    trafico_estado 2026-08-22          287               0            0             0       287 EOF      283               0             0              0                0
+    trafico_estado 2026-08-23          286               0            0             0       286 EOF      286               0             0              0                5
+    trafico_estado 2026-08-24          285               0            1             0       285 EOF      280               0             0              0                0
+    trafico_estado 2026-08-25          281               0            0             0       281 EOF      281               0             0              0                3
+    trafico_estado 2026-08-26          286               0            0             0       286 EOF      286               0             0              0                4
+    trafico_estado 2026-08-27          288               0            0             0       288 EOF      288               0             0              0                5
+    trafico_estado 2026-08-28          287               0            0             0       287 EOF      287               0             0              0                5
+    trafico_estado 2026-08-29          288               0            0             0       288 EOF      288               0             0              0                0
+    trafico_estado 2026-08-30          288               0            0             0       288 EOF      288               0             0              0                0
+    trafico_estado 2026-08-31          200               0            0             0       200 EOF      198               0             0              0                0
+trafico_intensidad 2026-08-15           46               0            0             0        46 EOF       44               0             0              0                0
+trafico_intensidad 2026-08-16          273               0            0             0       273 EOF      273               0             0              0                0
+trafico_intensidad 2026-08-17          288               0            0             0       288 EOF      288               0             0              0                3
+trafico_intensidad 2026-08-18           50               0            0             0        50 EOF       46               0             0              0                3
+trafico_intensidad 2026-08-19           96               0            0             0        96 EOF       95               0             0              0                0
+trafico_intensidad 2026-08-20           96               0            0             0        96 EOF       96               0             0              0                1
+trafico_intensidad 2026-08-21           55               0            0             0        55 EOF       54               0             0              0                1
+trafico_intensidad 2026-08-22           96               0            0             0        96 EOF       94               0             0              0                0
+trafico_intensidad 2026-08-23           96               0            0             0        96 EOF       96               0             0              0                0
+trafico_intensidad 2026-08-24           96               0            1             0        96 EOF       94               0             0              0                0
+trafico_intensidad 2026-08-25           94               0            0             0        94 EOF       94               0             0              0                1
+trafico_intensidad 2026-08-26           95               0            0             0        95 EOF       95               0             0              0                1
+trafico_intensidad 2026-08-27           96               0            0             0        96 EOF       96               0             0              0                0
+trafico_intensidad 2026-08-28           96               0            0             0        96 EOF       96               0             0              0                0
+trafico_intensidad 2026-08-29           96               0            0             0        96 EOF       96               0             0              0                0
+trafico_intensidad 2026-08-30           96               0            0             0        96 EOF       96               0             0              0                0
+trafico_intensidad 2026-08-31           68               0            0             0        68 EOF       66               0             0              0                0
+         valenbisi 2026-08-15           46               0            0             0        46 EOF       44               0             0              0                0
+         valenbisi 2026-08-16          273               0            0             0       273 EOF      273               0             0              0                0
+         valenbisi 2026-08-17          288               0            0             0       288 EOF      288               0             0              0                3
+         valenbisi 2026-08-18          111               0            0             0       111 EOF      106               0             0              0                3
+         valenbisi 2026-08-19          288               0            0             0       288 EOF      287               0             0              0                0
+         valenbisi 2026-08-20          287               0            0             0       287 EOF      287               0             0              0                1
+         valenbisi 2026-08-21          162               0            0             0       162 EOF      159               0             0              0                2
+         valenbisi 2026-08-22          287               0            0             0       287 EOF      283               0             0              0                0
+         valenbisi 2026-08-23          286               0            0             0       286 EOF      286               0             0              0                5
+         valenbisi 2026-08-24          285               0            1             0       285 EOF      280               0             0              0                0
+         valenbisi 2026-08-25          281               0            0             0       281 EOF      281               0             0              0                3
+         valenbisi 2026-08-26          286               0            0             0       286 EOF      286               0             0              0                4
+         valenbisi 2026-08-27          285               0            0             0       285 EOF      285               0             0              0                5
+         valenbisi 2026-08-28          288               0            0             0       288 EOF      288               0             0              0                0
+         valenbisi 2026-08-29          288               0            0             0       288 EOF      287               0             0              0                0
+         valenbisi 2026-08-30          287               0            0             0       287 EOF      287               0             0              0                0
+         valenbisi 2026-08-31          202               0            0             0       202 EOF      199               0             0              0                1
+   renfe_cercanias 2026-08-15          450               0            0             0       450 EOF      183               0             0              0                0
+   renfe_cercanias 2026-08-16         2762               0            0             0      2762 EOF     2121               0             0              0                0
+   renfe_cercanias 2026-08-17         2822               0            0             0      2822 EOF     2227               0             0              0                0
+   renfe_cercanias 2026-08-18         1097               0            0             0      1097 EOF      660               0             0              0                0
+   renfe_cercanias 2026-08-19         2283               0            0             0      2283 EOF     1632               0             0              0                0
+   renfe_cercanias 2026-08-20         2823               0            0             0      2823 EOF     2222               0             0              0                0
+   renfe_cercanias 2026-08-21         1587               0            1             0      1587 EOF     1091               0             0              0                0
+   renfe_cercanias 2026-08-22         2803               0            1             0      2803 EOF     2129               0             0              0                0
+   renfe_cercanias 2026-08-23         2773               0            0             0      2773 EOF     2183               0             0              0                0
+   renfe_cercanias 2026-08-24         2770               0            1             0      2770 EOF     2098               0             0              0                0
+   renfe_cercanias 2026-08-25         2853               0            0             0      2853 EOF     2234               0             0              0                0
+   renfe_cercanias 2026-08-26         2837               0            0             0      2837 EOF     2245               0             0              0                0
+   renfe_cercanias 2026-08-27         2822               0            0             0      2822 EOF     2103               0             0              0                0
+   renfe_cercanias 2026-08-28         2116               0            0             0      2116 EOF     1522               0             0              0                0
+   renfe_cercanias 2026-08-29         2832               0            0             0      2832 EOF     2209               0             0              0                0
+   renfe_cercanias 2026-08-30         2857               0            0             0      2857 EOF     2202               0             0              0                0
+   renfe_cercanias 2026-08-31         1977               0            0             0      1977 EOF     1588               0             0              0                0
+
+  Totales por fuente:
+                    miembros_ok  miembros_rotos  huecos_cero  bytes_basura  legibles  curated  perdida_reproc  recuperables  huerfanos_cur  cruce_particion
+fuente                                                                                                                                                     
+emt_buses                 42080               0            1             0     42080    40943               0             0              0              458
+renfe_cercanias           40464               0            3             0     40464    30649               0             0              0                0
+trafico_estado             6736               0            1             0      6736     6685               0             0              0               56
+trafico_intensidad         1833               0            1             0      1833     1819               0             0              0               10
+valenbisi                  4230               0            1             0      4230     4206               0             0              0               27
