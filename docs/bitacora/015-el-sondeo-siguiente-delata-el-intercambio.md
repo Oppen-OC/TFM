@@ -138,11 +138,23 @@ Hecho:
 
 Abierto:
 
-- **El residuo de "todos"** (46 saltos en 40 ejecuciones reservadas). Hipótesis
-  para la segunda iteración: el suavizado corrige al final, pero durante el
-  emparejamiento el predictor ya usó la velocidad del bus equivocado y un
-  intercambio puede provocar el siguiente. Las semillas 9001-9020 ya están
-  vistas: la segunda iteración necesita otras reservadas.
+- **El residuo de "todos"** (46 saltos en 40 ejecuciones reservadas). La
+  hipótesis inicial —el suavizado corrige al final, pero el predictor ya usó la
+  velocidad del bus equivocado y un intercambio provoca el siguiente— **queda
+  refutada**: evaluados los dos movimientos sobre el par verdadero de cada salto
+  residual con velocidad previa, en 34 de 36 **ningún movimiento reduce el
+  cambio de velocidad**; la asignación equivocada es cinemáticamente más suave
+  que la verdadera, y en los otros 2 la mejora no llega a los 10 m. Meter el
+  suavizado en el bucle no lo arreglaría: falla el criterio, no el momento.
+  Explicación probable: en `simular_flota` cada bus lleva rumbo propio, y dos
+  buses de la misma línea no comparten calle. Un simulador con rutas compartidas
+  improvisado para comprobarlo no sirvió de árbitro: con giros casi en cada paso
+  y rutas que se pisan a sí mismas, falla más que la realidad. La información
+  que falta es la geometría de la ruta (GTFS `shapes.txt`).
+- Las semillas 9001-9020 ya están vistas: cualquier iteración nueva necesita
+  otras reservadas.
+- La guardia de la trampa 009 quedó enmascarada por el suavizado y se corrigió
+  para medir el predictor sin él (mutante 017, commit `7397b57`).
 - Las cifras de las entradas 001, 009 y 010 se midieron sin suavizado. La 001
   usa el modo ingenuo, que no cambia; las otras dos habría que volver a medirlas.
 
