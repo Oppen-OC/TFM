@@ -62,6 +62,11 @@ atribuye.
 `simular_flota(huecos=(7,))`: 60 buses, un sondeo que desaparece entero. Con el
 bug da **4 saltos y 3,3 % de trayectorias contaminadas**; sin él, cero.
 
+Desde el suavizado de intercambios (09/2026) la guardia es el caso `predictor`
+del test, que desactiva `_suavizar_intercambios`: con él activo, el suavizado
+deshace después los intercambios que provoca este bug y el test seguía verde con
+el predictor roto. La auditoría de mutación lo detectó.
+
 `test_el_hueco_discrimina_de_verdad` fija que el escenario ejercita el defecto:
 comprueba que la cadencia deja de ser uniforme (`dt.max() == 2 * dt.min()`) y que
 la fragmentación se queda en 1,00, porque esta trampa es **fusión pura** y el eje

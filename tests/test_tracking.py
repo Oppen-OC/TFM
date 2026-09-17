@@ -17,6 +17,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
+from project import tracking
 from project.analysis.medir_tracking import medir
 from project.analysis.simulacion import simular_flota
 from project.tracking import rastrear, resumen
@@ -109,7 +110,8 @@ def test_captura_larga_no_esconde_saltos():
     assert m["saltos"] == 0, f"{m['saltos']} saltos en 160 snapshots"
 
 
-def test_un_sondeo_que_falta_no_rompe_la_identidad():
+@pytest.mark.parametrize("suavizado", [True, False], ids=["con_suavizado", "predictor"])
+def test_un_sondeo_que_falta_no_rompe_la_identidad(suavizado, monkeypatch):
     """TRAMPA 009: el predictor extrapolaba en pasos de snapshot, no en segundos.
 
     `2*lat - _plat` es el movimiento rectilíneo uniforme en diferencias finitas y
@@ -121,7 +123,15 @@ def test_un_sondeo_que_falta_no_rompe_la_identidad():
     Los saltos NO caen en la transición que salta el hueco, sino en las una o dos
     siguientes. Esa distancia entre síntoma y causa es lo que hace que se le
     atribuya al cambio que lo destapó: `docs/bitacora/010-plat-sin-su-dt.md`.
+
+    El caso `predictor` desactiva `_suavizar_intercambios`, y es el que guarda la
+    trampa. El suavizado deshace después los intercambios que este bug provoca,
+    así que con él activo el test seguía verde con el predictor roto: la segunda
+    línea de defensa tapaba la regresión de la primera (auditoría de mutación,
+    mutante 017 sobre 9269074).
     """
+    if not suavizado:
+        monkeypatch.setattr(tracking, "_suavizar_intercambios", lambda df: df)
     m = medir(simular_flota(huecos=(7,)), predictivo=True)
     assert m["saltos"] == 0, f"{m['saltos']} saltos tras el hueco"
     assert m["contaminadas"] == 0.0, f"{m['contaminadas']:.1%} contaminadas"
