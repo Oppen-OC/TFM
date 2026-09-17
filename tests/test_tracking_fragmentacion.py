@@ -81,15 +81,14 @@ def test_flip_de_trayecto_en_cabecera_no_parte_la_trayectoria():
     assert m["fragmentacion"] == 1.0, f"{m['fragmentacion']:.2f}"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "DEFECTO CONOCIDO: el giro en cabecera no sólo parte trayectorias, "
-        "también las mezcla — el bus que entra en el grupo del sentido opuesto "
-        "compite con los que ya estaban. Medido: 3 saltos, 1,7 % contaminadas."
-    ),
-)
 def test_flip_de_trayecto_en_cabecera_no_mezcla_identidades():
+    """El bus que entra en el grupo del sentido opuesto no se lleva la identidad de otro.
+
+    Fue `xfail` hasta 09/2026: 3 saltos y 1,7 % de trayectorias contaminadas. Lo
+    corrigió `_suavizar_intercambios` sin buscarlo —es el mismo mecanismo, un
+    intercambio que el sondeo siguiente delata—. La fragmentación del giro en
+    cabecera, el test de arriba, sigue abierta.
+    """
     m = medir(simular_flota(flip_en=8), predictivo=True)
     assert m["saltos"] == 0, f"{m['saltos']} saltos"
     assert m["contaminadas"] == 0.0

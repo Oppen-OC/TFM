@@ -1,0 +1,772 @@
+{
+  "etiqueta": "B_s25_k05",
+  "tracker": "C:\\Users\\oppen\\AppData\\Local\\Temp\\claude\\c--Users-oppen-Code-TFM\\1bdfc0c4-9e9c-40d9-aa2c-fdb03ba4c54d\\scratchpad\\candidatos\\B_s25_k05.py",
+  "semillas": "ajuste",
+  "simulacion": [
+    {
+      "escenario": "ninguno",
+      "saltos": 0,
+      "semillas_con_saltos": 0,
+      "contaminadas_max": 0.0,
+      "cola_media": 0.0,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "saltos": 26,
+      "semillas_con_saltos": 7,
+      "contaminadas_max": 0.06666666666666667,
+      "cola_media": 0.017416666666666667,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 4
+    },
+    {
+      "escenario": "giros",
+      "saltos": 22,
+      "semillas_con_saltos": 6,
+      "contaminadas_max": 0.03333333333333333,
+      "cola_media": 0.011291666666666667,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "saltos": 20,
+      "semillas_con_saltos": 5,
+      "contaminadas_max": 0.1,
+      "cola_media": 0.016583333333333332,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "saltos": 72,
+      "semillas_con_saltos": 9,
+      "contaminadas_max": 0.18333333333333332,
+      "cola_media": 0.04441666666666667,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 1
+    },
+    {
+      "escenario": "hueco",
+      "saltos": 0,
+      "semillas_con_saltos": 0,
+      "contaminadas_max": 0.0,
+      "cola_media": 0.0,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "saltos": 18,
+      "semillas_con_saltos": 5,
+      "contaminadas_max": 0.06666666666666667,
+      "cola_media": 0.012476127026426826,
+      "fragmentacion_max": 1.0,
+      "ida_vuelta": 4
+    }
+  ],
+  "detalle": [
+    {
+      "escenario": "ninguno",
+      "snaps": 20,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 20,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 20,
+      "semilla": 23,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 20,
+      "semilla": 42,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 20,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 80,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 80,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 80,
+      "semilla": 23,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 80,
+      "semilla": 42,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "ninguno",
+      "snaps": 80,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 20,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 20,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 20,
+      "semilla": 23,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.0016666666666666668,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 20,
+      "semilla": 42,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.028333333333333332,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 2
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 20,
+      "semilla": 101,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.02,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 80,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 80,
+      "semilla": 11,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.02375,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 80,
+      "semilla": 23,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.025416666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 80,
+      "semilla": 42,
+      "saltos": 8,
+      "contaminadas": 0.06666666666666667,
+      "cola": 0.045,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 2
+    },
+    {
+      "escenario": "paradas",
+      "snaps": 80,
+      "semilla": 101,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.03,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 20,
+      "semilla": 7,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.016666666666666666,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 20,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 20,
+      "semilla": 23,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 20,
+      "semilla": 42,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.02666666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 20,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 80,
+      "semilla": 7,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.029166666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 80,
+      "semilla": 11,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.0004166666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 80,
+      "semilla": 23,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.008333333333333333,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 80,
+      "semilla": 42,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.03166666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "giros",
+      "snaps": 80,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 20,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 20,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 20,
+      "semilla": 23,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.028333333333333332,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 20,
+      "semilla": 42,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.028333333333333332,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 20,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 80,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 80,
+      "semilla": 11,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.016666666666666666,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 80,
+      "semilla": 23,
+      "saltos": 4,
+      "contaminadas": 0.06666666666666667,
+      "cola": 0.03375,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 80,
+      "semilla": 42,
+      "saltos": 8,
+      "contaminadas": 0.1,
+      "cola": 0.05875,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "todos",
+      "snaps": 80,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 20,
+      "semilla": 7,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.015,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 20,
+      "semilla": 11,
+      "saltos": 4,
+      "contaminadas": 0.06666666666666667,
+      "cola": 0.04666666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 20,
+      "semilla": 23,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.03166666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 20,
+      "semilla": 42,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.02,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 20,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 80,
+      "semilla": 7,
+      "saltos": 12,
+      "contaminadas": 0.1,
+      "cola": 0.05708333333333333,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 80,
+      "semilla": 11,
+      "saltos": 18,
+      "contaminadas": 0.18333333333333332,
+      "cola": 0.10875,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 1
+    },
+    {
+      "escenario": "estres",
+      "snaps": 80,
+      "semilla": 23,
+      "saltos": 12,
+      "contaminadas": 0.13333333333333333,
+      "cola": 0.065,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 80,
+      "semilla": 42,
+      "saltos": 12,
+      "contaminadas": 0.16666666666666666,
+      "cola": 0.07166666666666667,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "estres",
+      "snaps": 80,
+      "semilla": 101,
+      "saltos": 6,
+      "contaminadas": 0.06666666666666667,
+      "cola": 0.028333333333333332,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 20,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 20,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 20,
+      "semilla": 23,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 20,
+      "semilla": 42,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 20,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 80,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 80,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 80,
+      "semilla": 23,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 80,
+      "semilla": 42,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco",
+      "snaps": 80,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 20,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 20,
+      "semilla": 11,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 20,
+      "semilla": 23,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.0017543859649122807,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 20,
+      "semilla": 42,
+      "saltos": 4,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.028070175438596492,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 2
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 20,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 80,
+      "semilla": 7,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 80,
+      "semilla": 11,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.024050632911392405,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 80,
+      "semilla": 23,
+      "saltos": 2,
+      "contaminadas": 0.03333333333333333,
+      "cola": 0.025738396624472575,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 80,
+      "semilla": 42,
+      "saltos": 8,
+      "contaminadas": 0.06666666666666667,
+      "cola": 0.04514767932489452,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 2
+    },
+    {
+      "escenario": "hueco_paradas",
+      "snaps": 80,
+      "semilla": 101,
+      "saltos": 0,
+      "contaminadas": 0.0,
+      "cola": 0.0,
+      "fragmentacion": 1.0,
+      "ida_vuelta": 0
+    }
+  ]
+}

@@ -53,6 +53,15 @@ SALTO_MAX_M = 800.0  # techo duro de desplazamiento entre snapshots
 # restringir nada. 120 s es lo que dura el hueco que se quiere puentear a
 # cadencia nominal.
 HUECO_MAX_S = 120.0
+# Suavizado de intercambios (`_suavizar_intercambios`). Solo se revisan pares de
+# posiciones del mismo sondeo y grupo a menos de este radio: más lejos que dos
+# pasos largos de refresco no hay intercambio que deshacer.
+RADIO_SUAVIZADO_M = 400.0
+# Mejora mínima, en metros de cambio de velocidad por paso de 30 s, para aceptar
+# un intercambio. Por debajo, la diferencia es del orden del ruido de posición
+# (p90 de 6,7 m entre pasos de un bus parado, bitácora 013) y no hay evidencia.
+MEJORA_MIN_M = 10.0
+_DT_REF_S = 30.0
 
 
 def _emparejar_grupo(
@@ -127,6 +136,150 @@ def _sembrar_por_centroide(a: pd.DataFrame, b: pd.DataFrame) -> pd.DataFrame:
     return a
 
 
+def _cambio_de_velocidad(xs, ys, ts, filas: list[int]) -> float:
+    """Suma de los cambios de velocidad a lo largo de `filas`, en metros por paso de 30 s.
+
+    Es la segunda diferencia de la posición escrita en segundos, no en pasos de
+    sondeo: con cadencia irregular la de pasos lee un hueco como una aceleración
+    (trampa 009).
+    """
+    if len(filas) < 3:
+        return 0.0
+    dt = np.diff(ts[filas])
+    dt = np.where(dt > 0, dt, _DT_REF_S)
+    vx, vy = np.diff(xs[filas]) / dt, np.diff(ys[filas]) / dt
+    return float(np.hypot(np.diff(vx), np.diff(vy)).sum() * _DT_REF_S)
+
+
+def _dentro_de_la_puerta(lat, lon, ts, filas: list[int]) -> bool:
+    """La misma puerta que el emparejamiento: haversine y reloj de sondeo (trampa 008)."""
+    if len(filas) < 2:
+        return True
+    d = haversine_m(lat[filas][:-1], lon[filas][:-1], lat[filas][1:], lon[filas][1:])
+    dt = np.diff(ts[filas])
+    dt = np.where(dt == 0, _DT_REF_S, dt)
+    tope = np.minimum(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * np.maximum(dt, 1.0))
+    return bool((d <= tope).all())
+
+
+def _suavizar_intercambios(df: pd.DataFrame) -> pd.DataFrame:
+    """Deshace intercambios de identidad mirando un sondeo hacia delante.
+
+    El emparejamiento decide sondeo a sondeo con un modelo de velocidad
+    constante. Cuando dos buses del mismo grupo coinciden a menos de un paso en
+    el instante en que uno SE DETIENE o GIRA, la extrapolación apunta al otro y el
+    intercambio sale más barato que la asignación correcta. Sobre la flota
+    simulada con paradas y giros al ritmo real (29 % de pasos parados, bitácora
+    013), dos de cada tres de esos intercambios se deshacen solos en el sondeo
+    siguiente, y el resto se queda.
+
+    Decidir un sondeo es no poder usar el siguiente, que es justo el que delata
+    el error. Aquí se usa: con las trayectorias ya construidas, cada par de
+    posiciones del mismo (sondeo, línea, trayecto) a menos de
+    `RADIO_SUAVIZADO_M` prueba dos movimientos —cambiar entre sí solo esas dos
+    posiciones (el intercambio que se deshizo) o cambiar las colas desde ahí (el
+    que no)— y se acepta el que reduzca el cambio de velocidad en ±2 pasos
+    alrededor en más de `MEJORA_MIN_M`, siempre que ningún desplazamiento
+    resultante salga de la puerta física.
+
+    No rompe cadenas ni crea trayectorias: solo reasigna posiciones entre
+    trayectorias que ya existen. Romper la cadena ante la duda está medido como
+    peor (trampa 007).
+
+    Límites que quedan: un intercambio en el último sondeo no tiene sondeo
+    siguiente que lo delate, y dos buses que arrancan a la vez desde parados no
+    tienen velocidad previa que los distinga.
+    """
+    lat0 = float(df["lat"].mean())
+    lat, lon = df["lat"].to_numpy(), df["lon"].to_numpy()
+    xs = (lon - lon.mean()) * 111_320 * np.cos(np.radians(lat0))
+    ys = (lat - lat0) * 111_320
+    # Reloj POR SONDEO, el mismo con el que el emparejamiento calcula `dt_s`: las
+    # filas de un sondeo no siempre traen el mismo `ts_utc`, y medir por fila
+    # produce pasos de 8 s o negativos donde el tracker ve 30.
+    reloj = df.groupby("snapshot_id")["ts_utc"].transform("max")
+    ts = (reloj - reloj.min()).dt.total_seconds().to_numpy()
+    snap = df["snapshot_id"].to_numpy()
+
+    tray: dict = {}
+    for vid, idx in df.groupby("vehicle_id", sort=False).indices.items():
+        tray[vid] = list(idx[np.argsort(snap[idx], kind="stable")])
+    dueno: dict[int, tuple] = {}
+    for vid, filas in tray.items():
+        for pos, f in enumerate(filas):
+            dueno[f] = (vid, pos)
+
+    tocadas: set = set()
+    for _ in range(3):
+        mejoras = 0
+        for _, g in df.groupby(["snapshot_id", "linea", "trayecto"], sort=False):
+            if len(g) < 2:
+                continue
+            filas_g = g.index.to_numpy()
+            gx, gy = xs[filas_g], ys[filas_g]
+            cerca = np.hypot(gx[:, None] - gx[None, :], gy[:, None] - gy[None, :])
+            ii, jj = np.nonzero(np.triu(cerca < RADIO_SUAVIZADO_M, k=1))
+            for a, b in zip(filas_g[ii], filas_g[jj]):
+                (u, iu), (v, iv) = dueno[a], dueno[b]
+                if u == v:
+                    continue
+                tu, tv = tray[u], tray[v]
+                lo_u, hi_u = max(iu - 2, 0), min(iu + 3, len(tu))
+                lo_v, hi_v = max(iv - 2, 0), min(iv + 3, len(tv))
+                antes = _cambio_de_velocidad(
+                    xs, ys, ts, tu[lo_u:hi_u]
+                ) + _cambio_de_velocidad(xs, ys, ts, tv[lo_v:hi_v])
+
+                punto_u = tu[lo_u:iu] + [b] + tu[iu + 1 : hi_u]
+                punto_v = tv[lo_v:iv] + [a] + tv[iv + 1 : hi_v]
+                punto = _cambio_de_velocidad(
+                    xs, ys, ts, punto_u
+                ) + _cambio_de_velocidad(xs, ys, ts, punto_v)
+                cola_u = tu[lo_u:iu] + tv[iv:hi_v]
+                cola_v = tv[lo_v:iv] + tu[iu:hi_u]
+                cola = _cambio_de_velocidad(xs, ys, ts, cola_u) + _cambio_de_velocidad(
+                    xs, ys, ts, cola_v
+                )
+
+                if antes - min(punto, cola) <= MEJORA_MIN_M:
+                    continue
+                if (
+                    punto <= cola
+                    and _dentro_de_la_puerta(lat, lon, ts, punto_u)
+                    and _dentro_de_la_puerta(lat, lon, ts, punto_v)
+                ):
+                    tu[iu], tv[iv] = b, a
+                    dueno[a], dueno[b] = (v, iv), (u, iu)
+                elif _dentro_de_la_puerta(
+                    lat, lon, ts, cola_u
+                ) and _dentro_de_la_puerta(lat, lon, ts, cola_v):
+                    tray[u], tray[v] = tu[:iu] + tv[iv:], tv[:iv] + tu[iu:]
+                    for vid in (u, v):
+                        for pos, f in enumerate(tray[vid]):
+                            dueno[f] = (vid, pos)
+                else:
+                    continue
+                tocadas.update((u, v))
+                mejoras += 1
+        if not mejoras:
+            break
+
+    if not tocadas:
+        return df
+    df = df.copy()
+    for vid in tocadas:
+        filas = tray[vid]
+        df.loc[df.index[filas], "vehicle_id"] = vid
+        df.at[df.index[filas[0]], "dist_m"] = np.nan
+        df.at[df.index[filas[0]], "dt_s"] = np.nan
+        for p, q in zip(filas[:-1], filas[1:]):
+            df.at[df.index[q], "dist_m"] = float(
+                haversine_m(lat[p], lon[p], lat[q], lon[q])
+            )
+            df.at[df.index[q], "dt_s"] = float(ts[q] - ts[p]) or _DT_REF_S
+    return df
+
+
 def rastrear(
     df: pd.DataFrame, predictivo: bool = True, tolerar_hueco: int = 2
 ) -> pd.DataFrame:
@@ -140,7 +293,9 @@ def rastrear(
                          intercambios de identidad cuando dos buses de la misma
                          línea se cruzan, que es el fallo dominante del método
                          ingenuo (medido en el autotest: de ~5 % de posiciones
-                         mal asignadas a prácticamente cero).
+                         mal asignadas a prácticamente cero). Además, al final
+                         se deshacen los intercambios que delata el sondeo
+                         siguiente (`_suavizar_intercambios`).
 
     tolerar_hueco     sondeos que un vehículo puede faltar sin perder su
                       identidad. Con 0 se exige presencia en el sondeo anterior,
@@ -274,6 +429,9 @@ def rastrear(
         # Los candidatos que agotaron su tolerancia dejan de competir.
         vivos = {i: kk for i, kk in vivos.items() if k - kk <= tolerar_hueco}
 
+    # Solo en modo predictivo: el ingenuo es la referencia sin nada que lo ayude.
+    if predictivo:
+        df = _suavizar_intercambios(df)
     df["vel_kmh"] = df["dist_m"] / df["dt_s"] * 3.6
     return df.drop(columns=["_plat", "_plon", "_pdt"])
 

@@ -26,6 +26,7 @@ pasa.
 | [012](012-tres-guardias-de-trampas-cerradas-no-guardan.md) | 2026-09-17 | anomalia | metodologia | En **3 de 7** trampas cerradas la guardia no cae al deshacer el arreglo; la de la 004 quedó inerte al pasar de numpy 2.2.6 a 2.4.6, sin tocar código ni test |
 | [013](013-la-flota-simulada-no-para-ni-gira.md) | 2026-09-17 | medicion | metodologia | La flota simulada nunca para; la real está parada el **29 %** de los pasos y gira con p90 de 57°. Con paradas y giros realistas, el tracker pasa de 0 a **2-4 saltos** de identidad |
 | [014](014-la-capa-192-duplica-los-tramos-211-y-216.md) | 2026-09-17 | anomalia | calidad-dato | La capa 192 da **412** filas con `idtramo` para **410** tramos: el 211 y el 216 llegan duplicados en cada sondeo, con el mismo estado |
+| [015](015-el-sondeo-siguiente-delata-el-intercambio.md) | 2026-09-17 | tecnica | metodologia | Ajustar el coste de un paso no deshace los intercambios en paradas y giros: la información está en el sondeo **siguiente**. Suavizar con un sondeo de retardo los reduce un **58-100 %** en semillas reservadas sin partir ni una trayectoria real; quedan 46 saltos en 40 ejecuciones del escenario completo |
 
 ## Qué va aquí y qué no
 

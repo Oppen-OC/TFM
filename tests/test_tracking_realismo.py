@@ -12,10 +12,15 @@ instante en que uno se detiene o gira: el predictor extrapola al parado hacia
 delante y le asigna la posición del que pasa. Casi siempre se deshace en el
 sondeo siguiente; en convoy, no.
 
-Es un defecto conocido y no corregido, así que se fija con `xfail(strict=True)`
-por semilla: si alguien lo arregla, los xfail pasan a XPASS y la suite se pone
-roja para que se retire el marcador. Las semillas son las que fallan medidas; las
-que no fallan no están, porque no probarían nada.
+Casi siempre el error se delata en el sondeo siguiente, y `_suavizar_intercambios`
+lo usa para deshacerlo: con las semillas de ajuste, paradas pasa de 20 a 6 saltos,
+giros de 20 a 2 y los fenómenos combinados de 10 a 0
+(`docs/bitacora/015-el-sondeo-siguiente-delata-el-intercambio.md`).
+
+Las semillas son las que fallaban antes del suavizado; las que no fallaban no
+están, porque no probarían nada. Dos siguen fallando y se fijan con
+`xfail(strict=True)`: no son el defecto, son el límite de lo que se puede
+deshacer mirando posiciones.
 """
 
 from __future__ import annotations
@@ -31,26 +36,36 @@ P_PARADA = 0.17  # ~29 % de pasos parados, la cifra real
 P_GIRO = 0.10
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="DEFECTO CONOCIDO: con paradas al ritmo real el predictor de velocidad "
-    "constante extrapola al bus detenido y lo intercambia con el que pasa. Medido: "
-    "2-4 saltos y 3,3 % de trayectorias contaminadas por semilla, fragmentación 1,00. "
-    "Al corregirlo, quitar este marcador.",
+@pytest.mark.parametrize(
+    "semilla",
+    [
+        pytest.param(
+            23,
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason="LÍMITE: dos buses parados a 59 m arrancan a la vez en el "
+                "ÚLTIMO sondeo. Sin velocidad previa y sin sondeo siguiente, las "
+                "dos asignaciones son igual de plausibles.",
+            ),
+        ),
+        42,
+        pytest.param(
+            101,
+            marks=pytest.mark.xfail(
+                strict=True,
+                reason="LÍMITE: un bus llega y se detiene a 37 m de otro parado que "
+                "arranca, con rumbos no relacionados. El cambio de velocidad de las "
+                "dos asignaciones empata dentro del ruido; ampliar la ventana a ±4 "
+                "sondeos no lo resuelve. En la calle, los dos irían por la misma vía.",
+            ),
+        ),
+    ],
 )
-@pytest.mark.parametrize("semilla", [23, 42, 101])
 def test_paradas_realistas_no_intercambian_identidad(semilla):
     m = medir(simular_flota(semilla=semilla, p_parada=P_PARADA), predictivo=True)
     assert m["saltos"] == 0, f"{m['saltos']} saltos con paradas"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="DEFECTO CONOCIDO: un giro de 90° en un encuentro a menos de un paso "
-    "invierte la extrapolación. Medido: 4 saltos y 3,3 % de trayectorias "
-    "contaminadas por semilla. Los giros están SUBcalibrados (p90 24° frente a "
-    "57° reales). Al corregirlo, quitar este marcador.",
-)
 @pytest.mark.parametrize("semilla", [7, 42])
 def test_giros_realistas_no_intercambian_identidad(semilla):
     m = medir(simular_flota(semilla=semilla, p_giro=P_GIRO), predictivo=True)
@@ -59,7 +74,7 @@ def test_giros_realistas_no_intercambian_identidad(semilla):
 
 @pytest.mark.parametrize("semilla", [7, 23, 42, 101])
 def test_sin_paradas_ni_giros_las_mismas_semillas_no_fallan(semilla):
-    """Discriminación: los xfail de arriba caen por el fenómeno, no por la semilla."""
+    """Discriminación: las semillas de arriba se eligieron por el fenómeno, no al revés."""
     m = medir(simular_flota(semilla=semilla), predictivo=True)
     assert m["saltos"] == 0 and m["contaminadas"] == 0.0, m
 

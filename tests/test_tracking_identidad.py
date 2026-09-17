@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from project import tracking
 from project.analysis.simulacion import simular_flota
 from project.tracking import SALTO_MAX_M, VEL_MAX_KMH, rastrear
 
@@ -367,6 +368,88 @@ def test_sondeos_con_el_mismo_instante_no_rompen_la_cadena():
     df.loc[df["snapshot_id"] > 1003, "ts_utc"] -= pd.Timedelta(seconds=DT)
     out = _rastrear_con_verdad(df)
     assert out["vehicle_id"].nunique() == 1, "el paso con dt = 0 partió la cadena"
+
+
+# --------------------------------------------------------------------------- #
+# Paradas y giros en un encuentro
+# --------------------------------------------------------------------------- #
+# Coordenadas en metros de dos buses de la flota simulada con paradas y giros al
+# ritmo real (`simular_flota(semilla=42, p_parada=0.17)`, sondeos 1000-1006, y
+# `simular_flota(semilla=7, p_giro=0.10)`, sondeos 1005-1012), congeladas aquí
+# para que el escenario no dependa del generador. Sin `_suavizar_intercambios`
+# el tracker los intercambia en las cinco ordenaciones de fila: 85,7 % y 87,5 %.
+PARADA_JUNTO_A_OTRO = {
+    "para": [
+        (-838.7, -775.7), (-866.0, -855.2), (-889.3, -936.0), (-889.3, -936.0),
+        (-889.3, -936.0), (-888.3, -1020.0), (-888.3, -1020.0),
+    ],
+    "pasa": [
+        (-910.2, -1422.4), (-910.2, -1422.4), (-889.6, -1221.9), (-939.1, -1026.5),
+        (-1000.5, -834.5), (-1088.2, -653.0), (-1169.1, -468.3),
+    ],
+}  # fmt: skip
+GIRO_EN_UN_CRUCE = {
+    "gira": [
+        (-615.9, -724.7), (-812.6, -783.9), (-861.0, -584.2), (-1061.2, -630.4),
+        (-1255.0, -698.6), (-1458.7, -725.0), (-1660.1, -765.8), (-1862.4, -801.2),
+    ],
+    "sigue": [
+        (-980.2, -1417.4), (-1070.4, -1278.0), (-1156.3, -1136.1), (-1247.0, -997.0),
+        (-1338.8, -858.8), (-1458.5, -743.7), (-1577.8, -628.4), (-1674.8, -493.6),
+    ],
+}  # fmt: skip
+
+
+@pytest.mark.parametrize("seed", [1, 2, 3, 5, 8])
+@pytest.mark.parametrize(
+    "escenario", [PARADA_JUNTO_A_OTRO, GIRO_EN_UN_CRUCE], ids=["parada", "giro"]
+)
+def test_parar_o_girar_en_un_encuentro_no_intercambia_identidad(escenario, seed):
+    """El predictor extrapola al bus que para o gira y le asigna la posición del otro.
+
+    El error se delata en el sondeo siguiente —el bus "parado" habría ido hasta
+    el otro y vuelto—, y `_suavizar_intercambios` usa ese sondeo para deshacerlo
+    (`docs/bitacora/015-el-sondeo-siguiente-delata-el-intercambio.md`).
+    """
+    out = _rastrear_con_verdad(_construir(escenario, seed=seed))
+    assert _precision(out) == 1.0, f"precisión {_precision(out):.1%}"
+
+
+@pytest.mark.parametrize(
+    "escenario", [PARADA_JUNTO_A_OTRO, GIRO_EN_UN_CRUCE], ids=["parada", "giro"]
+)
+def test_sin_suavizado_el_encuentro_si_intercambia(escenario, monkeypatch):
+    """Discriminación: los escenarios de arriba ejercitan el suavizado de verdad."""
+    monkeypatch.setattr(tracking, "_suavizar_intercambios", lambda df: df)
+    out = _rastrear_con_verdad(_construir(escenario))
+    assert _precision(out) < 1.0, "el escenario ya no necesita el suavizado"
+
+
+def test_el_suavizado_mide_el_tiempo_con_el_reloj_de_sondeo():
+    """`dt_s` tras suavizar es el del emparejamiento: máximo `ts_utc` por sondeo.
+
+    Las filas de un sondeo no siempre traen el mismo `ts_utc`. Medido por fila, el
+    suavizado reescribía `dt_s` de 8 s o negativos donde el tracker tenía 30, y la
+    puerta física calculada con ese `dt_s` aparecía violada 14 veces en un día
+    real. Aquí se desordena el reloj dentro de cada sondeo a propósito.
+    """
+    sim = simular_flota(semilla=42, p_parada=0.17)
+    rng = np.random.default_rng(0)
+    sim["ts_utc"] -= pd.to_timedelta(rng.uniform(0, 12, len(sim)), unit="s")
+    out = rastrear(sim.drop(columns=["verdad"]))
+
+    reloj = out.groupby("snapshot_id")["ts_utc"].max()
+    reloj_s = (reloj - reloj.min()).dt.total_seconds()
+    o = out.sort_values(["vehicle_id", "snapshot_id"], kind="stable")
+    anterior = o.groupby("vehicle_id")["snapshot_id"].shift()
+    tiene = anterior.notna()
+    esperado = (
+        reloj_s.loc[o.loc[tiene, "snapshot_id"]].to_numpy()
+        - reloj_s.loc[anterior[tiene].astype(int)].to_numpy()
+    )
+    esperado = np.where(esperado == 0, 30.0, esperado)
+    obtenido = o.loc[tiene, "dt_s"].to_numpy(dtype=float)
+    assert np.allclose(obtenido, esperado), "dt_s no sigue el reloj de sondeo"
 
 
 # --------------------------------------------------------------------------- #

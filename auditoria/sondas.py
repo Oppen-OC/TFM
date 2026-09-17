@@ -182,6 +182,13 @@ def _escenarios() -> dict[str, pd.DataFrame]:
     # Dos sondeos perdidos a cadencia de 60 s: dentro de `tolerar_hueco`, pero
     # el puente dura 180 s y supera `HUECO_MAX_S`.
     esc["pausa"] = simular_flota(dt=60.0, huecos=(6, 7))
+    # Paradas y giros al ritmo real: lo único que ejercita el suavizado de
+    # intercambios. Sin ellos, todo mutante del suavizado sale "equivalente".
+    esc["paradas"] = simular_flota(semilla=42, p_parada=0.17, n_snaps=40)
+    esc["giros"] = simular_flota(semilla=7, p_giro=0.10, n_snaps=40)
+    esc["estres"] = simular_flota(
+        semilla=11, p_parada=0.30, p_giro=0.20, ruido_gps_m=5.0, jitter_dt_s=6.0
+    )
     return esc
 
 

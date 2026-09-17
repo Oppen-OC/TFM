@@ -439,3 +439,61 @@ buscar = '''        for line in fh:'''
 reemplazar = '''        for line in list(fh)[:-1]:'''
 detector = []
 sondas = ["persistencia"]
+
+# --------------------------------------------------------------------------- #
+# Suavizado de intercambios
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "036"
+nombre = "suavizado de intercambios desactivado"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''    if predictivo:
+        df = _suavizar_intercambios(df)'''
+reemplazar = '''    if False:
+        df = _suavizar_intercambios(df)'''
+detector = ["tests/test_tracking_identidad.py::test_parar_o_girar_en_un_encuentro_no_intercambia_identidad"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "037"
+nombre = "el suavizado acepta movimientos fuera de la puerta física"
+capa = "tracking"
+trampa = "008"
+fichero = "src/project/tracking.py"
+buscar = '''    return bool((d <= tope).all())'''
+reemplazar = '''    return True'''
+detector = []
+sondas = ["tracking"]
+
+[[mutante]]
+id = "038"
+nombre = "el suavizado mide el tiempo por fila y no por sondeo"
+capa = "tracking"
+trampa = "009"
+fichero = "src/project/tracking.py"
+buscar = '''    reloj = df.groupby("snapshot_id")["ts_utc"].transform("max")
+    ts = (reloj - reloj.min()).dt.total_seconds().to_numpy()'''
+reemplazar = '''    ts = (df["ts_utc"] - df["ts_utc"].min()).dt.total_seconds().to_numpy()'''
+detector = ["tests/test_tracking_identidad.py::test_el_suavizado_mide_el_tiempo_con_el_reloj_de_sondeo"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "039"
+nombre = "el suavizado solo prueba el intercambio de un sondeo, nunca el de colas"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''                elif _dentro_de_la_puerta('''
+reemplazar = '''                elif False and _dentro_de_la_puerta('''
+detector = []
+sondas = ["tracking"]
+
+[[mutante]]
+id = "040"
+nombre = "el suavizado acepta mejoras del orden del ruido de posición"
+capa = "tracking"
+fichero = "src/project/tracking.py"
+buscar = '''MEJORA_MIN_M = 10.0'''
+reemplazar = '''MEJORA_MIN_M = 0.0'''
+detector = []
+sondas = ["tracking"]

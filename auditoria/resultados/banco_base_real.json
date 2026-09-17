@@ -1,0 +1,25 @@
+{
+  "etiqueta": "base_real",
+  "tracker": "C:\\Users\\oppen\\AppData\\Local\\Temp\\claude\\c--Users-oppen-Code-TFM\\1bdfc0c4-9e9c-40d9-aa2c-fdb03ba4c54d\\scratchpad\\candidatos\\base.py",
+  "semillas": "ajuste",
+  "real": [
+    {
+      "dia": "2026-08-17",
+      "posiciones": 398302,
+      "trayectorias": 7654,
+      "duracion_mediana_min": 26.98,
+      "ida_vuelta": 291,
+      "sobre_puerta": 0,
+      "segundos": 268.3
+    },
+    {
+      "dia": "2026-08-23",
+      "posiciones": 291450,
+      "trayectorias": 6001,
+      "duracion_mediana_min": 23.22,
+      "ida_vuelta": 201,
+      "sobre_puerta": 0,
+      "segundos": 222.0
+    }
+  ]
+}

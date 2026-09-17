@@ -86,6 +86,9 @@ Hecho también, en `c6e02cc`: `simular_flota` gana `p_parada`, `p_giro`,
 `ruido_gps_m` y `jitter_dt_s`, apagados por defecto, y el defecto queda fijado en
 `tests/test_tracking_realismo.py` como `xfail(strict=True)`.
 
+Mitigado, no resuelto, con el suavizado de intercambios de la entrada 015:
+−70 % de saltos en el escenario combinado con semillas reservadas.
+
 Abierto:
 
 - Medir los intercambios sobre captura real sin verdad-terreno: por ejemplo,
