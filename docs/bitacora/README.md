@@ -29,6 +29,8 @@ pasa.
 | [015](015-el-sondeo-siguiente-delata-el-intercambio.md) | 2026-09-17 | tecnica | metodologia | Ajustar el coste de un paso no deshace los intercambios en paradas y giros: la información está en el sondeo **siguiente**. Suavizar con un sondeo de retardo los reduce un **58-100 %** en semillas reservadas sin partir ni una trayectoria real; quedan 46 saltos en 40 ejecuciones del escenario completo |
 | [016](016-el-map-matching-casa-con-el-gtfs.md) | 2026-09-17 | medicion | calidad-dato | Las posiciones casan con los trazados del GTFS a **4 m** de mediana (5,16 M de posiciones). El sentido lo decide el avance: **0,998** sobre el trazado elegido frente a **0,018** sobre el contrario. Lo que queda fuera de ruta son buses en cochera: 4,8 % en servicio frente a >50 % de madrugada |
 | [017](017-la-abscisa-mejora-la-identidad-un-8-por-ciento.md) | 2026-09-18 | medicion | metodologia | Emparejar sobre el recorrido quita el **7,6 %** de los intercambios con semillas reservadas, no el 35 % que aparentaban cinco de ajuste. Hicieron falta la hipótesis de parada y penalizar los adelantamientos, con techo puesto por los adelantamientos reales |
+| [018](018-las-posiciones-sin-trayecto-salen-como-trayectorias-de-un-punto.md) | 2026-09-18 | anomalia | calidad-dato | 1.834 de 5,16 M posiciones (0,036 %, 31 líneas) llegan sin `trayecto`; `groupby` las descarta y cada una sale como trayectoria de **un punto**: el 1,07 % de las trayectorias del 27/08 |
+| [019](019-reprocesar-no-deduplica-sondeos.md) | 2026-09-18 | anomalia | calidad-dato | `reprocesar` no deduplica sondeos como el colector: el 27/08 pasa de 2.784 a 2.854 capturas y un **2,5 %** más de filas da un **53 %** más de trayectorias (7.658 → 11.730) |
 
 ## Qué va aquí y qué no
 
