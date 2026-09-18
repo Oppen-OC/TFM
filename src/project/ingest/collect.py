@@ -10,9 +10,11 @@ Diseño deliberado:
    Si el esquema de la fuente cambia (Renfe es un endpoint no documentado),
    podrás reprocesar. El pasado no se puede recapturar.
 
-2. Deduplicación por snapshot. La capa de la EMT se refresca cada ~29 s pero
-   tú sondeas cada 30 s: sin deduplicar te comes un ~15 % de filas repetidas.
-   El `snapshot_id` (gid mínimo del bloque) identifica el refresco.
+2. Deduplicación por sondeo (`sources.clave_sondeo`). La fuente sirve a veces
+   el mismo sondeo en dos capturas: del 15/08 al 18/09, 2.078 de las 80.069 de
+   la EMT (2,6 %) y 179 de las 90.250 de Renfe; Valenbisi y tráfico, ninguna.
+   Se guarda la primera, aunque la EMT la sirva a medias. `reprocesar` se queda
+   la más completa y recupera del crudo lo que aquí se descarta (bitácora 019).
 
 3. Escritura a Parquet particionado por fuente y día, con volcado por tamaño
    Y por tiempo: si el proceso muere, como mucho pierdes el Parquet de los

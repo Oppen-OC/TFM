@@ -388,7 +388,9 @@ def parse(source: str, payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
 def clave_sondeo(df: pd.DataFrame, ts_ingest: pd.Timestamp) -> int | str:
     """Lo que identifica un sondeo ya parseado, para no guardarlo dos veces.
 
-    Las fuentes sirven a veces la misma respuesta en varias capturas seguidas.
+    Las fuentes sirven a veces el mismo sondeo en varias capturas, y no siempre
+    con el mismo contenido: la EMT puede servir primero el bloque a medio
+    reinsertar (bitácora 019). Qué captura se guarda lo decide quien llama.
     EMT: el `snapshot_id` (gid mínimo del bloque, trampa 001). Renfe y Valenbisi:
     su propia marca de tiempo, `fechaActualizacion` y el `update_jcd` más
     reciente. Tráfico no publica marca: su `ts_utc` es el instante de captura y

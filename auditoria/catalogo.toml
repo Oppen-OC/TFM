@@ -387,7 +387,10 @@ buscar = '''    if sid in s:
         return False'''
 reemplazar = '''    if False:
         return False'''
-detector = []
+detector = [
+    "tests/test_persistencia.py::test_recordar_descarta_el_snapshot_repetido",
+    "tests/test_persistencia.py::test_reprocesar_reconstruye_lo_mismo_que_el_colector",
+]
 sondas = ["persistencia"]
 
 [[mutante]]
