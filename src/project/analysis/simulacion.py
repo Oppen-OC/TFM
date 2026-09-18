@@ -68,10 +68,13 @@ def simular_flota(
         versión fácil del problema.
 
     `parciales`  Índice de snapshot -> fracción de filas que sobrevive. Modela el
-        payload truncado a media escritura (`data/raw/_TRUNCADOS.txt`): el
-        colector guarda menos filas de las que había y no se entera. Se recorta
-        después del barajado, así que las filas que faltan son un subconjunto
-        arbitrario, como en el fichero real.
+        sondeo que la EMT sirve a medio reinsertar (bitácora 020): llegan menos
+        filas de las que hay y nada avisa. Se recorta después del barajado, así
+        que las filas que faltan son un subconjunto arbitrario. En la fuente real
+        no lo son: faltan los `gid` más altos del bloque, y el orden de inserción
+        es casi el mismo de un refresco al siguiente, así que un sondeo parcial
+        pierde grupos (línea, trayecto) enteros. Recortar al azar es el caso más
+        difícil para el tracker, porque deja buses sueltos de un grupo.
 
     `huecos`  Índices de snapshot que desaparecen ENTEROS, como cuando el
         colector se para un rato. A diferencia de `parciales`, aquí no falta

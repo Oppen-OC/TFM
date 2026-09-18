@@ -2,6 +2,7 @@
 
     uv run python -m project.analysis.validar_mapmatching                  # 17 días
     uv run python -m project.analysis.validar_mapmatching --dias 2026-08-26 --procesos 1
+    uv run python -m project.analysis.validar_mapmatching --guardar DIR    # + salida por posición
 
 Por jornada (filtrada por `ts_ingest_utc`, no por partición: entrada 011 de la
 bitácora): `rastrear` + `mapmatching.emparejar`, y se mide
@@ -18,6 +19,10 @@ los vehículos deben AVANZAR sobre el trazado elegido. Y si el feed vale para
 toda la captura: nueve de los diecisiete días son anteriores a su vigencia
 declarada (24/08), así que la distancia se compara antes y después.
 
+`--guardar DIR` escribe además la salida de `emparejar` de cada jornada en
+`DIR/<dia>.parquet`, para investigar sin repetir `rastrear`, que es el 95 % del
+coste.
+
 Nada del pipeline importa de aquí: esto es exploración, no un stage de DVC.
 """
 
@@ -27,6 +32,7 @@ import argparse
 import json
 import time
 from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 from pathlib import Path
 
 import duckdb
@@ -86,7 +92,7 @@ def _grupos(out: pd.DataFrame, trazados: dict) -> list[dict]:
     return filas
 
 
-def validar_dia(dia: str) -> dict:
+def validar_dia(dia: str, guardar: Path | None = None) -> dict:
     trazados = cargar_trazados()
     df = cargar_dia(dia)
     t0 = time.time()
@@ -94,6 +100,8 @@ def validar_dia(dia: str) -> dict:
     t1 = time.time()
     out = emparejar(tr, trazados)
     t2 = time.time()
+    if guardar is not None:
+        out.to_parquet(guardar / f"{dia}.parquet", index=False, compression="zstd")
     d = out["dist_trazado_m"].dropna()
     n = len(out)
 
@@ -136,9 +144,13 @@ def validar_dia(dia: str) -> dict:
     }
 
 
-def main(dias: list[str], procesos: int, salida: Path | None) -> None:
+def main(
+    dias: list[str], procesos: int, salida: Path | None, guardar: Path | None = None
+) -> None:
+    if guardar is not None:
+        guardar.mkdir(parents=True, exist_ok=True)
     with ProcessPoolExecutor(max_workers=procesos) as ex:
-        resultados = list(ex.map(validar_dia, dias))
+        resultados = list(ex.map(partial(validar_dia, guardar=guardar), dias))
 
     resumen = pd.DataFrame(
         [{k: v for k, v in r.items() if k != "grupos"} for r in resultados]
@@ -192,6 +204,7 @@ def main(dias: list[str], procesos: int, salida: Path | None) -> None:
                     "fuera_de_ruta_m": FUERA_DE_RUTA_M,
                     "dias": resumen.to_dict(orient="records"),
                     "grupos": agregado.reset_index().to_dict(orient="records"),
+                    "grupos_por_dia": grupos.to_dict(orient="records"),
                 },
                 ensure_ascii=False,
                 indent=2,
@@ -206,5 +219,6 @@ if __name__ == "__main__":
     p.add_argument("--dias", nargs="*", default=DIAS)
     p.add_argument("--procesos", type=int, default=9)
     p.add_argument("--json", type=Path, default=None)
+    p.add_argument("--guardar", type=Path, default=None)
     a = p.parse_args()
-    main(a.dias, a.procesos, a.json)
+    main(a.dias, a.procesos, a.json, a.guardar)

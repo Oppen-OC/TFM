@@ -3,6 +3,7 @@
     uv run python auditoria/banco_tracker.py --etiqueta base
     uv run python auditoria/banco_tracker.py --tracker ruta/tracking_candidato.py --etiqueta A
     uv run python auditoria/banco_tracker.py --real 2026-08-27 --etiqueta base
+    uv run python auditoria/banco_tracker.py --real 2026-08-27 --real-abscisa --sin-sim --etiqueta dos_pasadas
     uv run python auditoria/banco_tracker.py --reservadas --etiqueta final   # UNA vez
 
 Dos bloques de medida:
@@ -23,6 +24,13 @@ intercambio que se deshace en el sondeo siguiente —el bus parado "va" hasta el
 que pasa y vuelve—. No cuenta los intercambios que no se deshacen, así que es
 una cota inferior; su relación con los saltos verdaderos se comprueba en
 simulación con `--validar-indicador` antes de usarlo.
+
+`--real-abscisa` mide las jornadas reales con las dos pasadas que hará
+`prepare.py` (ADR-012): rastrear, `emparejar`, y rastrear otra vez con la abscisa
+donde es fiable. La segunda pasada se construye desde la SALIDA de la primera,
+no desde la entrada: `rastrear` reordena por sondeo y reinicia el índice, así que
+pegar la abscisa por posición a una entrada desordenada la cruzaría entre filas
+sin error (el patrón de la trampa 004).
 
 `--tracker` carga un `tracking.py` alternativo desde fichero, para probar
 candidatos sin tocar `src/project/tracking.py`.
@@ -188,7 +196,7 @@ def resumir_sim(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def medir_real(tracker: ModuleType, dia: str) -> dict:
+def medir_real(tracker: ModuleType, dia: str, con_abscisa: bool = False) -> dict:
     desde = pd.Timestamp(f"{dia}T00:00:00Z")
     hasta = desde + pd.Timedelta(days=1)
     patron = (settings.curated_dir / "source=emt_buses" / "*" / "*.parquet").as_posix()
@@ -202,6 +210,17 @@ def medir_real(tracker: ModuleType, dia: str) -> dict:
     ).df()
     t = time.time()
     out = tracker.rastrear(df)
+    fiable_frac = None
+    if con_abscisa:
+        casada = emparejar(out, cargar_trazados())
+        fiable = ~casada["fuera_de_ruta"].fillna(True).astype(bool) & ~casada[
+            "ambigua"
+        ].fillna(True).astype(bool)
+        fiable_frac = round(float(fiable.mean()), 4)
+        entrada = casada[
+            ["snapshot_id", "linea", "trayecto", "lat", "lon", "ts_utc"]
+        ].assign(abscisa_m=np.where(fiable, casada["abscisa_m"], np.nan))
+        out = tracker.rastrear(entrada)
     segundos = time.time() - t
     dur = out.groupby("vehicle_id")["ts_utc"].agg(
         lambda s: (s.max() - s.min()).total_seconds() / 60
@@ -212,8 +231,11 @@ def medir_real(tracker: ModuleType, dia: str) -> dict:
     )
     return {
         "dia": dia,
+        "dos_pasadas": con_abscisa,
+        "abscisa_fiable": fiable_frac,
         "posiciones": len(out),
         "trayectorias": int(out["vehicle_id"].nunique()),
+        "de_un_punto": int((out.groupby("vehicle_id").size() == 1).sum()),
         "duracion_mediana_min": round(float(dur.median()), 2),
         "ida_vuelta": ida_vuelta(out),
         "sobre_puerta": int((tr["dist_m"] > tope + 1e-6).sum()),
@@ -243,6 +265,9 @@ def main() -> None:
     p.add_argument("--etiqueta", required=True)
     p.add_argument("--reservadas", action="store_true")
     p.add_argument("--real", nargs="*", default=[])
+    p.add_argument(
+        "--real-abscisa", action="store_true", help="jornadas reales a dos pasadas"
+    )
     p.add_argument("--sin-sim", action="store_true")
     p.add_argument("--validar-indicador", action="store_true")
     p.add_argument("--gtfs", action="store_true", help="flota sobre trazados reales")
@@ -279,7 +304,7 @@ def main() -> None:
         salida["detalle"] = df.to_dict(orient="records")
     reales = []
     for dia in a.real:
-        r = medir_real(tracker, dia)
+        r = medir_real(tracker, dia, a.real_abscisa)
         reales.append(r)
         print(f"  [{a.etiqueta}] real {r}", flush=True)
     if reales:

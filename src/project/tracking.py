@@ -406,8 +406,10 @@ def rastrear(
                       que es el comportamiento histórico.
 
                       Un vehículo ausente NO es un vehículo que se va: la fuente
-                      publica sondeos truncados (`data/raw/_TRUNCADOS.txt`) y
-                      pierde vehículos sueltos. Tratar cada ausencia como una
+                      sirve a veces el bloque a medio reinsertar y pierde
+                      vehículos sueltos. `reprocesar` recupera la mayoría de esos
+                      bloques con la captura siguiente, pero no todos (bitácora
+                      020). Tratar cada ausencia como una
                       baja partía el autobús medio en trozos de 10,5 min frente a
                       servicios de 30-60. Sobre la jornada del 27/08/2026, pasar
                       de 0 a 2 baja de 12.709 a 7.632 trayectorias y sube la

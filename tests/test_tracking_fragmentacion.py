@@ -95,12 +95,13 @@ def test_flip_de_trayecto_en_cabecera_no_mezcla_identidades():
 
 
 def test_snapshot_parcial_no_parte_la_trayectoria():
-    """El payload truncado es un fallo del colector, no una flota que se va.
+    """El sondeo a medias es un fallo de la fuente, no una flota que se va.
 
-    Causa en `data/raw/_TRUNCADOS.txt`: un miembro gzip a medias hace que
-    `read_raw()` devuelva menos filas en silencio. Antes de `tolerar_hueco`, un
-    sondeo al 20 % dejaba `frag=1.80`; sobre la captura real del 27/08/2026, tres
-    sondeos parciales causaron 452 de las 883 roturas de la hora — el 51 %.
+    La EMT sirve a veces el bloque a medio reinsertar (bitácora 020; la causa
+    que se citaba aquí, un gzip truncado, era falsa: entrada 011). Antes de
+    `tolerar_hueco`, un sondeo al 20 % dejaba `frag=1.80`; sobre la captura real
+    del 27/08/2026, tres sondeos parciales causaron 452 de las 883 roturas de la
+    hora — el 51 %.
     """
     m = medir(simular_flota(parciales={7: 0.2}), predictivo=True)
     assert m["fragmentacion"] == 1.0, f"{m['fragmentacion']:.2f}"
