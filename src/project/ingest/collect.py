@@ -41,7 +41,7 @@ import httpx
 import pandas as pd
 
 from project.config import settings
-from project.ingest.sources import SOURCES, append_raw, now_utc, parse
+from project.ingest.sources import SOURCES, append_raw, clave_sondeo, now_utc, parse
 
 log = logging.getLogger("collect")
 HEADERS = {"User-Agent": "TFM-UPV-BigData/0.1 (investigacion academica)"}
@@ -220,13 +220,7 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
 
             df = parse(key, payload, ts)
             if not df.empty:
-                if "snapshot_id" in df.columns:
-                    sid = int(df["snapshot_id"].iloc[0])
-                elif "ts_utc" in df.columns and df["ts_utc"].notna().any():
-                    sid = str(df["ts_utc"].max())
-                else:
-                    sid = str(ts)
-                if not recordar(key, sid):
+                if not recordar(key, clave_sondeo(df, ts)):
                     STATS[key]["dup"] += 1
                 else:
                     BUFFER[key].append(df)

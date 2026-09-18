@@ -440,6 +440,46 @@ reemplazar = '''        for line in list(fh)[:-1]:'''
 detector = []
 sondas = ["persistencia"]
 
+[[mutante]]
+id = "053"
+nombre = "reprocesar no deduplica los sondeos que el colector descarta"
+capa = "persistencia"
+# El bug de la bitácora 019: el curated reconstruido del 27/08 daba 11.730
+# trayectorias frente a las 7.658 del colector.
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''            clave = clave_sondeo(df, ts_ingest)'''
+reemplazar = '''            clave = (clave_sondeo(df, ts_ingest), ts_ingest)'''
+detector = ["tests/test_persistencia.py::test_reprocesar_reconstruye_lo_mismo_que_el_colector"]
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "054"
+nombre = "la clave de sondeo es el instante de captura: nadie deduplica"
+capa = "persistencia"
+# Colector y reprocesar comparten `clave_sondeo`, así que se rompen a la vez y
+# siguen siendo equivalentes entre sí. Lo detecta la cuenta de sondeos del test,
+# no la comparación de los dos curated.
+fichero = "src/project/ingest/sources.py"
+buscar = '''    if "snapshot_id" in df.columns:
+        return int(df["snapshot_id"].iloc[0])'''
+reemplazar = '''    return str(ts_ingest)
+    if "snapshot_id" in df.columns:
+        return int(df["snapshot_id"].iloc[0])'''
+detector = ["tests/test_persistencia.py::test_reprocesar_reconstruye_lo_mismo_que_el_colector"]
+sondas = ["persistencia"]
+
+[[mutante]]
+id = "055"
+nombre = "reprocesar se queda la primera captura del sondeo aunque venga a medias"
+capa = "persistencia"
+# Es el criterio del colector. Descarta el bloque entero que llega en la captura
+# siguiente: 1.200 sondeos y 109.063 filas del 15/08 al 18/09.
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''                if len(df) > len(previo[1]):'''
+reemplazar = '''                if False:'''
+detector = ["tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"]
+sondas = ["persistencia"]
+
 # --------------------------------------------------------------------------- #
 # Suavizado de intercambios
 # --------------------------------------------------------------------------- #

@@ -385,6 +385,25 @@ def parse(source: str, payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
     return PARSERS[SOURCES[source].parser](payload, ts_ingest)
 
 
+def clave_sondeo(df: pd.DataFrame, ts_ingest: pd.Timestamp) -> int | str:
+    """Lo que identifica un sondeo ya parseado, para no guardarlo dos veces.
+
+    Las fuentes sirven a veces la misma respuesta en varias capturas seguidas.
+    EMT: el `snapshot_id` (gid mínimo del bloque, trampa 001). Renfe y Valenbisi:
+    su propia marca de tiempo, `fechaActualizacion` y el `update_jcd` más
+    reciente. Tráfico no publica marca: su `ts_utc` es el instante de captura y
+    la clave no se repite nunca.
+
+    La comparten el colector y `reprocesar`. Con dos copias, el curated
+    reconstruido deja de ser el del colector (bitácora 019).
+    """
+    if "snapshot_id" in df.columns:
+        return int(df["snapshot_id"].iloc[0])
+    if "ts_utc" in df.columns and df["ts_utc"].notna().any():
+        return str(df["ts_utc"].max())
+    return str(ts_ingest)
+
+
 # --------------------------------------------------------------------------- #
 # Geodesia mínima (sin dependencias pesadas)
 # --------------------------------------------------------------------------- #

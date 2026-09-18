@@ -12,6 +12,24 @@ crudos están en disco tal como llegaron: se vuelve a parsear y listo.
 Es el argumento operativo de por qué la ingesta se separa del procesado, y el
 mismo que justifica Kafka en la memoria: capturar es irreversible, procesar es
 reintentable.
+
+Reintentable siempre que no meta dos veces el mismo sondeo. El crudo guarda
+TODAS las capturas, también las del sondeo que la fuente sirvió repetido; sin
+descartarlas, el curated reconstruido del 27/08 daba un 53 % más de
+trayectorias que el del colector (bitácora 019). La clave de sondeo es la misma
+función que usa el colector, `clave_sondeo`.
+
+De las capturas de un mismo sondeo se queda la que MÁS filas trae, y a igualdad
+la primera. No es el criterio del colector, que se queda siempre la primera: la
+EMT sirve a veces el bloque a medio reinsertar, y la captura siguiente trae el
+mismo `snapshot_id` con el bloque entero. Del 15/08 al 18/09 fueron 1.200
+sondeos (el 1,5 %) y 109.063 filas que el colector descartó y el crudo conserva.
+Donde no hay sondeo a medias, el resultado es el del colector fila a fila.
+
+La memoria de sondeos vistos no tiene aquí la cota de 20.000 del colector: esa
+cota existe para que un proceso de meses no crezca sin fin, no porque la fuente
+reutilice claves. En el crudo, entre la primera captura de un sondeo y su
+repetición no se cuela nunca más de un sondeo nuevo.
 """
 
 from __future__ import annotations
@@ -24,7 +42,7 @@ from pathlib import Path
 import pandas as pd
 
 from project.config import settings
-from project.ingest.sources import SOURCES, parse, read_raw
+from project.ingest.sources import SOURCES, clave_sondeo, parse, read_raw
 
 
 def reprocesar(root: Path, source: str, dry: bool) -> dict:
@@ -32,9 +50,11 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
     if not dir_raw.exists():
         return {"fuente": source, "estado": "sin crudo"}
 
-    por_dia: dict[str, list[pd.DataFrame]] = defaultdict(list)
+    # Captura elegida de cada sondeo, en el orden en que apareció por primera vez.
+    elegidos: dict[int | str, tuple[str, pd.DataFrame]] = {}
+    completados: set[int | str] = set()
     geo: pd.DataFrame | None = None
-    n_payloads = errores = 0
+    n_payloads = errores = duplicados = 0
 
     for fichero in sorted(dir_raw.rglob("*.ndjson.gz")):
         for ts_ingest, payload in read_raw(fichero):
@@ -63,8 +83,20 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
                     ]
                     geo = df[cols].drop_duplicates(subset=["idtramo"])
                 df = df.drop(columns=["geom_wkt"])
-            por_dia[ts_ingest.strftime("%Y-%m-%d")].append(df)
+            clave = clave_sondeo(df, ts_ingest)
+            dia = ts_ingest.strftime("%Y-%m-%d")
+            previo = elegidos.get(clave)
+            if previo is not None:
+                duplicados += 1
+                if len(df) > len(previo[1]):
+                    elegidos[clave] = (dia, df)
+                    completados.add(clave)
+                continue
+            elegidos[clave] = (dia, df)
 
+    por_dia: dict[str, list[pd.DataFrame]] = defaultdict(list)
+    for dia, df in elegidos.values():
+        por_dia[dia].append(df)
     filas = sum(len(d) for v in por_dia.values() for d in v)
     if dry:
         return {
@@ -73,6 +105,8 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
             "dias": len(por_dia),
             "filas": filas,
             "errores": errores,
+            "duplicados": duplicados,
+            "completados": len(completados),
             "estado": "simulado",
         }
 
@@ -102,6 +136,8 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
         "dias": len(por_dia),
         "filas": filas,
         "errores": errores,
+        "duplicados": duplicados,
+        "completados": len(completados),
         "estado": "reescrito",
     }
 
@@ -121,7 +157,9 @@ if __name__ == "__main__":
         else:
             print(
                 f"  {s:22} {r['payloads']:6,} payloads -> {r['filas']:9,} filas "
-                f"en {r['dias']} día(s), {r['errores']} errores  [{r['estado']}]"
+                f"en {r['dias']} día(s), {r['duplicados']:,} repetidos "
+                f"({r['completados']:,} completados), "
+                f"{r['errores']} errores  [{r['estado']}]"
             )
     if not a.dry_run:
         print(

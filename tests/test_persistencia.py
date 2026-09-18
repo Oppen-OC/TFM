@@ -14,6 +14,8 @@ módulo (`BUFFER`, `VISTOS`, `PARAR`...); la fixture `colector` los aísla.
 from __future__ import annotations
 
 import asyncio
+import copy
+import dataclasses
 import gzip
 import json
 from collections import defaultdict, deque
@@ -203,3 +205,128 @@ def test_reprocesar_cuenta_los_payloads_que_no_parsean(crudo_de_dos_dias):
     """Un payload que no parsea se salta, pero se cuenta: si no, no se ve."""
     r = reprocesar.reprocesar(crudo_de_dos_dias, "trafico_estado", dry=True)
     assert r["errores"] == 1, r
+
+
+def _sondeo(fuente: str, base: dict, k: int) -> dict:
+    """El payload real de `fuente` como k-ésimo refresco: otra clave de sondeo."""
+    p = copy.deepcopy(base)
+    if fuente == "emt_buses":
+        for f in p["features"]:
+            f["attributes"]["gid"] += 1000 * k
+    elif fuente == "renfe_cercanias":
+        fecha = pd.Timestamp(p["fechaActualizacion"]) + pd.Timedelta(minutes=k)
+        p["fechaActualizacion"] = fecha.isoformat()
+    elif fuente == "valenbisi":
+        for f in p["features"]:
+            f["attributes"]["update_jcd"] += 60_000 * k
+    # Tráfico no publica marca de tiempo: su clave es el instante de captura y
+    # el mismo payload vale como sondeo distinto.
+    return p
+
+
+def _curado(raiz: Path) -> pd.DataFrame:
+    df = pd.concat(pd.read_parquet(f) for f in sorted(raiz.rglob("*.parquet")))
+    return df.sort_values("ts_ingest_utc", kind="stable").reset_index(drop=True)
+
+
+def _capturar_y_reprocesar(colector, monkeypatch, root, fuente, servidos):
+    """El colector sondea `servidos` en orden; después se reprocesa su crudo.
+
+    Devuelve el resumen de `reprocesar`, el curated que escribió el colector (que
+    `reprocesar` aparta a `_curated_previo/`) y el reconstruido.
+    """
+    monkeypatch.setitem(
+        sources.SOURCES,
+        fuente,
+        dataclasses.replace(sources.SOURCES[fuente], period_s=0),
+    )
+    cola = iter(servidos)
+
+    def responder(request: httpx.Request) -> httpx.Response:
+        payload = next(cola)
+        if payload is servidos[-1]:
+            colector.PARAR.set()
+        return httpx.Response(200, json=payload)
+
+    async def capturar() -> None:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as c:
+            await colector.sondear(c, fuente, root)
+
+    asyncio.run(capturar())
+    colector.flush(root, fuente)
+    r = reprocesar.reprocesar(root, fuente, dry=False)
+    return (
+        r,
+        _curado(root / "_curated_previo" / f"source={fuente}"),
+        _curado(root / "curated" / f"source={fuente}"),
+    )
+
+
+@pytest.mark.parametrize("fuente", list(sources.SOURCES))
+def test_reprocesar_reconstruye_lo_mismo_que_el_colector(
+    tmp_path, colector, fix, monkeypatch, fuente
+):
+    """Del mismo crudo, `reprocesar` escribe el curated que escribió el colector.
+
+    La fuente sirve a veces el mismo sondeo más de una vez, y no siempre seguido:
+    el 27/08 el sondeo 1664101649 de la EMT llegó en 14 capturas. El colector se
+    queda con una. `reprocesar` volvía a parsear todas y el día reconstruido daba
+    un 53 % más de trayectorias (`docs/bitacora/019-reprocesar-no-deduplica-sondeos.md`).
+    Comprobar que reconstruye no basta: tiene que reconstruir LO MISMO. La única
+    diferencia admitida es el sondeo servido a medias, en el test siguiente.
+    """
+    servidos = [_sondeo(fuente, fix[fuente], k) for k in (0, 1, 0, 2)]
+    esperados = 4 if fuente.startswith("trafico") else 3
+
+    r, del_colector, reconstruido = _capturar_y_reprocesar(
+        colector, monkeypatch, tmp_path, fuente, servidos
+    )
+
+    assert r["payloads"] == 4, r
+    assert r["duplicados"] == colector.STATS[fuente]["dup"] == 4 - esperados, r
+    assert reconstruido["ts_ingest_utc"].nunique() == esperados
+    pd.testing.assert_frame_equal(reconstruido, del_colector)
+
+
+def test_reprocesar_completa_el_sondeo_que_llego_a_medias(
+    tmp_path, colector, fix, monkeypatch
+):
+    """De dos capturas del mismo sondeo, `reprocesar` se queda la del bloque entero.
+
+    La EMT sirve a veces la tabla a medio reinsertar: los gid entran en orden, así
+    que la captura parcial trae los más bajos y el mismo `snapshot_id` que el
+    bloque completo, que llega en la captura siguiente. El colector guarda la
+    primera y tira la buena: del 15/08 al 18/09, 1.200 sondeos y 109.063 filas que
+    sólo sobreviven en el crudo. Fuera de ese sondeo, lo mismo que el colector.
+    """
+    completo = _sondeo("emt_buses", fix["emt_buses"], 0)
+    completo["features"].sort(key=lambda f: f["attributes"]["gid"])
+    parcial = copy.deepcopy(completo)
+    parcial["features"] = parcial["features"][:2]
+    servidos = [
+        parcial,
+        _sondeo("emt_buses", fix["emt_buses"], 1),
+        completo,
+        _sondeo("emt_buses", fix["emt_buses"], 2),
+    ]
+    sid = min(f["attributes"]["gid"] for f in completo["features"])
+    gids = sorted(f["attributes"]["gid"] for f in completo["features"])
+    assert len(gids) > 2
+
+    r, del_colector, reconstruido = _capturar_y_reprocesar(
+        colector, monkeypatch, tmp_path, "emt_buses", servidos
+    )
+    (fichero,) = list((tmp_path / "raw").rglob("*.ndjson.gz"))
+    ts_completo = list(sources.read_raw(fichero))[2][0]
+
+    assert r["duplicados"] == 1 and r["completados"] == 1, r
+    assert (del_colector["snapshot_id"] == sid).sum() == 2, (
+        "el colector ya no guarda el parcial"
+    )
+    a = reconstruido[reconstruido["snapshot_id"] == sid]
+    assert sorted(a["gid"]) == gids, "reprocesar no se quedó el bloque entero"
+    assert (a["ts_ingest_utc"] == ts_completo).all(), "filas de capturas mezcladas"
+    pd.testing.assert_frame_equal(
+        reconstruido[reconstruido["snapshot_id"] != sid].reset_index(drop=True),
+        del_colector[del_colector["snapshot_id"] != sid].reset_index(drop=True),
+    )
