@@ -268,9 +268,10 @@ def test_reprocesar_reconstruye_lo_mismo_que_el_colector(
 ):
     """Del mismo crudo, `reprocesar` escribe el curated que escribió el colector.
 
-    La fuente sirve a veces el mismo sondeo más de una vez, y no siempre seguido:
-    el 27/08 el sondeo 1664101649 de la EMT llegó en 14 capturas. El colector se
-    queda con una. `reprocesar` volvía a parsear todas y el día reconstruido daba
+    La fuente sirve a veces el mismo sondeo en varias capturas seguidas: el 27/08
+    el sondeo 1664101649 de la EMT llegó en 14. El colector se queda con una. Aquí
+    la repetición se intercala con otro sondeo, para no depender de que lleguen
+    seguidas. `reprocesar` volvía a parsear todas y el día reconstruido daba
     un 53 % más de trayectorias (`docs/bitacora/019-reprocesar-no-deduplica-sondeos.md`).
     Comprobar que reconstruye no basta: tiene que reconstruir LO MISMO. La única
     diferencia admitida es el sondeo servido a medias, en el test siguiente.

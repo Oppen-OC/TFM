@@ -31,6 +31,8 @@ pasa.
 | [017](017-la-abscisa-mejora-la-identidad-un-8-por-ciento.md) | 2026-09-18 | medicion | metodologia | Emparejar sobre el recorrido quita el **7,6 %** de los intercambios con semillas reservadas, no el 35 % que aparentaban cinco de ajuste. Hicieron falta la hipótesis de parada y penalizar los adelantamientos, con techo puesto por los adelantamientos reales |
 | [018](018-las-posiciones-sin-trayecto-salen-como-trayectorias-de-un-punto.md) | 2026-09-18 | anomalia | calidad-dato | 1.834 de 5,16 M posiciones (0,036 %, 31 líneas) llegan sin `trayecto`; `groupby` las descarta y cada una sale como trayectoria de **un punto**: el 1,07 % de las trayectorias del 27/08 |
 | [019](019-reprocesar-no-deduplica-sondeos.md) | 2026-09-18 | anomalia | calidad-dato | `reprocesar` no deduplica sondeos como el colector: el 27/08 pasa de 2.784 a 2.854 capturas y un **2,5 %** más de filas da un **53 %** más de trayectorias (7.658 → 11.730) |
+| [020](020-la-emt-sirve-el-bloque-a-medio-reinsertar.md) | 2026-09-18 | anomalia | calidad-dato | La EMT sirve a veces el bloque **a medio reinsertar**: 1.200 sondeos (1,54 %) llegan primero como prefijo de `gid` y completos en la captura siguiente. Quedarse la más completa baja los sondeos parciales de **1.081 a 82**: era la causa de los que motivaron `tolerar_hueco` |
+| [021](021-las-capas-del-geoportal-faltan-cuatro-dias-con-el-colector-vivo.md) | 2026-09-18 | limitacion | limitaciones | Las cuatro capas del geoportal faltan **103,7 h** (10/09 06:24 - 14/09 14:05 UTC) con el colector vivo y Renfe completa; volvieron con un reinicio del colector. Unos 11.900 sondeos de la EMT perdidos, y `--status` dijo `VIVO` los cuatro días |
 
 ## Qué va aquí y qué no
 

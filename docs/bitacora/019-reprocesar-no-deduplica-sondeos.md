@@ -56,7 +56,9 @@ for raiz in ("data/_curated_colector", "data/curated"):
 ```
 
 Los sondeos repetidos salen agrupando por `snapshot_id` con
-`count(distinct ts_ingest_utc) > 1`.
+`count(distinct ts_ingest_utc) > 1`. La semántica por fuente y la clasificación
+de las repeticiones, con
+`uv run python -m project.analysis.medir_sondeos_repetidos` (entrada 020).
 
 **El día es UTC y hay que decirlo.** La primera versión de esta consulta
 comparaba con `'2026-08-27'` a secas, y DuckDB interpreta ese literal en la
@@ -89,8 +91,10 @@ captura anterior:
 | Valenbisi | `update_jcd` más reciente | 0 de 8.033 | — |
 | tráfico (192 y 188) | instante de captura | 0 | — |
 
-Entre la primera captura de un sondeo y su repetición no se cuela nunca más de
-un sondeo nuevo, así que la memoria acotada del colector no cambia el resultado.
+Las repeticiones son siempre consecutivas: la captura anterior es del mismo
+sondeo en las 2.078 de la EMT y las 179 de Renfe. La memoria acotada del
+colector no cambia, por tanto, el resultado. (Una primera versión del contador
+decía «como mucho un sondeo nuevo entre medias»: tenía un error de uno.)
 
 **En la EMT, «la primera captura» no era el criterio correcto.** De las 1.340
 repeticiones con contenido distinto, 126 sólo cambian `fecha` en ±2 h (la

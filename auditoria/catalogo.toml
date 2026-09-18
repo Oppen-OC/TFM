@@ -475,6 +475,7 @@ sondas = ["persistencia"]
 id = "055"
 nombre = "reprocesar se queda la primera captura del sondeo aunque venga a medias"
 capa = "persistencia"
+trampa = "011"
 # Es el criterio del colector. Descarta el bloque entero que llega en la captura
 # siguiente: 1.200 sondeos y 109.063 filas del 15/08 al 18/09.
 fichero = "src/project/ingest/reprocesar.py"

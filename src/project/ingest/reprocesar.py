@@ -28,8 +28,8 @@ Donde no hay sondeo a medias, el resultado es el del colector fila a fila.
 
 La memoria de sondeos vistos no tiene aquí la cota de 20.000 del colector: esa
 cota existe para que un proceso de meses no crezca sin fin, no porque la fuente
-reutilice claves. En el crudo, entre la primera captura de un sondeo y su
-repetición no se cuela nunca más de un sondeo nuevo.
+reutilice claves. En el crudo las repeticiones son siempre consecutivas (las
+2.078 de la EMT y las 179 de Renfe, del 15/08 al 18/09).
 """
 
 from __future__ import annotations
