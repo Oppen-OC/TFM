@@ -36,11 +36,25 @@ puede asignar dos veces y arranca vehículos nuevos.
 
 ## Cómo se midió
 
-La copia del curated anterior quedó en `data/_curated_previo/`. Consulta DuckDB
-sobre ambas raíces para el 27/08 (`ts_ingest_utc` en el día): `count(*)`,
-`count(distinct snapshot_id)`, `count(distinct ts_ingest_utc)` y agrupado por
-`snapshot_id` con `count(distinct ts_ingest_utc) > 1`. Las trayectorias, con
-`rastrear()` sobre las columnas `snapshot_id, linea, trayecto, lat, lon, ts_utc`.
+La copia del curated anterior quedó en `data/_curated_previo/`. La misma
+consulta sobre las dos raíces, para el 27/08:
+
+```python
+import duckdb
+from project.tracking import rastrear
+for raiz in ("data/_curated_previo", "data/curated"):
+    p = f"{raiz}/source=emt_buses/*/*.parquet"
+    dia = (f"from read_parquet('{p}', hive_partitioning=false) where "
+           "ts_ingest_utc >= '2026-08-27' and ts_ingest_utc < '2026-08-28'")
+    print(duckdb.sql(f"select count(*), count(distinct snapshot_id), "
+                     f"count(distinct ts_ingest_utc) {dia}").fetchone())
+    df = duckdb.sql(f"select snapshot_id, linea, trayecto, lat, lon, ts_utc "
+                    f"{dia} and lat is not null").df()
+    print(rastrear(df).vehicle_id.nunique())
+```
+
+Los sondeos repetidos salen agrupando por `snapshot_id` con
+`count(distinct ts_ingest_utc) > 1`.
 
 ## Por qué importa
 
