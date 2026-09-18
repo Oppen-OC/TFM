@@ -33,6 +33,8 @@ pasa.
 | [019](019-reprocesar-no-deduplica-sondeos.md) | 2026-09-18 | anomalia | calidad-dato | `reprocesar` no deduplica sondeos como el colector: el 27/08 pasa de 2.784 a 2.854 capturas y un **2,5 %** más de filas da un **53 %** más de trayectorias (7.658 → 11.730) |
 | [020](020-la-emt-sirve-el-bloque-a-medio-reinsertar.md) | 2026-09-18 | anomalia | calidad-dato | La EMT sirve a veces el bloque **a medio reinsertar**: 1.200 sondeos (1,54 %) llegan primero como prefijo de `gid` y completos en la captura siguiente. Quedarse la más completa baja los sondeos parciales de **1.081 a 82**: era la causa de los que motivaron `tolerar_hueco` |
 | [021](021-las-capas-del-geoportal-faltan-cuatro-dias-con-el-colector-vivo.md) | 2026-09-18 | limitacion | limitaciones | Las cuatro capas del geoportal faltan **103,7 h** (10/09 06:24 - 14/09 14:05 UTC) con el colector vivo y Renfe completa; volvieron con un reinicio del colector. Unos 11.900 sondeos de la EMT perdidos, y `--status` dijo `VIVO` los cuatro días |
+| [022](022-el-map-matching-aguanta-en-septiembre.md) | 2026-09-18 | medicion | calidad-dato | El map-matching aguanta en septiembre: **4,21 m** de mediana y avance **0,996 frente a 0,03** en 91 grupos. La 40 era un bus en cochera, la C3 regulación en cabecera, la subida del fuera de ruta un desvío de la 24 y la 25; la 63 no tiene horario en el feed |
+| [023](023-la-segunda-pasada-no-mejora-la-jornada-real.md) | 2026-09-18 | anomalia | metodologia | En jornada real la segunda pasada con abscisa no cambia las trayectorias y sube **30-55 %** `ida_vuelta`. La mejora real de la 017 era abscisa pegada por posición: el 99,7 % de las filas recibió la de otra |
 
 ## Qué va aquí y qué no
 

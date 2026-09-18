@@ -1,0 +1,19 @@
+{
+  "etiqueta": "control_colector_dos_pasadas",
+  "tracker": "src/project/tracking.py",
+  "semillas": "ajuste",
+  "real": [
+    {
+      "dia": "2026-08-27",
+      "dos_pasadas": true,
+      "abscisa_fiable": 0.8759,
+      "posiciones": 353604,
+      "trayectorias": 7659,
+      "de_un_punto": 948,
+      "duracion_mediana_min": 20.83,
+      "ida_vuelta": 299,
+      "sobre_puerta": 0,
+      "segundos": 748.2
+    }
+  ]
+}

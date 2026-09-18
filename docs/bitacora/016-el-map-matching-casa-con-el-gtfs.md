@@ -52,7 +52,8 @@ correría hacia atrás.
 
 - **Línea 40, sentido Universitats → Est. del Nord**: cobertura **0**, a 826 m de
   mediana del único trazado que el GTFS ofrece. 1.163 posiciones en 8 días. Su
-  recorrido real no está en este feed.
+  recorrido real no está en este feed. *Corregido en la entrada 022: el trazado
+  es bueno; esos días la mayoría de las posiciones están en una cochera.*
 - **C3, Campanar → C. Benlloch**: cobertura 65,3 %. El trazado elegido es el
   único sobre el que sus buses avanzan (1,0 frente a 0,004), pero un tercio de
   sus posiciones queda a más de 60 m.
@@ -118,7 +119,11 @@ sintética y los mutantes 041-047 del catálogo. Cierran dos fichas de trampa: l
 **006** (el filtro es la distancia al trazado, nunca una caja geográfica) y la
 **010** (`shape_dist_traveled` se ignora).
 
-Abierto:
+Abierto (revisado el 18/09 con septiembre en la **entrada 022**, que da causa
+a cada punto: la 40 era un bus aparcado en cochera, la C3 es regulación en la
+cabecera de Campanar, las variantes de la 24 comparten recorrido, el umbral de
+60 m se mantiene y la subida del fuera de ruta es un desvío de las líneas 24 y
+25):
 
 - El recorrido real de la línea 40 en sentido Universitats → Est. del Nord, y el
   tercio de la C3 que no cae sobre su trazado.

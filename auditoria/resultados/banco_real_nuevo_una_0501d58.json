@@ -1,0 +1,43 @@
+{
+  "etiqueta": "nuevo_una",
+  "tracker": "src/project/tracking.py",
+  "semillas": "ajuste",
+  "real": [
+    {
+      "dia": "2026-08-27",
+      "dos_pasadas": false,
+      "abscisa_fiable": null,
+      "posiciones": 358142,
+      "trayectorias": 7627,
+      "de_un_punto": 901,
+      "duracion_mediana_min": 21.12,
+      "ida_vuelta": 230,
+      "sobre_puerta": 0,
+      "segundos": 337.8
+    },
+    {
+      "dia": "2026-09-03",
+      "dos_pasadas": false,
+      "abscisa_fiable": null,
+      "posiciones": 434978,
+      "trayectorias": 9276,
+      "de_un_punto": 1965,
+      "duracion_mediana_min": 17.62,
+      "ida_vuelta": 326,
+      "sobre_puerta": 0,
+      "segundos": 382.4
+    },
+    {
+      "dia": "2026-09-17",
+      "dos_pasadas": false,
+      "abscisa_fiable": null,
+      "posiciones": 363623,
+      "trayectorias": 8197,
+      "de_un_punto": 2291,
+      "duracion_mediana_min": 16.55,
+      "ida_vuelta": 250,
+      "sobre_puerta": 0,
+      "segundos": 253.6
+    }
+  ]
+}

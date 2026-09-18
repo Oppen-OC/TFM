@@ -76,6 +76,13 @@ rastrear con abscisa):
 | 23/08 | 6.001 → 6.069 (+1,1 %) | 23,13 → 22,62 | 0 → 0 | 89,5 % |
 | 27/08 | 7.658 → 7.793 (+1,8 %) | 20,84 → 19,98 | 0 → 0 | 87,6 % |
 
+> **Corrección (18/09, entrada 023): esta tabla es un artefacto.** La abscisa se
+> pegó por posición a una entrada no ordenada por sondeo, y `rastrear` reordena:
+> el 99,7 % de las filas recibió la abscisa de otra. Con la segunda pasada bien
+> alineada, el 27/08 da 7.658 → 7.659 trayectorias y 20,84 → 20,83 min. Las
+> cifras de simulación de esta entrada no están afectadas, porque la flota
+> simulada llega ordenada.
+
 ## Cómo se midió
 
 ```bash
@@ -126,8 +133,9 @@ y mutantes 048-052.
 
 Abierto:
 
-- La mediana de duración baja un 4 % y el 27/08 queda en 19,98 min, justo por
-  debajo del suelo de 20 min que se había fijado como supuesto.
+- ~~La mediana de duración baja un 4 % y el 27/08 queda en 19,98 min, justo por
+  debajo del suelo de 20 min que se había fijado como supuesto.~~ Artefacto de
+  alineación (entrada 023): bien medida, la mediana no cambia.
 - El 10-12 % de las posiciones reales no tiene abscisa fiable y sigue con el
   criterio del plano.
 - El banco no cubre el giro en cabecera ni la entrada y salida de servicio: los
@@ -159,8 +167,9 @@ Abierto:
 > La evaluación se realizó sobre una flota sintética que circula por los
 > recorridos reales de la red, con paradas y perturbaciones calibradas sobre la
 > captura. Sobre veinte semillas reservadas para validación, los intercambios de
-> identidad se redujeron un 7,6 %, con un incremento del número de trayectorias
-> inferior al 2 % y sin desplazamientos que violen la restricción física. Debe
+> identidad se redujeron un 7,6 %, sin desplazamientos que violen la
+> restricción física. La mejora no se reproduce, sin embargo, sobre jornadas
+> reales, como se detalla más adelante. Debe
 > señalarse que una evaluación preliminar sobre cinco semillas de desarrollo
 > sugería una reducción del 35 %, magnitud que no se confirmó al ampliar la
 > muestra: la diferencia ilustra la necesidad de reservar conjuntos de

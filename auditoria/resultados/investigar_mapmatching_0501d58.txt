@@ -1,0 +1,1088 @@
+  26 días completos: 2026-08-16, 2026-08-17, 2026-08-19, 2026-08-20, 2026-08-22, 2026-08-23, 2026-08-24, 2026-08-25, 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-29, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-02, 2026-09-03, 2026-09-04, 2026-09-05, 2026-09-06, 2026-09-07, 2026-09-08, 2026-09-09, 2026-09-15, 2026-09-16, 2026-09-17
+
+=== linea40 ===
+
+  Línea 40 por sentido:
+                              posiciones  dias                        trazado  dist_p50_m  fuera
+trayecto                                                                                        
+Est. del Nord - Universitats       14653    15  1030_1282_2278,1030_2278_1282       5.063  0.094
+Universitats - Est. del Nord       16318    21  1030_1282_2278,1030_2278_1282       4.334  0.157
+
+  Trazados de la 40 en el feed:
+    1030_1282_2278       5.1 km  (39.4794, -0.3456) -> (39.4682, -0.3769)
+    1030_2278_1282       5.4 km  (39.4682, -0.3769) -> (39.4794, -0.3456)
+
+=== l24 ===
+  1049_2172_2253      22.8 km  (39.3117, -0.3177) -> (39.4723, -0.3684)
+  1049_2173_2253      22.2 km  (39.3141, -0.3176) -> (39.4723, -0.3684)
+  1049_2253_2172      22.8 km  (39.4723, -0.3684) -> (39.3117, -0.3177)
+  1049_2253_2173      23.4 km  (39.4723, -0.3684) -> (39.3141, -0.3176)
+
+  24 'El Palmar - Pta.de la Mar': 258 trayectorias de >= 30 posiciones
+                trayectorias  dias  cobertura  avanza  empates
+gana                                                          
+1049_2172_2253           207     8        1.0   1.000       97
+1049_2253_2172            41     8        0.0   1.000       41
+1049_2253_2173            10     5        1.0   0.532        6
+  Trazado elegido por el grupo, por día:
+dia
+2026-09-07    1049_2172_2253
+2026-09-08    1049_2172_2253
+2026-09-09    1049_2172_2253
+2026-09-10    1049_2172_2253
+2026-09-14    1049_2172_2253
+2026-09-15    1049_2172_2253
+2026-09-16    1049_2172_2253
+2026-09-17    1049_2172_2253
+2026-09-18    1049_2172_2253
+
+  24 'El Palmar-Ptja.Saler-Pta.Mar': 861 trayectorias de >= 30 posiciones
+                trayectorias  dias  cobertura  avanza  empates
+gana                                                          
+1049_2172_2253           746    23      1.000   1.000      689
+1049_2253_2172            76    19      0.000   0.750       76
+1049_2253_2173            39    16      0.976   0.591       30
+  Trazado elegido por el grupo, por día:
+dia
+2026-08-15    1049_2172_2253
+2026-08-16    1049_2172_2253
+2026-08-17    1049_2172_2253
+2026-08-18    1049_2172_2253
+2026-08-19    1049_2172_2253
+2026-08-20    1049_2172_2253
+2026-08-21    1049_2172_2253
+2026-08-22    1049_2172_2253
+2026-08-23    1049_2172_2253
+2026-08-24    1049_2172_2253
+2026-08-25    1049_2172_2253
+2026-08-26    1049_2172_2253
+2026-08-27    1049_2172_2253
+2026-08-28    1049_2172_2253
+2026-08-29    1049_2172_2253
+2026-08-30    1049_2172_2253
+2026-08-31    1049_2172_2253
+2026-09-01    1049_2172_2253
+2026-09-02    1049_2172_2253
+2026-09-03    1049_2172_2253
+2026-09-04    1049_2172_2253
+2026-09-05    1049_2172_2253
+2026-09-06    1049_2172_2253
+
+  24 'Pta.Mar-Ptja.Saler-El Palmar': 895 trayectorias de >= 30 posiciones
+                trayectorias  dias  cobertura  avanza  empates
+gana                                                          
+1049_2172_2253            23     7       0.75   0.692       23
+1049_2253_2172           869    23       1.00   1.000      869
+1049_2253_2173             3     3       1.00   1.000        3
+  Trazado elegido por el grupo, por día:
+dia
+2026-08-15    1049_2253_2172
+2026-08-16    1049_2253_2172
+2026-08-17    1049_2253_2172
+2026-08-18    1049_2253_2172
+2026-08-19    1049_2253_2172
+2026-08-20    1049_2253_2172
+2026-08-21    1049_2253_2172
+2026-08-22    1049_2253_2172
+2026-08-23    1049_2253_2172
+2026-08-24    1049_2253_2172
+2026-08-25    1049_2253_2172
+2026-08-26    1049_2253_2172
+2026-08-27    1049_2253_2173
+2026-08-28    1049_2253_2172
+2026-08-29    1049_2253_2173
+2026-08-30    1049_2253_2173
+2026-08-31    1049_2253_2173
+2026-09-01    1049_2253_2172
+2026-09-02    1049_2253_2172
+2026-09-03    1049_2253_2173
+2026-09-04    1049_2253_2173
+2026-09-05    1049_2253_2172
+2026-09-06    1049_2253_2172
+2026-09-07    1049_2253_2172
+
+  24 'Pta.de la Mar - El Palmar': 241 trayectorias de >= 30 posiciones
+                trayectorias  dias  cobertura  avanza  empates
+gana                                                          
+1049_2172_2253             2     2       0.26     1.0        2
+1049_2253_2172           238     9       1.00     1.0      238
+1049_2253_2173             1     1       1.00     1.0        1
+  Trazado elegido por el grupo, por día:
+dia
+2026-09-07    1049_2253_2173
+2026-09-08    1049_2253_2172
+2026-09-09    1049_2253_2173
+2026-09-10    1049_2253_2172
+2026-09-14    1049_2253_2173
+2026-09-15    1049_2253_2173
+2026-09-16    1049_2253_2173
+2026-09-17    1049_2253_2173
+2026-09-18    1049_2253_2172
+
+=== umbral ===
+
+  Fracción por encima del umbral, 7-22 h (8,542,477 posiciones):
+         2026-08  2026-09
+> 20 m      8.24     9.19
+> 30 m      6.05     6.85
+> 40 m      5.37     6.00
+> 50 m      5.08     5.52
+> 60 m      4.91     5.31
+> 80 m      4.57     5.00
+> 100 m     4.03     4.27
+> 150 m     3.62     3.60
+> 200 m     3.46     3.42
+> 500 m     2.89     2.50
+
+  Fracción por encima del umbral, 0-6 h y 23 h (1,085,423 posiciones):
+         2026-08  2026-09
+> 20 m     54.98    62.42
+> 30 m     54.09    61.67
+> 40 m     53.81    61.39
+> 50 m     53.60    61.10
+> 60 m     53.39    60.88
+> 80 m     53.05    60.63
+> 100 m    52.68    60.13
+> 150 m    51.16    58.92
+> 200 m    50.82    58.45
+> 500 m    46.07    52.52
+
+  Densidad por tramo de distancia, 7-22 h (% de posiciones por metro):
+                      %  % por m
+dist                            
+[0.0, 5.0)      60.7082  12.1416
+[5.0, 10.0)     21.1100   4.2220
+[10.0, 15.0)     6.9680   1.3936
+[15.0, 20.0)     2.5139   0.5028
+[20.0, 30.0)     2.2644   0.2264
+[30.0, 40.0)     0.7602   0.0760
+[40.0, 50.0)     0.3824   0.0382
+[50.0, 60.0)     0.1882   0.0188
+[60.0, 80.0)     0.3280   0.0164
+[80.0, 100.0)    0.6328   0.0316
+[100.0, 150.0)   0.5358   0.0107
+[150.0, 200.0)   0.1650   0.0033
+[200.0, 500.0)   0.7427   0.0025
+[500.0, inf)     2.7002      NaN
+
+=== ambiguas ===
+
+  Ambiguas: 239,217 de 9,627,900 (  2.5 %)
+  Por línea (las 12 que más aportan):
+         sum   mean    size  parte
+linea                             
+23     40858  0.256  159548  0.171
+27     28891  0.081  357677  0.121
+93     23477  0.041  568328  0.098
+26     22948  0.106  217003  0.096
+28     19745  0.081  244183  0.083
+81     16812  0.062  271169   0.07
+94     14438  0.059  245944   0.06
+4      11564  0.049  234012  0.048
+25     10385  0.035  292760  0.043
+24     10117  0.052  195674  0.042
+98      7827  0.064  122773  0.033
+92      7663  0.012  613167  0.032
+  Posición relativa en el recorrido (0 = cabecera):
+(-0.001, 0.1]    0.196
+(0.1, 0.2]       0.121
+(0.2, 0.3]       0.065
+(0.3, 0.4]       0.083
+(0.4, 0.5]       0.141
+(0.5, 0.6]       0.048
+(0.6, 0.7]       0.058
+(0.7, 0.8]       0.047
+(0.8, 0.9]       0.118
+(0.9, 1.0]       0.123
+  Por mes:
+mes
+2026-08    0.0245
+2026-09    0.0252
+
+=== fuera ===
+
+  Fuera de ruta, 7-22 h, sobre las posiciones con trazado:
+  (cochera = las 10 celdas de 100 m con más fuera de ruta de madrugada)
+            completo  fuera  en_cochera  resto  posiciones
+dia                                                       
+2026-08-15     False   2.24        0.56   1.69        9001
+2026-08-16      True   4.47        1.83   2.64      250126
+2026-08-17      True   4.06        1.62   2.45      359896
+2026-08-18     False   2.78        0.74   2.04       93205
+2026-08-19      True   4.74        2.00   2.74      351941
+2026-08-20      True   4.30        1.44   2.86      341311
+2026-08-21     False   3.91        1.73   2.18      174989
+2026-08-22      True   4.26        1.30   2.96      295670
+2026-08-23      True   4.01        1.12   2.89      258953
+2026-08-24      True   4.27        1.81   2.46      342466
+2026-08-25      True   3.99        1.64   2.35      330825
+2026-08-26      True   4.13        1.55   2.58      333267
+2026-08-27      True   5.29        1.43   3.86      317230
+2026-08-28      True   6.33        1.89   4.44      317564
+2026-08-29      True   7.04        1.11   5.93      270918
+2026-08-30      True   8.23        1.67   6.56      240018
+2026-08-31      True   4.74        1.75   3.00      395366
+2026-09-01      True   4.54        1.51   3.03      389626
+2026-09-02      True   4.50        1.41   3.09      380202
+2026-09-03      True   4.68        1.50   3.18      372754
+2026-09-04      True   4.79        1.65   3.14      374717
+2026-09-05      True   4.89        1.33   3.55      261580
+2026-09-06      True   4.53        0.98   3.55      231587
+2026-09-07      True   6.27        1.41   4.85      383099
+2026-09-08      True   5.27        1.41   3.86      384662
+2026-09-09      True   5.59        1.30   4.30      361023
+2026-09-10     False  12.20        3.81   8.40       17889
+2026-09-14     False   3.71        0.53   3.18      140914
+2026-09-15      True   5.50        1.57   3.93      350628
+2026-09-16      True   7.03        2.30   4.73      335893
+2026-09-17      True   6.10        1.55   4.55      311155
+2026-09-18     False   7.43        1.60   5.82       82423
+
+  Media de los días completos por periodo (%):
+           fuera  en_cochera  resto
+ago < 24    4.31        1.55   2.76
+ago >= 24   5.50        1.61   3.90
+sep         5.31        1.49   3.81
+
+=== sin_abscisa ===
+
+  Composición de las posiciones (días completos):
+               2026-08 noche  2026-08 7-22h  2026-09 noche  2026-09 7-22h
+row_0                                                                    
+ambigua                 0.47           0.88           0.40           0.89
+fiable                 44.80          93.43          36.57          91.76
+fuera_de_ruta          51.84           4.87          57.53           5.20
+sin_trayecto            0.19           0.02           0.27           0.05
+sin_trazado             2.70           0.81           5.23           2.10
+
+  Todas las horas, todos los días completos:
+fiable           86.61
+fuera_de_ruta    10.77
+sin_trazado       1.73
+ambigua           0.83
+sin_trayecto      0.05
+
+=== nulos ===
+
+  Sin trayecto: 5,310 de 9,803,141 (0.054 %), 35 líneas
+  Por hora local:
+hora
+0     0.020
+1     0.052
+2     0.180
+3     0.110
+4     0.082
+5     0.022
+6     0.022
+7     0.001
+8     0.004
+9     0.001
+10    0.008
+11    0.019
+12    0.002
+13    0.024
+14    0.056
+15    0.045
+16    0.053
+17    0.022
+18    0.036
+19    0.102
+20    0.047
+21    0.046
+22    0.044
+23    0.003
+  Líneas que más aportan:
+linea
+12     1406
+24      742
+19      564
+99      333
+62      330
+100     297
+81      282
+25      150
+23      137
+98      135
+  A <= 60 m de algún trazado de su línea:  42.5 %
+  De esas, posición relativa en el trazado más cercano (0 = cabecera):
+rel
+(-0.001, 0.05]    0.006
+(0.05, 0.25]      0.063
+(0.25, 0.75]      0.655
+(0.75, 0.95]      0.247
+(0.95, 1.0]       0.029
+  Con una posición de su línea con trayecto a < 300 m en el sondeo anterior o el siguiente:  38.4 %
+
+=== c3 ===
+
+  C3 'C. Benlloch - Campanar': 207,954 posiciones, trazado 1075_229_1266, cobertura  94.9 %
+
+  C3 'Campanar - C. Benlloch': 211,213 posiciones, trazado 1075_1266_229, cobertura  65.1 %
+  En horario: 182,314 posiciones,  31.3 % fuera
+  Distancia al trazado de lo que queda fuera:
+dist_trazado_m
+[60.0, 100.0)       0.604
+[100.0, 200.0)      0.228
+[200.0, 500.0)      0.014
+[500.0, 1000.0)     0.020
+[1000.0, 5000.0)    0.134
+[5000.0, inf)       0.000
+  Fuera antes del inicio (abscisa < 1 m): 54,399 ( 95.2 % del fuera), distancia p50 95 m
+    celdas: {(39484.0, -392.0): 35233, (39483.0, -392.0): 12056, (39452.0, -407.0): 1088}
+  Fuera después del final: 322 (  0.6 % del fuera), distancia p50 1843 m
+    celdas: {(39459.0, -374.0): 23, (39459.0, -375.0): 21, (39458.0, -375.0): 21}
+  Fuera de ruta por tramo de 500 m de abscisa (largo 5614 m):
+                  posiciones  fuera  fraccion_fuera
+abscisa_m                                          
+(-0.001, 500.0]        72013  54515           0.757
+(500.0, 1000.0]         9296     81           0.009
+(1000.0, 1500.0]       11584     80           0.007
+(1500.0, 2000.0]       11003      2           0.000
+(2000.0, 2500.0]       11667      5           0.000
+(2500.0, 3000.0]        8211    114           0.014
+(3000.0, 3500.0]       10174    195           0.019
+(3500.0, 4000.0]       10600    125           0.012
+(4000.0, 4500.0]       10768     50           0.005
+(4500.0, 5000.0]       15234   1641           0.108
+(5000.0, 5500.0]       11219      1           0.000
+(5500.0, 6000.0]         545    322           0.591
+  Por día (horario):
+dia
+2026-08-16    0.341
+2026-08-17    0.276
+2026-08-19    0.336
+2026-08-20    0.320
+2026-08-22    0.357
+2026-08-23    0.386
+2026-08-24    0.315
+2026-08-25    0.308
+2026-08-26    0.333
+2026-08-27    0.328
+2026-08-28    0.314
+2026-08-29    0.339
+2026-08-30    0.371
+2026-08-31    0.357
+2026-09-01    0.322
+2026-09-02    0.301
+2026-09-03    0.270
+2026-09-04    0.292
+2026-09-05    0.309
+2026-09-06    0.284
+2026-09-07    0.301
+2026-09-08    0.296
+2026-09-09    0.309
+2026-09-15    0.289
+2026-09-16    0.264
+2026-09-17    0.302
+
+  C3 'Campanar - Ed. Bosca': 195,939 posiciones, trazado 1074_1265_231, cobertura  86.3 %
+
+  C3 'Ed. Bosca - Campanar': 190,970 posiciones, trazado 1074_231_1265, cobertura  94.4 %
+
+  C3 'La Marina - Tres Creus': 84 posiciones, trazado 1074_1265_231, cobertura   2.4 %
+  En horario: 84 posiciones,  97.6 % fuera
+  Distancia al trazado de lo que queda fuera:
+dist_trazado_m
+[60.0, 100.0)       0.012
+[100.0, 200.0)      0.061
+[200.0, 500.0)      0.171
+[500.0, 1000.0)     0.280
+[1000.0, 5000.0)    0.476
+[5000.0, inf)       0.000
+  Fuera antes del inicio (abscisa < 1 m): 15 ( 18.3 % del fuera), distancia p50 1435 m
+    celdas: {(39481.0, -374.0): 4, (39483.0, -381.0): 3, (39479.0, -371.0): 2}
+  Fuera después del final: 6 (  7.3 % del fuera), distancia p50 1366 m
+    celdas: {(39474.0, -365.0): 3, (39476.0, -366.0): 1, (39476.0, -367.0): 1}
+  Fuera de ruta por tramo de 500 m de abscisa (largo 6792 m):
+                  posiciones  fuera  fraccion_fuera
+abscisa_m                                          
+(-0.001, 500.0]           22     22           1.000
+(500.0, 1000.0]           11     10           0.909
+(1000.0, 1500.0]           4      4           1.000
+(1500.0, 2000.0]           0      0             NaN
+(2000.0, 2500.0]           3      3           1.000
+(2500.0, 3000.0]           0      0             NaN
+(3000.0, 3500.0]           0      0             NaN
+(3500.0, 4000.0]           0      0             NaN
+(4000.0, 4500.0]           0      0             NaN
+(4500.0, 5000.0]           0      0             NaN
+(5000.0, 5500.0]           0      0             NaN
+(5500.0, 6000.0]           0      0             NaN
+(6000.0, 6500.0]          17     16           0.941
+(6500.0, 7000.0]          27     27           1.000
+  Por día (horario):
+dia
+2026-09-17    0.976
+
+  C3 'Pta. de la Mar - El Perelló': 145 posiciones, trazado 1074_1265_231, cobertura   0.0 %
+  En horario: 145 posiciones, 100.0 % fuera
+  Distancia al trazado de lo que queda fuera:
+dist_trazado_m
+[60.0, 100.0)       0.000
+[100.0, 200.0)      0.000
+[200.0, 500.0)      0.007
+[500.0, 1000.0)     0.028
+[1000.0, 5000.0)    0.166
+[5000.0, inf)       0.800
+  Fuera antes del inicio (abscisa < 1 m): 0 (  0.0 % del fuera), distancia p50 nan m
+  Fuera después del final: 0 (  0.0 % del fuera), distancia p50 nan m
+  Fuera de ruta por tramo de 500 m de abscisa (largo 6792 m):
+                  posiciones  fuera  fraccion_fuera
+abscisa_m                                          
+(-0.001, 500.0]            0      0             NaN
+(500.0, 1000.0]            0      0             NaN
+(1000.0, 1500.0]           0      0             NaN
+(1500.0, 2000.0]           0      0             NaN
+(2000.0, 2500.0]           0      0             NaN
+(2500.0, 3000.0]           0      0             NaN
+(3000.0, 3500.0]           0      0             NaN
+(3500.0, 4000.0]           0      0             NaN
+(4000.0, 4500.0]           0      0             NaN
+(4500.0, 5000.0]         102    102             1.0
+(5000.0, 5500.0]           9      9             1.0
+(5500.0, 6000.0]           7      7             1.0
+(6000.0, 6500.0]           0      0             NaN
+(6500.0, 7000.0]          27     27             1.0
+  Por día (horario):
+dia
+2026-09-04    1.0
+2026-09-05    1.0
+
+  C3 'Tres Creus -  Platges': 22 posiciones, trazado 1074_231_1265, cobertura   0.0 %
+  En horario: 22 posiciones, 100.0 % fuera
+  Distancia al trazado de lo que queda fuera:
+dist_trazado_m
+[60.0, 100.0)       0.0
+[100.0, 200.0)      0.0
+[200.0, 500.0)      0.0
+[500.0, 1000.0)     0.0
+[1000.0, 5000.0)    1.0
+[5000.0, inf)       0.0
+  Fuera antes del inicio (abscisa < 1 m): 7 ( 31.8 % del fuera), distancia p50 2683 m
+    celdas: {(39455.0, -330.0): 2, (39448.0, -334.0): 1, (39448.0, -333.0): 1}
+  Fuera después del final: 0 (  0.0 % del fuera), distancia p50 nan m
+  Fuera de ruta por tramo de 500 m de abscisa (largo 6329 m):
+                  posiciones  fuera  fraccion_fuera
+abscisa_m                                          
+(-0.001, 500.0]           10     10             1.0
+(500.0, 1000.0]            6      6             1.0
+(1000.0, 1500.0]           6      6             1.0
+(1500.0, 2000.0]           0      0             NaN
+(2000.0, 2500.0]           0      0             NaN
+(2500.0, 3000.0]           0      0             NaN
+(3000.0, 3500.0]           0      0             NaN
+(3500.0, 4000.0]           0      0             NaN
+(4000.0, 4500.0]           0      0             NaN
+(4500.0, 5000.0]           0      0             NaN
+(5000.0, 5500.0]           0      0             NaN
+(5500.0, 6000.0]           0      0             NaN
+(6000.0, 6500.0]           0      0             NaN
+  Por día (horario):
+dia
+2026-09-03    1.0
+
+=== variantes ===
+  1049_2172_2253 (22796 m) frente a 1049_2173_2253 (22162 m):  97.3 % de 1049_2172_2253 a <= 20 m del otro
+    se separan en: 0-600 m
+  1049_2253_2172 (22779 m) frente a 1049_2253_2173 (23413 m): 100.0 % de 1049_2253_2172 a <= 20 m del otro
+
+=== fuera_lineas ===
+
+  Fuera de ruta fuera de cochera, 7-22 h: aporte a la tasa global (pp)
+periodo  ago < 24  ago >= 24   sep
+linea                             
+C3           0.74       0.88  1.01
+25           0.08       0.88  0.10
+28           0.27       0.26  0.21
+92           0.10       0.09  0.53
+67           0.19       0.22  0.25
+32           0.15       0.12  0.30
+24           0.05       0.26  0.09
+93           0.12       0.12  0.07
+27           0.13       0.05  0.10
+95           0.09       0.10  0.09
+4            0.05       0.08  0.10
+99           0.09       0.06  0.09
+
+  ... y tasa dentro de cada línea (%)
+periodo  ago < 24  ago >= 24   sep
+linea                             
+C3           10.3       11.4  11.1
+25            2.2       24.3   3.9
+28           11.2        9.9   8.7
+92            1.6        1.4   7.6
+67            9.4        9.2  11.1
+32            2.9        2.4   7.5
+24            2.2       15.4   4.8
+93            2.5        2.2   1.1
+27            4.5        1.5   2.4
+95            1.4        1.6   1.3
+4             1.6        2.3   9.7
+99            1.3        0.8   1.1
+
+  Pico 27-30/08 frente a 24-26/08, posiciones por día, líneas que más suben:
+linea
+25    4946.0
+24    1323.0
+32     268.0
+92     164.0
+99      85.0
+26      70.0
+31      56.0
+27      54.0
+
+  Banda 60-200 m, 7-22 h: 141,945 posiciones (  1.7 %); líneas que más aportan:
+linea
+C3    44.1
+92    11.8
+28    11.0
+67     6.2
+99     3.8
+31     2.1
+32     2.0
+25     2.0
+
+=== resumen ===
+
+  Por periodo, días completos (fracciones en %):
+periodo            ago < 24   ago >= 24         sep
+dias                   6.00        8.00       12.00
+posiciones       2104212.00  2900318.00  4798611.00
+p50_min                3.80        3.95        3.74
+p50_med                3.95        4.12        4.21
+p50_max                4.13        4.23        4.44
+fuera_7_22_med         4.28        5.02        5.08
+fuera_7_22_max         4.74        8.23        7.03
+ambigua_med            2.10        2.71        2.58
+sin_trazado_med        0.90        0.92        2.50
+
+=== sin_cobertura ===
+
+  Grupo-día con >= 50 posiciones y cobertura < 20 %: 76
+
+  14 'Est.del Nord - Castellar': 858 posiciones en 1 de 7 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-31
+    días con cobertura >= 50 %: 2 (2026-09-05 .. 2026-09-16)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   64 1042_1946_1824      0.188    1785.494
+   99 1052_2230_1751      0.110     607.782
+   99 1052_1751_2230      0.107     636.092
+   31 1053_2284_2248      0.107    1410.810
+   18 1062_2326_2320      0.099     994.975
+    celdas: {(39476.0, -339.0): 109, (39451.0, -406.0): 107, (39472.0, -327.0): 88}
+    => otro (en celdas de cochera:  12.7 %)
+
+  19 'Hosp. Dr.Peset - Platges': 209 posiciones en 3 de 6 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-17, 2026-08-19, 2026-08-20
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   18 1062_2320_2326      1.000       4.040
+   18 1062_2326_2320      0.804      16.968
+   93   994_488_2271      0.220     680.327
+   98  1055_487_2271      0.220    1898.510
+   14  983_2376_2279      0.215    1099.629
+    celdas: {(39470.0, -355.0): 10, (39458.0, -360.0): 9, (39462.0, -363.0): 9}
+    => circula sobre la 18 (en celdas de cochera:   0.0 %)
+
+  24 'El Palmar - Pta.de la Mar': 1,099 posiciones en 1 de 9 días; en horario de servicio el  15.2 %
+    días sin cobertura: 2026-09-10
+    días con cobertura >= 50 %: 6 (2026-09-08 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   24 1049_2253_2173      0.051    4051.955
+   24 1049_2172_2253      0.051    4104.043
+   24 1049_2253_2172      0.049    4051.955
+   24 1049_2173_2253      0.038    4104.043
+   25 1026_2253_2186      0.025    4051.955
+    celdas: {(39450.0, -406.0): 1002, (39449.0, -406.0): 20, (39312.0, -318.0): 10}
+    => aparcado en cochera (en celdas de cochera:  91.2 %)
+
+  24 'Pta.de la Mar - El Palmar': 558 posiciones en 1 de 9 días; en horario de servicio el  14.5 %
+    días sin cobertura: 2026-09-10
+    días con cobertura >= 50 %: 7 (2026-09-07 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   95  1063_504_1052      0.036    2109.374
+   73  962_1936_2312      0.023     314.215
+   73  963_1936_2312      0.023     314.215
+   25 1026_2253_2186      0.023    4049.154
+   24 1049_2253_2172      0.023    4049.154
+    celdas: {(39450.0, -406.0): 515, (39348.0, -323.0): 4, (39481.0, -378.0): 2}
+    => aparcado en cochera (en celdas de cochera:  92.3 %)
+
+  25 'P. Congressos - La Malva-rosa': 85 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-21
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_2230_1751      1.000       3.144
+   99 1052_1751_2230      0.882      33.493
+   18 1062_2326_2320      0.165     824.973
+   73  962_2312_1936      0.165    2501.889
+   73  963_2312_1936      0.165    2501.889
+    celdas: {(39470.0, -406.0): 5, (39447.0, -391.0): 3, (39453.0, -353.0): 3}
+    => circula sobre la 99 (en celdas de cochera:   0.0 %)
+
+  27 'El Perelló - Pta. de la Mar': 314 posiciones en 5 de 5 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-07, 2026-09-08, 2026-09-09, 2026-09-15, 2026-09-16
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   25 1026_2186_2253      1.000       1.970
+   25 1026_2253_2186      0.930      13.758
+   24 1049_2172_2253      0.917       2.329
+   24 1049_2173_2253      0.917       2.329
+   24 1049_2253_2172      0.847      18.591
+    celdas: {(39470.0, -365.0): 13, (39463.0, -361.0): 12, (39458.0, -357.0): 11}
+    => circula sobre la 25 (en celdas de cochera:   0.0 %)
+
+  28 'C.Art.Faller - Est.del Nord': 412 posiciones en 1 de 31 días; en horario de servicio el  15.0 %
+    días sin cobertura: 2026-09-10
+    días con cobertura >= 50 %: 30 (2026-08-15 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   28 1034_1326_2277      0.068    3147.350
+   28 1034_2277_1326      0.039    4097.425
+   12   827_1326_764      0.024    1997.703
+   12   827_764_1326      0.019    1917.764
+   98  1055_2271_487      0.017     435.537
+    celdas: {(39481.0, -334.0): 326, (39481.0, -336.0): 27, (39501.0, -393.0): 4}
+    => aparcado en cochera (en celdas de cochera:  85.9 %)
+
+  31 'Ctat.Art i C. - Est. del Nord': 112 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-07
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   35  935_1950_2279      1.000       3.527
+   35  935_2279_1950      0.661      23.195
+   14  983_2376_2279      0.429     195.606
+    6 1057_2158_2085      0.295     547.375
+   19    930_18_2314      0.250     277.890
+    celdas: {(39460.0, -348.0): 7, (39458.0, -348.0): 7, (39457.0, -348.0): 7}
+    => circula sobre la 35 (en celdas de cochera:   0.0 %)
+
+  31 'Est. del Nord - Ctat.Art i C.': 113 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-07
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   35  935_2279_1950      0.956       5.070
+   35  935_1950_2279      0.584      43.087
+    6 1057_2085_2158      0.416     219.308
+   14  983_2279_2376      0.407     100.706
+   14  983_2376_2279      0.177     171.043
+    celdas: {(39458.0, -348.0): 6, (39469.0, -374.0): 4, (39460.0, -366.0): 4}
+    => circula sobre la 35 (en celdas de cochera:   0.0 %)
+
+  32 'La Patacona - Est.J.Sorolla': 76 posiciones en 1 de 1 días; en horario de servicio el   0.0 %
+    días sin cobertura: 2026-09-16
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   31 1053_2248_2284      1.000       2.502
+   81 1041_1210_2278      0.421     150.677
+   71 1059_1282_1366      0.395     241.853
+   31 1053_2284_2248      0.289      76.914
+   70  1058_2030_500      0.289    1138.993
+    celdas: {(39488.0, -327.0): 2, (39478.0, -328.0): 2, (39474.0, -328.0): 2}
+    => circula sobre la 31 (en celdas de cochera:   0.0 %)
+
+  32 'Pass. Marítim - Pl. Ajuntament': 1,767 posiciones en 1 de 32 días; en horario de servicio el  22.4 %
+    días sin cobertura: 2026-09-10
+    días con cobertura >= 50 %: 31 (2026-08-15 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   32 1029_1162_2403      0.198     753.197
+   99 1052_1751_2230      0.183     175.858
+   32 1029_2403_1162      0.121     844.862
+   92 1064_1272_1162      0.069     439.387
+   92 1064_1162_1272      0.066     568.875
+    celdas: {(39481.0, -335.0): 1015, (39480.0, -333.0): 269, (39484.0, -325.0): 54}
+    => aparcado en cochera (en celdas de cochera:  75.7 %)
+
+  35 'Ctat.Art i C. - Est. del Nord': 1,608 posiciones en 1 de 32 días; en horario de servicio el  13.6 %
+    días sin cobertura: 2026-09-10
+    días con cobertura >= 50 %: 31 (2026-08-15 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   35  935_1950_2279      0.136    2275.885
+   35  935_2279_1950      0.104    2134.674
+   14  983_2376_2279      0.050    3197.975
+   99 1052_1751_2230      0.038     110.752
+    6 1057_2158_2085      0.035    2739.864
+    celdas: {(39480.0, -334.0): 805, (39481.0, -336.0): 490, (39463.0, -349.0): 50}
+    => aparcado en cochera (en celdas de cochera:  81.4 %)
+
+  4 'Pl.Ajuntament - Natzaret': 427 posiciones en 1 de 32 días; en horario de servicio el   0.0 %
+    días sin cobertura: 2026-09-18
+    días con cobertura >= 50 %: 26 (2026-08-15 .. 2026-09-15)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_2230_1751      0.084     533.550
+   99 1052_1751_2230      0.084     579.706
+   18 1062_2326_2320      0.016     944.881
+   18 1062_2320_2326      0.012     994.916
+   59 1070_2285_2437      0.012    1007.739
+    celdas: {(39481.0, -335.0): 157, (39451.0, -407.0): 125, (39450.0, -406.0): 79}
+    => aparcado en cochera (en celdas de cochera:  60.9 %)
+
+  40 'Est. del Nord - Universitats': 890 posiciones en 2 de 15 días; en horario de servicio el  40.2 %
+    días sin cobertura: 2026-08-22, 2026-08-24
+    días con cobertura >= 50 %: 12 (2026-08-15 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_1751_2230      0.001     686.381
+   73  962_1936_2312      0.000     278.743
+   73  963_1936_2312      0.000     278.743
+   72  970_1936_2277      0.000     278.743
+   73  962_2312_1936      0.000     305.624
+    celdas: {(39449.0, -405.0): 451, (39450.0, -405.0): 221, (39449.0, -406.0): 72}
+    => otro (en celdas de cochera:  16.3 %)
+
+  40 'Universitats - Est. del Nord': 1,308 posiciones en 6 de 21 días; en horario de servicio el  39.8 %
+    días sin cobertura: 2026-08-20, 2026-08-22, 2026-08-23, 2026-08-24, 2026-08-25, 2026-08-30
+    días con cobertura >= 50 %: 12 (2026-08-15 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea      shape_id  cobertura  dist_p50_m
+   C3 1075_1266_229      0.033    1704.378
+   C3 1074_231_1265      0.031    1639.187
+   60 966_2085_1520      0.026    3612.383
+   60 966_1520_2085      0.024    3790.485
+   C3 1075_229_1266      0.017    2382.367
+    celdas: {(39481.0, -334.0): 618, (39481.0, -336.0): 280, (39481.0, -335.0): 130}
+    => aparcado en cochera (en celdas de cochera:  84.6 %)
+
+  6 'Torrefiel - Hosp. La Fe': 1,229 posiciones en 4 de 8 días; en horario de servicio el   0.2 %
+    días sin cobertura: 2026-09-01, 2026-09-02, 2026-09-03, 2026-09-04
+    días con cobertura >= 50 %: 4 (2026-08-27 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea      shape_id  cobertura  dist_p50_m
+   73 962_1936_2312        0.0     249.837
+   73 963_1936_2312        0.0     249.837
+   72 970_1936_2277        0.0     249.837
+   73 962_2312_1936        0.0     296.864
+   73 963_2312_1936        0.0     296.864
+    celdas: {(39451.0, -406.0): 1229}
+    => aparcado en cochera (en celdas de cochera: 100.0 %)
+
+  62 'Est.del Nord - Benimàmet': 73 posiciones en 1 de 10 días; en horario de servicio el   0.0 %
+    días sin cobertura: 2026-08-29
+    días con cobertura >= 50 %: 9 (2026-08-21 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea      shape_id  cobertura  dist_p50_m
+   73 962_1936_2312        0.0     268.503
+   73 963_1936_2312        0.0     268.503
+   72 970_1936_2277        0.0     268.503
+   73 962_2312_1936        0.0     324.720
+   73 963_2312_1936        0.0     324.720
+    celdas: {(39451.0, -406.0): 73}
+    => aparcado en cochera (en celdas de cochera: 100.0 %)
+
+  67 'Av. Cid - Pass. Marítim': 99 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-03
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   98  1055_487_2271      1.000       3.320
+   98  1055_2271_487      0.889      23.906
+   93   994_488_2271      0.434     213.605
+   93   994_2271_488      0.424     176.909
+   99 1052_2230_1751      0.263     714.919
+    celdas: {(39481.0, -394.0): 3, (39470.0, -405.0): 3, (39469.0, -413.0): 3}
+    => circula sobre la 98 (en celdas de cochera:   0.0 %)
+
+  67 'El Pouet/Campanar-Est.del Nord': 1,538 posiciones en 1 de 32 días; en horario de servicio el  14.8 %
+    días sin cobertura: 2026-09-10
+    días con cobertura >= 50 %: 30 (2026-08-15 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   67  995_1657_2309      0.178    2132.842
+   67  995_2309_1657      0.134    2340.092
+   99 1052_2230_1751      0.047     643.357
+   99 1052_1751_2230      0.045     678.780
+   93   994_488_2271      0.038    1947.685
+    celdas: {(39452.0, -407.0): 955, (39481.0, -334.0): 217, (39490.0, -404.0): 73}
+    => aparcado en cochera (en celdas de cochera:  76.2 %)
+
+  7 'Fta. S.Lluis - Mercat Central': 520 posiciones en 3 de 23 días; en horario de servicio el  95.6 %
+    días sin cobertura: 2026-08-22, 2026-08-28, 2026-08-29
+    días con cobertura >= 50 %: 19 (2026-08-15 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   93   994_488_2271      0.096    2001.046
+   93   994_2271_488      0.092    2022.994
+   98  1055_487_2271      0.087    2035.892
+   98  1055_2271_487      0.073    2093.703
+   99 1052_1751_2230      0.065     617.752
+    celdas: {(39451.0, -406.0): 346, (39470.0, -414.0): 25, (39452.0, -406.0): 20}
+    => aparcado en cochera (en celdas de cochera:  70.8 %)
+
+  70 'Alboraia - La Fontsanta': 803 posiciones en 5 de 26 días; en horario de servicio el  16.1 %
+    días sin cobertura: 2026-08-26, 2026-08-28, 2026-08-29, 2026-08-30, 2026-08-31
+    días con cobertura >= 50 %: 20 (2026-08-15 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   10  923_1240_1440      0.122    1767.052
+   25 1026_2186_2253      0.118    2864.141
+   25 1026_2253_2186      0.118    2889.320
+   71 1059_1282_1366      0.117     970.034
+   81 1041_1210_2278      0.116    1086.323
+    celdas: {(39481.0, -334.0): 243, (39481.0, -335.0): 202, (39473.0, -369.0): 87}
+    => aparcado en cochera (en celdas de cochera:  75.7 %)
+
+  70 'El Perelló - Pta. de la Mar': 113 posiciones en 1 de 1 días; en horario de servicio el   0.0 %
+    días sin cobertura: 2026-08-28
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   25 1026_2186_2253      0.460     207.060
+   25 1026_2253_2186      0.398     203.635
+   24 1049_2172_2253      0.372    1746.856
+   24 1049_2173_2253      0.372    1746.856
+   24 1049_2253_2172      0.310    1609.653
+    celdas: {(39274.0, -277.0): 4, (39470.0, -365.0): 3, (39275.0, -278.0): 2}
+    => otro (en celdas de cochera:   0.0 %)
+
+  70 'La Fontsanta - Alboraia': 1,193 posiciones en 6 de 29 días; en horario de servicio el  58.7 %
+    días sin cobertura: 2026-08-26, 2026-08-29, 2026-08-30, 2026-08-31, 2026-09-07, 2026-09-08
+    días con cobertura >= 50 %: 22 (2026-08-15 .. 2026-09-18)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_1751_2230      0.143     614.658
+   94  873_2307_2324      0.074    2586.226
+   10  923_1240_1440      0.073     990.223
+   95  1063_504_1052      0.071    1623.829
+   71 1059_1282_1366      0.070    1081.192
+    celdas: {(39480.0, -334.0): 322, (39451.0, -406.0): 307, (39452.0, -406.0): 149}
+    => aparcado en cochera (en celdas de cochera:  77.2 %)
+
+  70 'La Malva-rosa - P. Congressos': 139 posiciones en 2 de 2 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-07, 2026-09-09
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_1751_2230      1.000       2.938
+   99 1052_2230_1751      0.993      31.921
+   98  1055_487_2271      0.367     671.357
+   98  1055_2271_487      0.360     667.465
+   64 1042_1824_1946      0.259     663.676
+    celdas: {(39471.0, -405.0): 7, (39445.0, -377.0): 6, (39481.0, -394.0): 5}
+    => circula sobre la 99 (en celdas de cochera:   0.0 %)
+
+  71 'La Llum - Universitats': 1,097 posiciones en 2 de 29 días; en horario de servicio el   4.4 %
+    días sin cobertura: 2026-09-05, 2026-09-06
+    días con cobertura >= 50 %: 27 (2026-08-15 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_2230_1751      0.043     636.050
+   99 1052_1751_2230      0.043     675.422
+   73  962_1936_2312      0.011     283.847
+   73  963_1936_2312      0.011     283.847
+   72  970_1936_2277      0.011     283.847
+    celdas: {(39452.0, -407.0): 1002, (39450.0, -406.0): 6, (39481.0, -334.0): 5}
+    => aparcado en cochera (en celdas de cochera:  93.3 %)
+
+  71 'Universitats - La Llum': 246 posiciones en 1 de 28 días; en horario de servicio el   0.0 %
+    días sin cobertura: 2026-09-05
+    días con cobertura >= 50 %: 27 (2026-08-15 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea      shape_id  cobertura  dist_p50_m
+   73 962_1936_2312        0.0     280.911
+   73 963_1936_2312        0.0     280.911
+   72 970_1936_2277        0.0     280.911
+   73 962_2312_1936        0.0     322.343
+   73 963_2312_1936        0.0     322.343
+    celdas: {(39452.0, -407.0): 121, (39450.0, -406.0): 75, (39451.0, -406.0): 49}
+    => aparcado en cochera (en celdas de cochera:  99.6 %)
+
+  81 'Platges/Malva-rosa - Campanar': 71 posiciones en 1 de 1 días; en horario de servicio el   0.0 %
+    días sin cobertura: 2026-08-29
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_1751_2230      0.042     257.965
+   99 1052_2230_1751      0.000     317.468
+   98  1055_2271_487      0.000     387.393
+   18 1062_2326_2320      0.000     387.393
+   93   994_2271_488      0.000     387.393
+    celdas: {(39481.0, -336.0): 47, (39481.0, -335.0): 10, (39480.0, -335.0): 10}
+    => aparcado en cochera (en celdas de cochera:  85.9 %)
+
+  93 'La Malva-rosa - P. Congressos': 66 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-31
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_1751_2230      1.000       1.853
+   99 1052_2230_1751      1.000      35.349
+   98  1055_487_2271      0.348     713.295
+   98  1055_2271_487      0.333     728.756
+   64 1042_1824_1946      0.273     611.261
+    celdas: {(39481.0, -394.0): 3, (39481.0, -393.0): 3, (39447.0, -389.0): 2}
+    => circula sobre la 99 (en celdas de cochera:   0.0 %)
+
+  93 'P. Congressos - La Malva-rosa': 221 posiciones en 2 de 2 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-15, 2026-09-16
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   99 1052_2230_1751      1.000       2.613
+   99 1052_1751_2230      0.941      28.581
+   98  1055_487_2271      0.217     895.008
+   98  1055_2271_487      0.208     961.883
+   64 1042_1824_1946      0.172    1401.743
+    celdas: {(39479.0, -398.0): 6, (39446.0, -387.0): 6, (39471.0, -334.0): 6}
+    => circula sobre la 99 (en celdas de cochera:   0.0 %)
+
+  93 'Platges - Tres Creus': 239 posiciones en 4 de 5 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-19, 2026-08-20, 2026-08-25, 2026-08-28
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea      shape_id  cobertura  dist_p50_m
+   95 1063_1052_504      1.000       3.460
+   94 873_2324_2307      0.460     191.826
+   95 1063_504_1052      0.310     180.612
+   94 873_2307_2324      0.305     220.112
+   C2   651_691_166      0.280     492.897
+    celdas: {(39474.0, -365.0): 14, (39469.0, -364.0): 11, (39470.0, -365.0): 10}
+    => circula sobre la 95 (en celdas de cochera:   0.0 %)
+
+  94 'La Patacona - Est.J.Sorolla': 93 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-07
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   31 1053_2248_2284      1.000       2.846
+   81 1041_1210_2278      0.398     245.899
+   71 1059_1282_1366      0.366     311.129
+   70  1058_2030_500      0.366     711.426
+   11 1056_1229_2380      0.344     922.029
+    celdas: {(39468.0, -377.0): 6, (39485.0, -328.0): 3, (39470.0, -376.0): 3}
+    => circula sobre la 31 (en celdas de cochera:   0.0 %)
+
+  98 'Av. Cid - Pass. Marítim': 2,382 posiciones en 4 de 19 días; en horario de servicio el   1.3 %
+    días sin cobertura: 2026-08-27, 2026-08-28, 2026-08-29, 2026-08-30
+    días con cobertura >= 50 %: 15 (2026-08-15 .. 2026-09-03)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   26 1027_2014_2105      0.009    3537.487
+   26 1027_2105_2014      0.008    3550.888
+   24 1049_2253_2172      0.007    3999.673
+   24 1049_2253_2173      0.007    3999.673
+   25 1026_2253_2186      0.006    3999.454
+    celdas: {(39452.0, -407.0): 1863, (39481.0, -336.0): 121, (39481.0, -335.0): 110}
+    => aparcado en cochera (en celdas de cochera:  91.5 %)
+
+  98 'El Palmar-Ptja.Saler-Pta.Mar': 97 posiciones en 1 de 1 días; en horario de servicio el   0.0 %
+    días sin cobertura: 2026-08-29
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   24 1049_2172_2253      0.381     727.057
+   24 1049_2173_2253      0.381     727.057
+   24 1049_2253_2172      0.361     711.602
+   24 1049_2253_2173      0.361     711.602
+   25 1026_2186_2253      0.320     727.057
+    celdas: {(39468.0, -377.0): 4, (39315.0, -303.0): 4, (39451.0, -405.0): 3}
+    => otro (en celdas de cochera:   0.0 %)
+
+  98 'Pass. Marítim - Av. Cid': 97 posiciones en 1 de 17 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-28
+    días con cobertura >= 50 %: 15 (2026-08-15 .. 2026-09-03)
+    trazados del feed que mejor cubren esas posiciones:
+linea      shape_id  cobertura  dist_p50_m
+   73 962_1936_2312        0.0     311.950
+   73 963_1936_2312        0.0     311.950
+   72 970_1936_2277        0.0     311.950
+   73 962_2312_1936        0.0     404.296
+   73 963_2312_1936        0.0     404.296
+    celdas: {(39452.0, -407.0): 92, (39452.0, -406.0): 5}
+    => aparcado en cochera (en celdas de cochera: 100.0 %)
+
+  99 'El Perelló - Pta. de la Mar': 75 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-22
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   25 1026_2186_2253      1.000       1.773
+   25 1026_2253_2186      0.920       9.539
+   24 1049_2172_2253      0.867       2.098
+   24 1049_2173_2253      0.867       2.098
+   24 1049_2253_2172      0.800      17.876
+    celdas: {(39359.0, -324.0): 4, (39337.0, -317.0): 3, (39388.0, -332.0): 3}
+    => circula sobre la 25 (en celdas de cochera:   0.0 %)
+
+  99 'Pass. Marítim - Av. Cid': 65 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-16
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   93   994_2271_488      1.000       3.414
+   93   994_488_2271      0.738      40.349
+   C2   996_346_1057      0.446     237.280
+   92 1064_1162_1272      0.369     621.908
+   92 1064_1272_1162      0.354     594.201
+    celdas: {(39470.0, -385.0): 4, (39470.0, -406.0): 3, (39473.0, -358.0): 3}
+    => circula sobre la 93 (en celdas de cochera:   0.0 %)
+
+  99 'Pta. de la Mar - El Perelló': 80 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-08-29
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   25 1026_2253_2186      0.075    7033.746
+   24 1049_2253_2173      0.062    7603.727
+   24 1049_2253_2172      0.062    7668.795
+   25 1026_2186_2253      0.038    7077.342
+   24 1049_2172_2253      0.038    7603.727
+    celdas: {(39423.0, -374.0): 3, (39332.0, -420.0): 2, (39389.0, -331.0): 2}
+    => otro (en celdas de cochera:   0.0 %)
+
+  C2 'Av. Arago - Est. Autobusos': 795 posiciones en 1 de 32 días; en horario de servicio el  14.7 %
+    días sin cobertura: 2026-09-10
+    días con cobertura >= 50 %: 30 (2026-08-15 .. 2026-09-17)
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   C2   996_1057_346      0.170    1909.755
+   31 1053_2248_2284      0.109     491.461
+   81 1041_1210_2278      0.108    1111.994
+   12   827_764_1326      0.103    1909.755
+   95  1063_1052_504      0.092    1707.423
+    celdas: {(39481.0, -334.0): 574, (39471.0, -358.0): 14, (39482.0, -375.0): 8}
+    => aparcado en cochera (en celdas de cochera:  73.7 %)
+
+  C3 'La Marina - Tres Creus': 84 posiciones en 1 de 1 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-17
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea      shape_id  cobertura  dist_p50_m
+   95 1063_1052_504      1.000       3.152
+   95 1063_504_1052      0.464     103.556
+   23 1033_2251_585      0.417     441.651
+   23 1033_585_2251      0.417     485.253
+   94 873_2324_2307      0.381     255.328
+    celdas: {(39481.0, -374.0): 4, (39460.0, -359.0): 3, (39470.0, -365.0): 3}
+    => circula sobre la 95 (en celdas de cochera:   0.0 %)
+
+  C3 'Pta. de la Mar - El Perelló': 145 posiciones en 2 de 2 días; en horario de servicio el 100.0 %
+    días sin cobertura: 2026-09-04, 2026-09-05
+    días con cobertura >= 50 %: 0
+    trazados del feed que mejor cubren esas posiciones:
+linea       shape_id  cobertura  dist_p50_m
+   25 1026_2253_2186      1.000       1.909
+   25 1026_2186_2253      0.952       3.699
+   24 1049_2253_2172      0.545       7.744
+   24 1049_2253_2173      0.545       7.744
+   24 1049_2172_2253      0.490      65.501
+    celdas: {(39297.0, -289.0): 4, (39307.0, -297.0): 4, (39457.0, -357.0): 3}
+    => circula sobre la 25 (en celdas de cochera:   0.0 %)
+
+  Resumen: grupos (línea, trayecto) y posiciones por clase
+                     grupos  posiciones
+clase                                  
+aparcado en cochera      19       17223
+circula sobre            16        2135
+otro                      5        2038
