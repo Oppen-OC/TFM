@@ -123,3 +123,38 @@ La URL lleva la fecha de publicación dentro, así que cambia en cada versión d
 feed: si devuelve 404, hay que volver al dataset de VLCi a por la nueva. Por eso
 el md5 queda fijado en el `.dvc` — un feed que cambia sin avisar cambia todas las
 etiquetas en silencio.
+
+## Versiones del feed
+
+El feed tampoco guarda histórico: cada publicación sustituye a la anterior en la
+misma ficha de VLCi. Cada versión que se descarga se conserva bajo DVC y no se
+sobrescribe.
+
+| versión | vigencia (`feed_info`) | `calendar` | fichero | md5 |
+|---|---|---|---|---|
+| `01-09-2026` | 24/08 – 30/09 | 15/08 – 30/09 | `data/raw/gtfs/emt_google_transit.zip` | `a87aa72b…` |
+| `19-09-2026` | 12/09 – 19/10 | 12/09 – 19/10 | `data/raw/gtfs/versiones/google_transit2026-09-18.zip` | `5ca9c99d…` |
+
+La segunda se descargó el 21/09 (el recurso de VLCi se modificó el 20/09). Frente
+a la primera:
+
+- **La línea 63 (Campus de Burjassot - Estació del Nord) tiene 92 viajes.** En la
+  primera tenía la ruta y cero viajes, aunque circula desde el 31/08: entre el
+  31/08 y el 11/09 no hay horario con el que etiquetarla.
+- **Cambian de trazado o de ruta la 18, la 24, la 64, la 92 y la 95.** La 92 cambia
+  de cabecera, de 1162↔1272 a 1272↔1546. La 62 y la 98 ganan variantes, y la C3
+  mueve entre un 9 y un 11 % de su geometría.
+- 50 rutas, 36.964 viajes y 100 trazados, frente a 47, 33.843 y 94.
+- 96, 98E y 100 siguen sin ruta.
+
+Del 12 al 30/09 **las dos versiones son vigentes a la vez**. El etiquetado tiene
+que elegir el feed por fecha de servicio, no cargar uno fijo.
+
+```bash
+curl -sSL -o data/raw/gtfs/versiones/google_transit2026-09-18.zip \
+  "https://opendata.vlci.valencia.es/dataset/ab058cf8-ad3e-4d9c-ac89-0c6367ecf351/resource/c81b69e6-c082-44dc-acc6-66fc417b4e66/download/google_transit2026-09-18.zip"
+uv run dvc add data/raw/gtfs/versiones/google_transit2026-09-18.zip
+```
+
+La publicación vigente se consulta con la API CKAN de VLCi:
+`https://opendata.vlci.valencia.es/api/3/action/package_show?id=google-transit-lines-stops-bus-schedules`.
