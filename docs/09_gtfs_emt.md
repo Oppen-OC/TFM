@@ -158,3 +158,26 @@ uv run dvc add data/raw/gtfs/versiones/google_transit2026-09-18.zip
 
 La publicación vigente se consulta con la API CKAN de VLCi:
 `https://opendata.vlci.valencia.es/api/3/action/package_show?id=google-transit-lines-stops-bus-schedules`.
+
+### Versiones archivadas en Transitland
+
+Transitland (`f-ezp8-emtvalencia`) archiva una versión casi diaria. Su página
+pública incrusta la lista; descargar una versión antigua exige API key. Las que
+rodean la captura (consultado el 21/09):
+
+| descargada | sha1 | calendario | `feed_version` |
+|---|---|---|---|
+| 01/08 | `f6c77d81478a` | 24/07 – 30/08 | — |
+| 02/09 | `d2d4cb8899ae` | 24/07 – 30/09 | (la `01-09-2026` de este repo) |
+| 10/09 | `c58040a67325` | 08/09 – 09/10 | — |
+| 11/09 | `ae0e01c6f907` | 08/09 – 10/10 | — |
+| 13/09 | `7ee6a4935247` | 08/09 – 11/10 | — |
+| 15/09 | `4ace8676b3b8` | 08/09 – 14/10 | `14-09-2026` |
+| 16/09 | `1cc90a40ec7f` | 08/09 – 15/10 | `15-09-2026` |
+| 17/09 | `4040b443bbaa` | 09/09 – 16/10 | `16-09-2026` |
+| 18/09 | `058434992a85` | 08/09 – 17/10 | `17-09-2026` |
+| 21/09 | `565b839146c0` | 12/09 – 19/10 | `19-09-2026` (la de este repo) |
+
+**El servicio de septiembre aparece publicado con calendario desde el 08/09**, y
+no hay ninguna versión archivada con horario de septiembre para el 31/08-07/09,
+aunque lo observado esos días encaja mejor con él (bitácora 024).
