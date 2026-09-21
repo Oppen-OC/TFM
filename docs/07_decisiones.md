@@ -317,6 +317,15 @@ calendario los cubre pero cuya vigencia no: quedan marcados. El día de servicio
 empieza a las 04:00 locales (`etiquetado.HORA_CORTE`), porque el feed escribe la
 madrugada como 25:10.
 
+**Excepción declarada (21/09).** Del 31/08 al 07/09 no se etiqueta
+(`params.yaml → prepare.excluir_fechas`). Lo que circuló esos días encaja con el
+servicio de septiembre, pero la EMT no lo publicó hasta el 10/09 y con
+calendario desde el 08/09 (versiones archivadas en Transitland, `docs/09`). El
+único horario publicado para esos días es el de verano, con el que se asignaba
+el 75 % de los tramos y se triplicaban los conflictos (bitácora 024). Las
+versiones archivadas del 10 al 18/09 se descargan con `ingest.transitland` y
+entran en la elección por fecha como cualquier otra.
+
 **Reabrir si** aparece una versión archivada (Transitland) que cubra 15-23/08.
 
 ---

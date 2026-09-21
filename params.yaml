@@ -20,6 +20,11 @@ prepare:
   max_desfase_s: 1200            # más lejos de todo viaje: refuerzo, no se asigna
   margen_min_s: 120              # ventaja mínima sobre el segundo viaje candidato
   min_avance: 0.8                # un trazado es candidato si el tramo avanza sobre él
+  # Días de servicio que no se etiquetan: ningún horario publicado describe lo
+  # que circuló (bitácora 024). El servicio de septiembre empezó el 31/08 y la
+  # EMT no lo publicó, con calendario desde el 08/09, hasta el 10/09.
+  excluir_fechas:
+    - ["2026-08-31", "2026-09-07"]
 
 features:
   objetivo: retraso_siguiente_parada_s

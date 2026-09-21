@@ -71,6 +71,16 @@ class Parametros:
     max_desfase_s: float = 1200.0
     margen_min_s: float = 120.0
     min_avance: float = 0.8
+    # Días de servicio [desde, hasta] que no se etiquetan porque ningún horario
+    # publicado describe lo que circuló (bitácora 024). Se cuentan como
+    # `excluido`, no desaparecen.
+    excluir_fechas: tuple[tuple[str, str], ...] = ()
+
+    def excluido(self, dia: date) -> bool:
+        return any(
+            date.fromisoformat(a) <= dia <= date.fromisoformat(b)
+            for a, b in self.excluir_fechas
+        )
 
 
 @dataclass
@@ -374,6 +384,23 @@ def etiquetar(pos: pd.DataFrame, horarios: list[Horario], p: Parametros) -> Resu
     partes, filas_viaje, filas_pasos = [], [], []
     programaciones: dict[str, _Programacion] = {}
     for dia, sub in pos.groupby("fecha_servicio", sort=True):
+        if p.excluido(dia):
+            partes.append(sub.assign(fiable=False, viaje_id=pd.NA, feed_version=pd.NA))
+            for vid, g in sub.groupby("vehicle_id", sort=False):
+                filas_viaje.append(
+                    {
+                        "viaje_id": f"{vid}_{dia:%Y%m%d}_x",
+                        "vehicle_id": vid,
+                        "fecha_servicio": dia,
+                        "linea": g["linea"].iloc[0],
+                        "trayecto": g["trayecto"].iloc[0],
+                        "posiciones": len(g),
+                        "t_inicio": g["ts_utc"].min(),
+                        "t_fin": g["ts_utc"].max(),
+                        "motivo": "excluido",
+                    }
+                )
+            continue
         h, dentro = elegir_horario(horarios, dia)
         if h is None:
             partes.append(sub.assign(fiable=False, viaje_id=pd.NA, feed_version=pd.NA))
@@ -477,6 +504,8 @@ def etiquetar(pos: pd.DataFrame, horarios: list[Horario], p: Parametros) -> Resu
 
     posiciones = pd.concat(partes).sort_index() if partes else pos
     posiciones = _estado(posiciones, viajes, pasos)
+    fuera = posiciones["fecha_servicio"].map(p.excluido).astype(bool)
+    posiciones.loc[fuera, "estado"] = "excluido"
     return Resultado(pasos=pasos, viajes=viajes, posiciones=posiciones)
 
 

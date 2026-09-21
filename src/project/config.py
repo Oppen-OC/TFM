@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     # servicio (`gtfs.elegir_horario`), no una fija.
     gtfs_dir: Path = Field(default=RAIZ / "data" / "raw" / "gtfs")
 
+    # Clave de la API de Transitland, para descargar versiones ARCHIVADAS del
+    # GTFS (`ingest.transitland`). El editor sólo sirve la versión actual.
+    transitland_api_key: str = ""
+
     # --- Rutas derivadas ---------------------------------------------------
     @computed_field  # type: ignore[prop-decorator]
     @property

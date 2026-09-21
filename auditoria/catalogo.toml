@@ -849,3 +849,14 @@ reemplazar = '''    pos = rastrear(df.loc[~sin_trayecto])
 detector = ["tests/test_etiquetado.py::test_el_orden_de_las_filas_de_entrada_no_cambia_la_etiqueta"]
 sondas = []
 
+[[mutante]]
+id = "070"
+nombre = "los días sin horario que los describa se etiquetan igual"
+capa = "etiquetado"
+# Del 31/08 al 07/09 el único horario publicado es el de verano (bitácora 024).
+fichero = "src/project/etiquetado.py"
+buscar = '''        if p.excluido(dia):'''
+reemplazar = '''        if False:'''
+detector = ["tests/test_etiquetado.py::test_un_dia_excluido_no_se_etiqueta_y_se_cuenta"]
+sondas = []
+

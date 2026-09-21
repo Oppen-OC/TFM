@@ -75,7 +75,10 @@ def etiquetar_dia(
 def cargar_parametros(ruta: Path = RAIZ / "params.yaml") -> Parametros:
     cfg = yaml.safe_load(ruta.read_text(encoding="utf-8"))["prepare"]
     campos = {f.name for f in dataclasses.fields(Parametros)}
-    return Parametros(**{k: v for k, v in cfg.items() if k in campos})
+    cfg = {k: v for k, v in cfg.items() if k in campos}
+    if "excluir_fechas" in cfg:  # YAML da listas; el dataclass es inmutable
+        cfg["excluir_fechas"] = tuple(tuple(map(str, r)) for r in cfg["excluir_fechas"])
+    return Parametros(**cfg)
 
 
 def _patron() -> str:

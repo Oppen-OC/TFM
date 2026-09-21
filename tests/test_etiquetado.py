@@ -650,4 +650,26 @@ def test_cada_clave_de_params_prepare_llega_al_etiquetado():
     campos = {f.name for f in dataclasses.fields(etiquetado.Parametros)}
     assert set(cfg) <= campos, f"claves que nadie lee: {set(cfg) - campos}"
     p = prepare.cargar_parametros()
-    assert all(getattr(p, k) == v for k, v in cfg.items())
+
+    def plano(v):  # YAML da listas; el dataclass, tuplas
+        return [plano(x) for x in v] if isinstance(v, (list, tuple)) else v
+
+    assert all(plano(getattr(p, k)) == plano(v) for k, v in cfg.items())
+    assert p.excluido(date(2026, 9, 3)) and not p.excluido(date(2026, 9, 8))
+
+
+def test_un_dia_excluido_no_se_etiqueta_y_se_cuenta(horario_a):
+    """Del 31/08 al 07/09 ningún horario publicado describe lo que circuló
+    (bitácora 024): esos días se excluyen de forma declarada, no se etiquetan
+    con un horario que no es, y cada tramo queda contado como `excluido`.
+    """
+    bus = Bus("1", "Oeste - Este", IDA, 7 * 3600 + 600, 4.0)
+    dia = DIA.isoformat()
+    r = etiquetar(flota(bus), [horario_a], excluir_fechas=((dia, dia),))
+    assert r.pasos.empty
+    assert len(r.viajes) and set(r.viajes["motivo"]) == {"excluido"}
+    assert set(r.posiciones["estado"]) == {"excluido"}
+    otro = etiquetar(
+        flota(bus), [horario_a], excluir_fechas=(("2026-08-31", "2026-09-07"),)
+    )
+    _comparar(otro, "1_01", bus)
