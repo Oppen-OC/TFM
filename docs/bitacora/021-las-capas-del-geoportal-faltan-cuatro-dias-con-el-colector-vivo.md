@@ -101,7 +101,7 @@ Abierto:
   el `ultimo_error` de su `_status.json` lo dirían. La copia local de
   `data/_status.json` es del 18/08 y no sirve.
 - **Salud por fuente en `--status`.** Una fuente sin sondeo bueno en N periodos
-  debería poner el diagnóstico en rojo.
+  debería poner el diagnóstico en rojo. Abierto como issue #1.
 
 ## Para la memoria
 
