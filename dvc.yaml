@@ -7,7 +7,9 @@
 #
 #   project/ingest/collect.py  ──(fuera de DVC, proceso largo)──>  data/raw/
 #                                                            │
-#                       prepare ──> features ──> train ──> evaluate
+#            curar ──> prepare ──> features ──> train ──> evaluate
+#                         ▲
+#               data/raw/gtfs (todas las versiones del feed)
 #
 # `dvc repro` fallará hasta que (a) exista `data/raw/` con captura real y
 # (b) los módulos de `src/project/` dejen de estar vacíos. Ese fallo es el
@@ -15,22 +17,50 @@
 # `stages:` vivía en params.yaml y `dvc repro` simplemente no ejecutaba nada.
 
 stages:
+  curar:
+    # Crudo -> curated: reparsea todos los payloads, deduplica sondeos y se
+    # queda la captura más completa de cada uno (bitácoras 019 y 020). A
+    # diferencia de la ingesta, esto SÍ es determinista y reejecutable. El
+    # curated que escribe el colector en vivo es una vista previa; el que usa
+    # el pipeline es este.
+    cmd: uv run python -m project.ingest.reprocesar
+    deps:
+      - data/raw/source=emt_buses
+      - data/raw/source=trafico_estado
+      - data/raw/source=trafico_intensidad
+      - data/raw/source=valenbisi
+      - data/raw/source=renfe_cercanias
+      - src/project/ingest/reprocesar.py
+      - src/project/ingest/sources.py
+    outs:
+      - data/curated
+
   prepare:
-    # Crudo capturado + GTFS estático -> trayectorias con identidad de vehículo
-    # y retraso etiquetado por paso por parada.
+    # Curated + GTFS (todas sus versiones) -> trayectorias con identidad de
+    # vehículo, viajes observados y retraso por paso por parada.
     cmd: uv run python -m project.prepare
     deps:
-      - data/raw
+      - data/curated
+      - data/raw/gtfs
       - src/project/prepare.py
+      - src/project/etiquetado.py
+      - src/project/gtfs.py
+      - src/project/mapmatching.py
+      - src/project/tracking.py
     params:
       - prepare
     outs:
-      - data/interim/emt_tracked.parquet
+      - data/interim/emt_tracked
+      - data/interim/viajes
+      - data/interim/pasos
+    metrics:
+      - metrics/prepare.json:
+          cache: false
 
   features:
     cmd: uv run python -m project.features
     deps:
-      - data/interim/emt_tracked.parquet
+      - data/interim/pasos
       - src/project/features.py
     params:
       - features

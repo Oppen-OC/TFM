@@ -243,6 +243,9 @@ el coste de 40 minutos sea asumible.
 
 ## ADR-012 · El tracker recibe la abscisa; no calcula el map-matching · cerrada
 
+> **Revisada por ADR-013 (21/09):** las dos pasadas de `prepare.py` se
+> sustituyen por una. Lo demás sigue en pie.
+
 **Decisión.** `rastrear()` acepta una columna `abscisa_m` opcional y, donde la
 hay, empareja sobre el recorrido. Quien llama —`prepare.py`— hace dos pasadas:
 rastrear para tener identidad aproximada, `mapmatching.emparejar` para la
@@ -269,6 +272,67 @@ pero dependencia circular y tracker inseparable del GTFS. Descartada.
 **Reabrir si** el map-matching deja de necesitar identidad para decidir el
 sentido —por ejemplo, si la fuente publicase `direction_id` o el GTFS trajera
 una correspondencia con el campo `trayecto`.
+
+---
+
+## ADR-013 · El tracker rastrea en una pasada; la abscisa es para el paso por parada · revisable
+
+**Decisión.** `prepare.py` llama a `rastrear` una sola vez, sin abscisa. El
+map-matching se hace después y se usa para segmentar viajes e interpolar el paso
+por parada (`etiquetado.py`). Sustituye la parte de ADR-012 que mandaba rastrear
+dos veces; el resto de ADR-012 sigue en pie: `rastrear` acepta la abscisa y
+`tracking.py` no importa el GTFS.
+
+**Por qué.** La confirmación de ADR-012 sobre jornada real era un artefacto: la
+abscisa se pegó por posición a una entrada desordenada (bitácora 023). Bien
+alineada, la segunda pasada no cambia ni el número de trayectorias ni su
+duración en tres jornadas, y el indicador de intercambios `ida_vuelta` sube un
+30-55 %. La mejora del −7,6 % de la simulación no se transfiere a lo real.
+
+**Consecuencias.** Unos 3,5 min de reloj menos por jornada (una pasada de
+`rastrear` en lugar de dos, ADR-012). Las guardias de la abscisa en el tracker (mutantes
+048-052) siguen vigentes porque el código sigue ahí.
+
+**Reabrir si** se explica la subida de `ida_vuelta` y una segunda pasada mejora
+la identidad sobre jornada real, medida con `banco_tracker --real-abscisa`.
+
+---
+
+## ADR-014 · El GTFS se elige por día de servicio entre todas sus versiones · cerrada
+
+**Decisión.** Todas las versiones descargadas del feed se guardan en
+`settings.gtfs_dir` (una por zip, bajo DVC). Para cada día de servicio manda la
+versión más reciente cuya vigencia declarada lo cubre; si ninguna lo declara, la
+más reciente cuyo `calendar.txt` lo cubre, y la etiqueta se marca
+`fuera_de_vigencia`.
+
+**Por qué.** El feed no guarda histórico y las versiones se solapan: la
+`01-09-2026` (vigente 24/08-30/09) y la `19-09-2026` (12/09-19/10) conviven del
+12 al 30/09, y sólo la segunda tiene los viajes de la línea 63 y los recorridos
+nuevos de la 92, la 18 o la 95 (`docs/09_gtfs_emt.md`). Un feed fijo etiqueta
+septiembre con el horario de agosto, o agosto con el de octubre, sin error.
+
+**Consecuencias.** Los días del 15 al 23/08 se etiquetan con la `01-09-2026`, cuyo
+calendario los cubre pero cuya vigencia no: quedan marcados. El día de servicio
+empieza a las 04:00 locales (`etiquetado.HORA_CORTE`), porque el feed escribe la
+madrugada como 25:10.
+
+**Reabrir si** aparece una versión archivada (Transitland) que cubra 15-23/08.
+
+---
+
+## ADR-015 · `curar` es un stage de DVC; la ingesta no · cerrada
+
+**Decisión.** `reprocesar` (crudo → curated) entra en `dvc.yaml` como stage
+`curar`, antes de `prepare`. El colector sigue fuera (ADR-002).
+
+**Por qué.** `reprocesar` es determinista y el curated que produce es el de
+referencia: deduplica los sondeos y se queda la captura más completa, cosa que el
+colector no hace (bitácoras 019 y 020). Sin stage, `prepare` dependería de un
+curated que nadie sabe cómo se regeneró.
+
+**Consecuencias.** Un cambio en el crudo o en el parser reejecuta `curar` (unos
+17 min sobre 32 días) y todo lo que cuelga de él.
 
 ---
 

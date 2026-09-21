@@ -678,3 +678,153 @@ reemplazar = """        if False:
             sobre_ruta = [f for f in filas if not np.isnan(s[f])]"""
 detector = []
 sondas = ["tracking"]
+
+# --------------------------------------------------------------------------- #
+# Cascada del etiquetado (bitácora 024)
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "056"
+nombre = "el paso por parada se toma a la llegada, no a la salida"
+capa = "etiquetado"
+# Con la llegada, los diez minutos de espera en cabecera salen como adelanto.
+fichero = "src/project/etiquetado.py"
+buscar = '''        k1 = int(np.searchsorted(acc, sp + margen_m, side="right"))'''
+reemplazar = '''        k1 = int(np.searchsorted(acc, sp - margen_m, side="right"))'''
+detector = ["tests/test_etiquetado.py::test_la_regulacion_en_cabecera_no_es_retraso", "tests/test_etiquetado.py::test_el_cruce_se_toma_a_la_salida_de_la_parada"]
+sondas = []
+
+[[mutante]]
+id = "057"
+nombre = "el cruce se busca sobre la abscisa cruda, sin máximo acumulado"
+capa = "etiquetado"
+# searchsorted sobre una serie que no es monótona: el ruido de un bus parado decide el paso.
+fichero = "src/project/etiquetado.py"
+buscar = '''    acc = np.maximum.accumulate(s)'''
+reemplazar = '''    acc = s'''
+detector = ["tests/test_etiquetado.py::test_el_cruce_se_toma_a_la_salida_de_la_parada"]
+sondas = []
+
+[[mutante]]
+id = "058"
+nombre = "se interpola el paso a través de un hueco de sondeos"
+capa = "etiquetado"
+# Un paso inventado entre dos posiciones a cinco minutos, con aspecto de medido.
+fichero = "src/project/etiquetado.py"
+buscar = '''        k0 = k1 - 1
+        dt = t[k1] - t[k0]
+        if dt > max_hueco_s or dt <= 0:
+            continue'''
+reemplazar = '''        k0 = k1 - 1
+        dt = t[k1] - t[k0]
+        if dt <= 0:
+            continue'''
+detector = ["tests/test_etiquetado.py::test_un_hueco_de_sondeos_no_se_interpola", "tests/test_etiquetado.py::test_un_desvio_deja_sin_cruce_las_paradas_que_se_salta"]
+sondas = []
+
+[[mutante]]
+id = "059"
+nombre = "las paradas se proyectan al punto más cercano, sin orden"
+capa = "etiquetado"
+# En un bucle, la última parada cae junto a la salida.
+fichero = "src/project/etiquetado.py"
+buscar = '''        d = np.where(s >= previa - tolerancia_m, d, np.inf)'''
+reemplazar = '''        d = d'''
+detector = ["tests/test_etiquetado.py::test_las_paradas_de_un_bucle_se_proyectan_en_orden"]
+sondas = []
+
+[[mutante]]
+id = "060"
+nombre = "se asigna el viaje aunque el segundo candidato esté igual de cerca"
+capa = "etiquetado"
+# En punta, un bus a medio intervalo se etiqueta contra un viaje al azar.
+fichero = "src/project/etiquetado.py"
+buscar = '''    if margen < p.margen_min_s:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_etiquetado.py::test_en_punta_el_viaje_dudoso_no_se_etiqueta"]
+sondas = []
+
+[[mutante]]
+id = "061"
+nombre = "un viaje programado puede quedarse con dos tramos observados"
+capa = "etiquetado"
+fichero = "src/project/etiquetado.py"
+buscar = '''        repetido = asig.duplicated(["fecha_servicio", "trip_id"], keep="first")'''
+reemplazar = '''        repetido = asig.duplicated(["viaje_id"], keep="first")'''
+detector = ["tests/test_etiquetado.py::test_un_viaje_programado_se_asigna_a_un_solo_bus"]
+sondas = []
+
+[[mutante]]
+id = "062"
+nombre = "la variante se decide por grupo y no por viaje"
+capa = "etiquetado"
+# El bus de V2 se evalúa contra V1, el trazado del grupo, y se asigna a un viaje de V1.
+fichero = "src/project/etiquetado.py"
+buscar = '''    for c in aptos:'''
+reemplazar = '''    for c in [c for c in aptos if c["trazado"].shape_id == g["shape_id"].iloc[0]]:'''
+detector = ["tests/test_etiquetado.py::test_la_variante_se_decide_por_viaje"]
+sondas = []
+
+[[mutante]]
+id = "063"
+nombre = "la madrugada pertenece al mismo día de servicio"
+capa = "etiquetado"
+# El 25:10 del miércoles se busca en el jueves.
+fichero = "src/project/etiquetado.py"
+buscar = '''HORA_CORTE = 4'''
+reemplazar = '''HORA_CORTE = 0'''
+detector = ["tests/test_etiquetado.py::test_el_nocturno_pertenece_al_dia_de_servicio_anterior"]
+sondas = []
+
+[[mutante]]
+id = "064"
+nombre = "con dos versiones vigentes manda la más antigua"
+capa = "etiquetado"
+# Del 12 al 30/09 conviven las versiones 01-09-2026 y 19-09-2026.
+fichero = "src/project/gtfs.py"
+buscar = '''        return max(vigentes, key=lambda h: (h.vigencia[0], h.vigencia[1])), True'''
+reemplazar = '''        return min(vigentes, key=lambda h: (h.vigencia[0], h.vigencia[1])), True'''
+detector = ["tests/test_etiquetado.py::test_el_feed_se_elige_por_fecha_de_servicio"]
+sondas = []
+
+[[mutante]]
+id = "065"
+nombre = "calendar_dates no suprime servicios"
+capa = "etiquetado"
+# Un festivo etiquetado con el horario de laborable.
+fichero = "src/project/gtfs.py"
+buscar = '''        activos -= set(exc[exc["exception_type"] == "2"]["service_id"])'''
+reemplazar = '''        pass'''
+detector = ["tests/test_etiquetado.py::test_un_dia_suprimido_en_calendar_dates_no_tiene_viajes"]
+sondas = []
+
+[[mutante]]
+id = "066"
+nombre = "las posiciones sin trayecto entran en el tracker"
+capa = "etiquetado"
+# Cada una sale como trayectoria de un punto (bitácora 018).
+fichero = "src/project/prepare.py"
+buscar = '''    pos = rastrear(df.loc[~sin_trayecto])'''
+reemplazar = '''    pos = rastrear(df)'''
+detector = ["tests/test_etiquetado.py::test_las_posiciones_sin_trayecto_se_descartan_y_se_cuentan"]
+sondas = []
+
+[[mutante]]
+id = "067"
+nombre = "la parada terminal se trata como las demás y nunca se cruza"
+capa = "etiquetado"
+# La abscisa no pasa de la longitud del trazado: la llegada a la terminal se pierde.
+fichero = "src/project/etiquetado.py"
+buscar = '''        if sp + margen_m >= s_fin:'''
+reemplazar = '''        if False:'''
+detector = ["tests/test_etiquetado.py::test_el_retraso_de_salida_se_recupera_en_cada_parada", "tests/test_etiquetado.py::test_la_variante_se_decide_por_viaje"]
+sondas = []
+
+[[mutante]]
+id = "068"
+nombre = "no hay tope de desfase: el refuerzo se asigna al viaje más cercano"
+capa = "etiquetado"
+fichero = "src/project/etiquetado.py"
+buscar = '''    if coste > p.max_desfase_s:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_etiquetado.py::test_un_refuerzo_fuera_de_horario_no_se_asigna"]
+sondas = []

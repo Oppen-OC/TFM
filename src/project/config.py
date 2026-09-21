@@ -57,6 +57,11 @@ class Settings(BaseSettings):
         default=RAIZ / "data" / "raw" / "gtfs" / "emt_google_transit.zip"
     )
 
+    # Todas las versiones del feed, una por zip. El feed no guarda histórico y
+    # sus vigencias se solapan: el etiquetado elige la que manda cada día de
+    # servicio (`gtfs.elegir_horario`), no una fija.
+    gtfs_dir: Path = Field(default=RAIZ / "data" / "raw" / "gtfs")
+
     # --- Rutas derivadas ---------------------------------------------------
     @computed_field  # type: ignore[prop-decorator]
     @property

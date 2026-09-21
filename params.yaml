@@ -7,15 +7,19 @@
 # Este archivo NO contiene definiciones de stages. Eso vive en dvc.yaml.
 
 prepare:
-  # Reconstrucción de identidad de vehículo. La capa de la EMT no publica id de
-  # vehículo: `gid` es un autoincrement que se reinicia en cada refresco.
-  # Ver src/project/tracking.py y docs/01_viabilidad_fuentes_valencia.md.
-  vel_max_kmh: 70            # por encima de esto el emparejamiento es un error
-  salto_max_m: 800           # techo duro de desplazamiento entre snapshots
-  predictivo: true           # extrapolar con velocidad constante antes de asignar
-  min_posiciones_viaje: 10   # trayectorias más cortas se descartan
-  gtfs_zip: data/raw/gtfs/emt_google_transit.zip
-  tz_origen: Europe/Madrid   # el campo `fecha` viene en hora local naive
+  # Umbrales del etiquetado (`etiquetado.Parametros`, qué hace cada uno en su
+  # docstring). Las constantes del tracker (velocidad máxima, salto máximo,
+  # hueco tolerado) viven en `tracking.py`: hasta 09/2026 había aquí copias que
+  # ningún código leía.
+  min_posiciones_viaje: 10       # posiciones fiables para que un tramo sea viaje
+  min_fraccion_recorrido: 0.3    # y que recorra al menos esta parte del trazado
+  retroceso_nuevo_viaje_m: 500   # la abscisa cae esto: el bus volvió a cabecera
+  max_hueco_cruce_s: 120         # no se interpola un paso a través de más
+  margen_cruce_m: 15             # un bus parado no «sale» de la parada por ruido
+  paradas_referencia: 3          # primeras paradas que deciden el viaje programado
+  max_desfase_s: 1200            # más lejos de todo viaje: refuerzo, no se asigna
+  margen_min_s: 120              # ventaja mínima sobre el segundo viaje candidato
+  min_avance: 0.8                # un trazado es candidato si el tramo avanza sobre él
 
 features:
   objetivo: retraso_siguiente_parada_s

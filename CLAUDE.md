@@ -74,8 +74,8 @@ verifica la cifra antes de escribirla, porque el instrumento también miente
 Dirección de dependencias (nunca al revés):
 
 ```
-ingest/ (proceso aparte) ──> data/raw/ ──> tracking.py ──┐
-                            gtfs.py ──> mapmatching.py ──┴──> prepare.py
+ingest/ (proceso aparte) ──> data/raw/ ──> tracking.py ──────────────┐
+                            gtfs.py ──> mapmatching.py ──> etiquetado.py ──┴──> prepare.py
 ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py / features.py  ──>  config.py
 ```
 
@@ -100,11 +100,17 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 - **`tracking.py` es la reconstrucción de identidad de vehículo.** Lo consume
   `prepare.py`. La EMT no publica id de vehículo, así que se infiere: cualquier
   error aquí contamina todas las etiquetas sin dar la cara (trampa 004).
-- **`tracking.py` NO importa el GTFS.** Recibe la abscisa sobre el recorrido como
-  columna opcional y `prepare.py` orquesta las dos pasadas: rastrear,
-  `mapmatching.emparejar`, rastrear con abscisa. Al revés la dependencia sería
-  circular, porque el map-matching necesita identidad para decidir el sentido
-  (ADR-012).
+- **`tracking.py` NO importa el GTFS.** Acepta la abscisa como columna opcional
+  (ADR-012), pero `prepare.py` rastrea en UNA pasada: la segunda con abscisa no
+  mejora la identidad en jornada real (bitácora 023, ADR-013). Al revés la
+  dependencia sería circular, porque el map-matching necesita identidad para
+  decidir el sentido.
+- **`etiquetado.py` es la cascada**: viajes, paso por parada, viaje programado y
+  retraso. Funciones puras sobre la salida de `rastrear`; `prepare.py` sólo
+  orquesta la E/S. **Toda columna se une por índice o identificador, nunca por
+  posición de fila**: `rastrear` reordena, y así se falseó la 017 (bitácora 023).
+- **El GTFS se elige por fecha de servicio** (`gtfs.elegir_horario`): hay varias
+  versiones con vigencias solapadas en `settings.gtfs_dir` (ADR-014).
 - **`mapmatching.py` filtra por distancia al trazado, nunca por caja geográfica**
   (trampa 006), y la abscisa se proyecta sobre la geometría: el
   `shape_dist_traveled` del feed es el horario reescalado (trampa 010).
@@ -121,11 +127,14 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 ## Pipeline ML
 
 - **DVC gobierna el pipeline**, no scripts sueltos. Cada etapa
-  (prepare → features → train → evaluate) es un stage en `dvc.yaml` con sus
+  (curar → prepare → features → train → evaluate) es un stage en `dvc.yaml` con sus
   `deps`, `params` y `outs` declarados. Un script de entrenamiento sin stage es un
   error.
 - **La ingesta NO es un stage.** Capturar un stream en vivo no es idempotente ni
   reejecutable. El colector corre aparte; el pipeline empieza en `data/raw/`.
+  **Curar sí lo es**: `curar` reconstruye `data/curated/` desde el crudo con
+  `reprocesar`, que es determinista. El curated que escribe el colector en vivo
+  es una vista previa; el del pipeline es el reprocesado (bitácoras 019 y 020).
 - **Stages en `dvc.yaml`, hiperparámetros en `params.yaml`**, bajo las claves
   `prepare`, `features` y `train`. Hasta 08/2026 estaban al revés y `dvc repro` no
   ejecutaba nada; no volver a moverlos.
@@ -143,17 +152,16 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 ## Estado
 
-**La mitad de aguas arriba existe; la de aguas abajo no.**
+**Hasta la etiqueta existe; del modelo hacia abajo, no.**
 
 Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
-explore), `tracking.py` y `analysis/diagnose.py`. Salieron de `demo/` en 08/2026,
-que desapareció en ese porte.
+explore), `tracking.py`, `gtfs.py`, `mapmatching.py`, `etiquetado.py`,
+`prepare.py` y `analysis/`. `dvc repro` llega hasta `prepare` (stages `curar` y
+`prepare`): los pasos por parada con `retraso_s` salen en `data/interim/pasos/`.
 
-Vacíos, 0 líneas: `prepare.py`, `features.py`, `train.py`, `predict.py`,
-`evaluate.py` y `services/model_service.py`. `dvc repro` falla en `prepare`, y ese
-fallo es correcto: **falta el GTFS estático de la EMT**, que es de donde sale el
-horario teórico y por tanto la etiqueta de retraso. Sin él no hay variable
-objetivo.
+Vacíos, 0 líneas: `features.py`, `train.py`, `predict.py`, `evaluate.py` y
+`services/model_service.py`. `dvc repro` falla en `features`, y ese fallo es el
+esperado.
 
 Las reglas de este fichero son **prescriptivas**, no descriptivas: dicen cómo debe
 escribirse el código que falta. No asumas que ya está implementado — comprueba
@@ -183,9 +191,11 @@ antes de importar.
   modelo real. Endpoint nuevo ⇒ test nuevo.
 - `tests/test_features.py` **está vacío**: se escribirá con `features.py`. Cubrirá
   las transformaciones, que es la capa donde un bug es silencioso.
-- **El etiquetado necesitará tests con datos sintéticos de verdad-terreno
-  conocida**, como los de `tests/conftest.py`. Un bug ahí contamina todas las
-  etiquetas sin dar la cara.
+- `tests/test_etiquetado.py` monta un **GTFS sintético y una flota con retraso
+  conocido** y exige recuperarlo en cada parada (±5 s): regulación en cabecera,
+  huecos, desvíos, refuerzos, punta, variantes, nocturnos, calendario, versión del
+  feed y orden de la entrada. Un bug ahí contamina todas las etiquetas sin dar la
+  cara; mutantes 056-068.
 
 `tests/` es el software del TFM. El andamiaje de agentes se valida aparte, en
 `.claude/tests/`: `test_trampas.py` (frontmatter, `cerrada` sin guardia, `test:`

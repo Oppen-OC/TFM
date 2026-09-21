@@ -1,8 +1,8 @@
 """GTFS estático de la EMT: los trazados, en metros.
 
 El feed trae el horario teórico y la geometría de cada recorrido. Este módulo
-lee lo segundo y lo deja listo para proyectar posiciones encima; el horario lo
-leerá el etiquetado. Qué contiene cada fichero y qué muerde de cada uno:
+lee las dos cosas: la geometría, lista para proyectar posiciones encima, y el
+horario de cada versión del feed (`Horario`), con su calendario y su vigencia. Qué contiene cada fichero y qué muerde de cada uno:
 `docs/09_gtfs_emt.md`.
 
 Tres cosas que parecen detalle y no lo son:
@@ -27,6 +27,7 @@ from __future__ import annotations
 import io
 import zipfile
 from dataclasses import dataclass
+from datetime import date, datetime
 from pathlib import Path
 
 import numpy as np
@@ -104,3 +105,142 @@ def cargar_trazados(ruta: Path | None = None) -> dict[str, list[Trazado]]:
             Trazado(str(shape_id), str(route_id), str(linea), x, y, acum)
         )
     return por_linea
+
+
+# --------------------------------------------------------------------------- #
+# Horario: el término programado de la etiqueta
+# --------------------------------------------------------------------------- #
+DIAS_SEMANA = (
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+)
+
+
+def a_segundos(horas: pd.Series) -> np.ndarray:
+    """'HH:MM:SS' a segundos desde la medianoche del DÍA DE SERVICIO.
+
+    El GTFS admite horas por encima de 24 —en este feed hasta 28:03—: son
+    madrugada del día siguiente dentro del mismo día de servicio. Por eso no se
+    puede usar `pd.to_datetime`, que las rechaza o las pliega al día equivocado.
+    """
+    partes = horas.astype(str).str.split(":", expand=True).astype(int)
+    return (partes[0] * 3600 + partes[1] * 60 + partes[2]).to_numpy()
+
+
+def _fecha(s: str) -> date:
+    return datetime.strptime(str(s), "%Y%m%d").date()
+
+
+@dataclass(frozen=True)
+class Horario:
+    """Una versión del feed: sus viajes, su horario, su calendario y sus trazados."""
+
+    ruta: Path
+    version: str
+    vigencia: tuple[date, date]  # `feed_info`: lo que el editor declara
+    calendario: tuple[date, date]  # lo que cubre `calendar.txt`
+    viajes: pd.DataFrame  # trip_id, route_id, service_id, shape_id, linea
+    paradas_de_viaje: pd.DataFrame  # trip_id, stop_sequence, stop_id, t_prog_s
+    paradas: pd.DataFrame  # stop_id -> lat, lon
+    calendar: pd.DataFrame
+    calendar_dates: pd.DataFrame
+    trazados: dict[str, list[Trazado]]
+
+    def servicios(self, dia: date) -> set[str]:
+        """`service_id` activos ese día: patrón semanal más excepciones."""
+        c = self.calendar
+        ymd = dia.strftime("%Y%m%d")
+        activos = set(
+            c[
+                (c["start_date"] <= ymd)
+                & (c["end_date"] >= ymd)
+                & (c[DIAS_SEMANA[dia.weekday()]] == "1")
+            ]["service_id"]
+        )
+        exc = self.calendar_dates[self.calendar_dates["date"] == ymd]
+        activos |= set(exc[exc["exception_type"] == "1"]["service_id"])
+        activos -= set(exc[exc["exception_type"] == "2"]["service_id"])
+        return activos
+
+    def trazado(self, shape_id: str) -> Trazado:
+        for ts in self.trazados.values():
+            for t in ts:
+                if t.shape_id == shape_id:
+                    return t
+        raise KeyError(shape_id)
+
+
+def cargar_horario(ruta: Path) -> Horario:
+    """Lee una versión del feed. `shape_dist_traveled` no se lee (trampa 010)."""
+    with zipfile.ZipFile(ruta) as z:
+        routes = _leer(z, "routes.txt")
+        trips = _leer(z, "trips.txt")
+        stop_times = _leer(z, "stop_times.txt")
+        stops = _leer(z, "stops.txt")
+        calendar = _leer(z, "calendar.txt")
+        calendar_dates = (
+            _leer(z, "calendar_dates.txt")
+            if "calendar_dates.txt" in z.namelist()
+            else pd.DataFrame(columns=["service_id", "date", "exception_type"])
+        )
+        info = _leer(z, "feed_info.txt") if "feed_info.txt" in z.namelist() else None
+
+    viajes = trips[["trip_id", "route_id", "service_id", "shape_id"]].merge(
+        routes[["route_id", "route_short_name"]], on="route_id"
+    )
+    viajes = viajes.rename(columns={"route_short_name": "linea"})
+    pv = stop_times[["trip_id", "stop_sequence", "stop_id", "arrival_time"]].copy()
+    pv["stop_sequence"] = pd.to_numeric(pv["stop_sequence"])
+    pv["t_prog_s"] = a_segundos(pv["arrival_time"])
+    pv = pv.drop(columns="arrival_time").sort_values(
+        ["trip_id", "stop_sequence"], kind="stable"
+    )
+    paradas = stops[["stop_id"]].assign(
+        lat=pd.to_numeric(stops["stop_lat"]), lon=pd.to_numeric(stops["stop_lon"])
+    )
+    cal = (_fecha(calendar["start_date"].min()), _fecha(calendar["end_date"].max()))
+    if info is not None and len(info):
+        vig = (_fecha(info["feed_start_date"][0]), _fecha(info["feed_end_date"][0]))
+        version = str(info["feed_version"][0])
+    else:
+        vig, version = cal, Path(ruta).stem
+    return Horario(
+        ruta=Path(ruta),
+        version=version,
+        vigencia=vig,
+        calendario=cal,
+        viajes=viajes,
+        paradas_de_viaje=pv.reset_index(drop=True),
+        paradas=paradas.set_index("stop_id"),
+        calendar=calendar,
+        calendar_dates=calendar_dates,
+        trazados=cargar_trazados(ruta),
+    )
+
+
+def versiones(directorio: Path) -> list[Path]:
+    """Todos los feeds guardados bajo `directorio`, cada versión en su zip."""
+    return sorted(Path(directorio).rglob("*.zip"))
+
+
+def elegir_horario(horarios: list[Horario], dia: date) -> tuple[Horario | None, bool]:
+    """El feed que manda en un día de servicio, y si ese día está en su vigencia.
+
+    Manda la versión más reciente —la de vigencia que empieza más tarde— entre
+    las que declaran vigencia ese día: cada publicación sustituye a la anterior.
+    Si ninguna la declara, la más reciente cuyo `calendar.txt` lo cubre, y se
+    marca como fuera de vigencia: el feed 01-09-2026 declara desde el 24/08
+    aunque su calendario diga 15/08 (`docs/09_gtfs_emt.md`, punto 6).
+    """
+    vigentes = [h for h in horarios if h.vigencia[0] <= dia <= h.vigencia[1]]
+    if vigentes:
+        return max(vigentes, key=lambda h: (h.vigencia[0], h.vigencia[1])), True
+    cubren = [h for h in horarios if h.calendario[0] <= dia <= h.calendario[1]]
+    if cubren:
+        return max(cubren, key=lambda h: (h.vigencia[0], h.vigencia[1])), False
+    return None, False
