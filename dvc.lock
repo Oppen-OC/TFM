@@ -1,0 +1,109 @@
+schema: '2.0'
+stages:
+  curar:
+    cmd: uv run python -m project.ingest.reprocesar
+    deps:
+    - path: data/raw/source=emt_buses
+      hash: md5
+      md5: f46c2834183651286996ff725a69951a.dir
+      size: 364675631
+      nfiles: 32
+    - path: data/raw/source=renfe_cercanias
+      hash: md5
+      md5: aea9efc1cb365df1d2710ef9b61b988d.dir
+      size: 658043226
+      nfiles: 35
+    - path: data/raw/source=trafico_estado
+      hash: md5
+      md5: 60f90ceebfad2909aef3bf505cf71517.dir
+      size: 355924985
+      nfiles: 32
+    - path: data/raw/source=trafico_intensidad
+      hash: md5
+      md5: 29c27db3dde30e22f5ed994559b61c98.dir
+      size: 50760669
+      nfiles: 32
+    - path: data/raw/source=valenbisi
+      hash: md5
+      md5: 1c2bfc03a6ef51d35914d5cef59b663b.dir
+      size: 153401112
+      nfiles: 32
+    - path: src/project/ingest/reprocesar.py
+      hash: md5
+      md5: 9de8269d7c719d3a1c468c70a5d3cf94
+      size: 6621
+    - path: src/project/ingest/sources.py
+      hash: md5
+      md5: 072d334806a9fef7be86152520929472
+      size: 16477
+    outs:
+    - path: data/curated
+      hash: md5
+      md5: ae401ac4b37c84574a4e568855410592.dir
+      size: 265282212
+      nfiles: 163
+  prepare:
+    cmd: uv run python -m project.prepare
+    deps:
+    - path: data/curated
+      hash: md5
+      md5: ae401ac4b37c84574a4e568855410592.dir
+      size: 265282212
+      nfiles: 163
+    - path: data/raw/gtfs
+      hash: md5
+      md5: 58e47750a59418f7aed19ec560781cde.dir
+      size: 76792028
+      nfiles: 13
+    - path: src/project/etiquetado.py
+      hash: md5
+      md5: 412b1136b484cdc9c3887511e939737e
+      size: 20943
+    - path: src/project/gtfs.py
+      hash: md5
+      md5: eddb6c0ab87e20c72fbdb9b835d129a9
+      size: 9426
+    - path: src/project/mapmatching.py
+      hash: md5
+      md5: fbbf9e17f110a61527ec486efd4141bf
+      size: 7756
+    - path: src/project/prepare.py
+      hash: md5
+      md5: a43f5ba915c8ec2837013a395743536a
+      size: 6358
+    - path: src/project/tracking.py
+      hash: md5
+      md5: 54db0fcefee1f9107013dd33583fd5ff
+      size: 28452
+    params:
+      params.yaml:
+        prepare:
+          min_posiciones_viaje: 10
+          min_fraccion_recorrido: 0.3
+          retroceso_nuevo_viaje_m: 500
+          max_hueco_cruce_s: 120
+          margen_cruce_m: 15
+          paradas_referencia: 3
+          max_desfase_s: 1200
+          margen_min_s: 120
+          min_avance: 0.8
+    outs:
+    - path: data/interim/emt_tracked
+      hash: md5
+      md5: e577600160fc783c05db5422803bc495.dir
+      size: 323770730
+      nfiles: 32
+    - path: data/interim/pasos
+      hash: md5
+      md5: 7b5deddc75fb586cda763c85747b4045.dir
+      size: 63406446
+      nfiles: 32
+    - path: data/interim/viajes
+      hash: md5
+      md5: ffef0df9309a8dc38d8172ddc16006b4.dir
+      size: 8539154
+      nfiles: 32
+    - path: metrics/prepare.json
+      hash: md5
+      md5: 2ecc4939dc1d17ae1f12437498d8302c
+      size: 13910

@@ -35,6 +35,8 @@ pasa.
 | [021](021-las-capas-del-geoportal-faltan-cuatro-dias-con-el-colector-vivo.md) | 2026-09-18 | limitacion | limitaciones | Las cuatro capas del geoportal faltan **103,7 h** (10/09 06:24 - 14/09 14:05 UTC) con el colector vivo y Renfe completa; volvieron con un reinicio del colector. Unos 11.900 sondeos de la EMT perdidos, y `--status` dijo `VIVO` los cuatro días |
 | [022](022-el-map-matching-aguanta-en-septiembre.md) | 2026-09-18 | medicion | calidad-dato | El map-matching aguanta en septiembre: **4,21 m** de mediana y avance **0,996 frente a 0,03** en 91 grupos. La 40 era un bus en cochera, la C3 regulación en cabecera, la subida del fuera de ruta un desvío de la 24 y la 25; la 63 no tiene horario en el feed |
 | [023](023-la-segunda-pasada-no-mejora-la-jornada-real.md) | 2026-09-18 | anomalia | metodologia | En jornada real la segunda pasada con abscisa no cambia las trayectorias y sube **30-55 %** `ida_vuelta`. La mejora real de la 017 era abscisa pegada por posición: el 99,7 % de las filas recibió la de otra |
+| [024](024-la-etiqueta-sale-bien-salvo-donde-el-horario-no-es-el-que-se-circula.md) | 2026-09-21 | medicion | metodologia | La cascada da **2,1 M** de pasos con retraso y asigna el **94 %** de los tramos de servicio de agosto. Del 31/08 al 11/09 el feed vigente no es el horario que se circula: el éxito cae al 75 % y los conflictos se triplican; con el feed posterior, 84-88 % |
+| [025](025-desde-el-9-de-septiembre-la-fuente-deja-de-publicar-lineas-enteras.md) | 2026-09-21 | anomalia | limitaciones | Desde el 09/09 la capa de la EMT deja de publicar casi toda la **71** (−93 %) y buena parte de la 28, la 25, la 4 y la 73; esos buses no reaparecen con otro número de línea |
 
 ## Qué va aquí y qué no
 

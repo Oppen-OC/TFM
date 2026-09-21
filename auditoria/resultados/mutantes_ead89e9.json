@@ -1,0 +1,302 @@
+{
+  "rev": "ead89e9",
+  "segundos": 1194,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 61.1
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 61.3
+    },
+    {
+      "id": "056",
+      "nombre": "el paso por parada se toma a la llegada, no a la salida",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_el_cruce_se_toma_a_la_salida_de_la_parada",
+        "tests/test_etiquetado.py::test_el_retraso_de_salida_se_recupera_en_cada_parada",
+        "tests/test_etiquetado.py::test_la_regulacion_en_cabecera_no_es_retraso"
+      ],
+      "n_caidos": 3,
+      "esperados": [
+        "tests/test_etiquetado.py::test_la_regulacion_en_cabecera_no_es_retraso",
+        "tests/test_etiquetado.py::test_el_cruce_se_toma_a_la_salida_de_la_parada"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 64.0
+    },
+    {
+      "id": "057",
+      "nombre": "el cruce se busca sobre la abscisa cruda, sin máximo acumulado",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_etiquetado.py::test_el_cruce_se_toma_a_la_salida_de_la_parada"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 60.2
+    },
+    {
+      "id": "058",
+      "nombre": "se interpola el paso a través de un hueco de sondeos",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_un_desvio_deja_sin_cruce_las_paradas_que_se_salta"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_un_hueco_de_sondeos_no_se_interpola",
+        "tests/test_etiquetado.py::test_un_desvio_deja_sin_cruce_las_paradas_que_se_salta"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 61.5
+    },
+    {
+      "id": "059",
+      "nombre": "las paradas se proyectan al punto más cercano, sin orden",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_las_paradas_de_un_bucle_se_proyectan_en_orden"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_las_paradas_de_un_bucle_se_proyectan_en_orden"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 62.9
+    },
+    {
+      "id": "060",
+      "nombre": "se asigna el viaje aunque el segundo candidato esté igual de cerca",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_en_punta_el_viaje_dudoso_no_se_etiqueta"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_en_punta_el_viaje_dudoso_no_se_etiqueta"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 67.8
+    },
+    {
+      "id": "061",
+      "nombre": "un viaje programado puede quedarse con dos tramos observados",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_un_viaje_programado_se_asigna_a_un_solo_bus"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_un_viaje_programado_se_asigna_a_un_solo_bus"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 90.8
+    },
+    {
+      "id": "062",
+      "nombre": "la variante se decide por grupo y no por viaje",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_la_variante_se_decide_por_viaje"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_la_variante_se_decide_por_viaje"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 90.1
+    },
+    {
+      "id": "063",
+      "nombre": "la madrugada pertenece al mismo día de servicio",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_el_nocturno_pertenece_al_dia_de_servicio_anterior"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_el_nocturno_pertenece_al_dia_de_servicio_anterior"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 83.9
+    },
+    {
+      "id": "064",
+      "nombre": "con dos versiones vigentes manda la más antigua",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_el_feed_se_elige_por_fecha_de_servicio"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_el_feed_se_elige_por_fecha_de_servicio"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 84.1
+    },
+    {
+      "id": "065",
+      "nombre": "calendar_dates no suprime servicios",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_un_dia_suprimido_en_calendar_dates_no_tiene_viajes"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_un_dia_suprimido_en_calendar_dates_no_tiene_viajes"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 85.5
+    },
+    {
+      "id": "066",
+      "nombre": "las posiciones sin trayecto entran en el tracker",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_las_posiciones_sin_trayecto_se_descartan_y_se_cuentan"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_las_posiciones_sin_trayecto_se_descartan_y_se_cuentan"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 87.6
+    },
+    {
+      "id": "067",
+      "nombre": "la parada terminal se trata como las demás y nunca se cruza",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_el_retraso_de_salida_se_recupera_en_cada_parada",
+        "tests/test_etiquetado.py::test_la_variante_se_decide_por_viaje"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_etiquetado.py::test_el_retraso_de_salida_se_recupera_en_cada_parada",
+        "tests/test_etiquetado.py::test_la_variante_se_decide_por_viaje"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 85.3
+    },
+    {
+      "id": "068",
+      "nombre": "no hay tope de desfase: el refuerzo se asigna al viaje más cercano",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_un_refuerzo_fuera_de_horario_no_se_asigna"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_un_refuerzo_fuera_de_horario_no_se_asigna"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 86.7
+    }
+  ]
+}
