@@ -100,10 +100,17 @@ ADR-013, 014 y 015, y los mutantes 056-069. Trampa 012.
 
 Abierto:
 
-1. **Qué horario usar del 31/08 al 11/09.** Una versión archivada del feed
-   (Transitland) que cubra esos días sería la respuesta limpia. Usar el
-   `19-09-2026` fuera de su vigencia es la que mejor encaja con lo observado.
-   Si se excluyen, se pierde un tercio de las etiquetas.
+1. ~~**Qué horario usar del 31/08 al 11/09.**~~ **Cerrado el 22/09 para el
+   31/08-07/09:** no existe. En el historial de Transitland no hay ninguna
+   versión entre la del 02/09 (`d2d4cb8899ae`, la `01-09-2026` local: mismo
+   sha1, servicio de verano) y la del 10/09 (calendario desde el 08/09). La EMT
+   no publicó nada en medio. Esos días se excluyen de forma definitiva
+   (ADR-014). Reproducir:
+   `uv run python -m project.ingest.transitland --desde 2026-08-31 --hasta 2026-09-07`
+   (salida en `auditoria/resultados/transitland_versiones_2026-09-22.txt`).
+   **Sigue abierto el 08-11/09:** las versiones del 10 al 18/09 lo cubren con
+   horario de septiembre, pero descargar zips archivados exige el plan de pago
+   de Transitland (401 con la key gratuita). Hoy se etiqueta con el de verano.
 2. Los 7.218 conflictos y los tramos cortos: cuántos son buses partidos por el
    tracker, que pierden la etiqueta de un tramo.
 3. El sesgo declarado de la asignación: un bus que va más de medio intervalo

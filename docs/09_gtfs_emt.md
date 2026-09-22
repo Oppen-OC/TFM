@@ -161,9 +161,19 @@ La publicación vigente se consulta con la API CKAN de VLCi:
 
 ### Versiones archivadas en Transitland
 
-Transitland (`f-ezp8-emtvalencia`) archiva una versión casi diaria. Su página
-pública incrusta la lista; descargar una versión antigua exige API key. Las que
-rodean la captura (consultado el 21/09):
+Transitland (`f-ezp8-emtvalencia`) registra una versión cada vez que el zip
+cambia, así que su historial es el registro de lo que la EMT publicó y cuándo.
+Los metadatos se leen con la API key gratuita; **el zip no**: la descarga exige
+plan professional o enterprise y que la licencia del feed permita redistribuirlo
+(la del feed de la EMT sale `null`), y con la key gratuita devuelve 401
+(22/09). Las que rodean la captura, contrastadas por sha1 contra los zips
+locales:
+
+```bash
+uv run python -m project.ingest.transitland --desde 2026-08-31 --hasta 2026-09-07
+```
+
+Salida completa en `auditoria/resultados/transitland_versiones_2026-09-22.txt`.
 
 | descargada | sha1 | calendario | `feed_version` |
 |---|---|---|---|
@@ -180,4 +190,13 @@ rodean la captura (consultado el 21/09):
 
 **El servicio de septiembre aparece publicado con calendario desde el 08/09**, y
 no hay ninguna versión archivada con horario de septiembre para el 31/08-07/09,
-aunque lo observado esos días encaja mejor con él (bitácora 024).
+aunque lo observado esos días encaja mejor con él (bitácora 024). **Entre el 02/09
+y el 10/09 la EMT no publicó nada**: no hay versión intermedia, y Transitland la
+habría registrado. El único horario publicado para el 31/08-07/09 es la
+`01-09-2026` (`d2d4cb8899ae`, sha1 idéntico al zip local), con servicio de verano.
+Ningún otro archivo puede tener lo que el editor nunca publicó, así que esos
+días quedan excluidos de forma definitiva (ADR-014).
+
+Las versiones del 10 al 18/09 sí servirían para el **08-11/09**, que hoy se
+etiqueta con la `01-09-2026` porque la `19-09-2026` empieza el 12/09. No son
+descargables con la key gratuita.

@@ -322,9 +322,15 @@ madrugada como 25:10.
 servicio de septiembre, pero la EMT no lo publicó hasta el 10/09 y con
 calendario desde el 08/09 (versiones archivadas en Transitland, `docs/09`). El
 único horario publicado para esos días es el de verano, con el que se asignaba
-el 75 % de los tramos y se triplicaban los conflictos (bitácora 024). Las
-versiones archivadas del 10 al 18/09 se descargan con `ingest.transitland` y
-entran en la elección por fecha como cualquier otra.
+el 75 % de los tramos y se triplicaban los conflictos (bitácora 024).
+
+**Excepción definitiva (22/09).** El historial de Transitland muestra que entre
+el 02/09 y el 10/09 la EMT no publicó ninguna versión: no existe un horario de
+septiembre para el 31/08-07/09 en ningún archivo (`docs/09`,
+`auditoria/resultados/transitland_versiones_2026-09-22.txt`). Las versiones del
+10 al 18/09 cubrirían el 08-11/09, que hoy se etiqueta con el horario de verano,
+pero descargarlas exige el plan de pago de Transitland; `ingest.transitland`
+queda como consulta de metadatos.
 
 **Reabrir si** aparece una versión archivada (Transitland) que cubra 15-23/08.
 

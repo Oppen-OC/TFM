@@ -215,3 +215,39 @@ def test_los_bloques_de_gid_son_contiguos(fix):
     """Contiguos y disjuntos: la firma de un truncate + reinsert."""
     b0, b1 = set(fix["bloques_gid"]["t0"]), set(fix["bloques_gid"]["t1"])
     assert min(b1) - max(b0) == 1, f"salto={min(b1) - max(b0)}"
+
+
+# ---------------------------------------------------------------------------
+# Versiones archivadas (Transitland): cobertura por calendario, sin red
+# ---------------------------------------------------------------------------
+
+
+def test_transitland_resume_cobertura_y_reconoce_versiones_locales():
+    from datetime import date
+    from pathlib import Path
+
+    from project.ingest.transitland import resumir
+
+    def fv(sha, capturada, ini, fin):
+        return {
+            "sha1": sha,
+            "fetched_at": f"{capturada}T00:14:05Z",
+            "earliest_calendar_date": ini,
+            "latest_calendar_date": fin,
+        }
+
+    fvs = [
+        fv("c", "2026-09-10", "2026-09-08", "2026-10-09"),
+        fv("b", "2026-09-02", "2026-07-24", "2026-09-30"),
+        fv("a", "2026-08-01", "2026-07-24", "2026-08-30"),
+        fv("c", "2026-09-10", "2026-09-08", "2026-10-09"),  # repetida entre páginas
+    ]
+    filas = resumir(
+        fvs, {"b": Path("emt_google_transit.zip")}, date(2026, 8, 31), date(2026, 9, 7)
+    )
+    assert [f["sha1"] for f in filas] == ["a", "b", "c"]
+    assert [f["cobertura"] for f in filas] == ["", "total", ""]
+    assert [f["local"] for f in filas] == ["", "emt_google_transit.zip", ""]
+
+    parcial = resumir(fvs, {}, date(2026, 9, 5), date(2026, 9, 11))
+    assert [f["cobertura"] for f in parcial] == ["", "total", "parcial"]
