@@ -57,8 +57,8 @@ stages:
       nfiles: 13
     - path: src/project/etiquetado.py
       hash: md5
-      md5: 412b1136b484cdc9c3887511e939737e
-      size: 20943
+      md5: 64706f26407f812080cf8a41b1aec38f
+      size: 22251
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -69,8 +69,8 @@ stages:
       size: 7756
     - path: src/project/prepare.py
       hash: md5
-      md5: a43f5ba915c8ec2837013a395743536a
-      size: 6358
+      md5: cae32653ecc4331f06e74f6e3c068fc4
+      size: 8336
     - path: src/project/tracking.py
       hash: md5
       md5: 54db0fcefee1f9107013dd33583fd5ff
@@ -87,23 +87,26 @@ stages:
           max_desfase_s: 1200
           margen_min_s: 120
           min_avance: 0.8
+          excluir_fechas:
+          - - '2026-08-31'
+            - '2026-09-07'
     outs:
     - path: data/interim/emt_tracked
       hash: md5
-      md5: e577600160fc783c05db5422803bc495.dir
-      size: 323770730
+      md5: 6ec4c0df2380858fdace08ee0a056f38.dir
+      size: 278158786
       nfiles: 32
     - path: data/interim/pasos
       hash: md5
-      md5: 7b5deddc75fb586cda763c85747b4045.dir
-      size: 63406446
+      md5: 17a44751a9c9c9cdf4afa66238228170.dir
+      size: 46746574
       nfiles: 32
     - path: data/interim/viajes
       hash: md5
-      md5: ffef0df9309a8dc38d8172ddc16006b4.dir
-      size: 8539154
+      md5: 7c96d8323d2333e569a6b91c646711fe.dir
+      size: 7414570
       nfiles: 32
     - path: metrics/prepare.json
       hash: md5
-      md5: 2ecc4939dc1d17ae1f12437498d8302c
-      size: 13910
+      md5: f78d051ef7c9972b903f71e0cf707970
+      size: 12605

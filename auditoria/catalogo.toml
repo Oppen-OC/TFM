@@ -910,3 +910,20 @@ buscar = '''if s[i] < maximo - retroceso_m:'''
 reemplazar = '''if False:'''
 detector = []
 sondas = []
+
+[[mutante]]
+id = "074"
+nombre = "prepare vuelve a cortar por día UTC, no por día de servicio"
+capa = "etiquetado"
+# El corte de las 02:00 locales parte los nocturnos y numera `v00000` dos veces
+# para el mismo día de servicio: 932 viaje_id repetidos y 74 viajes dobles en
+# la captura real (bitácora 027).
+fichero = "src/project/prepare.py"
+buscar = '''    return desde.tz_convert("UTC"), hasta.tz_convert("UTC")'''
+reemplazar = '''    inicio = pd.Timestamp(f"{d}T00:00:00Z")
+    return inicio, inicio + pd.Timedelta(days=1)'''
+detector = [
+    "tests/test_etiquetado.py::test_cada_dia_de_servicio_se_procesa_entero_y_sus_claves_no_chocan",
+    "tests/test_etiquetado.py::test_la_ventana_de_servicio_va_de_corte_a_corte_en_hora_local",
+]
+sondas = []

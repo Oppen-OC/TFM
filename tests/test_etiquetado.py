@@ -502,6 +502,65 @@ def test_el_nocturno_pertenece_al_dia_de_servicio_anterior(horario_a):
     assert set(p["fecha_servicio"]) == {DIA}
 
 
+def _del_dia(df: pd.DataFrame, dia: date) -> pd.DataFrame:
+    """Lo que `prepare.cargar_dia` entrega para ese día de servicio."""
+    desde, hasta = prepare.ventana_servicio(dia)
+    return df[(df["ts_utc"] >= desde) & (df["ts_utc"] < hasta)]
+
+
+def test_cada_dia_de_servicio_se_procesa_entero_y_sus_claves_no_chocan(horario_a):
+    """`prepare` etiqueta por separado cada día; la unión tiene que valer igual.
+
+    Hasta 09/2026 cortaba por día UTC —las 02:00 locales— y el día de servicio
+    cambia a las 04:00: el nocturno que cruzaba las 02:00 se partía en dos
+    llamadas, las dos mitades se quedaban el mismo `trip_id`, y la segunda
+    numeraba `v00000` con el día de servicio anterior, chocando con el primer
+    bus del día (bitácora 027: 932 `viaje_id` repetidos, 74 viajes dobles).
+    """
+    diurno = Bus("1", "Oeste - Este", IDA, 7 * 3600, 4.0)
+    # 40 min tarde: 01:50-02:07 del jueves, a través del corte de día UTC.
+    nocturno = Bus("1", "Oeste - Este", IDA, 25 * 3600 + 600 + 2400, 4.0)
+    siguiente = Bus("1", "Oeste - Este", IDA, 24 * 3600 + 7 * 3600, 4.0)
+    df = flota(diurno, nocturno, siguiente)
+    dias = [DIA, DIA + timedelta(days=1)]
+    partes = [etiquetar(_del_dia(df, d), [horario_a], max_desfase_s=3600) for d in dias]
+    assert sum(len(_del_dia(df, d)) for d in dias) == len(df), "la ventana pierde filas"
+
+    viajes = pd.concat([r.viajes for r in partes], ignore_index=True)
+    pasos = pd.concat([r.pasos for r in partes], ignore_index=True)
+    assert viajes["viaje_id"].is_unique, viajes[
+        viajes["viaje_id"].duplicated(keep=False)
+    ]
+    asignados = viajes[viajes["motivo"] == "asignado"]
+    assert not asignados.duplicated(["fecha_servicio", "trip_id"]).any()
+    for r, d in zip(partes, dias):
+        assert set(r.viajes["fecha_servicio"]) == {d}
+
+    union = etiquetado.Resultado(pasos=pasos, viajes=viajes, posiciones=df)
+    p = _comparar(union, "1_noche", nocturno)
+    assert set(p.index) == {sid for sid, _ in IDA.paradas}, "el nocturno sale partido"
+
+
+# El cambio de hora cae a las 02:00-03:00, ANTES del corte de las 04:00: el día
+# de servicio que dura 25 h es el sábado 24/10, no el domingo del cambio.
+@pytest.mark.parametrize(
+    ("dia", "horas"),
+    [
+        (date(2026, 9, 16), 24),
+        (date(2026, 10, 24), 25),
+        (date(2026, 10, 25), 24),
+        (date(2027, 3, 27), 23),
+    ],
+    ids=["normal", "vispera_invierno", "cambio_a_invierno", "vispera_verano"],
+)
+def test_la_ventana_de_servicio_va_de_corte_a_corte_en_hora_local(dia, horas):
+    desde, hasta = prepare.ventana_servicio(dia)
+    assert str(desde.tz) == "UTC" and str(hasta.tz) == "UTC"
+    assert desde.tz_convert(TZ).hour == etiquetado.HORA_CORTE
+    assert desde.tz_convert(TZ).date() == dia
+    assert (hasta - desde) == pd.Timedelta(hours=horas)
+
+
 def test_un_dia_suprimido_en_calendar_dates_no_tiene_viajes(tmp_path):
     ruta = escribir_feed(
         tmp_path / "s.zip",

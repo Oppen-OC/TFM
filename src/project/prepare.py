@@ -3,8 +3,11 @@
     uv run python -m project.prepare                         # lo que ejecuta `dvc repro prepare`
     uv run python -m project.prepare --dias 2026-08-27 --salida DIR   # una prueba, fuera de DVC
 
-Por jornada (día UTC de captura, filtrado por `ts_ingest_utc` sobre todas las
-particiones: entrada 011):
+Por día de servicio: de las `HORA_CORTE` a las `HORA_CORTE` locales del día
+siguiente, filtrado por `ts_utc` sobre todas las particiones (entrada 011). No
+por día UTC: ese corte cae a las 02:00 locales, parte los nocturnos y numera
+`v00000` dos veces para el mismo día de servicio (bitácora 027). A las 04:00 no
+hay en servicio ni un bus por sondeo.
 
 1. Descarta las posiciones sin `trayecto` y las cuenta. No son etiquetables: en
    las ráfagas medidas son un único bus aparcado, fuera de todo trazado de su
@@ -15,7 +18,7 @@ particiones: entrada 011):
 3. `etiquetado.etiquetar` contra la versión del GTFS que manda cada día de
    servicio.
 
-Escribe, particionado por día, `emt_tracked/` (posiciones con vehículo, viaje y
+Escribe, particionado por día de servicio, `emt_tracked/` (posiciones con vehículo, viaje y
 estado), `viajes/` (cada tramo observado y por qué se etiquetó o no) y `pasos/`
 (una fila por parada con `retraso_s`); y `metrics/prepare.json` con los
 recuentos, que es lo que se compara entre versiones del pipeline.
@@ -29,6 +32,7 @@ import json
 import shutil
 import time
 from concurrent.futures import ProcessPoolExecutor
+from datetime import date, datetime, timedelta
 from functools import partial
 from pathlib import Path
 
@@ -37,7 +41,7 @@ import pandas as pd
 import yaml
 
 from project.config import RAIZ, settings
-from project.etiquetado import Parametros, Resultado, etiquetar
+from project.etiquetado import HORA_CORTE, Parametros, Resultado, etiquetar
 from project.gtfs import Horario, cargar_horario, versiones
 from project.tracking import rastrear
 
@@ -85,23 +89,41 @@ def _patron() -> str:
     return (settings.curated_dir / "source=emt_buses" / "*" / "*.parquet").as_posix()
 
 
+def ventana_servicio(dia: date | str) -> tuple[pd.Timestamp, pd.Timestamp]:
+    """[desde, hasta) en UTC del día de servicio: de corte a corte en hora local.
+
+    Es la misma regla que `etiquetado._dia_de_servicio`, así que toda trayectoria
+    que empiece dentro de la ventana es de ese día de servicio. Dura 23 o 25 h los
+    días de cambio de hora.
+    """
+    d = date.fromisoformat(str(dia))
+    siguiente = d + timedelta(days=1)
+    desde, hasta = (
+        pd.Timestamp(datetime(x.year, x.month, x.day, HORA_CORTE), tz=settings.tz_local)
+        for x in (d, siguiente)
+    )
+    return desde.tz_convert("UTC"), hasta.tz_convert("UTC")
+
+
 def dias_capturados() -> list[str]:
+    """Días de servicio con alguna posición: la fecha local menos `HORA_CORTE` h."""
     duckdb.sql("set TimeZone = 'UTC'")
     filas = duckdb.sql(
-        f"select distinct cast(ts_ingest_utc as date) as d "
+        f"select distinct cast(timezone('{settings.tz_local}', ts_utc) "
+        f"- interval {HORA_CORTE} hour as date) as d "
         f"from read_parquet('{_patron()}', hive_partitioning = false) order by d"
     ).fetchall()
     return [str(f[0]) for f in filas]
 
 
 def cargar_dia(dia: str) -> pd.DataFrame:
-    desde = pd.Timestamp(f"{dia}T00:00:00Z")
-    hasta = desde + pd.Timedelta(days=1)
+    """Las posiciones de un día de servicio (`ventana_servicio`), formato curated."""
+    desde, hasta = ventana_servicio(dia)
     return duckdb.sql(
         f"""
         select snapshot_id, linea, trayecto, lat, lon, ts_utc
         from read_parquet('{_patron()}', hive_partitioning = false)
-        where ts_ingest_utc >= '{desde.isoformat()}' and ts_ingest_utc < '{hasta.isoformat()}'
+        where ts_utc >= '{desde.isoformat()}' and ts_utc < '{hasta.isoformat()}'
           and lat is not null and lon is not null
         """
     ).df()
@@ -118,6 +140,14 @@ def _cargar_feeds(rutas: list[Path]) -> None:
 def procesar_dia(dia: str, p: Parametros, salida: Path) -> dict:
     t0 = time.time()
     r = etiquetar_dia(cargar_dia(dia), _HORARIOS, p)
+    # Si la ventana y el día de servicio dejan de coincidir, las claves vuelven a
+    # chocar entre días sin ningún error (bitácora 027): que lo haya.
+    otros = set(r.posiciones["fecha_servicio"]) - {date.fromisoformat(dia)}
+    if otros:
+        raise ValueError(
+            f"{dia}: la ventana de servicio trae posiciones de {sorted(otros)}; "
+            "ventana_servicio y etiquetado.HORA_CORTE no coinciden"
+        )
     for nombre, df in (
         (
             "emt_tracked",
