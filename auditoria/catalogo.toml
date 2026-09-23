@@ -860,3 +860,53 @@ reemplazar = '''        if False:'''
 detector = ["tests/test_etiquetado.py::test_un_dia_excluido_no_se_etiqueta_y_se_cuenta"]
 sondas = []
 
+
+# --------------------------------------------------------------------------- #
+# Auditoría de la cadena API -> línea -> trazado -> viaje (2026-09-23).
+# Huecos previstos: ningún test los guarda todavía (bitácoras 026 y 027).
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "071"
+nombre = "el parser normaliza la línea: C1, C2 y C3 dejan de casar con el GTFS"
+capa = "fuentes"
+# La línea no se infiere: sale literal del payload y se une por texto con
+# `route_short_name`. Nada comprueba que llegue intacta al trazado.
+fichero = "src/project/ingest/sources.py"
+buscar = '''    df["ts_utc"], convencion = resolver_convencion(df["fecha"], ts_ingest)
+    df["tz_convencion"] = convencion
+    df["ts_ingest_utc"] = ts_ingest
+    # gid NO'''
+reemplazar = '''    df["linea"] = df["linea"].astype(str).str.lower()
+    df["ts_utc"], convencion = resolver_convencion(df["fecha"], ts_ingest)
+    df["tz_convencion"] = convencion
+    df["ts_ingest_utc"] = ts_ingest
+    # gid NO'''
+detector = []
+sondas = ["parsers"]
+
+[[mutante]]
+id = "072"
+nombre = "la puerta física baja a 40 km/h"
+capa = "tracking"
+trampa = "013"
+# La flota simulada no pasa de unos 30 km/h: ningún test distingue 70 de 40.
+# Es la misma ceguera que dejó a la 24 fuera de la etiqueta (bitácora 026).
+fichero = "src/project/tracking.py"
+buscar = '''VEL_MAX_KMH = 70.0'''
+reemplazar = '''VEL_MAX_KMH = 40.0'''
+detector = []
+sondas = ["tracking"]
+
+[[mutante]]
+id = "073"
+nombre = "la trayectoria nunca se corta en viajes"
+capa = "etiquetado"
+# Una trayectoria que vuelve a cabecera y repite recorrido queda como un solo
+# viaje. Ningún escenario de test_etiquetado encadena dos recorridos en un bus.
+# El runner lo da «equivalente» (mutantes_ba6b54d.json) solo porque ninguna
+# sonda ejercita el etiquetado: no cae ningún test y la salida sí cambia.
+fichero = "src/project/etiquetado.py"
+buscar = '''if s[i] < maximo - retroceso_m:'''
+reemplazar = '''if False:'''
+detector = []
+sondas = []
