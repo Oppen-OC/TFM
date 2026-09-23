@@ -355,6 +355,37 @@ def test_salto_imposible_rompe_la_cadena(salto_m):
     assert not (antes & despues), "emparejó por encima de la puerta física"
 
 
+def test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte():
+    """TRAMPA 013: la puerta no puede medir el tiempo solo con el reloj del sondeo.
+
+    La capa publica cada posición con su propio `ts_utc`, a veces uno o dos
+    decenas de segundos por detrás del resto del sondeo. Un bus a 50 km/h reales
+    cuya posición llega 20 s atrasada un sondeo sí y otro no recorre 694 m entre
+    un sondeo atrasado y el siguiente al día: 83 km/h con el reloj del sondeo, por
+    encima de los 583 m que permiten 70 km/h. Es lo que parte la línea 24 en la
+    carretera de la costa (bitácora 026). Otro bus, en otra línea, marca el reloj.
+    """
+    v = 50 / 3.6
+    retraso = [0.0 if k % 2 == 0 else 20.0 for k in range(10)]
+    tray = {
+        "atrasado": [(v * (k * DT - retraso[k]), 0.0) for k in range(10)],
+        "reloj": [(0.0, 5000.0)] * 10,
+    }
+    df = _construir(tray, linea={"atrasado": "L1", "reloj": "L2"})
+    t0 = pd.Timestamp("2026-08-15T19:00:00Z")
+    k = df["snapshot_id"] - 1000
+    es = df["verdad"] == "atrasado"
+    df.loc[es, "ts_utc"] = t0 + pd.to_timedelta(
+        k[es] * DT - k[es].map(lambda i: retraso[i]), unit="s"
+    )
+    salto = np.diff([p for p, _ in tray["atrasado"]]).max()
+    assert VEL_MAX_KMH / 3.6 * DT < salto < SALTO_MAX_M, "el escenario no discrimina"
+
+    out = _rastrear_con_verdad(df)
+    ids = out.loc[out["verdad"] == "atrasado", "vehicle_id"]
+    assert ids.nunique() == 1, f"partido en {ids.nunique()} trayectorias"
+
+
 def test_sondeos_con_el_mismo_instante_no_rompen_la_cadena():
     """Dos sondeos con el mismo `ts_utc` dan `dt = 0`: se trata como un paso de 30 s.
 
@@ -426,12 +457,15 @@ def test_sin_suavizado_el_encuentro_si_intercambia(escenario, monkeypatch):
 
 
 def test_el_suavizado_mide_el_tiempo_con_el_reloj_de_sondeo():
-    """`dt_s` tras suavizar es el del emparejamiento: máximo `ts_utc` por sondeo.
+    """`dt_s` tras suavizar es el del emparejamiento: `tracking._dt_puerta`.
 
-    Las filas de un sondeo no siempre traen el mismo `ts_utc`. Medido por fila, el
-    suavizado reescribía `dt_s` de 8 s o negativos donde el tracker tenía 30, y la
-    puerta física calculada con ese `dt_s` aparecía violada 14 veces en un día
-    real. Aquí se desordena el reloj dentro de cada sondeo a propósito.
+    Las filas de un sondeo no siempre traen el mismo `ts_utc`. Medido SOLO por
+    fila, el suavizado reescribía `dt_s` de 8 s o negativos donde el tracker tenía
+    30, y la puerta física calculada con ese `dt_s` aparecía violada 14 veces en
+    un día real. Desde la trampa 013 el paso es el MAYOR de los dos relojes, el
+    del sondeo (máximo `ts_utc`) y el de la posición: nunca menos que el sondeo,
+    más si la posición llegó atrasada. Aquí se desordena el reloj dentro de cada
+    sondeo a propósito.
     """
     sim = simular_flota(semilla=42, p_parada=0.17)
     rng = np.random.default_rng(0)
@@ -443,13 +477,19 @@ def test_el_suavizado_mide_el_tiempo_con_el_reloj_de_sondeo():
     o = out.sort_values(["vehicle_id", "snapshot_id"], kind="stable")
     anterior = o.groupby("vehicle_id")["snapshot_id"].shift()
     tiene = anterior.notna()
-    esperado = (
+    del_sondeo = (
         reloj_s.loc[o.loc[tiene, "snapshot_id"]].to_numpy()
         - reloj_s.loc[anterior[tiene].astype(int)].to_numpy()
     )
-    esperado = np.where(esperado == 0, 30.0, esperado)
+    del_sondeo = np.where(del_sondeo == 0, 30.0, del_sondeo)
+    de_la_fila = (
+        o.groupby("vehicle_id")["ts_utc"].diff()[tiene].dt.total_seconds().to_numpy()
+    )
     obtenido = o.loc[tiene, "dt_s"].to_numpy(dtype=float)
-    assert np.allclose(obtenido, esperado), "dt_s no sigue el reloj de sondeo"
+    assert (obtenido >= del_sondeo - 1e-6).all(), "dt_s por debajo del reloj de sondeo"
+    assert np.allclose(obtenido, np.maximum(del_sondeo, de_la_fila)), (
+        "dt_s no es el mayor de los dos relojes"
+    )
 
 
 # --------------------------------------------------------------------------- #

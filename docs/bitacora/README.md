@@ -39,6 +39,7 @@ pasa.
 | [025](025-desde-el-9-de-septiembre-la-fuente-deja-de-publicar-lineas-enteras.md) | 2026-09-21 | anomalia | limitaciones | Desde el 09/09 la capa de la EMT deja de publicar casi toda la **71** (−93 %) y buena parte de la 28, la 25, la 4 y la 73; esos buses no reaparecen con otro número de línea |
 | [026](026-la-24-y-la-25-casi-no-llegan-a-la-etiqueta.md) | 2026-09-23 | anomalia | metodologia | La 24 y la 25 son el **4,9 %** de las posiciones y el **0,37 %** de los pasos etiquetados, y el éxito de la 024 no lo ve porque excluye los cortos. A la 24 la trocea la puerta de 70 km/h en carretera (abrirla: 363 → 144 trayectorias); a la 25, una fuente que alterna el trayecto del mismo bus a mitad de ruta (**6,9-9,0 %** de los pasos, ≤ 0,4 % en las de control) |
 | [027](027-viaje-id-colisiona-entre-dias-procesados.md) | 2026-09-23 | anomalia | metodologia | `viaje_id` no es único entre los días que procesa `prepare`: **932** se repiten entre particiones (890 con líneas distintas) y **74** viajes programados se etiquetan dos veces. El tracker numera desde `v00000` en cada llamada y la madrugada pertenece al día de servicio anterior |
+| [028](028-la-puerta-cuenta-el-reloj-de-la-posicion.md) | 2026-09-23 | tecnica | metodologia | La puerta física cuenta el mayor de los dos relojes, el del sondeo y el de la posición: la 24 pasa de **4.272 a 13.596** pasos y la 25 de 826 a 7.413, con las líneas urbanas a ±0,4 %. Subir el umbral a 100 km/h recuperaba lo mismo pero aceptaba saltos imposibles y rompía dos guardias |
 
 ## Qué va aquí y qué no
 

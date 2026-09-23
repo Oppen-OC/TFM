@@ -6,7 +6,7 @@ tipo: anomalia
 capa: tracking
 capitulo: metodologia
 impacto: alto
-estado: abierto
+estado: mitigado
 evidencia: uv run python -m project.analysis.medir_rutas lineas | rupturas | contrafactual | alternancia --dia 2026-08-20
 trampa: 013
 ---
@@ -113,15 +113,15 @@ como hueco.
 
 Abierto:
 
-- **La puerta (24).** Decidir el arreglo: puerta sobre el `ts_utc` del bus,
-  umbral por línea o velocidad medida sobre la abscisa. Cualquiera de los tres
-  debe dejar intacta la guardia de la trampa 008 (el caso de 110 km/h).
+- ~~La puerta (24).~~ Resuelto en la entrada 028: la puerta cuenta también el
+  reloj de la posición. La 24 pasa de 4.272 a 13.596 pasos y la 25 de 826 a
+  7.413, sin mover las líneas urbanas.
 - **La alternancia (25).** Agrupar por línea sin trayecto se descartó en la 008
   y la 009 porque dobla la contaminación en las líneas urbanas. Hace falta una
   regla que trate el trayecto como ruidoso solo cuando alterna, o decidir el
   sentido por el movimiento, como ya hace el map-matching.
-- Guardias que faltan: un bus a 60-80 km/h en `tests/test_tracking.py` que exija
-  una sola trayectoria, y un bus cuyo `trayecto` alterna a mitad de ruta.
+- Guardia que falta: un bus cuyo `trayecto` alterna a mitad de ruta. La de la
+  puerta es `test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte`.
 
 ## Para la memoria
 

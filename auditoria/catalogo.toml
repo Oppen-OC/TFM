@@ -889,12 +889,15 @@ id = "072"
 nombre = "la puerta física baja a 40 km/h"
 capa = "tracking"
 trampa = "013"
-# La flota simulada no pasa de unos 30 km/h: ningún test distingue 70 de 40.
-# Es la misma ceguera que dejó a la 24 fuera de la etiqueta (bitácora 026).
+# Hueco en ba6b54d: la flota simulada no pasa de unos 30 km/h y ningún test
+# distinguía 70 de 40. Lo guarda desde la trampa 013 el bus de posiciones
+# atrasadas: a 40 km/h su paso de 694 m vuelve a salirse de la puerta.
 fichero = "src/project/tracking.py"
 buscar = '''VEL_MAX_KMH = 70.0'''
 reemplazar = '''VEL_MAX_KMH = 40.0'''
-detector = []
+detector = [
+    "tests/test_tracking_identidad.py::test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte",
+]
 sondas = ["tracking"]
 
 [[mutante]]
@@ -927,3 +930,19 @@ detector = [
     "tests/test_etiquetado.py::test_la_ventana_de_servicio_va_de_corte_a_corte_en_hora_local",
 ]
 sondas = []
+
+[[mutante]]
+id = "075"
+nombre = "la puerta vuelve a medir el tiempo solo con el reloj del sondeo"
+capa = "tracking"
+trampa = "013"
+# El arreglo de la trampa 013: una posición atrasada amplía el paso. Sin él, la
+# línea 24 vuelve a partirse en la carretera de la costa (bitácora 026).
+fichero = "src/project/tracking.py"
+buscar = '''    return np.maximum(dt_reloj, dt_bus)'''
+reemplazar = '''    return dt_reloj + 0 * np.asarray(dt_bus, dtype=float)'''
+detector = [
+    "tests/test_tracking_identidad.py::test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte",
+    "tests/test_tracking_identidad.py::test_el_suavizado_mide_el_tiempo_con_el_reloj_de_sondeo",
+]
+sondas = ["tracking"]

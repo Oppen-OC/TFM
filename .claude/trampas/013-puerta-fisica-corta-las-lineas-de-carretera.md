@@ -1,48 +1,43 @@
 ---
 id: 013
 titulo: La puerta física de 70 km/h corta las trayectorias de las líneas que salen por carretera
-estado: vigente
+estado: cerrada
 capa: tracking
 detectada: 2026-09-23
-test: ninguno
+test: tests/test_tracking_identidad.py::test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte
 ---
 
 ## Síntoma
 
-La línea 24 llega a la etiqueta con el 5 % de sus tramos asignados, frente al
-33-82 % del resto de líneas con más de 100.000 posiciones. No hay ningún error:
-sus tramos salen como `corto` y la tasa de éxito publicada (bitácora 024) los deja fuera del
-denominador. El 20/08, la 24 son 363 trayectorias con una mediana de 13
-posiciones; la 31, 227 con 110.
+La línea 24 llegaba a la etiqueta con el 5 % de sus tramos asignados, frente al
+33-82 % del resto de líneas con más de 100.000 posiciones. No había ningún
+error: sus tramos salían como `corto` y la tasa de éxito publicada (bitácora 024)
+los deja fuera del denominador.
 
 ## Causa
 
-`tracking.py` rechaza todo emparejamiento que supere
-`min(SALTO_MAX_M, VEL_MAX_KMH / 3,6 · dt)` con el reloj de sondeo: 583 m en un
-sondeo de 30 s. En la CV-500 hacia El Saler y El Palmar, el paso entre el final
-de una trayectoria y su sucesora es de 773 m de mediana (el 99 % por encima de
-70 km/h con ese reloj, 62,7 km/h con el `ts_utc` del propio bus). Es el ritmo
-normal de un autobús por carretera, no un error de asignación. Abrir la puerta a
-100 km/h y 1.200 m recompone la 24 (363 → 144 trayectorias, mediana 13 → 48) y
-no mueve la 31 (227 → 223). Medida y evidencia: bitácora 026.
+La puerta `min(SALTO_MAX_M, VEL_MAX_KMH / 3,6 · dt)` medía `dt` solo con el reloj
+del sondeo (su `ts_utc` máximo). Cuando la posición de un bus llega atrasada en
+un sondeo y al día en el siguiente, el desplazamiento real de ~50 s se divide
+entre ~30: un bus a 62,7 km/h por la CV-500 parecía ir a 88,5 y la cadena se
+cortaba. Detalle y barrido de candidatos: bitácoras 026 y 028.
 
 ## Por qué se vuelve a caer aquí
 
-El umbral se calibró, y se validó, para un «bus urbano». La bitácora 003 midió
-su coste en un −0,3 % de emparejamientos sobre el total, que es una cifra que
-tranquiliza, y no lo desglosó por línea: el coste está concentrado en las líneas que
-salen del término por carretera (la 24, y en parte la 25). La flota simulada no
-pasa de unos 30 km/h (p90 de 26,7, `docs/11_auditoria_tests.md`), así que ningún
-test ve la diferencia entre 70 y 40 km/h (mutante 072).
-
-Es la trampa 006 con otra puerta de entrada. Las líneas 24 y 25 son las peor
-cubiertas por sensores de tráfico: perderlas sesga la muestra hacia los
-corredores bien cubiertos, a favor de la hipótesis del TFM y sin tocar la
-etiqueta de nadie más. Endurecer la puerta tras un caso de 110 km/h es la
-reacción natural, y cualquier ajuste de este umbral vuelve a hacerlo.
+El reloj del sondeo se eligió a propósito: medir por fila daba pasos de 8 s o
+negativos y falsas violaciones de la puerta. Volver a él «por robustez», o subir
+`VEL_MAX_KMH` para recuperar la 24, es la reacción natural. Lo primero parte
+otra vez las líneas de carretera sin error; lo segundo acepta el salto de 675 m
+que un bus a 15 km/h no puede dar (`test_salto_imposible_rompe_la_cadena[550m]`).
+El coste de la puerta se midió en total y no por línea (bitácora 003), y la
+flota simulada no pasa de 30 km/h: ninguna de las dos cosas lo habría visto.
 
 ## Guardia
 
-Ninguna todavía. La que falta: un escenario con un bus a 60-80 km/h por un
-trazado recto que exige una sola trayectoria, en `tests/test_tracking.py`, y el
-mutante 072 (`VEL_MAX_KMH = 40.0`) pasando a detectado.
+`_dt_puerta` toma el mayor de los dos relojes, el del sondeo y el de la
+posición, en el emparejamiento, en el suavizado y en `dt_s`.
+`test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte` exige una sola
+trayectoria a un bus a 50 km/h con posiciones atrasadas 20 s un sondeo sí y otro
+no. La ponen roja el mutante 075 (solo el reloj del sondeo) y el 072
+(`VEL_MAX_KMH = 40`). `test_el_suavizado_mide_el_tiempo_con_el_reloj_de_sondeo`
+exige que `dt_s` nunca baje del reloj del sondeo.

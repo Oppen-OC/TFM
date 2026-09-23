@@ -82,14 +82,30 @@ PENALIZACION_CRUCE_M = 100.0
 _DT_REF_S = 30.0
 
 
+def _dt_puerta(dt_reloj, dt_bus):
+    """Segundos que la puerta física concede a un paso: el mayor de los dos relojes.
+
+    El del sondeo (su `ts_utc` máximo) es el que no produce pasos de 8 s ni
+    negativos cuando las filas de un sondeo traen instantes distintos. Pero una
+    posición que llega atrasada y la siguiente al día recorren más tiempo que el
+    que marca el sondeo: con solo su reloj, un bus a 50 km/h reales parecía ir a
+    83 y la puerta partía la línea 24 en la carretera de la costa (trampa 013,
+    bitácora 026). El máximo nunca da menos tiempo que el reloj del sondeo, así
+    que no reabre los pasos cortos; solo cuenta el que el propio bus declara.
+    """
+    dt_reloj = np.where(np.asarray(dt_reloj, dtype=float) == 0, _DT_REF_S, dt_reloj)
+    return np.maximum(dt_reloj, dt_bus)
+
+
 def _emparejar_grupo(
     a: pd.DataFrame, b: pd.DataFrame, tope: np.ndarray
 ) -> list[tuple[int, int, float]]:
     """Asignación óptima entre los vehículos de a y los de b (misma línea/trayecto).
 
-    `tope` es el desplazamiento máximo admisible de CADA fila de `a`, no un
-    escalar: con `tolerar_hueco` cada candidato arrastra un hueco distinto y por
-    tanto una puerta distinta.
+    `tope` es el desplazamiento máximo admisible de cada PAREJA (fila de `a`,
+    fila de `b`), no un escalar: con `tolerar_hueco` cada candidato arrastra un
+    hueco distinto, y el `ts_utc` de cada posición puede ampliar su paso
+    (`_dt_puerta`).
 
     Si las dos partes traen abscisa sobre el trazado —`abs_pred` en `a`,
     `abscisa_m` en `b`—, el coste se mide SOBRE EL RECORRIDO y no en el plano.
@@ -137,7 +153,7 @@ def _emparejar_grupo(
 
     # La puerta sigue midiéndose en el plano y sobre el desplazamiento real: es
     # una afirmación física sobre lo que un autobús puede recorrer (trampa 008).
-    t = tope[:, None]
+    t = tope
     coste = np.where((d <= t) & (d_real <= t), plano, 1e9)
 
     fi, ci = linear_sum_assignment(coste)
@@ -234,13 +250,12 @@ def _cambio_de_velocidad(xs, ys, ts, filas: list[int]) -> float:
     return float(np.hypot(np.diff(vx), np.diff(vy)).sum() * _DT_REF_S)
 
 
-def _dentro_de_la_puerta(lat, lon, ts, filas: list[int]) -> bool:
-    """La misma puerta que el emparejamiento: haversine y reloj de sondeo (trampa 008)."""
+def _dentro_de_la_puerta(lat, lon, ts, tb, filas: list[int]) -> bool:
+    """La misma puerta que el emparejamiento: haversine y `_dt_puerta` (trampas 008, 013)."""
     if len(filas) < 2:
         return True
     d = haversine_m(lat[filas][:-1], lon[filas][:-1], lat[filas][1:], lon[filas][1:])
-    dt = np.diff(ts[filas])
-    dt = np.where(dt == 0, _DT_REF_S, dt)
+    dt = _dt_puerta(np.diff(ts[filas]), np.diff(tb[filas]))
     tope = np.minimum(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * np.maximum(dt, 1.0))
     return bool((d <= tope).all())
 
@@ -282,6 +297,8 @@ def _suavizar_intercambios(df: pd.DataFrame) -> pd.DataFrame:
     # produce pasos de 8 s o negativos donde el tracker ve 30.
     reloj = df.groupby("snapshot_id")["ts_utc"].transform("max")
     ts = (reloj - reloj.min()).dt.total_seconds().to_numpy()
+    # ...y el de cada posición, que solo AMPLÍA la puerta (`_dt_puerta`).
+    tb = (df["ts_utc"] - reloj.min()).dt.total_seconds().to_numpy()
     snap = df["snapshot_id"].to_numpy()
     # Con abscisa, el cambio de velocidad se mide SOBRE EL RECORRIDO. En el plano,
     # una horquilla —subir por una calle y volver por la paralela— parece un ida y
@@ -339,14 +356,14 @@ def _suavizar_intercambios(df: pd.DataFrame) -> pd.DataFrame:
                     continue
                 if (
                     punto <= cola
-                    and _dentro_de_la_puerta(lat, lon, ts, punto_u)
-                    and _dentro_de_la_puerta(lat, lon, ts, punto_v)
+                    and _dentro_de_la_puerta(lat, lon, ts, tb, punto_u)
+                    and _dentro_de_la_puerta(lat, lon, ts, tb, punto_v)
                 ):
                     tu[iu], tv[iv] = b, a
                     dueno[a], dueno[b] = (v, iv), (u, iu)
                 elif _dentro_de_la_puerta(
-                    lat, lon, ts, cola_u
-                ) and _dentro_de_la_puerta(lat, lon, ts, cola_v):
+                    lat, lon, ts, tb, cola_u
+                ) and _dentro_de_la_puerta(lat, lon, ts, tb, cola_v):
                     tray[u], tray[v] = tu[:iu] + tv[iv:], tv[:iv] + tu[iu:]
                     for vid in (u, v):
                         for pos, f in enumerate(tray[vid]):
@@ -370,7 +387,7 @@ def _suavizar_intercambios(df: pd.DataFrame) -> pd.DataFrame:
             df.at[df.index[q], "dist_m"] = float(
                 haversine_m(lat[p], lon[p], lat[q], lon[q])
             )
-            df.at[df.index[q], "dt_s"] = float(ts[q] - ts[p]) or _DT_REF_S
+            df.at[df.index[q], "dt_s"] = float(_dt_puerta(ts[q] - ts[p], tb[q] - tb[p]))
     return df
 
 
@@ -481,9 +498,6 @@ def rastrear(
             dtype=float,
         )
         prev["_dt"] = dt_fila
-        prev["_tope"] = np.minimum(
-            SALTO_MAX_M, VEL_MAX_KMH / 3.6 * np.maximum(dt_fila, 1.0)
-        )
 
         if predictivo:
             # Modelo de velocidad constante: si venía moviéndose, seguirá. El
@@ -523,7 +537,17 @@ def rastrear(
             ga = prev[(prev["linea"] == clave[0]) & (prev["trayecto"] == clave[1])]
             if predictivo:
                 ga = _sembrar_por_centroide(ga, gb)
-            for ia, ib, _ in _emparejar_grupo(ga, gb, ga["_tope"].to_numpy()):
+            # La puerta por pareja: el reloj del sondeo, ampliado por el de la
+            # propia posición si llegó atrasada (trampa 013). El predictor sigue
+            # con el reloj del sondeo: mezclar relojes en su cociente es la 009.
+            dt_bus = (
+                gb["ts_utc"].to_numpy()[None, :] - ga["ts_utc"].to_numpy()[:, None]
+            ) / np.timedelta64(1, "s")
+            dt_par = _dt_puerta(ga["_dt"].to_numpy()[:, None], dt_bus)
+            tope = np.minimum(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * np.maximum(dt_par, 1.0))
+            fila_a = {i: n for n, i in enumerate(ga.index)}
+            fila_b = {i: n for n, i in enumerate(gb.index)}
+            for ia, ib, _ in _emparejar_grupo(ga, gb, tope):
                 df.at[ib, "vehicle_id"] = df.at[ia, "vehicle_id"]
                 df.at[ib, "dist_m"] = float(
                     haversine_m(
@@ -533,7 +557,7 @@ def rastrear(
                         df.at[ib, "lon"],
                     )
                 )
-                df.at[ib, "dt_s"] = float(prev.at[ia, "_dt"])
+                df.at[ib, "dt_s"] = float(dt_par[fila_a[ia], fila_b[ib]])
                 df.at[ib, "_plat"] = df.at[ia, "lat"]
                 df.at[ib, "_plon"] = df.at[ia, "lon"]
                 df.at[ib, "_pdt"] = float(prev.at[ia, "_dt"])
