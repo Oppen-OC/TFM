@@ -67,6 +67,9 @@ stages:
     outs:
       - data/processed/train.parquet
       - data/processed/test.parquet
+    metrics:
+      - metrics/features.json:
+          cache: false
 
   train:
     cmd: uv run python -m project.train

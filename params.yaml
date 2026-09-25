@@ -31,12 +31,13 @@ features:
   horizonte_paradas: 1
   lags_min: [1, 5, 15]
   ventana_trafico_min: 10
-  incluir_trafico: true
-  incluir_meteo: true
+  incluir_trafico: false   # fase 2 (bitácora 030)
+  incluir_meteo: false     # sin fuente: no hay capa meteorológica capturada
   umbral_retraso_s: 300      # para la variante de clasificación binaria
   # Split TEMPORAL, nunca aleatorio: con series de posiciones, un split
   # aleatorio filtra el futuro en el entrenamiento y te da métricas falsas.
-  test_desde: "2026-12-01"
+  # Captura hasta el 18/09: prueba del 14 al 18/09 (bitácora 030).
+  test_desde: "2026-09-14"
 
 train:
   objective: reg:squarederror

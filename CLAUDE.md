@@ -152,15 +152,18 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 ## Estado
 
-**Hasta la etiqueta existe; del modelo hacia abajo, no.**
+**Hasta la tabla de entrenamiento existe; del modelo hacia abajo, no.**
 
 Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
 explore), `tracking.py`, `gtfs.py`, `mapmatching.py`, `etiquetado.py`,
-`prepare.py` y `analysis/`. `dvc repro` llega hasta `prepare` (stages `curar` y
-`prepare`): los pasos por parada con `retraso_s` salen en `data/interim/pasos/`.
+`prepare.py`, `features.py` (fase 1, sin tráfico: bitácora 030) y `analysis/`.
+`dvc repro` llega hasta `features`: los pasos por parada con `retraso_s` salen en
+`data/interim/pasos/` y la tabla partida en `data/processed/{train,test}.parquet`,
+con los baselines en `metrics/features.json`. Las variables del modelo las da
+`features.variables()`; `train.py` y `predict.py` las leen de ahí.
 
-Vacíos, 0 líneas: `features.py`, `train.py`, `predict.py`, `evaluate.py` y
-`services/model_service.py`. `dvc repro` falla en `features`, y ese fallo es el
+Vacíos, 0 líneas: `train.py`, `predict.py`, `evaluate.py` y
+`services/model_service.py`. `dvc repro` falla en `train`, y ese fallo es el
 esperado.
 
 Las reglas de este fichero son **prescriptivas**, no descriptivas: dicen cómo debe
@@ -189,8 +192,10 @@ antes de importar.
   del TFM por accidente.
 - `tests/test_api.py` usa `httpx` + `TestClient`; mockea `services/`, no carga el
   modelo real. Endpoint nuevo ⇒ test nuevo.
-- `tests/test_features.py` **está vacío**: se escribirá con `features.py`. Cubrirá
-  las transformaciones, que es la capa donde un bug es silencioso.
+- `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
+  pasos sintéticos con instantes conocidos y variables que no pueden ver nada
+  en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la
+  asignación. Mutantes 079-082.
 - `tests/test_etiquetado.py` monta un **GTFS sintético y una flota con retraso
   conocido** y exige recuperarlo en cada parada (±5 s): regulación en cabecera,
   huecos, desvíos, refuerzos, punta, variantes, nocturnos, calendario, versión del

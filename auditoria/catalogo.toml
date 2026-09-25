@@ -991,3 +991,51 @@ reemplazar = '''        if False:'''
 detector = ["tests/test_tracking_fragmentacion.py::test_el_cosido_no_acepta_un_fragmento_desviado"]
 sondas = ["tracking"]
 
+# --------------------------------------------------------------------------- #
+# Features: la fuga de futuro (ADR-007). Un error aquí no lanza nada: da una
+# prueba mejor de lo que es.
+# --------------------------------------------------------------------------- #
+[[mutante]]
+id = "079"
+nombre = "el estado de la línea incluye los pasos en el mismo instante t"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''            hi = np.searchsorted(ts, ts, side="left")'''
+reemplazar = '''            hi = np.searchsorted(ts, ts, side="right")'''
+detector = ["tests/test_features.py::test_el_estado_de_la_linea_solo_ve_el_pasado_y_otros_viajes"]
+sondas = []
+
+[[mutante]]
+id = "080"
+nombre = "el bus anterior puede haber pasado en el mismo instante t"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''        allow_exact_matches=False,'''
+reemplazar = '''        allow_exact_matches=True,'''
+detector = ["tests/test_features.py::test_el_bus_anterior_es_el_ultimo_que_paso_por_la_parada_objetivo_antes_de_t"]
+sondas = []
+
+[[mutante]]
+id = "081"
+nombre = "el estado de la línea cuenta los pasos del propio viaje"
+capa = "features"
+# El propio viaje ya entra por sus lags; contarlo otra vez en la línea duplica
+# la persistencia en una variable que se lee como «red».
+fichero = "src/project/features.py"
+buscar = '''(["linea", *CLAVE_VIAJE], -1)'''
+reemplazar = '''(["linea", *CLAVE_VIAJE], 0)'''
+detector = ["tests/test_features.py::test_el_estado_de_la_linea_solo_ve_el_pasado_y_otros_viajes"]
+sondas = []
+
+[[mutante]]
+id = "082"
+nombre = "la tabla conserva los diagnósticos de la asignación del viaje"
+capa = "features"
+# `desfase_s` es la mediana del desfase en las primeras paradas del viaje: en la
+# parada 1 o 2 lleva el retraso de paradas futuras.
+fichero = "src/project/features.py"
+buscar = '''FUERA_DE_LA_TABLA = ["desfase_s", "margen_s", "coste_s"]'''
+reemplazar = '''FUERA_DE_LA_TABLA = []'''
+detector = ["tests/test_features.py::test_la_tabla_no_lleva_diagnosticos_que_miran_el_futuro_y_trae_sus_variables"]
+sondas = []
+

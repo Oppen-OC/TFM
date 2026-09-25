@@ -110,3 +110,42 @@ stages:
       hash: md5
       md5: 8dc9f9967c591b93bb9c84258167b504
       size: 12606
+  features:
+    cmd: uv run python -m project.features
+    deps:
+    - path: data/interim/pasos
+      hash: md5
+      md5: a956b3d98b975cbb77acbccf284b5cf3.dir
+      size: 47600540
+      nfiles: 32
+    - path: src/project/features.py
+      hash: md5
+      md5: 9ec6f3151c86fb4bfbc8707d4de17887
+      size: 9132
+    params:
+      params.yaml:
+        features:
+          objetivo: retraso_siguiente_parada_s
+          horizonte_paradas: 1
+          lags_min:
+          - 1
+          - 5
+          - 15
+          ventana_trafico_min: 10
+          incluir_trafico: false
+          incluir_meteo: false
+          umbral_retraso_s: 300
+          test_desde: '2026-09-14'
+    outs:
+    - path: data/processed/test.parquet
+      hash: md5
+      md5: cd3fcab5b64a3a6b21453bce1d1383a7
+      size: 25830781
+    - path: data/processed/train.parquet
+      hash: md5
+      md5: 99bcaa49219502623c478b9837dc1972
+      size: 111258646
+    - path: metrics/features.json
+      hash: md5
+      md5: b5107f6dafe8bb8e31ad03422412f3c5
+      size: 10301

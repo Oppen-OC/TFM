@@ -1,0 +1,499 @@
+{
+  "filas": {
+    "train": 1236585,
+    "test": 269493
+  },
+  "dias": {
+    "train": 19,
+    "test": 5
+  },
+  "positivos": {
+    "train": 0.057,
+    "test": 0.0585
+  },
+  "baselines_test": {
+    "horario": {
+      "mae_s": 139.92,
+      "rmse_s": 195.76
+    },
+    "persistencia": {
+      "mae_s": 37.62,
+      "rmse_s": 72.58
+    },
+    "por_linea": {
+      "10": {
+        "filas": 680,
+        "horario": {
+          "mae_s": 237.6,
+          "rmse_s": 303.84
+        },
+        "persistencia": {
+          "mae_s": 45.65,
+          "rmse_s": 70.84
+        }
+      },
+      "11": {
+        "filas": 236,
+        "horario": {
+          "mae_s": 139.69,
+          "rmse_s": 204.38
+        },
+        "persistencia": {
+          "mae_s": 47.47,
+          "rmse_s": 81.07
+        }
+      },
+      "12": {
+        "filas": 8462,
+        "horario": {
+          "mae_s": 164.12,
+          "rmse_s": 218.28
+        },
+        "persistencia": {
+          "mae_s": 41.83,
+          "rmse_s": 82.75
+        }
+      },
+      "13": {
+        "filas": 4048,
+        "horario": {
+          "mae_s": 150.73,
+          "rmse_s": 191.12
+        },
+        "persistencia": {
+          "mae_s": 29.33,
+          "rmse_s": 40.94
+        }
+      },
+      "14": {
+        "filas": 163,
+        "horario": {
+          "mae_s": 277.32,
+          "rmse_s": 392.69
+        },
+        "persistencia": {
+          "mae_s": 27.02,
+          "rmse_s": 38.51
+        }
+      },
+      "16": {
+        "filas": 13986,
+        "horario": {
+          "mae_s": 126.55,
+          "rmse_s": 185.33
+        },
+        "persistencia": {
+          "mae_s": 36.53,
+          "rmse_s": 62.84
+        }
+      },
+      "18": {
+        "filas": 9262,
+        "horario": {
+          "mae_s": 136.78,
+          "rmse_s": 174.31
+        },
+        "persistencia": {
+          "mae_s": 36.4,
+          "rmse_s": 65.29
+        }
+      },
+      "19": {
+        "filas": 14036,
+        "horario": {
+          "mae_s": 127.86,
+          "rmse_s": 172.52
+        },
+        "persistencia": {
+          "mae_s": 34.19,
+          "rmse_s": 66.87
+        }
+      },
+      "23": {
+        "filas": 3162,
+        "horario": {
+          "mae_s": 176.24,
+          "rmse_s": 228.9
+        },
+        "persistencia": {
+          "mae_s": 32.88,
+          "rmse_s": 59.91
+        }
+      },
+      "24": {
+        "filas": 2060,
+        "horario": {
+          "mae_s": 176.85,
+          "rmse_s": 239.74
+        },
+        "persistencia": {
+          "mae_s": 26.61,
+          "rmse_s": 49.96
+        }
+      },
+      "25": {
+        "filas": 509,
+        "horario": {
+          "mae_s": 265.51,
+          "rmse_s": 390.69
+        },
+        "persistencia": {
+          "mae_s": 26.91,
+          "rmse_s": 36.07
+        }
+      },
+      "26": {
+        "filas": 6208,
+        "horario": {
+          "mae_s": 175.32,
+          "rmse_s": 261.06
+        },
+        "persistencia": {
+          "mae_s": 37.0,
+          "rmse_s": 68.25
+        }
+      },
+      "27": {
+        "filas": 11331,
+        "horario": {
+          "mae_s": 103.32,
+          "rmse_s": 141.51
+        },
+        "persistencia": {
+          "mae_s": 36.12,
+          "rmse_s": 62.73
+        }
+      },
+      "28": {
+        "filas": 1302,
+        "horario": {
+          "mae_s": 98.35,
+          "rmse_s": 128.32
+        },
+        "persistencia": {
+          "mae_s": 38.57,
+          "rmse_s": 61.85
+        }
+      },
+      "30": {
+        "filas": 3332,
+        "horario": {
+          "mae_s": 169.08,
+          "rmse_s": 208.45
+        },
+        "persistencia": {
+          "mae_s": 33.68,
+          "rmse_s": 49.32
+        }
+      },
+      "31": {
+        "filas": 19005,
+        "horario": {
+          "mae_s": 143.43,
+          "rmse_s": 184.22
+        },
+        "persistencia": {
+          "mae_s": 40.73,
+          "rmse_s": 93.29
+        }
+      },
+      "32": {
+        "filas": 7857,
+        "horario": {
+          "mae_s": 168.49,
+          "rmse_s": 212.89
+        },
+        "persistencia": {
+          "mae_s": 35.26,
+          "rmse_s": 57.01
+        }
+      },
+      "35": {
+        "filas": 6558,
+        "horario": {
+          "mae_s": 142.3,
+          "rmse_s": 186.19
+        },
+        "persistencia": {
+          "mae_s": 45.53,
+          "rmse_s": 72.5
+        }
+      },
+      "4": {
+        "filas": 1762,
+        "horario": {
+          "mae_s": 140.91,
+          "rmse_s": 192.28
+        },
+        "persistencia": {
+          "mae_s": 30.89,
+          "rmse_s": 38.9
+        }
+      },
+      "40": {
+        "filas": 1556,
+        "horario": {
+          "mae_s": 150.62,
+          "rmse_s": 187.96
+        },
+        "persistencia": {
+          "mae_s": 39.51,
+          "rmse_s": 67.76
+        }
+      },
+      "59": {
+        "filas": 305,
+        "horario": {
+          "mae_s": 165.83,
+          "rmse_s": 221.49
+        },
+        "persistencia": {
+          "mae_s": 41.3,
+          "rmse_s": 51.81
+        }
+      },
+      "6": {
+        "filas": 36,
+        "horario": {
+          "mae_s": 122.38,
+          "rmse_s": 147.37
+        },
+        "persistencia": {
+          "mae_s": 47.67,
+          "rmse_s": 66.59
+        }
+      },
+      "60": {
+        "filas": 2399,
+        "horario": {
+          "mae_s": 100.88,
+          "rmse_s": 124.35
+        },
+        "persistencia": {
+          "mae_s": 34.67,
+          "rmse_s": 51.65
+        }
+      },
+      "62": {
+        "filas": 1321,
+        "horario": {
+          "mae_s": 156.47,
+          "rmse_s": 213.34
+        },
+        "persistencia": {
+          "mae_s": 33.17,
+          "rmse_s": 50.17
+        }
+      },
+      "63": {
+        "filas": 1524,
+        "horario": {
+          "mae_s": 132.58,
+          "rmse_s": 171.61
+        },
+        "persistencia": {
+          "mae_s": 49.72,
+          "rmse_s": 66.85
+        }
+      },
+      "64": {
+        "filas": 802,
+        "horario": {
+          "mae_s": 149.15,
+          "rmse_s": 240.68
+        },
+        "persistencia": {
+          "mae_s": 34.11,
+          "rmse_s": 48.22
+        }
+      },
+      "67": {
+        "filas": 5692,
+        "horario": {
+          "mae_s": 139.19,
+          "rmse_s": 304.8
+        },
+        "persistencia": {
+          "mae_s": 42.28,
+          "rmse_s": 181.83
+        }
+      },
+      "7": {
+        "filas": 3316,
+        "horario": {
+          "mae_s": 127.9,
+          "rmse_s": 163.98
+        },
+        "persistencia": {
+          "mae_s": 40.61,
+          "rmse_s": 60.22
+        }
+      },
+      "70": {
+        "filas": 2349,
+        "horario": {
+          "mae_s": 172.36,
+          "rmse_s": 231.96
+        },
+        "persistencia": {
+          "mae_s": 40.49,
+          "rmse_s": 55.51
+        }
+      },
+      "71": {
+        "filas": 410,
+        "horario": {
+          "mae_s": 246.28,
+          "rmse_s": 293.85
+        },
+        "persistencia": {
+          "mae_s": 39.58,
+          "rmse_s": 56.91
+        }
+      },
+      "72": {
+        "filas": 6112,
+        "horario": {
+          "mae_s": 114.69,
+          "rmse_s": 150.65
+        },
+        "persistencia": {
+          "mae_s": 38.34,
+          "rmse_s": 55.6
+        }
+      },
+      "73": {
+        "filas": 567,
+        "horario": {
+          "mae_s": 140.66,
+          "rmse_s": 183.65
+        },
+        "persistencia": {
+          "mae_s": 54.2,
+          "rmse_s": 130.24
+        }
+      },
+      "81": {
+        "filas": 8607,
+        "horario": {
+          "mae_s": 112.58,
+          "rmse_s": 158.79
+        },
+        "persistencia": {
+          "mae_s": 35.32,
+          "rmse_s": 57.34
+        }
+      },
+      "9": {
+        "filas": 693,
+        "horario": {
+          "mae_s": 183.39,
+          "rmse_s": 255.58
+        },
+        "persistencia": {
+          "mae_s": 39.16,
+          "rmse_s": 74.03
+        }
+      },
+      "92": {
+        "filas": 25506,
+        "horario": {
+          "mae_s": 145.09,
+          "rmse_s": 211.82
+        },
+        "persistencia": {
+          "mae_s": 33.37,
+          "rmse_s": 65.69
+        }
+      },
+      "93": {
+        "filas": 16994,
+        "horario": {
+          "mae_s": 147.82,
+          "rmse_s": 208.55
+        },
+        "persistencia": {
+          "mae_s": 38.66,
+          "rmse_s": 71.92
+        }
+      },
+      "94": {
+        "filas": 5454,
+        "horario": {
+          "mae_s": 192.38,
+          "rmse_s": 233.42
+        },
+        "persistencia": {
+          "mae_s": 40.71,
+          "rmse_s": 59.9
+        }
+      },
+      "95": {
+        "filas": 18427,
+        "horario": {
+          "mae_s": 155.72,
+          "rmse_s": 206.24
+        },
+        "persistencia": {
+          "mae_s": 37.17,
+          "rmse_s": 57.19
+        }
+      },
+      "98": {
+        "filas": 319,
+        "horario": {
+          "mae_s": 136.43,
+          "rmse_s": 176.32
+        },
+        "persistencia": {
+          "mae_s": 44.52,
+          "rmse_s": 81.59
+        }
+      },
+      "99": {
+        "filas": 24979,
+        "horario": {
+          "mae_s": 129.15,
+          "rmse_s": 181.28
+        },
+        "persistencia": {
+          "mae_s": 32.54,
+          "rmse_s": 66.31
+        }
+      },
+      "C1": {
+        "filas": 254,
+        "horario": {
+          "mae_s": 109.36,
+          "rmse_s": 141.1
+        },
+        "persistencia": {
+          "mae_s": 34.62,
+          "rmse_s": 43.21
+        }
+      },
+      "C2": {
+        "filas": 8228,
+        "horario": {
+          "mae_s": 108.55,
+          "rmse_s": 150.04
+        },
+        "persistencia": {
+          "mae_s": 44.38,
+          "rmse_s": 97.62
+        }
+      },
+      "C3": {
+        "filas": 19684,
+        "horario": {
+          "mae_s": 122.92,
+          "rmse_s": 172.09
+        },
+        "persistencia": {
+          "mae_s": 46.17,
+          "rmse_s": 69.74
+        }
+      }
+    }
+  }
+}
