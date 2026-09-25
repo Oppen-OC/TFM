@@ -5,6 +5,7 @@
     uv run python -m project.analysis.medir_fuentes --senal-192
     uv run python -m project.analysis.medir_fuentes --union-trafico
     uv run python -m project.analysis.medir_fuentes --valenbisi
+    uv run python -m project.analysis.medir_fuentes --lectivo
 
 Los notebooks de `notebooks/EDA/` son donde se descubrieron estas cifras, pero un
 notebook no es una evidencia cómoda: hay que abrirlo, ejecutarlo entero y leer la
@@ -187,6 +188,59 @@ def senal_192() -> dict[str, pd.DataFrame]:
     }
 
 
+def lectivo() -> dict[str, pd.DataFrame]:
+    """¿Siguen planas las capas en periodo lectivo? (docs/06, docs/10, bitácora 031).
+
+    Por día local: tramos de la 192 que llegan a congestión (estados 1-2), el pico
+    de tramos congestionados a la vez y las horas-tramo de congestión, sobre las horas
+    que el día tiene sondeos (el 10, el 14 y el 18/09 son parciales). El estado 4
+    no cuenta: aparece en TODA la capa a la vez durante una o dos horas, y es un
+    fallo del servicio, no tráfico. De la 188, cuántos valores distintos y qué
+    media: si no cambian de un día a otro, la capa está congelada.
+    """
+    dia = "CAST(ts_ingest_utc AT TIME ZONE 'Europe/Madrid' AS DATE)"
+    hora = "extract(hour FROM ts_ingest_utc AT TIME ZONE 'Europe/Madrid')"
+    estado = sql(
+        f"""
+        WITH s AS (
+            SELECT {dia} AS dia, {hora} AS hora, ts_ingest_utc,
+                   sum(CASE WHEN estado IN (1, 2) THEN 1 ELSE 0 END) AS congestion,
+                   sum(CASE WHEN estado = 4 THEN 1 ELSE 0 END) AS en_4
+            FROM {{f}} WHERE idtramo IS NOT NULL GROUP BY 1, 2, 3
+        ), t AS (
+            SELECT {dia} AS dia, count(DISTINCT idtramo) AS tramos_congestion
+            FROM {{f}} WHERE estado IN (1, 2) GROUP BY 1
+        )
+        SELECT s.dia, dayofweek(s.dia) AS dow,
+               coalesce(any_value(t.tramos_congestion), 0) AS tramos_congestion,
+               max(s.congestion) AS pico_simultaneo,
+               sum(s.congestion) / (count(*) / count(DISTINCT s.hora)) AS horas_tramo,
+               sum(CASE WHEN s.en_4 > 100 THEN 1 ELSE 0 END) AS sondeos_capa_en_4
+        FROM s LEFT JOIN t USING (dia) GROUP BY 1, 2 ORDER BY 1
+        """,
+        f="trafico_estado",
+    )
+    por_hora = sql(
+        f"""
+        SELECT {dia} >= DATE '2026-09-08' AS lectivo, {hora} AS hora,
+               avg(CASE WHEN estado IN (1, 2) THEN 1.0 ELSE 0 END) * 410 AS tramos_medios
+        FROM {{f}}
+        WHERE idtramo IS NOT NULL AND dayofweek({dia}) BETWEEN 1 AND 5
+        GROUP BY 1, 2 ORDER BY 1, 2
+        """,
+        f="trafico_estado",
+    )
+    intensidad = sql(
+        f"""
+        SELECT {dia} AS dia, count(DISTINCT lectura) AS valores_distintos,
+               round(avg(lectura)) AS media, count(DISTINCT idtramo) AS puntos
+        FROM {{f}} WHERE lectura IS NOT NULL GROUP BY 1 ORDER BY 1
+        """,
+        f="trafico_intensidad",
+    )
+    return {"estado": estado, "por_hora": por_hora, "intensidad": intensidad}
+
+
 # --- 3. ¿Se pueden unir las dos capas de tráfico? --------------------------
 
 
@@ -290,8 +344,9 @@ def main() -> None:
     p.add_argument("--senal-192", action="store_true")
     p.add_argument("--union-trafico", action="store_true")
     p.add_argument("--valenbisi", action="store_true")
+    p.add_argument("--lectivo", action="store_true")
     a = p.parse_args()
-    todo = not (a.solape or a.senal_192 or a.union_trafico or a.valenbisi)
+    todo = not (a.solape or a.senal_192 or a.union_trafico or a.valenbisi or a.lectivo)
 
     pd.set_option("display.width", 160)
     pd.set_option("display.max_columns", 40)
@@ -318,6 +373,30 @@ def main() -> None:
         )
         print("\nEpisodios en todo el corpus:")
         print(s["episodios"].to_string(index=False))
+
+    if todo or a.lectivo:
+        lec = lectivo()
+        e = lec["estado"]
+        print("\n=== 5. ¿Siguen planas las capas en periodo lectivo? ===\n")
+        print(e.round(1).to_string(index=False))
+        e["periodo"] = np.where(
+            e["dia"] >= pd.Timestamp("2026-09-08"), "lectivo", "agosto"
+        )
+        lab = e[e["dow"].between(1, 5)]
+        print("\nLaborables, mediana por periodo:")
+        columnas = ["tramos_congestion", "pico_simultaneo", "horas_tramo"]
+        print(lab.groupby("periodo")[columnas].median().round(1).to_string())
+        print("\nTramos congestionados de media por hora, laborables:")
+        tabla = lec["por_hora"].pivot(
+            index="hora", columns="lectivo", values="tramos_medios"
+        )
+        print(tabla.round(2).to_string())
+        i = lec["intensidad"]
+        print(
+            f"\n188: valores distintos por día {i['valores_distintos'].min()}-"
+            f"{i['valores_distintos'].max()}, media {i['media'].min():.0f}-"
+            f"{i['media'].max():.0f} veh/h en {len(i)} días"
+        )
 
     if todo or a.union_trafico:
         u = union_trafico()
