@@ -80,6 +80,21 @@ PENALIZACION_PARADA_M = 15.0
 # adelantamiento. 100 deja margen.
 PENALIZACION_CRUCE_M = 100.0
 _DT_REF_S = 30.0
+# Racha más larga del trayecto contrario que se cose como alternancia de la
+# fuente (`_coser_alternancias`). La 25 publica el otro sentido en el 6,9-9,0 %
+# de sus pasos a mitad de ruta, casi siempre en rachas de 1-2 sondeos y a veces
+# de 3-5 (bitácora 026). Un giro en cabecera no vuelve al texto de antes.
+RACHA_ALTERNANCIA_MAX = 4
+# Con más de un candidato dentro de la puerta, se cose con el más cercano a su
+# posición predicha solo si saca esta ventaja al segundo; si no, no se cose. Es
+# el mismo orden de magnitud que `PENALIZACION_CRUCE_M`: por debajo, la
+# diferencia la decide el ruido.
+MARGEN_COSIDO_M = 100.0
+# Lo que puede alargar F el camino de A a C. Una alternancia es la misma marcha:
+# pasa por donde pasaría el bus, con el ruido del GPS (p90 de 6,7 m parado,
+# bitácora 013). Con 100 m colaban excursiones de otro bus que el indicador
+# `ida_vuelta` delataba.
+RODEO_MAX_M = 30.0
 
 
 def _dt_puerta(dt_reloj, dt_bus):
@@ -248,6 +263,158 @@ def _cambio_de_velocidad(xs, ys, ts, filas: list[int]) -> float:
     dt = np.where(dt > 0, dt, _DT_REF_S)
     vx, vy = np.diff(xs[filas]) / dt, np.diff(ys[filas]) / dt
     return float(np.hypot(np.diff(vx), np.diff(vy)).sum() * _DT_REF_S)
+
+
+def _coser_alternancias(df: pd.DataFrame) -> pd.DataFrame:
+    """Une A + F + C cuando F es la misma marcha publicada con el otro sentido.
+
+    La clave (línea, trayecto) parte al bus en tres cuando la fuente publica el
+    sentido contrario durante unos sondeos: A (texto T) acaba en k, un fragmento
+    F de hasta `RACHA_ALTERNANCIA_MAX` sondeos con el otro texto empieza en k+1,
+    y C, otra vez con T, empieza justo después de F. Se cose solo esa firma, y
+    solo si cada enlace cabe en la puerta física de un sondeo y no es dudoso
+    (`MARGEN_COSIDO_M`). F recupera el texto T: aguas abajo se proyecta sobre el
+    trazado de su texto.
+
+    No se cruza el trayecto al emparejar: probado en real, cualquier radio que
+    recupere la 25 enlaza buses urbanos de sentidos opuestos y sus trayectorias
+    caen hasta un 25 % (bitácora 029). Aquí el emparejamiento no cambia en nada.
+    Tampoco hace falta predicción, así que vale en el arranque en frío y a
+    velocidad de carretera.
+    """
+    reloj = df.groupby("snapshot_id")["ts_utc"].transform("max")
+    ts = (reloj - reloj.min()).dt.total_seconds()
+    tb = (df["ts_utc"] - reloj.min()).dt.total_seconds()
+    k = df["snapshot_id"].rank(method="dense").astype(int)
+    o = df.assign(_k=k).sort_values(["vehicle_id", "_k"], kind="stable")
+    filas = o.index.to_series().groupby(o["vehicle_id"], sort=False)
+    primera, ultima, n = filas.first(), filas.last(), filas.size()
+    en_k = o.groupby([o["_k"], o["linea"]]).groups
+
+    anterior = o.index.to_series().groupby(o["vehicle_id"], sort=False).shift()
+    siguiente = o.index.to_series().groupby(o["vehicle_id"], sort=False).shift(-1)
+
+    def cabe(p: int, q: int) -> bool:
+        d = haversine_m(
+            df.at[p, "lat"], df.at[p, "lon"], df.at[q, "lat"], df.at[q, "lon"]
+        )
+        dt = _dt_puerta(ts[q] - ts[p], tb[q] - tb[p])
+        return bool(d <= min(SALTO_MAX_M, VEL_MAX_KMH / 3.6 * max(float(dt), 1.0)))
+
+    def hacia(desde: int, origen, destino: int) -> float:
+        """Distancia de `destino` a la extrapolación de `origen` -> `desde`."""
+        lat, lon = df.at[desde, "lat"], df.at[desde, "lon"]
+        if origen is not None and not pd.isna(origen):
+            f = (k[destino] - k[desde]) / max(k[desde] - k[origen], 1)
+            lat += f * (lat - df.at[origen, "lat"])
+            lon += f * (lon - df.at[origen, "lon"])
+        return float(
+            haversine_m(lat, lon, df.at[destino, "lat"], df.at[destino, "lon"])
+        )
+
+    def elegir(candidatos: list[int], distancia) -> int | None:
+        """El más cercano a lo predicho, si saca `MARGEN_COSIDO_M` al segundo."""
+        d = sorted((distancia(c), c) for c in candidatos)
+        if not d or (len(d) > 1 and d[1][0] - d[0][0] < MARGEN_COSIDO_M):
+            return None
+        return d[0][1]
+
+    def rodeo(p: int, f: str, q: int) -> float:
+        """Metros de más de ir de p a q pasando por las filas de F."""
+        g = [p, *o.index[o["vehicle_id"] == f], q]
+        lat, lon = df.loc[g, "lat"].to_numpy(), df.loc[g, "lon"].to_numpy()
+        camino = haversine_m(lat[:-1], lon[:-1], lat[1:], lon[1:]).sum()
+        return float(camino - haversine_m(lat[0], lon[0], lat[-1], lon[-1]))
+
+    raiz: dict[str, str] = {}
+    texto_de: dict[str, str] = {}
+    propuestas: list[tuple[str, int, int]] = []
+    cortos = n[n <= RACHA_ALTERNANCIA_MAX].index
+    for f in sorted(cortos, key=lambda v: k[primera[v]]):
+        f0, f1 = primera[f], ultima[f]
+        linea, texto = df.at[f0, "linea"], df.at[f0, "trayecto"]
+        p = elegir(
+            [
+                p
+                for p in en_k.get((k[f0] - 1, linea), [])
+                if df.at[p, "trayecto"] != texto and cabe(p, f0)
+            ],
+            lambda p: hacia(p, anterior[p], f0),
+        )
+        if p is None:
+            continue
+        q = elegir(
+            [
+                q
+                for q in en_k.get((k[f1] + 1, linea), [])
+                if df.at[q, "trayecto"] == df.at[p, "trayecto"] and cabe(f1, q)
+            ],
+            lambda q: hacia(f1, p if f1 == f0 else anterior[f1], q),
+        )
+        if q is None:
+            continue
+        # Una alternancia no se desvía: pasar por F no puede alargar el camino
+        # de A a C más de `MARGEN_COSIDO_M`. Sin esto, un bus de otro sentido a
+        # 600 m, con ida y vuelta dentro de la puerta, se cosía como si nada.
+        if rodeo(p, f, q) > RODEO_MAX_M:
+            continue
+        a, c = df.at[p, "vehicle_id"], df.at[q, "vehicle_id"]
+        # A y C son el mismo si `tolerar_hueco` ya puenteó por encima de F; pero
+        # entonces q tiene que ser la fila SIGUIENTE a p. Si A tiene filas dentro
+        # de F, A es otro bus que sigue su marcha, y coser F dejaba dos filas por
+        # sondeo intercaladas en la misma trayectoria (línea 31, 20/08, 06:37).
+        if a == c:
+            if siguiente[p] != q:
+                continue
+        elif p != ultima[a] or q != primera[c]:
+            continue
+        propuestas.append((f, p, q))
+
+    # Cada F elige su A y su C, pero dos F del mismo sondeo pueden elegir los
+    # mismos: dos buses publicando el otro sentido junto a uno que no lo hace
+    # (línea 25, 27/08, 12:04). Entonces no se cose ninguno.
+    usos_p = pd.Series([p for _, p, _ in propuestas]).value_counts()
+    usos_q = pd.Series([q for _, _, q in propuestas]).value_counts()
+
+    def final(v: str) -> str:
+        while v in raiz:
+            v = raiz[v]
+        return v
+
+    sondeos = o.groupby("vehicle_id", sort=False)["_k"].agg(set).to_dict()
+    for f, p, q in propuestas:
+        if usos_p[p] > 1 or usos_q[q] > 1:
+            continue
+        a, c = final(df.at[p, "vehicle_id"]), final(df.at[q, "vehicle_id"])
+        # Red de seguridad: una trayectoria no tiene dos filas en un sondeo.
+        if sondeos[a] & sondeos[f] or (c != a and sondeos[a] & sondeos[c]):
+            continue
+        sondeos[a] |= sondeos[f] | sondeos[c]
+        raiz[f] = a
+        if c != a:
+            raiz[c] = a
+        texto_de[f] = df.at[p, "trayecto"]
+
+    if not raiz:
+        return df
+
+    df = df.copy()
+    f_filas = df["vehicle_id"].isin(texto_de)
+    df.loc[f_filas, "trayecto"] = df.loc[f_filas, "vehicle_id"].map(texto_de)
+    df["vehicle_id"] = df["vehicle_id"].map(lambda v: final(v) if v in raiz else v)
+    for vid in {final(v) for v in raiz}:
+        g = df.index[df["vehicle_id"] == vid]
+        g = g[np.argsort(k[g].to_numpy(), kind="stable")]
+        p, q = g[:-1], g[1:]
+        df.loc[g[0], ["dist_m", "dt_s"]] = np.nan
+        df.loc[q, "dist_m"] = haversine_m(
+            df.loc[p, "lat"].to_numpy(), df.loc[p, "lon"].to_numpy(),
+            df.loc[q, "lat"].to_numpy(), df.loc[q, "lon"].to_numpy(),
+        )  # fmt: skip
+        df.loc[q, "dt_s"] = _dt_puerta(
+            ts[q].to_numpy() - ts[p].to_numpy(), tb[q].to_numpy() - tb[p].to_numpy()
+        )
+    return df
 
 
 def _dentro_de_la_puerta(lat, lon, ts, tb, filas: list[int]) -> bool:
@@ -578,8 +745,10 @@ def rastrear(
         vivos = {i: kk for i, kk in vivos.items() if k - kk <= tolerar_hueco}
 
     # Solo en modo predictivo: el ingenuo es la referencia sin nada que lo ayude.
+    df["trayecto_publicado"] = df["trayecto"]
     if predictivo:
         df = _suavizar_intercambios(df)
+        df = _coser_alternancias(df)
     df["vel_kmh"] = df["dist_m"] / df["dt_s"] * 3.6
     internas = ["_plat", "_plon", "_pdt"] + (["_pabs"] if con_abscisa else [])
     return df.drop(columns=internas)

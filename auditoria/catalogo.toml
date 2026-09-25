@@ -946,3 +946,44 @@ detector = [
     "tests/test_tracking_identidad.py::test_el_suavizado_mide_el_tiempo_con_el_reloj_de_sondeo",
 ]
 sondas = ["tracking"]
+
+[[mutante]]
+id = "076"
+nombre = "no se cose la alternancia del trayecto"
+capa = "tracking"
+# La 25 publica el sentido contrario en el 6,9-9,0 % de sus pasos (bitácora 026);
+# sin coser, el bus sale partido y el viaje se disputa entre dos tramos.
+fichero = "src/project/tracking.py"
+buscar = '''    cortos = n[n <= RACHA_ALTERNANCIA_MAX].index'''
+reemplazar = '''    cortos = n[n < 0].index'''
+detector = [
+    "tests/test_tracking_fragmentacion.py::test_la_alternancia_del_trayecto_no_parte_la_trayectoria",
+    "tests/test_tracking_fragmentacion.py::test_la_alternancia_del_trayecto_se_corrige_al_sentido_real",
+    "tests/test_etiquetado.py::test_la_alternancia_del_trayecto_no_corta_el_viaje",
+]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "077"
+nombre = "el cosido acepta un A que tiene filas dentro de F"
+capa = "tracking"
+# Dos buses intercalados en una trayectoria, con dos filas por sondeo (línea 31,
+# 20/08, 06:37): A era otro bus que seguía su marcha.
+fichero = "src/project/tracking.py"
+buscar = '''            if siguiente[p] != q:'''
+reemplazar = '''            if False:'''
+detector = ["tests/test_tracking_fragmentacion.py::test_coser_la_alternancia_no_mezcla_buses"]
+sondas = ["tracking"]
+
+[[mutante]]
+id = "078"
+nombre = "el cosido admite cualquier rodeo"
+capa = "tracking"
+# Un bus de otro sentido a 600 m, con ida y vuelta dentro de la puerta, se cosía
+# y subía el indicador `ida_vuelta` en real (bitácora 029).
+fichero = "src/project/tracking.py"
+buscar = '''        if rodeo(p, f, q) > RODEO_MAX_M:'''
+reemplazar = '''        if False:'''
+detector = []
+sondas = ["tracking"]
+

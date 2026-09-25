@@ -50,6 +50,7 @@ COLUMNAS_POSICIONES = [
     "snapshot_id",
     "linea",
     "trayecto",
+    "trayecto_publicado",
     "lat",
     "lon",
     "ts_utc",

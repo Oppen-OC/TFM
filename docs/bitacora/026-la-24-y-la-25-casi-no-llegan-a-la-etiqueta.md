@@ -116,12 +116,9 @@ Abierto:
 - ~~La puerta (24).~~ Resuelto en la entrada 028: la puerta cuenta también el
   reloj de la posición. La 24 pasa de 4.272 a 13.596 pasos y la 25 de 826 a
   7.413, sin mover las líneas urbanas.
-- **La alternancia (25).** Agrupar por línea sin trayecto se descartó en la 008
-  y la 009 porque dobla la contaminación en las líneas urbanas. Hace falta una
-  regla que trate el trayecto como ruidoso solo cuando alterna, o decidir el
-  sentido por el movimiento, como ya hace el map-matching.
-- Guardia que falta: un bus cuyo `trayecto` alterna a mitad de ruta. La de la
-  puerta es `test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte`.
+- **La alternancia (25).** Mitigada en la entrada 029: se cose después de
+  rastrear y la 25 sube de 7.413 a 8.594 pasos. Sigue lejos de su peso en
+  posiciones: queda abierto qué más la pierde.
 
 ## Para la memoria
 

@@ -44,6 +44,7 @@ def simular_flota(
     p_giro: float = 0.0,
     ruido_gps_m: float = 0.0,
     jitter_dt_s: float = 0.0,
+    p_alternancia: float = 0.0,
 ) -> pd.DataFrame:
     """Devuelve posiciones con la forma de la capa de buses, más la columna `verdad`.
 
@@ -100,6 +101,10 @@ def simular_flota(
         movimiento verdadero sigue limpio.
     `jitter_dt_s`  El sondeo llega entre 0 y este número de segundos tarde. El
         p99 real de la duración del paso es 33 s.
+    `p_alternancia`  Probabilidad por paso de que la fuente publique el trayecto
+        CONTRARIO durante 1-2 sondeos, con el bus siguiendo su marcha. La línea
+        25 lo hace en el 6,9-9,0 % de sus pasos a mitad de ruta (bitácora 026).
+        Solo cambia la etiqueta: la verdad del sentido es la de siempre.
     """
     rng = np.random.default_rng(semilla)
     lineas = [(f"L{i % 8}", "Ida" if i % 2 else "Vuelta") for i in range(n_buses)]
@@ -109,6 +114,7 @@ def simular_flota(
     vel = rng.uniform(3, 30, n_buses)  # km/h realistas para bus urbano
     extra = np.random.default_rng(semilla + 10_000)
     parado_resta = np.zeros(n_buses, dtype=int)
+    alterna_resta = np.zeros(n_buses, dtype=int)
 
     filas = []
     t0 = pd.Timestamp("2026-08-15T19:00:00Z")
@@ -127,6 +133,10 @@ def simular_flota(
             rumbo[gira] += extra.choice([-np.pi / 2, np.pi / 2], gira.sum())
         if p_parada:
             parado_resta = np.maximum(parado_resta - 1, 0)
+        if p_alternancia:
+            alterna_resta = np.maximum(alterna_resta - 1, 0)
+            empieza = (alterna_resta == 0) & (extra.random(n_buses) < p_alternancia)
+            alterna_resta[empieza] = extra.integers(1, 3, empieza.sum())
         obs_lat, obs_lon = lat, lon
         if ruido_gps_m:
             obs_lat = lat + extra.normal(0, ruido_gps_m, n_buses) / 111_320
@@ -140,6 +150,8 @@ def simular_flota(
         for i in range(n_buses):
             trayecto = lineas[i][1]
             if flip_en is not None and s >= flip_en + (3 * i) % 7:
+                trayecto = "Ida" if trayecto == "Vuelta" else "Vuelta"
+            if alterna_resta[i]:
                 trayecto = "Ida" if trayecto == "Vuelta" else "Vuelta"
             filas.append(
                 {

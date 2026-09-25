@@ -23,7 +23,8 @@ import pytest
 
 from project.analysis.medir_tracking import medir
 from project.analysis.simulacion import simular_flota
-from project.tracking import HUECO_MAX_S, rastrear
+from project import tracking
+from project.tracking import HUECO_MAX_S, RACHA_ALTERNANCIA_MAX, rastrear
 
 
 def test_la_fragmentacion_y_la_fusion_son_ejes_independientes():
@@ -153,3 +154,99 @@ def test_el_paso_inmediato_no_lo_acota_el_tope():
     sim = simular_flota(n_snaps=12, huecos=(5,), dt=90.0)
     out = rastrear(sim.drop(columns=["verdad"]), tolerar_hueco=2)
     assert out.dropna(subset=["dt_s"])["dt_s"].max() > HUECO_MAX_S
+
+
+# La línea 25 publica el trayecto contrario en el 6,9-9,0 % de sus pasos a mitad
+# de ruta (bitácora 026); 0,05 da el 8,6 % en la flota simulada.
+P_ALTERNANCIA = 0.05
+# Eficacia con la identidad clara: 2 buses por línea. La flota por defecto pone
+# 7-8 por línea en ~2 km, mucho más densa que la 25 real (6 buses en 25 km), y
+# ahí el cosido debe abstenerse ante la duda: eso lo mide la seguridad.
+N_BUSES_DISPERSA = 16
+SEMILLAS = (42, 7, 23)
+
+
+def _alternancia(semilla: int) -> tuple:
+    """La flota con alternancia, rastreada y alineada por `gid` (trampa 012).
+
+    Devuelve también qué filas son INTERIORES: una alternancia en los primeros o
+    los últimos `RACHA_ALTERNANCIA_MAX` sondeos no tiene texto a ambos lados y no
+    se distingue de un giro en cabecera, que sí debe cortar la trayectoria. En una
+    jornada real el único borde es el corte de las 04:00.
+    """
+    sim = simular_flota(
+        n_buses=N_BUSES_DISPERSA, semilla=semilla, p_alternancia=P_ALTERNANCIA
+    )
+    out = rastrear(sim.drop(columns=["verdad"])).set_index("gid")
+    sim = sim.set_index("gid").loc[out.index]
+    s = sim["snapshot_id"]
+    interior = (s >= s.min() + RACHA_ALTERNANCIA_MAX) & (
+        s <= s.max() - RACHA_ALTERNANCIA_MAX
+    )
+    return sim, out, interior
+
+
+def test_la_alternancia_del_trayecto_no_parte_la_trayectoria():
+    """El bus cuyo texto de sentido alterna sigue siendo el mismo bus.
+
+    Solo cambia la etiqueta, durante 1-4 sondeos; el bus sigue su marcha. Con la
+    clave (línea, trayecto) cada cambio abría trayectoria nueva: en la 25 real,
+    con la puerta abierta del todo, 465 trayectorias para 6 buses. Sin coser,
+    estas tres semillas dejan una veintena de buses partidos por dentro.
+    """
+    de_mas = 0
+    for semilla in SEMILLAS:
+        sim, out, interior = _alternancia(semilla)
+        trozos = (
+            out.loc[interior, "vehicle_id"]
+            .groupby(sim.loc[interior, "verdad"])
+            .nunique()
+        )
+        de_mas += int((trozos - 1).sum())
+    assert de_mas <= 1, f"{de_mas} trozos de más por dentro en {len(SEMILLAS)} flotas"
+
+
+def test_la_alternancia_del_trayecto_se_corrige_al_sentido_real():
+    """Aguas abajo, cada posición se proyecta sobre el trazado de SU trayecto.
+
+    Una posición con el texto invertido cae sobre el trazado contrario, su
+    abscisa «retrocede» y el etiquetado corta el viaje. No basta con no partir la
+    trayectoria: el texto de la racha corta tiene que volver al del bus.
+    """
+    for semilla in SEMILLAS:
+        sim, out, interior = _alternancia(semilla)
+        real = (
+            sim["verdad"]
+            .str[3:]
+            .astype(int)
+            .map(lambda i: "Ida" if i % 2 else "Vuelta")
+        )
+        publicado_mal = (sim.loc[interior, "trayecto"] != real[interior]).mean()
+        assert publicado_mal > 0.03, "el escenario no alterna"
+        mal = (out.loc[interior, "trayecto"] != real[interior]).mean()
+        assert mal <= 0.01, (
+            f"semilla {semilla}: {mal:.1%} con el sentido invertido; "
+            f"publicadas mal: {publicado_mal:.1%}"
+        )
+        assert (out["trayecto_publicado"] == sim["trayecto"]).all()
+
+
+@pytest.mark.parametrize("semilla", [42, 7, 23, 101, 3])
+def test_coser_la_alternancia_no_mezcla_buses(semilla, monkeypatch):
+    """Seguridad, en la flota densa: coser no añade saltos ni trayectorias mixtas.
+
+    Se compara con el mismo tracker sin coser, en recuento y no en fracción: al
+    coser hay menos trayectorias y la misma mixta pesa más. Sobre la captura real
+    el cosido dejaba dos buses intercalados en una trayectoria (línea 31, 20/08)
+    antes de exigir que F no tenga sondeos en común con A.
+    """
+    sim = simular_flota(semilla=semilla, p_alternancia=P_ALTERNANCIA)
+    cosido = medir(sim, predictivo=True)
+    monkeypatch.setattr(tracking, "_coser_alternancias", lambda df: df)
+    sin_coser = medir(sim, predictivo=True)
+    assert cosido["saltos"] <= sin_coser["saltos"]
+    assert round(cosido["contaminadas"] * cosido["trayectorias"]) <= round(
+        sin_coser["contaminadas"] * sin_coser["trayectorias"]
+    )
+    out = rastrear(sim.drop(columns=["verdad"]))
+    assert not out.duplicated(["vehicle_id", "snapshot_id"]).any()

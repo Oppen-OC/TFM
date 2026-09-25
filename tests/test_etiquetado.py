@@ -290,6 +290,9 @@ class Bus:
     hueco: tuple[float, float] | None = None  # [desde, hasta) sin posiciones
     desvio: tuple[float, float] | None = None  # tramo de abscisa desplazado 300 m
     parado_en_s: float = 0.0  # dónde espera antes de salir
+    # [desde, hasta) en que la fuente publica `trayecto_alterno` (bitácora 026)
+    alterna: tuple[float, float] | None = None
+    trayecto_alterno: str = "Este - Oeste"
 
     def posiciones(self, rng: np.random.Generator) -> pd.DataFrame:
         largo = self.forma.largo
@@ -317,7 +320,13 @@ class Bus:
             {
                 "snapshot_id": (t // CADENCIA_S).astype(np.int64) + 1_000_000,
                 "linea": self.linea,
-                "trayecto": self.trayecto,
+                "trayecto": np.where(
+                    (t >= self.alterna[0]) & (t < self.alterna[1]),
+                    self.trayecto_alterno,
+                    self.trayecto,
+                )
+                if self.alterna
+                else self.trayecto,
                 "lat": lat,
                 "lon": lon,
                 "ts_utc": ts,
@@ -427,6 +436,23 @@ def test_un_hueco_de_sondeos_no_se_interpola(horario_a):
             assert sid not in p.index, (
                 f"{sid} (s={s:.0f}) se interpoló a través del hueco"
             )
+
+
+def test_la_alternancia_del_trayecto_no_corta_el_viaje(horario_a):
+    """La fuente publica el sentido contrario tres sondeos a mitad de recorrido.
+
+    La línea 25 lo hace en el 6,9-9,0 % de sus pasos (bitácora 026). Con dos
+    sondeos basta `tolerar_hueco` para puentear; con tres, el viaje salía partido
+    en dos tramos que se disputaban el mismo viaje programado.
+    """
+    salida = 7 * 3600 + 600 + 45
+    bus = Bus(
+        "1", "Oeste - Este", IDA, salida, 4.0, alterna=(salida + 480, salida + 570)
+    )
+    r = etiquetar(flota(bus), [horario_a])
+    p = _comparar(r, "1_01", bus)
+    assert set(p.index) == {sid for sid, _ in IDA.paradas}, "el viaje sale partido"
+    assert r.viajes.query("motivo == 'asignado'")["viaje_id"].nunique() == 1
 
 
 def test_un_desvio_deja_sin_cruce_las_paradas_que_se_salta(horario_a):

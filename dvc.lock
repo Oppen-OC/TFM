@@ -69,12 +69,12 @@ stages:
       size: 7756
     - path: src/project/prepare.py
       hash: md5
-      md5: cae32653ecc4331f06e74f6e3c068fc4
-      size: 8336
+      md5: 3650aacdb0571c6690c47beb1c50e6bf
+      size: 8363
     - path: src/project/tracking.py
       hash: md5
-      md5: 73a7e931d74ce09c4177dfb4ad1c020a
-      size: 30045
+      md5: f959dc34bcd666037e946f8775111e89
+      size: 37943
     params:
       params.yaml:
         prepare:
@@ -93,20 +93,20 @@ stages:
     outs:
     - path: data/interim/emt_tracked
       hash: md5
-      md5: d14b0475177935e60fd8c75b6413a3ff.dir
-      size: 277796533
+      md5: 0f41c05d9eca96e7af3c85f43cd1f100.dir
+      size: 282493993
       nfiles: 32
     - path: data/interim/pasos
       hash: md5
-      md5: a215cf116ba4d72611f21a07e558b12e.dir
-      size: 47503719
+      md5: a956b3d98b975cbb77acbccf284b5cf3.dir
+      size: 47600540
       nfiles: 32
     - path: data/interim/viajes
       hash: md5
-      md5: 1babcde4853338ddf8ffc978b118ba63.dir
-      size: 6976262
+      md5: bfd5d890b1e9f4e6fb65a5f6c3dd2088.dir
+      size: 6798228
       nfiles: 32
     - path: metrics/prepare.json
       hash: md5
-      md5: a8364dd3cf4a41902da1b770f77e6f8c
-      size: 12607
+      md5: 8dc9f9967c591b93bb9c84258167b504
+      size: 12606

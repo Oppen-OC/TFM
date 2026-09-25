@@ -6,18 +6,18 @@
   ],
   "posiciones": 10457901,
   "descartadas_sin_trayecto": 5851,
-  "viajes": 197384,
-  "pasos": 1574436,
+  "viajes": 183703,
+  "pasos": 1577736,
   "viajes_por_motivo": {
-    "asignado": 71537,
-    "corto": 60424,
-    "conflicto": 3707,
-    "sin_trazado": 1420,
-    "margen": 3679,
+    "asignado": 71658,
+    "corto": 51376,
+    "conflicto": 3672,
+    "sin_trazado": 1409,
+    "margen": 3687,
     "desfase": 262,
     "sin_candidato": 253,
     "sin_sentido": 24,
-    "excluido": 56078
+    "excluido": 51362
   },
   "parametros": {
     "min_posiciones_viaje": 10,
@@ -41,405 +41,405 @@
       "dia": "2026-08-15",
       "posiciones": 31847,
       "descartadas_sin_trayecto": 52,
-      "viajes": 670,
+      "viajes": 640,
       "viajes_por_motivo": {
         "asignado": 390,
-        "corto": 246,
+        "corto": 216,
         "conflicto": 12,
         "sin_trazado": 11,
         "margen": 8,
         "desfase": 3
       },
-      "pasos": 7582,
-      "segundos": 46.6
+      "pasos": 7593,
+      "segundos": 44.2
     },
     {
       "dia": "2026-08-16",
       "posiciones": 282331,
       "descartadas_sin_trayecto": 17,
-      "viajes": 6214,
+      "viajes": 5718,
       "viajes_por_motivo": {
-        "asignado": 3106,
-        "corto": 2914,
-        "conflicto": 100,
+        "asignado": 3122,
+        "corto": 2404,
+        "conflicto": 98,
         "sin_trazado": 51,
         "margen": 33,
         "desfase": 9,
         "sin_candidato": 1
       },
-      "pasos": 68448,
-      "segundos": 319.5
+      "pasos": 68702,
+      "segundos": 361.9
     },
     {
       "dia": "2026-08-17",
       "posiciones": 394403,
       "descartadas_sin_trayecto": 2,
-      "viajes": 7141,
+      "viajes": 6711,
       "viajes_por_motivo": {
-        "asignado": 4323,
-        "corto": 2562,
-        "conflicto": 135,
+        "asignado": 4325,
+        "corto": 2132,
+        "conflicto": 133,
         "margen": 78,
         "sin_trazado": 33,
         "desfase": 10
       },
-      "pasos": 96226,
-      "segundos": 430.2
+      "pasos": 96328,
+      "segundos": 458.4
     },
     {
       "dia": "2026-08-18",
       "posiciones": 115073,
       "descartadas_sin_trayecto": 12,
-      "viajes": 2097,
+      "viajes": 1970,
       "viajes_por_motivo": {
-        "asignado": 1222,
-        "corto": 777,
-        "conflicto": 49,
+        "asignado": 1224,
+        "corto": 650,
+        "conflicto": 47,
         "margen": 33,
         "sin_trazado": 12,
         "desfase": 4
       },
-      "pasos": 26577,
-      "segundos": 128.7
+      "pasos": 26688,
+      "segundos": 115.9
     },
     {
       "dia": "2026-08-19",
       "posiciones": 397890,
       "descartadas_sin_trayecto": 342,
-      "viajes": 7448,
+      "viajes": 6986,
       "viajes_por_motivo": {
-        "asignado": 4113,
-        "corto": 3022,
-        "conflicto": 151,
-        "margen": 108,
+        "asignado": 4124,
+        "corto": 2551,
+        "conflicto": 150,
+        "margen": 107,
         "sin_trazado": 40,
         "desfase": 14
       },
-      "pasos": 91227,
-      "segundos": 410.8
+      "pasos": 91430,
+      "segundos": 464.0
     },
     {
       "dia": "2026-08-20",
       "posiciones": 386773,
       "descartadas_sin_trayecto": 51,
-      "viajes": 6946,
+      "viajes": 6509,
       "viajes_por_motivo": {
-        "asignado": 4007,
-        "corto": 2645,
-        "conflicto": 119,
+        "asignado": 4014,
+        "corto": 2203,
+        "conflicto": 117,
         "margen": 117,
         "sin_trazado": 41,
         "desfase": 14,
         "sin_candidato": 2,
         "sin_sentido": 1
       },
-      "pasos": 90067,
-      "segundos": 425.6
+      "pasos": 90245,
+      "segundos": 452.3
     },
     {
       "dia": "2026-08-21",
       "posiciones": 199766,
       "descartadas_sin_trayecto": 155,
-      "viajes": 3774,
+      "viajes": 3457,
       "viajes_por_motivo": {
-        "asignado": 2202,
-        "corto": 1385,
-        "margen": 84,
+        "asignado": 2208,
+        "corto": 1061,
+        "margen": 85,
         "conflicto": 81,
         "sin_trazado": 18,
         "desfase": 4
       },
-      "pasos": 48628,
-      "segundos": 221.0
+      "pasos": 48755,
+      "segundos": 222.5
     },
     {
       "dia": "2026-08-22",
       "posiciones": 338460,
       "descartadas_sin_trayecto": 120,
-      "viajes": 6584,
+      "viajes": 6024,
       "viajes_por_motivo": {
-        "asignado": 3566,
-        "corto": 2684,
-        "conflicto": 177,
+        "asignado": 3574,
+        "corto": 2117,
+        "conflicto": 176,
         "margen": 81,
         "sin_trazado": 62,
         "desfase": 11,
         "sin_sentido": 2,
         "sin_candidato": 1
       },
-      "pasos": 79698,
-      "segundos": 397.8
+      "pasos": 79863,
+      "segundos": 421.9
     },
     {
       "dia": "2026-08-23",
       "posiciones": 292952,
       "descartadas_sin_trayecto": 32,
-      "viajes": 5470,
+      "viajes": 5066,
       "viajes_por_motivo": {
-        "asignado": 3142,
-        "corto": 2155,
-        "conflicto": 82,
+        "asignado": 3151,
+        "corto": 1740,
+        "conflicto": 85,
         "sin_trazado": 44,
         "margen": 32,
-        "desfase": 12,
+        "desfase": 11,
         "sin_sentido": 2,
         "sin_candidato": 1
       },
-      "pasos": 71876,
-      "segundos": 335.8
+      "pasos": 72018,
+      "segundos": 381.5
     },
     {
       "dia": "2026-08-24",
       "posiciones": 385618,
       "descartadas_sin_trayecto": 343,
-      "viajes": 7157,
+      "viajes": 6683,
       "viajes_por_motivo": {
-        "asignado": 4024,
-        "corto": 2843,
-        "conflicto": 147,
-        "margen": 84,
+        "asignado": 4034,
+        "corto": 2360,
+        "conflicto": 146,
+        "margen": 83,
         "sin_trazado": 40,
-        "desfase": 11,
+        "desfase": 12,
         "sin_candidato": 8
       },
-      "pasos": 89829,
-      "segundos": 395.6
+      "pasos": 90039,
+      "segundos": 482.3
     },
     {
       "dia": "2026-08-25",
       "posiciones": 379312,
       "descartadas_sin_trayecto": 101,
-      "viajes": 6864,
+      "viajes": 6492,
       "viajes_por_motivo": {
-        "asignado": 3907,
-        "corto": 2675,
+        "asignado": 3915,
+        "corto": 2295,
         "conflicto": 145,
         "margen": 85,
         "sin_trazado": 37,
         "desfase": 14,
         "sin_sentido": 1
       },
-      "pasos": 87075,
-      "segundos": 423.8
+      "pasos": 87255,
+      "segundos": 478.3
     },
     {
       "dia": "2026-08-26",
       "posiciones": 380076,
       "descartadas_sin_trayecto": 116,
-      "viajes": 6686,
+      "viajes": 6240,
       "viajes_por_motivo": {
-        "asignado": 3993,
-        "corto": 2436,
-        "conflicto": 122,
+        "asignado": 4004,
+        "corto": 1977,
+        "conflicto": 124,
         "margen": 78,
         "sin_trazado": 42,
         "desfase": 12,
         "sin_sentido": 2,
         "sin_candidato": 1
       },
-      "pasos": 89257,
-      "segundos": 409.6
+      "pasos": 89432,
+      "segundos": 465.8
     },
     {
       "dia": "2026-08-27",
       "posiciones": 358257,
       "descartadas_sin_trayecto": 28,
-      "viajes": 7077,
+      "viajes": 6669,
       "viajes_por_motivo": {
-        "asignado": 3684,
-        "corto": 3107,
+        "asignado": 3687,
+        "corto": 2694,
         "conflicto": 124,
-        "margen": 110,
+        "margen": 112,
         "sin_trazado": 35,
         "desfase": 16,
         "sin_candidato": 1
       },
-      "pasos": 82751,
-      "segundos": 384.1
+      "pasos": 82831,
+      "segundos": 435.6
     },
     {
       "dia": "2026-08-28",
       "posiciones": 364724,
       "descartadas_sin_trayecto": 131,
-      "viajes": 8108,
+      "viajes": 7738,
       "viajes_por_motivo": {
-        "corto": 4007,
-        "asignado": 3816,
-        "conflicto": 120,
+        "asignado": 3817,
+        "corto": 3638,
+        "conflicto": 118,
         "margen": 94,
         "sin_trazado": 51,
         "desfase": 15,
         "sin_candidato": 5
       },
-      "pasos": 85928,
-      "segundos": 418.0
+      "pasos": 86022,
+      "segundos": 427.8
     },
     {
       "dia": "2026-08-29",
       "posiciones": 309489,
       "descartadas_sin_trayecto": 291,
-      "viajes": 7620,
+      "viajes": 7293,
       "viajes_por_motivo": {
-        "corto": 4065,
-        "asignado": 3235,
-        "margen": 132,
-        "conflicto": 130,
+        "corto": 3739,
+        "asignado": 3236,
+        "margen": 133,
+        "conflicto": 127,
         "sin_trazado": 46,
         "desfase": 8,
         "sin_sentido": 2,
         "sin_candidato": 2
       },
-      "pasos": 71364,
-      "segundos": 350.8
+      "pasos": 71455,
+      "segundos": 375.0
     },
     {
       "dia": "2026-08-30",
       "posiciones": 275071,
       "descartadas_sin_trayecto": 12,
-      "viajes": 7243,
+      "viajes": 6920,
       "viajes_por_motivo": {
-        "corto": 4230,
-        "asignado": 2836,
-        "conflicto": 67,
+        "corto": 3908,
+        "asignado": 2837,
+        "conflicto": 65,
         "margen": 49,
         "sin_trazado": 48,
         "desfase": 10,
         "sin_sentido": 3
       },
-      "pasos": 64387,
-      "segundos": 347.7
+      "pasos": 64477,
+      "segundos": 360.0
     },
     {
       "dia": "2026-08-31",
       "posiciones": 450691,
       "descartadas_sin_trayecto": 61,
-      "viajes": 7982,
+      "viajes": 7373,
       "viajes_por_motivo": {
-        "excluido": 7982
+        "excluido": 7373
       },
       "pasos": 0,
-      "segundos": 439.9
+      "segundos": 442.6
     },
     {
       "dia": "2026-09-01",
       "posiciones": 448583,
       "descartadas_sin_trayecto": 102,
-      "viajes": 7793,
+      "viajes": 7088,
       "viajes_por_motivo": {
-        "excluido": 7793
+        "excluido": 7088
       },
       "pasos": 0,
-      "segundos": 420.6
+      "segundos": 429.7
     },
     {
       "dia": "2026-09-02",
       "posiciones": 439720,
       "descartadas_sin_trayecto": 75,
-      "viajes": 7575,
+      "viajes": 6969,
       "viajes_por_motivo": {
-        "excluido": 7575
+        "excluido": 6969
       },
       "pasos": 0,
-      "segundos": 478.3
+      "segundos": 429.4
     },
     {
       "dia": "2026-09-03",
       "posiciones": 432324,
       "descartadas_sin_trayecto": 848,
-      "viajes": 7635,
+      "viajes": 6940,
       "viajes_por_motivo": {
-        "excluido": 7635
+        "excluido": 6940
       },
       "pasos": 0,
-      "segundos": 458.0
+      "segundos": 425.0
     },
     {
       "dia": "2026-09-04",
       "posiciones": 432759,
       "descartadas_sin_trayecto": 53,
-      "viajes": 7695,
+      "viajes": 7009,
       "viajes_por_motivo": {
-        "excluido": 7695
+        "excluido": 7009
       },
       "pasos": 0,
-      "segundos": 453.1
+      "segundos": 415.6
     },
     {
       "dia": "2026-09-05",
       "posiciones": 299222,
       "descartadas_sin_trayecto": 191,
-      "viajes": 5342,
+      "viajes": 4881,
       "viajes_por_motivo": {
-        "excluido": 5342
+        "excluido": 4881
       },
       "pasos": 0,
-      "segundos": 338.6
+      "segundos": 287.2
     },
     {
       "dia": "2026-09-06",
       "posiciones": 268095,
       "descartadas_sin_trayecto": 32,
-      "viajes": 4629,
+      "viajes": 4276,
       "viajes_por_motivo": {
-        "excluido": 4629
+        "excluido": 4276
       },
       "pasos": 0,
-      "segundos": 341.3
+      "segundos": 271.6
     },
     {
       "dia": "2026-09-07",
       "posiciones": 440844,
       "descartadas_sin_trayecto": 37,
-      "viajes": 7427,
+      "viajes": 6826,
       "viajes_por_motivo": {
-        "excluido": 7427
+        "excluido": 6826
       },
       "pasos": 0,
-      "segundos": 500.1
+      "segundos": 419.1
     },
     {
       "dia": "2026-09-08",
       "posiciones": 441675,
       "descartadas_sin_trayecto": 286,
-      "viajes": 7968,
+      "viajes": 7338,
       "viajes_por_motivo": {
-        "asignado": 3265,
-        "corto": 3147,
-        "margen": 672,
-        "conflicto": 580,
-        "sin_trazado": 231,
+        "asignado": 3271,
+        "corto": 2520,
+        "margen": 673,
+        "conflicto": 576,
+        "sin_trazado": 225,
         "sin_candidato": 57,
         "desfase": 14,
         "sin_sentido": 2
       },
-      "pasos": 70863,
-      "segundos": 563.7
+      "pasos": 71004,
+      "segundos": 446.1
     },
     {
       "dia": "2026-09-09",
       "posiciones": 422904,
       "descartadas_sin_trayecto": 82,
-      "viajes": 8362,
+      "viajes": 7816,
       "viajes_por_motivo": {
-        "corto": 3518,
-        "asignado": 3223,
-        "conflicto": 635,
-        "margen": 585,
-        "sin_trazado": 262,
+        "asignado": 3228,
+        "corto": 2974,
+        "conflicto": 632,
+        "margen": 586,
+        "sin_trazado": 257,
         "sin_candidato": 119,
         "desfase": 18,
         "sin_sentido": 2
       },
-      "pasos": 66207,
-      "segundos": 529.4
+      "pasos": 66400,
+      "segundos": 427.8
     },
     {
       "dia": "2026-09-10",
       "posiciones": 48219,
       "descartadas_sin_trayecto": 0,
-      "viajes": 1286,
+      "viajes": 1260,
       "viajes_por_motivo": {
-        "corto": 847,
+        "corto": 821,
         "asignado": 272,
         "sin_trazado": 54,
         "conflicto": 50,
@@ -447,17 +447,17 @@
         "desfase": 11,
         "sin_candidato": 3
       },
-      "pasos": 4479,
-      "segundos": 74.1
+      "pasos": 4481,
+      "segundos": 56.8
     },
     {
       "dia": "2026-09-14",
       "posiciones": 162110,
       "descartadas_sin_trayecto": 17,
-      "viajes": 3086,
+      "viajes": 2842,
       "viajes_por_motivo": {
-        "asignado": 1624,
-        "corto": 1285,
+        "asignado": 1630,
+        "corto": 1035,
         "margen": 91,
         "conflicto": 65,
         "sin_trazado": 15,
@@ -465,68 +465,68 @@
         "sin_sentido": 1,
         "sin_candidato": 1
       },
-      "pasos": 34916,
-      "segundos": 226.4
+      "pasos": 35022,
+      "segundos": 176.4
     },
     {
       "dia": "2026-09-15",
       "posiciones": 410726,
       "descartadas_sin_trayecto": 42,
-      "viajes": 7884,
+      "viajes": 7234,
       "viajes_por_motivo": {
-        "asignado": 3750,
-        "corto": 3552,
-        "margen": 324,
-        "conflicto": 178,
+        "asignado": 3757,
+        "corto": 2906,
+        "margen": 326,
+        "conflicto": 165,
         "sin_trazado": 66,
         "desfase": 12,
         "sin_sentido": 2
       },
-      "pasos": 81128,
-      "segundos": 519.5
+      "pasos": 81451,
+      "segundos": 448.1
     },
     {
       "dia": "2026-09-16",
       "posiciones": 395010,
       "descartadas_sin_trayecto": 627,
-      "viajes": 7041,
+      "viajes": 6653,
       "viajes_por_motivo": {
         "asignado": 3489,
-        "corto": 2936,
-        "margen": 327,
-        "conflicto": 199,
+        "corto": 2549,
+        "margen": 328,
+        "conflicto": 197,
         "sin_trazado": 67,
         "desfase": 17,
         "sin_candidato": 4,
         "sin_sentido": 2
       },
-      "pasos": 74620,
-      "segundos": 468.7
+      "pasos": 74739,
+      "segundos": 376.1
     },
     {
       "dia": "2026-09-17",
       "posiciones": 360550,
       "descartadas_sin_trayecto": 1301,
-      "viajes": 6455,
+      "viajes": 6044,
       "viajes_por_motivo": {
-        "asignado": 3453,
-        "corto": 2394,
-        "margen": 330,
+        "asignado": 3454,
+        "corto": 1981,
+        "margen": 331,
         "conflicto": 190,
         "sin_trazado": 74,
         "desfase": 13,
         "sin_sentido": 1
       },
-      "pasos": 72381,
-      "segundos": 441.0
+      "pasos": 72558,
+      "segundos": 370.4
     },
     {
       "dia": "2026-09-18",
       "posiciones": 112427,
       "descartadas_sin_trayecto": 292,
-      "viajes": 2125,
+      "viajes": 2038,
       "viajes_por_motivo": {
-        "corto": 992,
+        "corto": 905,
         "asignado": 895,
         "margen": 95,
         "conflicto": 49,
@@ -535,8 +535,8 @@
         "desfase": 6,
         "sin_sentido": 1
       },
-      "pasos": 18922,
-      "segundos": 143.3
+      "pasos": 18948,
+      "segundos": 117.1
     }
   ]
 }

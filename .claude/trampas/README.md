@@ -19,6 +19,7 @@ completa antes de tocar la capa correspondiente.**
 | [011](011-primera-captura-puede-ser-bloque-a-medias.md) | cerrada | fuentes | La primera captura de un `snapshot_id` puede ser el bloque **a medio reinsertar**: el prefijo de `gid`, con el mismo `snapshot_id` y la mediana del 48 % de las filas. Quedarse la primera, que es lo natural y lo que hace el colector, tira 1.200 sondeos y 109.063 posiciones | `test_reprocesar_completa_el_sondeo_…` |
 | [012](012-columna-pegada-por-posicion-tras-rastrear.md) | cerrada | tracking | `rastrear` reordena por sondeo y **reinicia el índice**: una columna calculada sobre su salida y pegada por posición a la entrada se cruza entre filas sin error. Un solo par desordenado dio al 99,7 % la abscisa de otra fila y una mejora falsa del 1,8 % (017) | `test_el_orden_de_las_filas_de_entrada_…` |
 | [013](013-puerta-fisica-corta-las-lineas-de-carretera.md) | cerrada | tracking | La puerta de 70 km/h medía el tiempo solo con el reloj del sondeo: una posición atrasada y la siguiente al día parecían ir a 88 km/h y partían la **24** en carretera (5 % de tramos asignados, fuera del denominador del éxito). Subir el umbral no es el arreglo: acepta saltos imposibles | `test_un_bus_cuyas_posiciones_llegan_con_retraso_…` |
+| [014](014-la-emt-alterna-el-trayecto-a-mitad-de-ruta.md) | cerrada | fuentes | La EMT publica a veces el `trayecto` **contrario** para un bus que sigue su marcha, 1-4 sondeos a mitad de ruta (7-9 % de los pasos de la 25). La clave (línea, trayecto) lo parte en tres sin error. Cruzar el trayecto al emparejar lo arregla y engancha buses opuestos: se cose después | `test_la_alternancia_del_trayecto_no_parte_…` |
 
 ## Cómo se usa
 
@@ -27,8 +28,7 @@ código y la documentación de la fuente, lo volvería a hacer*. Typo, off-by-on
 import olvidado, cualquier cosa visible en el stack trace: **no entra** — eso va a
 GitHub Issues (`gh issue create`).
 
-**Nada se mueve de sitio.** Fichero numerado, inmutable. Al resolverse cambia
-`estado`, no la ruta.
+**Nada se mueve de sitio.** Fichero numerado, inmutable. Al resolverse cambia `estado`, no la ruta.
 
 **Estados.** `vigente` muerde hoy · `mitigada` hay workaround, sin test · `cerrada`
 hay test que la guarda. **Sin guardia no se cierra.**
