@@ -138,6 +138,7 @@ def test_la_tabla_no_lleva_diagnosticos_que_miran_el_futuro_y_trae_sus_variables
     filas = [_paso("A", s, 2 * s, 10 * s) for s in range(1, 5)]
     pasos = pd.DataFrame(filas).assign(desfase_s=1.0, margen_s=1.0, coste_s=1.0)
     t = features.construir(pasos, objetivo=OBJ, lags_min=(5,))
-    assert not set(features.FUERA_DE_LA_TABLA) & set(t.columns)
+    # Por nombre, no con la constante: vaciarla no puede dejar el test en verde.
+    assert not {"desfase_s", "margen_s", "coste_s"} & set(t.columns)
     assert set(features.variables((5,))) <= set(t.columns)
     assert OBJ not in features.variables((5,))
