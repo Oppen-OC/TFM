@@ -968,11 +968,14 @@ id = "077"
 nombre = "el cosido acepta un A que tiene filas dentro de F"
 capa = "tracking"
 # Dos buses intercalados en una trayectoria, con dos filas por sondeo (línea 31,
-# 20/08, 06:37): A era otro bus que seguía su marcha.
+# 20/08, 06:37): A era otro bus que seguía su marcha. Equivalente en d7e9183 y
+# previsto: la red de seguridad de `_coser_alternancias` (nunca dos filas por
+# sondeo) atrapa el mismo caso. Son dos defensas del mismo invariante; se deja
+# para que quitar una se haga sabiendo que la otra la cubre.
 fichero = "src/project/tracking.py"
 buscar = '''            if siguiente[p] != q:'''
 reemplazar = '''            if False:'''
-detector = ["tests/test_tracking_fragmentacion.py::test_coser_la_alternancia_no_mezcla_buses"]
+detector = []
 sondas = ["tracking"]
 
 [[mutante]]
@@ -980,10 +983,11 @@ id = "078"
 nombre = "el cosido admite cualquier rodeo"
 capa = "tracking"
 # Un bus de otro sentido a 600 m, con ida y vuelta dentro de la puerta, se cosía
-# y subía el indicador `ida_vuelta` en real (bitácora 029).
+# y subía el indicador `ida_vuelta` en real (bitácora 029). Hueco en d7e9183: la
+# flota simulada no produce fragmentos desviados; se construye a mano.
 fichero = "src/project/tracking.py"
 buscar = '''        if rodeo(p, f, q) > RODEO_MAX_M:'''
 reemplazar = '''        if False:'''
-detector = []
+detector = ["tests/test_tracking_fragmentacion.py::test_el_cosido_no_acepta_un_fragmento_desviado"]
 sondas = ["tracking"]
 

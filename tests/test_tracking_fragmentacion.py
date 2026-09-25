@@ -19,6 +19,8 @@ de `trayecto` y ningún snapshot llega recortado. Medidos sobre captura real del
 
 from __future__ import annotations
 
+import numpy as np
+import pandas as pd
 import pytest
 
 from project.analysis.medir_tracking import medir
@@ -250,3 +252,43 @@ def test_coser_la_alternancia_no_mezcla_buses(semilla, monkeypatch):
     )
     out = rastrear(sim.drop(columns=["verdad"]))
     assert not out.duplicated(["vehicle_id", "snapshot_id"]).any()
+
+
+def test_el_cosido_no_acepta_un_fragmento_desviado():
+    """F a 200 m del camino de A a C no es la misma marcha: es otro bus.
+
+    Con un rodeo de hasta 100 m se cosía un bus de otro sentido a 600 m, con ida
+    y vuelta dentro de la puerta física (línea 99, 27/08, 06:47, bitácora 029).
+    La flota simulada nunca produce ese caso, así que se construye a mano.
+    """
+    t0 = pd.Timestamp("2026-08-20T08:00:00Z")
+    lat0, lon0, m_lat = 39.46, -0.37, 111_320.0
+    m_lon = m_lat * np.cos(np.radians(lat0))
+
+    def fila(k: int, x: float, y: float, vid: str, trayecto: str) -> dict:
+        return {
+            "snapshot_id": 1000 + k,
+            "ts_utc": t0 + pd.Timedelta(seconds=30 * k),
+            "linea": "L1",
+            "trayecto": trayecto,
+            "lat": lat0 + y / m_lat,
+            "lon": lon0 + x / m_lon,
+            "vehicle_id": vid,
+            "dist_m": np.nan,
+            "dt_s": np.nan,
+        }
+
+    def cose(desvio_m: float) -> int:
+        df = pd.DataFrame(
+            [
+                fila(0, 0, 0, "A", "Ida"),
+                fila(1, 150, 0, "A", "Ida"),
+                fila(2, 300, desvio_m, "F", "Vuelta"),
+                fila(3, 450, 0, "C", "Ida"),
+                fila(4, 600, 0, "C", "Ida"),
+            ]
+        )
+        return tracking._coser_alternancias(df)["vehicle_id"].nunique()
+
+    assert cose(0.0) == 1, "la alternancia en línea recta tiene que coserse"
+    assert cose(200.0) == 3, "cosió un fragmento a 200 m del camino"
