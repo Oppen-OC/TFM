@@ -1039,3 +1039,42 @@ reemplazar = '''FUERA_DE_LA_TABLA = []'''
 detector = ["tests/test_features.py::test_la_tabla_no_lleva_diagnosticos_que_miran_el_futuro_y_trae_sus_variables"]
 sondas = []
 
+[[mutante]]
+id = "083"
+nombre = "la flota cuenta los tramos que acaban justo en t"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''        hi = np.searchsorted(tf, t[idx], side="left")'''
+reemplazar = '''        hi = np.searchsorted(tf, t[idx], side="right")'''
+detector = ["tests/test_features.py::test_el_tramo_aguas_abajo_lo_miden_otros_buses_antes_de_t"]
+sondas = []
+
+[[mutante]]
+id = "084"
+nombre = "la flota usa la media y no la mediana"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''                mediana[fila] = np.median(v[a:b])'''
+reemplazar = '''                mediana[fila] = np.mean(v[a:b])'''
+detector = ["tests/test_features.py::test_el_tramo_aguas_abajo_lo_miden_otros_buses_antes_de_t"]
+sondas = []
+
+[[mutante]]
+id = "085"
+nombre = "la flota estima con un solo bus"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''            if b - a >= soporte_min:'''
+reemplazar = '''            if b - a >= 1:'''
+detector = ["tests/test_features.py::test_el_tramo_sin_soporte_suficiente_no_se_estima"]
+sondas = []
+
+[[mutante]]
+id = "086"
+nombre = "la flota solo cuenta la propia línea"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''groupby(["stop_id", "_stop_objetivo"], sort=False)'''
+reemplazar = '''groupby(["linea", "stop_id", "_stop_objetivo"], sort=False)'''
+detector = ["tests/test_features.py::test_el_tramo_aguas_abajo_lo_miden_otros_buses_antes_de_t"]
+sondas = []

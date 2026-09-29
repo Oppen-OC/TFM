@@ -137,8 +137,53 @@ def test_la_tabla_no_lleva_diagnosticos_que_miran_el_futuro_y_trae_sus_variables
     """`desfase_s` resume las primeras paradas del viaje: en la 1 incluye la 2 y la 3."""
     filas = [_paso("A", s, 2 * s, 10 * s) for s in range(1, 5)]
     pasos = pd.DataFrame(filas).assign(desfase_s=1.0, margen_s=1.0, coste_s=1.0)
-    t = features.construir(pasos, objetivo=OBJ, lags_min=(5,))
+    t = features.construir(pasos, objetivo=OBJ, lags_min=(5,), ventanas_flota_min=(5,))
     # Por nombre, no con la constante: vaciarla no puede dejar el test en verde.
     assert not {"desfase_s", "margen_s", "coste_s"} & set(t.columns)
-    assert set(features.variables((5,))) <= set(t.columns)
+    assert set(features.variables((5,), (5,))) <= set(t.columns)
     assert OBJ not in features.variables((5,))
+
+
+# --------------------------------------------------------------------------- #
+# Fase 2: la flota como sensor del tramo aguas abajo (bitácora 032)
+# --------------------------------------------------------------------------- #
+def _tramo(viaje, t_ini, t_fin, ganado, linea="1"):
+    """Un viaje que recorre P01 -> P02 empezando en hora y ganando `ganado` s."""
+    return [
+        _paso(viaje, 1, t_ini, 0, linea=linea),
+        _paso(viaje, 2, t_fin, ganado, linea=linea),
+    ]
+
+
+def test_el_tramo_aguas_abajo_lo_miden_otros_buses_antes_de_t():
+    """Mediana del retraso ganado en P01 -> P02 por los que ACABARON antes de t.
+
+    Cuenta cualquier línea que comparta las dos paradas: la congestión es del
+    viario, no de la línea. El que acaba el tramo en t o después ve el futuro.
+    """
+    filas = [
+        _paso("A", 1, 10, 0),  # la fila evaluada: t = 10 min, objetivo P02
+        _paso("A", 2, 12, 0),
+        *_tramo("B", 4, 6, 60),  # acaba 4 min antes: cuenta
+        *_tramo("C", 7, 9, 120),  # cuenta
+        # otra línea, mismas paradas: cuenta; y es un extremo, que la mediana ignora
+        *_tramo("F", 5, 7.5, 900, linea="2"),
+        *_tramo("D", 8, 10, 999),  # acaba justo en t: no cuenta
+        *_tramo("E", 1, 3, 500),  # acaba 7 min antes: fuera de la ventana de 5
+        *_tramo("G", 9, 11, 999),  # acaba después de t: no cuenta
+    ]
+    t = _construir(filas, horizonte=1, ventanas_flota_min=(5,), soporte_min=2)
+    f = _fila(t, "A", 1)
+    # mediana de 60, 120 y 900; la media sería 360
+    assert f["tramo_ganado_5min"] == 120.0
+    assert f["tramo_soporte_5min"] == 3
+
+
+def test_el_tramo_sin_soporte_suficiente_no_se_estima():
+    """Un solo bus no es congestión: puede ser una avería. Nulo, no cero."""
+    filas = [_paso("A", 1, 10, 0), _paso("A", 2, 12, 0), *_tramo("B", 6, 8, 300)]
+    f = _fila(
+        _construir(filas, horizonte=1, ventanas_flota_min=(5,), soporte_min=2), "A", 1
+    )
+    assert f["tramo_soporte_5min"] == 1
+    assert np.isnan(f["tramo_ganado_5min"])

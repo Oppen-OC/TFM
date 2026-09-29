@@ -31,7 +31,12 @@ features:
   horizonte_paradas: 1
   lags_min: [1, 5, 15]
   ventana_trafico_min: 10
-  incluir_trafico: false   # fase 2 (bitácora 030)
+  # La flota como sensor (bitácora 032): mediana del retraso ganado en el tramo
+  # aguas abajo por otros buses que lo acabaron en los últimos N minutos.
+  incluir_flota: true
+  ventanas_flota_min: [5, 15]
+  soporte_min: 2            # por debajo, no estimable (nulo), no cero
+  incluir_trafico: false    # la capa 192 va después de la flota
   incluir_meteo: false     # sin fuente: no hay capa meteorológica capturada
   umbral_retraso_s: 300      # para la variante de clasificación binaria
   # Split TEMPORAL, nunca aleatorio: con series de posiciones, un split

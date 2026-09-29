@@ -120,8 +120,8 @@ stages:
       nfiles: 32
     - path: src/project/features.py
       hash: md5
-      md5: 9ec6f3151c86fb4bfbc8707d4de17887
-      size: 9132
+      md5: f3a55d6ab1d965f97989a958f8b0a484
+      size: 11696
     params:
       params.yaml:
         features:
@@ -132,6 +132,11 @@ stages:
           - 5
           - 15
           ventana_trafico_min: 10
+          incluir_flota: true
+          ventanas_flota_min:
+          - 5
+          - 15
+          soporte_min: 2
           incluir_trafico: false
           incluir_meteo: false
           umbral_retraso_s: 300
@@ -139,12 +144,12 @@ stages:
     outs:
     - path: data/processed/test.parquet
       hash: md5
-      md5: cd3fcab5b64a3a6b21453bce1d1383a7
-      size: 25830781
+      md5: 713f2bc678749198bea52ae2ffeafaea
+      size: 27003139
     - path: data/processed/train.parquet
       hash: md5
-      md5: 99bcaa49219502623c478b9837dc1972
-      size: 111258646
+      md5: 9588fe63989479a1f6d588fba3ef94a4
+      size: 115627909
     - path: metrics/features.json
       hash: md5
       md5: b5107f6dafe8bb8e31ad03422412f3c5

@@ -156,7 +156,8 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
 explore), `tracking.py`, `gtfs.py`, `mapmatching.py`, `etiquetado.py`,
-`prepare.py`, `features.py` (fase 1, sin tráfico: bitácora 030) y `analysis/`.
+`prepare.py`, `features.py` (fase 1, bitácora 030; fase 2, la flota como sensor:
+bitácora 032; la capa 192, pendiente) y `analysis/`.
 `dvc repro` llega hasta `features`: los pasos por parada con `retraso_s` salen en
 `data/interim/pasos/` y la tabla partida en `data/processed/{train,test}.parquet`,
 con los baselines en `metrics/features.json`. Las variables del modelo las da

@@ -8,8 +8,10 @@ variante binaria, si pasa de `umbral_retraso_s`. Toda variable usa solo lo
 observado ANTES de t: con una ventana que incluye t, o un «bus anterior» que no
 exige serlo, el modelo ve el futuro y la prueba sale mejor de lo que es.
 
-Fase 1, sin tráfico (bitácora 030): variables del propio viaje, de la línea y
-del calendario. El tráfico aguas abajo, que es la pregunta del TFM, va aparte.
+Fase 1 (bitácora 030): variables del propio viaje, de la línea y del
+calendario. Fase 2 (bitácora 032): la flota como sensor del tramo aguas abajo,
+con lo que ganaron otros buses, de cualquier línea, al recorrerlo antes de t.
+La capa municipal 192 va después.
 
 Esta transformación se comparte entre entrenamiento e inferencia: vive aquí y
 solo aquí (train/serve skew).
@@ -32,7 +34,9 @@ CLAVE_VIAJE = ["fecha_servicio", "viaje_id"]
 FUERA_DE_LA_TABLA = ["desfase_s", "margen_s", "coste_s"]
 
 
-def variables(lags_min: tuple[int, ...] = (1, 5, 15)) -> list[str]:
+def variables(
+    lags_min: tuple[int, ...] = (1, 5, 15), ventanas_flota_min: tuple[int, ...] = ()
+) -> list[str]:
     """Las columnas que ve el modelo, en entrenamiento y en inferencia.
 
     Solo estas: el resto de la tabla son claves y el objetivo. Que `train.py` y
@@ -55,6 +59,11 @@ def variables(lags_min: tuple[int, ...] = (1, 5, 15)) -> list[str]:
         ],
         "bus_anterior_retraso_s",
         "bus_anterior_edad_s",
+        *[
+            c
+            for n in ventanas_flota_min
+            for c in (f"tramo_ganado_{n}min", f"tramo_soporte_{n}min")
+        ],
         "hora",
         "dia_semana",
         "fin_de_semana",
@@ -83,12 +92,48 @@ def _ventana_linea(p: pd.DataFrame, minutos: int) -> tuple[pd.Series, pd.Series]
     return pd.Series(media, index=p.index), pd.Series(cuenta, index=p.index)
 
 
+def _tramo_flota(
+    p: pd.DataFrame, ganado: pd.Series, minutos: int, soporte_min: int
+) -> tuple[pd.Series, pd.Series]:
+    """Mediana del retraso ganado en el tramo por los viajes que lo ACABARON en [t − W, t).
+
+    El tramo es el par (parada de la fila, parada objetivo). Lo comparten todas
+    las líneas que paran en las dos, así que la mediana es de la flota, no de la
+    línea (docs/10, §3: la congestión es la componente común de tramo × ventana).
+    Mediana y no media: un bus averiado es un extremo y no debe fabricar
+    congestión. Con menos de `soporte_min` viajes, nulo: no estimable no es cero.
+    El propio viaje acaba el tramo después de t y no entra.
+    """
+    t = p["_t"].to_numpy()
+    t_fin = p["_t_fin"].to_numpy()
+    valor = ganado.to_numpy()
+    mediana = np.full(len(p), np.nan)
+    soporte = np.zeros(len(p))
+    ancho = np.int64(minutos * 60 * 10**9)
+    con_tramo = p["_stop_objetivo"].notna().to_numpy()
+    for idx in (
+        p[con_tramo].groupby(["stop_id", "_stop_objetivo"], sort=False).indices.values()
+    ):
+        idx = np.flatnonzero(con_tramo)[idx]
+        orden = idx[np.argsort(t_fin[idx], kind="stable")]
+        tf, v = t_fin[orden], valor[orden]
+        lo = np.searchsorted(tf, t[idx] - ancho, side="left")
+        hi = np.searchsorted(tf, t[idx], side="left")
+        soporte[idx] = hi - lo
+        for fila, a, b in zip(idx, lo, hi):
+            if b - a >= soporte_min:
+                mediana[fila] = np.median(v[a:b])
+    return pd.Series(mediana, index=p.index), pd.Series(soporte, index=p.index)
+
+
 def construir(
     pasos: pd.DataFrame,
     objetivo: str,
     horizonte: int = 1,
     lags_min: tuple[int, ...] = (1, 5, 15),
     umbral_s: float = 300.0,
+    ventanas_flota_min: tuple[int, ...] = (),
+    soporte_min: int = 2,
 ) -> pd.DataFrame:
     """La tabla: una fila por paso con objetivo, sus variables y sus claves."""
     # Las particiones de `pasos` no traen todas el mismo tipo de fecha (issue #2):
@@ -109,9 +154,14 @@ def construir(
         g["abscisa_parada_m"].shift(-horizonte) - p["abscisa_parada_m"]
     )
     p["_stop_objetivo"] = g["stop_id"].shift(-horizonte)
+    p["_t_fin"] = g["_t"].shift(-horizonte)
 
     for n in lags_min:
         p[f"linea_retraso_{n}min"], p[f"linea_pasos_{n}min"] = _ventana_linea(p, n)
+    for n in ventanas_flota_min:
+        p[f"tramo_ganado_{n}min"], p[f"tramo_soporte_{n}min"] = _tramo_flota(
+            p, p[objetivo] - p["retraso_s"], n, soporte_min
+        )
 
     # El último viaje de la línea que pasó por la parada objetivo ANTES de t. El
     # propio viaje no puede: aún no ha llegado a ella.
@@ -145,6 +195,9 @@ def construir(
     p["fin_de_semana"] = (p["dia_semana"] >= 5).astype(int)
 
     p = p[p[objetivo].notna()].copy()
+    # Clave, no variable: el tramo (par de paradas) hace falta para separar el
+    # sesgo estático del horario de la congestión (bitácora 032).
+    p["stop_objetivo_id"] = p["_stop_objetivo"]
     p[objetivo + "_bin"] = (p[objetivo] > umbral_s).astype(int)
     fuera = [c for c in p.columns if c.startswith("_") or c in FUERA_DE_LA_TABLA]
     return p.drop(columns=fuera).reset_index(drop=True)
@@ -185,7 +238,8 @@ def baselines(test: pd.DataFrame, objetivo: str) -> dict:
 def main() -> None:
     cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
     if cfg["incluir_trafico"] or cfg["incluir_meteo"]:
-        raise NotImplementedError("tráfico y meteo son la fase 2 (bitácora 030)")
+        raise NotImplementedError("capa 192 y meteo: después de la fase 2")
+    flota = tuple(cfg["ventanas_flota_min"]) if cfg["incluir_flota"] else ()
     pasos = pd.concat(
         pd.read_parquet(f)
         for f in sorted((settings.interim_dir / "pasos").rglob("*.parquet"))
@@ -196,6 +250,8 @@ def main() -> None:
         horizonte=cfg["horizonte_paradas"],
         lags_min=tuple(cfg["lags_min"]),
         umbral_s=cfg["umbral_retraso_s"],
+        ventanas_flota_min=flota,
+        soporte_min=cfg["soporte_min"],
     )
     train, test = partir(tabla, cfg["test_desde"])
     settings.processed_dir.mkdir(parents=True, exist_ok=True)
