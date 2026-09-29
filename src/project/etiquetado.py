@@ -205,8 +205,10 @@ def _medianoche(dia: date) -> pd.Timestamp:
     """Medianoche local del día de servicio.
 
     El GTFS la define como «mediodía menos 12 h», que difiere de la medianoche
-    sólo los dos días de cambio de hora. Ninguno cae en la captura (el próximo es
-    el 25/10), pero un etiquetado que los cruce tendría que tenerlo en cuenta.
+    sólo los dos días de cambio de hora. Las jornadas procesadas hasta el 18/09
+    no incluyen ninguno, pero la captura cruza el del 25/10: ese día las dos
+    referencias se separan 1 h, y mientras esta función use la medianoche, el
+    horario de ese día de servicio queda desplazado una hora.
     """
     return pd.Timestamp(datetime(dia.year, dia.month, dia.day), tz=settings.tz_local)
 

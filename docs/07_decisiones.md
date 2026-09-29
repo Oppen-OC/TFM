@@ -351,6 +351,51 @@ curated que nadie sabe cómo se regeneró.
 
 ---
 
+## ADR-016 · Kafka no entra en la captura; queda para el servido en tiempo real · revisable
+
+**Decisión.** El colector escribe a disco (crudo NDJSON y curated Parquet), sin
+broker de por medio. Kafka, o Redpanda, que habla su mismo protocolo, queda como
+opción del demostrador en tiempo real: en `docker-compose`, en el PC y no en la
+Pi, y solo cuando exista el modelo. La arquitectura de la propuesta al tutor
+(`docs/04`: ingesta → Kafka/Redpanda → Parquet) no es la implementada.
+
+**Por qué.**
+
+- **El volumen no lo pide.** Día completo del 16/09/2026: 6.222 payloads (EMT
+  2.821, Renfe 2.767, estado del tráfico 277, Valenbisi 267, intensidad 90), es
+  decir, 0,07 por segundo, y unos 314 MB sin comprimir (42 MB en gzip). Un broker
+  se justifica varios órdenes de magnitud por encima. Presentar Kafka como
+  respuesta al volumen no resiste esa cifra.
+- **Desacoplar y reejecutar ya está resuelto.** El crudo se guarda antes de
+  parsear y `reprocesar` lo reconstruye todo (ADR-002, ADR-015).
+- **Riesgo.** En la captura, un broker es un punto de fallo más sobre datos que
+  no se pueden recapturar.
+- **Hardware.** Kafka arranca por defecto con 1 GB de heap y Redpanda pide
+  alrededor de 1 GB en modo desarrollo. La Pi sirve además el DNS de casa, el
+  servicio del colector está limitado a `MemoryMax=512M` y su RAM no está
+  verificada.
+
+**Dónde sí aporta.** Predecir un bus en vivo exige variables calculadas sobre la
+flota en ese momento: `tramo_ganado_{W}min`, las ventanas de la línea y el bus
+anterior. Hace falta un proceso que consuma el flujo y mantenga ese estado, y un
+bus de mensajes lo separa del colector y del escritor del curated. El coste de
+verdad no es el broker: `rastrear`, `etiquetar` y `features.construir` trabajan
+por día completo y tendrían que funcionar de forma incremental sin separarse de
+lo que vio el entrenamiento (train/serve skew).
+
+**Alternativas.** Kafka en la captura: descartada, por lo anterior. Sin Kafka en
+ningún punto: válida, y con 0,07 mensajes/s puede bastar un proceso en
+`services/` que sondee las fuentes y guarde la ventana en memoria.
+
+**Qué la reabriría.** Montar el servido en tiempo real, después de `train.py`.
+Ahí se elige entre broker y proceso en `services/`, con la latencia y la memoria
+medidas.
+
+Reproducir la cifra: contar las líneas de
+`data/raw/source=*/date=2026-09-16/payloads.ndjson.gz` (una por payload).
+
+---
+
 ## Pendientes de decidir
 
 - **Selección de corredores.** `docs/05` mide 57,7 % de cobertura de tráfico y

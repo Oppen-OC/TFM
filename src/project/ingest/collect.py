@@ -23,8 +23,11 @@ Diseño deliberado:
 4. Latido en `<out>/_status.json` cada minuto. Corriendo desapegado del
    terminal es la única forma de saber si sigue vivo sin adivinar.
 
-Este script es el prototipo. En el TFM su equivalente vive en
-`src/project/ingest/` y publica a Kafka en vez de escribir a disco.
+Escribe a disco y seguirá haciéndolo: Kafka no entra en la captura (ADR-016).
+Son unos 6.200 payloads al día, 0,07 por segundo, y un broker en este camino
+solo añadiría un punto de fallo sobre datos que no se pueden recapturar. Si se
+monta Kafka, será para el servido en tiempo real y leerá lo que el colector ya
+guarda.
 """
 
 from __future__ import annotations

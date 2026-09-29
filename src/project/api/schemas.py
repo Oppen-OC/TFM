@@ -3,16 +3,19 @@
 Los modelos Pydantic viven aquí, no en los routers: los routers validan y
 delegan, y `services/` no debe importar nada de `api/`.
 
-Placeholder: los campos concretos dependen del dataset, aún sin definir.
+Placeholder hasta que exista el endpoint de predicción. Lo que ya está fijado:
+la salida es el retraso en segundos en la siguiente parada y su variante
+binaria, `retraso > 300 s` (ADR-006), y las variables del modelo las da
+`features.variables()`, que este módulo no copia. Los modelos de abajo son los
+de la plantilla inicial y todavía no reflejan nada de eso.
 """
 
 from pydantic import BaseModel, Field
 
 
 class PredictRequest(BaseModel):
-    """Una observación a predecir. Sustituir por los campos reales del dataset."""
+    """Una observación a predecir. Sus campos se definen con el endpoint."""
 
-    # TODO: campos reales, p. ej. age: int, tenure: int, balance: float
     ...
 
 

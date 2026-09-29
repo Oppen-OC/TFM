@@ -11,10 +11,10 @@
 #                         ▲
 #               data/raw/gtfs (todas las versiones del feed)
 #
-# `dvc repro` fallará hasta que (a) exista `data/raw/` con captura real y
-# (b) los módulos de `src/project/` dejen de estar vacíos. Ese fallo es el
-# comportamiento correcto, no el bug que había antes: hasta 08/2026 el bloque
-# `stages:` vivía en params.yaml y `dvc repro` simplemente no ejecutaba nada.
+# `dvc repro` llega hasta `features` y falla en `train`: `train.py`, `predict.py`
+# y `evaluate.py` siguen vacíos. Ese fallo es el comportamiento correcto, no el
+# bug que había antes: hasta 08/2026 el bloque `stages:` vivía en params.yaml y
+# `dvc repro` simplemente no ejecutaba nada.
 
 stages:
   curar:

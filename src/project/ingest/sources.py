@@ -5,13 +5,16 @@ Todas las fuentes se normalizan a un DataFrame con una columna `ts_utc`
 nosotros). Esa separación es la que permite luego medir la latencia de la
 fuente, y es imprescindible para no mentirle al modelo.
 
-TRAMPA DOCUMENTADA (medida empíricamente el 15/08/2026):
-El campo `fecha` de la capa de buses de la EMT viene en epoch-ms, pero está
-construido a partir de la hora LOCAL de Madrid tratada como si fuera UTC.
-Es decir, en agosto (CEST, UTC+2) el timestamp va 2 horas adelantado. En
-invierno (CET, UTC+1) irá 1 hora. Hay que corregirlo con la zona horaria
-real de cada fecha o la serie se te parte en el cambio de hora de octubre.
-Lo mismo ocurre con `fechaActualizacion` de Renfe, que es un ISO naive local.
+Convención horaria (trampa 002): el campo `fecha` de la capa de buses de la
+EMT viene en epoch-ms, pero NO siempre en la misma convención. De un sondeo al
+siguiente alterna entre UTC real y hora local de Madrid leída como si fuera
+UTC (338 cambios en 1.224 sondeos, medido el 16/08/2026). Un desfase fijo deja
+el 20 % de las filas dos horas desplazadas: `resolver_convencion` decide POR
+SONDEO con la latencia contra el instante de captura. `local_naive_epoch_to_utc`
+es la conversión de desfase fijo y el pipeline no la usa.
+
+`fechaActualizacion` de Renfe sí es siempre un ISO naive en hora local:
+`local_naive_iso_to_utc`.
 """
 
 from __future__ import annotations
@@ -146,11 +149,13 @@ SOURCES: dict[str, Source] = {
     "trafico_estado": Source(
         name="trafico_estado",
         url=f"{TRAFICO}/192/query?{QUERY_ARGS}",
-        # 60 s era la cadencia inicial. Medido: en 2.033 sondeos sólo 8 tramos
-        # cambiaron de estado. Muestrear cada 5 min basta de sobra para
-        # documentar esa quietud y divide el volumen por cinco.
+        # 60 s era la cadencia inicial. En agosto, en 2.033 sondeos solo 8
+        # tramos cambiaron de estado, y se bajó a 5 min. En periodo lectivo la
+        # capa se anima: congestión en unos 34 tramos por laborable, con picos a
+        # las 8 y a las 18 h (bitácora 031). La cadencia no se ha vuelto a
+        # evaluar con ese dato.
         period_s=300,
-        notes="Estado de congestión por tramo (410 útiles). Sin timestamp propio. Prácticamente estático.",
+        notes="Estado de congestión por tramo (410 útiles). Sin timestamp propio. Casi estático en agosto; con perfil de punta en periodo lectivo.",
         parser="parse_trafico_estado",
         layer_id=192,
         geometria_estatica=True,

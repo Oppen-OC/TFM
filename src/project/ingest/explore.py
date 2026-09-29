@@ -1,7 +1,7 @@
 """Exploración one-shot de los endpoints: esquema, muestra y salud de cada fuente.
 
-    python explore.py            # todas las fuentes
-    python explore.py emt_buses  # una concreta
+    uv run python -m project.ingest.explore            # todas las fuentes
+    uv run python -m project.ingest.explore emt_buses  # una concreta
 
 No escribe nada. Es lo primero que debes ejecutar para comprobar que las
 cinco fuentes siguen vivas desde tu red.

@@ -580,8 +580,10 @@ def rastrear(
                          anterior antes de emparejar. Reduce drásticamente los
                          intercambios de identidad cuando dos buses de la misma
                          línea se cruzan, que es el fallo dominante del método
-                         ingenuo (medido en el autotest: de ~5 % de posiciones
-                         mal asignadas a prácticamente cero). Además, al final
+                         ingenuo. Sobre la flota simulada de `tests/conftest.py`
+                         el ingenuo asigna mal el 2,2 % de las posiciones, con 4
+                         saltos de identidad y el 5 % de las trayectorias
+                         contaminadas; el predictivo, ninguna. Además, al final
                          se deshacen los intercambios que delata el sondeo
                          siguiente (`_suavizar_intercambios`).
 
@@ -789,7 +791,8 @@ if __name__ == "__main__":
     out = rastrear(df)
     for k, v in resumen(out).items():
         print(f"  {k:26} {v}")
-    # Mismo nombre que el `outs` del stage `prepare` en dvc.yaml
+    # Vista previa fuera de DVC. La salida del pipeline es el directorio
+    # `emt_tracked/`, particionado por día de servicio, y la escribe `prepare.py`.
     destino = settings.interim_dir / "emt_tracked.parquet"
     destino.parent.mkdir(parents=True, exist_ok=True)
     out.to_parquet(destino, index=False)

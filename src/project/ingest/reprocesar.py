@@ -9,9 +9,9 @@ Cuando descubres que el parser estaba mal (y descubrirás que lo estaba: el
 horarias de un sondeo al siguiente), no hay que recapturar nada. Los payloads
 crudos están en disco tal como llegaron: se vuelve a parsear y listo.
 
-Es el argumento operativo de por qué la ingesta se separa del procesado, y el
-mismo que justifica Kafka en la memoria: capturar es irreversible, procesar es
-reintentable.
+Es el argumento operativo de por qué la ingesta se separa del procesado
+(ADR-002): capturar es irreversible, procesar es reintentable. Lo cumple el
+crudo guardado antes de parsear, sin broker de por medio (ADR-016).
 
 Reintentable siempre que no meta dos veces el mismo sondeo. El crudo guarda
 TODAS las capturas, también las del sondeo que la fuente sirvió repetido; sin

@@ -3,7 +3,7 @@
 **Predicción de retrasos del transporte público urbano de València mediante fusión
 de posiciones GPS de flota y estado del tráfico en tiempo real.**
 
-Pipeline ML end-to-end: ingesta en streaming de datos abiertos municipales,
+Pipeline ML end-to-end: captura continua en tiempo real de datos abiertos municipales,
 preparación y entrenamiento reproducibles (DVC + MLflow), modelo XGBoost servido
 por FastAPI y consumido por una UI Streamlit.
 

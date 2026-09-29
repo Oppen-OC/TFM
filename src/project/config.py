@@ -51,8 +51,9 @@ class Settings(BaseSettings):
     # resolver esa ambigüedad exige saber cuál es "la local".
     tz_local: str = "Europe/Madrid"
 
-    # GTFS estático de la EMT: el horario teórico del que sale la etiqueta de
-    # retraso. Sin esto no hay variable objetivo.
+    # Feed por defecto de `gtfs.cargar_trazados()` cuando no se le pasa ruta:
+    # lo usan los medidores de `analysis/`. La etiqueta NO sale de aquí, sino de
+    # todas las versiones de `gtfs_dir` (ADR-014).
     gtfs_zip: Path = Field(
         default=RAIZ / "data" / "raw" / "gtfs" / "emt_google_transit.zip"
     )
