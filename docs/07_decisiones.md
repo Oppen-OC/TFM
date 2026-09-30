@@ -461,16 +461,23 @@ sensores.
 
 **Por qué.** Los dos motivos para acotar eran el coste de etiquetar las 47
 líneas y la cobertura de sensores. El primero desapareció: el pipeline etiqueta
-todas, y los cinco corredores propuestos eran el 24,5 % de las filas. Recortar
+todas, y los cinco corredores propuestos (93, C3, 98E, 99 y 81) eran el 22,8 %
+de las filas; la 98E ni siquiera tiene trazado en el GTFS. Recortar
 por cobertura deja fuera justo las líneas periféricas y sesga la muestra a favor
 de la hipótesis (bitácora 026). El criterio de mejora no estaba escrito en
 ningún sitio: «por un margen claro» no es un criterio.
 
 **Consecuencias.** Con la prueba actual, de 5 días, 24 líneas tienen cifra
-propia, 9 poco soporte y 10 no tienen entrenamiento. Por línea, con 100 a 300
-viajes, solo se distinguen mejoras de 1 a 2 s o más; de ahí la decisión 5. La
+propia, 9 poco soporte y 10 no tienen entrenamiento. Por línea, con 100 a 299
+viajes, no se distingue una mejora de menos de 1-2 s si el modelo se parece a la
+persistencia, ni de menos de unos 6 s si se aleja de ella; de ahí la decisión 5. La
 evaluación del modelo tendrá que calcular el intervalo de la diferencia
 remuestreando viajes, no filas.
+
+**Límite conocido.** El intervalo por viajes da por buenos los días de la prueba:
+no recoge lo que cambia el resultado de un día a otro, así que es un suelo de la
+incertidumbre, no su medida. Con 5 días de prueba esa variación no se puede
+estimar. Está en los pendientes.
 
 **Alternativas.** Acotar a corredores: descartada, por lo anterior. Excluir las
 líneas con menos del 40 % de sus posiciones en viajes asignados (25, 63 y 73):
@@ -499,6 +506,10 @@ Reproducir: `uv run python -m project.analysis.medir_rutas lineas` y
 - **Cómo se codifica la línea.** Diez líneas de la prueba no tienen ni un viaje
   de entrenamiento. Que el modelo pueda predecirlas depende de cómo entre
   `linea` como variable. Se decide al escribir `train.py`.
+- **Unidad de remuestreo del intervalo.** El ADR-018 remuestrea viajes. Si los
+  días de la prueba difieren entre sí, remuestrear días daría un intervalo más
+  ancho y más honrado, pero exige bastantes más de 5 días. Se mide al rehacer el
+  corte con la captura posterior al 18/09.
 - **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
   estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
   si 5 min bastan. Lo que no se capture no se recupera.

@@ -1,6 +1,6 @@
 ---
 id: 036
-titulo: Todas las líneas etiquetadas entran en la muestra; con 5 días de prueba, 24 tienen soporte para una cifra propia y, con 100-300 viajes, solo se distingue una mejora de 1 a 2 s
+titulo: Todas las líneas etiquetadas entran en la muestra; con 5 días de prueba, 24 tienen soporte para una cifra propia y, con 100-299 viajes, no se distingue una mejora de menos de 1-2 s, ni de menos de 6 s si el modelo se aleja de la persistencia
 fecha: 2026-09-30
 tipo: medicion
 capa: pipeline
@@ -30,20 +30,22 @@ un viaje programado, sobre las posiciones de la línea en días no excluidos:
 0,67 % de la tabla. Sin ellas, la persistencia pasa de 37,62 a 37,54 s de MAE en
 la prueba. Y lo que sí se etiqueta de ellas no es más dudoso: el margen del
 viaje asignado sobre el segundo candidato, en su percentil 10, es de 449 s en la
-25 y 534 s en la 63, frente a 372 s de mediana en las demás.
+25 y 534 s en la 63, frente a 372 s de mediana en las demás. En la 73, con solo
+30 viajes asignados, es de 273 s: por debajo de la mediana, como otras 7 de las
+31 líneas con las que se compara.
 
 **Qué se distingue con cada soporte.** Mediana, entre líneas, del semiancho del
 intervalo del 95 %, remuestreando viajes:
 
 | viajes de la línea en la prueba | líneas | del MAE de la persistencia | de la diferencia con un predictor parecido | con uno muy distinto |
 |---|---|---|---|---|
-| menos de 100 | 17 | 3,21 s | 2,70 s | 6,91 s |
-| de 100 a 299 | 7 | 1,57 s | 0,86 s | 9,67 s |
-| 300 o más | 19 | 1,02 s | 0,58 s | 3,67 s |
+| menos de 100 | 17 | 3,21 s | 2,70 s | 16,60 s |
+| de 100 a 299 | 7 | 1,57 s | 0,86 s | 6,32 s |
+| 300 o más | 19 | 1,02 s | 0,58 s | 3,75 s |
 
 El predictor «parecido» es la persistencia encogida un 10 %; el «muy distinto»,
-la media de la persistencia y el retraso medio de la línea en los 5 min
-anteriores. Son sustitutos de un modelo que aún no existe.
+la persistencia encogida a la mitad. Son sustitutos de un modelo que aún no
+existe.
 
 **Los grupos**, con 100 viajes en 3 días de prueba y 100 de entrenamiento:
 
@@ -79,20 +81,31 @@ v = (settings.interim_dir / "viajes" / "*" / "*.parquet").as_posix()
 duckdb.sql(f"""select linea, quantile_cont(margen_s, 0.1) from
     read_parquet('{v}', hive_partitioning=false, union_by_name=true)
     where motivo = 'asignado' group by 1""")
-# 25: 449 · 63: 534 · mediana de las líneas con 100 viajes asignados o más,
-# sin la 24, la 25, la 63 y la 73: 372
+# 25: 449 · 63: 534 · 73: 273 (30 viajes) · mediana de las 31 líneas con 100
+# viajes asignados o más, sin la 24, la 25, la 63 y la 73: 372
 ```
 
-**El instrumento se corrigió antes de la cifra.** La primera justificación del
-umbral de 100 viajes usaba solo el intervalo del MAE, y daba por hecho que el de
-una diferencia sobre los mismos viajes sería siempre menor. Medido, solo lo es
-si el predictor se parece a la persistencia: con uno muy distinto es varias
-veces mayor.
+**El instrumento se corrigió dos veces antes de la cifra.** La primera
+justificación del umbral de 100 viajes usaba solo el intervalo del MAE, y daba
+por hecho que el de una diferencia sobre los mismos viajes sería siempre menor.
+Medido, solo lo es si el predictor se parece a la persistencia: con uno muy
+distinto es varias veces mayor.
+
+Y el primer predictor «muy distinto» mentía. Era la media de la persistencia y
+el retraso medio de la línea en los 5 min anteriores, que falta donde no ha
+pasado otro viaje de la línea; los huecos se rellenaban con la propia
+persistencia. En las líneas de menos de 100 viajes faltaba en el 89 % de las
+filas (mediana por línea): ahí la diferencia era cero y el semiancho salía en
+6,91 s, menor que en la banda siguiente (9,67 s). Lo encontró la revisión
+independiente de la rama. Con un predictor definido en todas las filas son
+16,60 s, y la columna vuelve a decrecer con el soporte
+(`tests/test_medir_soporte.py`).
 
 ## Por qué importa
 
 - **Acotar a corredores tiraba tres cuartas partes del dato.** Los cinco
-  propuestos en agosto (93, C3, 98, 99, 81) eran el 24,5 % de las filas.
+  propuestos en agosto (93, C3, 98E, 99, 81) son el 22,8 % de las filas, y la 98E
+  no aporta ninguna: no tiene trazado en el GTFS.
 - **Excluir líneas por su etiqueta costaba más de lo que daba.** Movía el
   resultado 0,08 s y obligaba a defender un umbral puesto después de ver los
   datos y un sesgo a favor de la hipótesis: la 25 es también la línea peor
@@ -100,10 +113,11 @@ veces mayor.
   las cifras por línea.
 - **Una cifra por línea con pocos viajes no distingue nada.** En la 98, con 16
   viajes, el intervalo del MAE es de ±6,2 s sobre 44,5.
-- **El tráfico no se verá línea a línea.** Con 100 a 300 viajes solo se
-  distinguen mejoras de 1 a 2 s, y lo que la flota detecta por encima del sesgo
-  del horario es pequeño (bitácora 032). Hay que juzgarlo en el conjunto y en el
-  estrato con sensor.
+- **El tráfico no se verá línea a línea.** Con 100 a 299 viajes no se distingue
+  una mejora de menos de 1-2 s si el modelo se parece a la persistencia, ni de
+  menos de unos 6 s si se aleja de ella. Lo que la flota detecta por encima del
+  sesgo del horario es pequeño (bitácora 032). Hay que juzgarlo en el conjunto y
+  en el estrato con sensor.
 - **Las diez líneas sin entrenamiento son un resultado aparte:** miden cómo
   generaliza el modelo a líneas que no ha visto.
 
@@ -115,8 +129,13 @@ los mutantes 088 y 089 y el ADR-018, con el criterio de mejora.
 Abierto:
 
 - El estrato de sensores: falta medir la cobertura por tramo entre paradas.
-- Repetirlo todo con la captura posterior al 18/09 y el corte rehecho. Con 5
-  días de prueba, casi todas las líneas de «poco soporte» lo son por eso.
+- Repetirlo todo con la captura posterior al 18/09 y el corte rehecho. De las
+  nueve líneas de «poco soporte», cuatro se quedan cerca del umbral (70, 28, 4 y
+  40, con 87-98 viajes) y pasarían con pocos días más; la 25 y la 62 necesitan
+  el doble, y la 6, la 71 y la 98 tienen entre 2 y 16 viajes.
+- El intervalo remuestrea viajes y da por buenos los días de la prueba: no
+  recoge lo que cambia de un día a otro, así que es un suelo. Con 5 días no se
+  puede medir esa variación; está en los pendientes de `docs/07_decisiones.md`.
 - Cómo se codifica `linea` para que el modelo prediga líneas no vistas.
 - El intervalo de la diferencia con el modelo de verdad, cuando exista.
 
@@ -128,8 +147,8 @@ Abierto:
 > en el 46 % en una más; tres líneas quedan por debajo del 30 %. Se valoró
 > excluir estas últimas y se descartó: representan el 0,67 % de las
 > observaciones, su exclusión modifica el error de referencia en 0,08 segundos y
-> las asignaciones que sí se obtienen en ellas no son más ambiguas que en el
-> resto. La proporción se informa por línea como limitación. Para presentar
+> las asignaciones que sí se obtienen no son más ambiguas que en el resto en
+> las dos líneas con volumen suficiente para medirlo. La proporción se informa por línea como limitación. Para presentar
 > resultados desagregados se exige un mínimo de 100 viajes en tres días distintos
 > del periodo de prueba y otros 100 en el de entrenamiento, requisito que cumplen
 > 24 de las 43 líneas; las restantes se informan agrupadas, distinguiendo las que
@@ -138,5 +157,6 @@ Abierto:
 > de confianza del 95 % obtenido remuestreando viajes completos, y se considera
 > que existe mejora cuando el intervalo no contiene el cero. Con el soporte
 > disponible, una diferencia inferior a uno o dos segundos no es distinguible
-> línea a línea, por lo que la contribución de las variables de tráfico se evalúa
+> línea a línea, y el umbral sube a unos seis segundos si el modelo se aparta de
+> la persistencia, por lo que la contribución de las variables de tráfico se evalúa
 > sobre el conjunto y sobre el subconjunto de tramos con sensor.

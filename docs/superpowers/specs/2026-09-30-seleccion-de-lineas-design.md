@@ -9,9 +9,9 @@ de `docs/07_decisiones.md`._
 En agosto se propuso acotar el trabajo a 4-6 corredores (`docs/05`, sección 4)
 por dos motivos: se temía que etiquetar las 47 líneas no diera tiempo, y solo
 algunas líneas tienen sensores de tráfico cerca. El primero ya no existe: el
-pipeline etiqueta todas las líneas. Los cinco corredores propuestos (93, C3, 98,
-99, 81) son el 24,5 % de las 1.506.078 filas de la tabla; acotar tiraría tres
-cuartas partes del dato.
+pipeline etiqueta todas las líneas. Los cinco corredores propuestos (93, C3, 98E,
+99, 81) son el 22,8 % de las 1.506.078 filas de la tabla, y la 98E no aporta
+ninguna; acotar tiraría tres cuartas partes del dato.
 
 «Corredor» mezclaba tres decisiones distintas, que aquí se separan: qué líneas
 entran en la muestra, qué papel tiene la cobertura de sensores y qué líneas
@@ -81,15 +81,16 @@ remuestreando viajes en la prueba actual (5 días):
 
 | viajes en la prueba | del MAE de la persistencia | de la diferencia con un modelo parecido | con un modelo muy distinto |
 |---|---|---|---|
-| menos de 100 | 3,2 s | 2,7 s | 6,9 s |
-| de 100 a 300 | 1,6 s | 0,9 s | 9,7 s |
-| 300 o más | 1,0 s | 0,6 s | 3,7 s |
+| menos de 100 | 3,2 s | 2,7 s | 16,6 s |
+| de 100 a 299 | 1,6 s | 0,9 s | 6,3 s |
+| 300 o más | 1,0 s | 0,6 s | 3,8 s |
 
-El «parecido» es la persistencia encogida un 10 %; el «muy distinto», la media de
-la persistencia y el retraso medio de la línea en los 5 min anteriores. Son
+El «parecido» es la persistencia encogida un 10 %; el «muy distinto», la
+persistencia encogida a la mitad. Son
 sustitutos: todavía no hay modelo.
 
-Por línea, con 100 a 300 viajes, solo se distinguen mejoras de 1 a 2 s o más. El
+Por línea, con 100 a 299 viajes, no se distingue una mejora de menos de 1-2 s si
+el modelo se parece a la persistencia, ni de menos de unos 6 s si se aleja. El
 efecto del tráfico será menor (bitácora 032): de ahí la decisión 5.
 
 ## Cambios en el código

@@ -11,11 +11,14 @@ demasiado estrecho):
   semi_ic_dif_cerca_s  de la diferencia de error, sobre los mismos viajes, entre
                        la persistencia y un predictor parecido: ella misma
                        encogida un 10 %.
-  semi_ic_dif_lejos_s  lo mismo con uno muy distinto: la media de la persistencia
-                       y el retraso medio de la línea en los 5 min anteriores.
+  semi_ic_dif_lejos_s  lo mismo con uno muy distinto: la persistencia encogida a
+                       la mitad.
 
 Los dos predictores son sustitutos del modelo, que aún no existe: acotan cuánto
-tendría que mejorar para que se viera en una línea. Es la tabla que fija
+tendría que mejorar para que se viera en una línea. Tienen que estar definidos en
+TODAS las filas: el primer «lejano» usaba el retraso medio de la línea, que falta
+donde no hay otro viaje en la ventana, y rellenado con la persistencia daba una
+diferencia de cero en el 89 % de las filas de las líneas pequeñas. Es la tabla que fija
 `features.linea_min_viajes` y el criterio de mejora (ADR-018, bitácora 036). Lee
 `data/processed/`; nada del pipeline importa de aquí.
 """
@@ -33,6 +36,16 @@ REMUESTRAS = 1000
 MEDIDAS = ["mae", "dif_cerca", "dif_lejos"]
 
 
+def errores(test: pd.DataFrame, obj: str) -> pd.DataFrame:
+    """`test` con el error de la persistencia y su diferencia con los dos sustitutos."""
+    r, y = test["retraso_s"], test[obj]
+    return test.assign(
+        mae=(r - y).abs(),
+        dif_cerca=(0.9 * r - y).abs() - (r - y).abs(),
+        dif_lejos=(0.5 * r - y).abs() - (r - y).abs(),
+    )
+
+
 def medir() -> pd.DataFrame:
     cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
     obj = cfg["objetivo"]
@@ -40,16 +53,10 @@ def medir() -> pd.DataFrame:
     train = pd.read_parquet(settings.processed_dir / "train.parquet", columns=claves)
     test = pd.read_parquet(
         settings.processed_dir / "test.parquet",
-        columns=[*claves, "retraso_s", obj, "linea_retraso_5min"],
+        columns=[*claves, "retraso_s", obj],
     )
     s = soporte_por_linea(train, test, cfg["linea_min_viajes"], cfg["linea_min_dias"])
-    r, y = test["retraso_s"], test[obj]
-    mezcla = 0.5 * r + 0.5 * test["linea_retraso_5min"].fillna(r)
-    test = test.assign(
-        mae=(r - y).abs(),
-        dif_cerca=(0.9 * r - y).abs() - (r - y).abs(),
-        dif_lejos=(mezcla - y).abs() - (r - y).abs(),
-    )
+    test = errores(test, obj)
     rng = np.random.default_rng(0)
     for linea, g in test.groupby("linea"):
         por_viaje = g.groupby(CLAVE_VIAJE)

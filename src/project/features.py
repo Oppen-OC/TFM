@@ -216,8 +216,8 @@ def soporte_por_linea(
 
     Una fila por línea de `test`. Se cuenta en VIAJES y no en filas: las paradas
     de un mismo viaje están correlacionadas, y 200 filas de cinco viajes no son
-    200 observaciones. Un viaje es un par (día de servicio, `viaje_id`), porque
-    el `viaje_id` se repite de un día a otro.
+    200 observaciones. Un viaje es un par (día de servicio, `viaje_id`): la clave
+    de viaje de todo el módulo (`CLAVE_VIAJE`).
 
     `propia`: al menos `min_viajes` en `min_dias` días de prueba y `min_viajes`
     en entrenamiento. `sin_entrenamiento`: el modelo no ha visto la línea.

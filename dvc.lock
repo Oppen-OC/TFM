@@ -120,8 +120,8 @@ stages:
       nfiles: 32
     - path: src/project/features.py
       hash: md5
-      md5: 51a841cf93f859ff7d373d1f6212bdfa
-      size: 13671
+      md5: d35b130a5ee740e9fc54ee58a4a0ea63
+      size: 13675
     params:
       params.yaml:
         features:

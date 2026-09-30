@@ -1114,3 +1114,26 @@ buscar = '''        return t.drop_duplicates(["linea", *CLAVE_VIAJE]).groupby("l
 reemplazar = '''        return t.groupby("linea").size()'''
 detector = ["tests/test_features.py::test_el_soporte_de_una_linea_se_cuenta_en_viajes_y_dias"]
 sondas = []
+
+[[mutante]]
+id = "090"
+nombre = "el soporte va a las métricas sin convertir a entero"
+capa = "features"
+# Un `int64` de numpy no es serializable: `metrics/features.json` no se escribe.
+fichero = "src/project/features.py"
+buscar = '''            "viajes": int(soporte.at[linea, "viajes"]),'''
+reemplazar = '''            "viajes": soporte.at[linea, "viajes"],'''
+detector = ["tests/test_features.py::test_los_baselines_traen_el_soporte_y_los_grupos"]
+sondas = []
+
+[[mutante]]
+id = "091"
+nombre = "el predictor lejano del medidor de soporte es la propia persistencia"
+capa = "features"
+# La diferencia sale cero por construcción y el intervalo publicado, estrecho
+# (bitácora 036).
+fichero = "src/project/analysis/medir_soporte.py"
+buscar = '''        dif_lejos=(0.5 * r - y).abs() - (r - y).abs(),'''
+reemplazar = '''        dif_lejos=(1.0 * r - y).abs() - (r - y).abs(),'''
+detector = ["tests/test_medir_soporte.py::test_los_predictores_sustitutos_estan_definidos_en_todas_las_filas"]
+sondas = []

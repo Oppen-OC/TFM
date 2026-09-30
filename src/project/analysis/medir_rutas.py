@@ -14,8 +14,8 @@ contrafactual y la alternancia, que leen `data/curated/`:
                  cortos; aquí van dentro, porque es donde acaba una línea
                  entera cuando el tracker la trocea (bitácora 026).
                  `pos_asignadas` es la fracción de las posiciones de la línea,
-                 en días no excluidos, que cae en un viaje asignado (bitácora
-                 036).
+                 en días no excluidos (`pos_validas`), que cae en un viaje
+                 asignado (bitácora 036).
   RUPTURAS       para cada trayectoria que termina entre las 7 y las 21 h, la
                  sucesora más cercana del mismo (línea, trayecto) que empieza
                  en los dos sondeos siguientes: distancia, velocidad con el
@@ -71,6 +71,7 @@ def lineas() -> None:
             select linea, count(*) tramos,
                    sum((motivo = 'asignado')::int) asignados,
                    sum((motivo = 'corto')::int) cortos,
+                   sum(posiciones) filter (where motivo <> 'excluido') pos_validas,
                    coalesce(sum(posiciones) filter (where motivo = 'asignado'), 0)
                        / sum(posiciones) filter (where motivo <> 'excluido')
                        pos_asignadas

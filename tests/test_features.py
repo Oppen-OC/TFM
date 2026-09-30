@@ -197,8 +197,10 @@ def test_el_tramo_sin_soporte_suficiente_no_se_estima():
 def _viajes(linea, n, dias):
     """`n` viajes de la línea en `dias` días, dos filas por viaje.
 
-    El mismo `viaje_id` se repite de un día a otro, como en la captura real
-    (bitácora 027): un viaje es el par (día de servicio, `viaje_id`).
+    Aquí el mismo `viaje_id` se repite de un día a otro a propósito. En la
+    captura real ya no pasa, porque lleva la fecha dentro (bitácora 027), pero la
+    clave de viaje del módulo es el par (día de servicio, `viaje_id`) y el
+    recuento tiene que respetarla.
     """
     dia0 = pd.Timestamp("2026-09-14")
     return pd.DataFrame(
