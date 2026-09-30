@@ -120,8 +120,8 @@ stages:
       nfiles: 32
     - path: src/project/features.py
       hash: md5
-      md5: f3a55d6ab1d965f97989a958f8b0a484
-      size: 11696
+      md5: 51a841cf93f859ff7d373d1f6212bdfa
+      size: 13671
     params:
       params.yaml:
         features:
@@ -140,6 +140,8 @@ stages:
           incluir_trafico: false
           incluir_meteo: false
           umbral_retraso_s: 300
+          linea_min_viajes: 100
+          linea_min_dias: 3
           test_desde: '2026-09-14'
     outs:
     - path: data/processed/test.parquet
@@ -152,5 +154,5 @@ stages:
       size: 115627909
     - path: metrics/features.json
       hash: md5
-      md5: b5107f6dafe8bb8e31ad03422412f3c5
-      size: 10301
+      md5: d9dc27143c3cd877090a60b9893c4484
+      size: 14293
