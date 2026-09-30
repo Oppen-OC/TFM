@@ -13,6 +13,9 @@ contrafactual y la alternancia, que leen `data/curated/`:
                  La tasa de éxito de `medir_etiquetado` deja fuera los tramos
                  cortos; aquí van dentro, porque es donde acaba una línea
                  entera cuando el tracker la trocea (bitácora 026).
+                 `pos_asignadas` es la fracción de las posiciones de la línea,
+                 en días no excluidos, que cae en un viaje asignado (bitácora
+                 036).
   RUPTURAS       para cada trayectoria que termina entre las 7 y las 21 h, la
                  sucesora más cercana del mismo (línea, trayecto) que empieza
                  en los dos sondeos siguientes: distancia, velocidad con el
@@ -67,7 +70,10 @@ def lineas() -> None:
         tra as (
             select linea, count(*) tramos,
                    sum((motivo = 'asignado')::int) asignados,
-                   sum((motivo = 'corto')::int) cortos
+                   sum((motivo = 'corto')::int) cortos,
+                   coalesce(sum(posiciones) filter (where motivo = 'asignado'), 0)
+                       / sum(posiciones) filter (where motivo <> 'excluido')
+                       pos_asignadas
             from {v} group by 1),
         pas as (select linea, count(*) pasos from {p} group by 1)
         select * from pos left join tra using (linea) left join pas using (linea)
@@ -76,6 +82,7 @@ def lineas() -> None:
     d["pasos"] = d["pasos"].fillna(0).astype(int)
     d["pos_por_trayectoria"] = (d["posiciones"] / d["trayectorias"]).round(1)
     d["exito_con_cortos"] = (d["asignados"] / d["tramos"]).round(3)
+    d["pos_asignadas"] = d["pos_asignadas"].round(3)
     d["cuota_posiciones"] = (d["posiciones"] / d["posiciones"].sum()).round(4)
     d["cuota_pasos"] = (d["pasos"] / d["pasos"].sum()).round(4)
     print(d.sort_values("exito_con_cortos").to_string(index=False))
