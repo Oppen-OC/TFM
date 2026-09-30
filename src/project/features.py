@@ -209,8 +209,51 @@ def partir(tabla: pd.DataFrame, test_desde: str) -> tuple[pd.DataFrame, pd.DataF
     return tabla[~prueba].reset_index(drop=True), tabla[prueba].reset_index(drop=True)
 
 
-def baselines(test: pd.DataFrame, objetivo: str) -> dict:
-    """MAE y RMSE de los baselines obligatorios: horario (0) y persistencia."""
+def soporte_por_linea(
+    train: pd.DataFrame, test: pd.DataFrame, min_viajes: int = 100, min_dias: int = 3
+) -> pd.DataFrame:
+    """Qué líneas de la prueba pueden informarse con cifra propia (ADR-018).
+
+    Una fila por línea de `test`. Se cuenta en VIAJES y no en filas: las paradas
+    de un mismo viaje están correlacionadas, y 200 filas de cinco viajes no son
+    200 observaciones. Un viaje es un par (día de servicio, `viaje_id`), porque
+    el `viaje_id` se repite de un día a otro.
+
+    `propia`: al menos `min_viajes` en `min_dias` días de prueba y `min_viajes`
+    en entrenamiento. `sin_entrenamiento`: el modelo no ha visto la línea.
+    `poco_soporte`: el resto. Ninguna se tira: las dos últimas se informan
+    agrupadas.
+    """
+
+    def viajes(t: pd.DataFrame) -> pd.Series:
+        return t.drop_duplicates(["linea", *CLAVE_VIAJE]).groupby("linea").size()
+
+    s = pd.DataFrame(
+        {
+            "viajes": viajes(test),
+            "dias": test.groupby("linea")["fecha_servicio"].nunique(),
+        }
+    )
+    s["viajes_train"] = viajes(train).reindex(s.index, fill_value=0)
+    propia = (
+        (s["viajes"] >= min_viajes)
+        & (s["dias"] >= min_dias)
+        & (s["viajes_train"] >= min_viajes)
+    )
+    s["grupo"] = np.where(
+        s["viajes_train"] == 0,
+        "sin_entrenamiento",
+        np.where(propia, "propia", "poco_soporte"),
+    )
+    return s
+
+
+def baselines(test: pd.DataFrame, objetivo: str, soporte: pd.DataFrame) -> dict:
+    """MAE y RMSE de los baselines obligatorios: horario (0) y persistencia.
+
+    Globales, por línea con su soporte, y por grupo de soporte
+    (`soporte_por_linea`).
+    """
 
     def errores(pred: pd.Series, real: pd.Series) -> dict:
         e = (pred - real).to_numpy()
@@ -219,19 +262,25 @@ def baselines(test: pd.DataFrame, objetivo: str) -> dict:
             "rmse_s": round(float(np.sqrt((e**2).mean())), 2),
         }
 
-    real = test[objetivo]
-    fuera = {
-        "horario": errores(pd.Series(0.0, index=test.index), real),
-        "persistencia": errores(test["retraso_s"], real),
-    }
-    fuera["por_linea"] = {
-        str(linea): {
+    def los_dos(g: pd.DataFrame) -> dict:
+        return {
             "filas": int(len(g)),
             "horario": errores(pd.Series(0.0, index=g.index), g[objetivo]),
             "persistencia": errores(g["retraso_s"], g[objetivo]),
         }
+
+    fuera = {k: v for k, v in los_dos(test).items() if k != "filas"}
+    fuera["por_linea"] = {
+        str(linea): {
+            **los_dos(g),
+            "viajes": int(soporte.at[linea, "viajes"]),
+            "dias": int(soporte.at[linea, "dias"]),
+            "grupo": str(soporte.at[linea, "grupo"]),
+        }
         for linea, g in test.groupby("linea")
     }
+    grupo = test["linea"].map(soporte["grupo"])
+    fuera["por_grupo"] = {str(k): los_dos(g) for k, g in test.groupby(grupo)}
     return fuera
 
 
@@ -254,6 +303,9 @@ def main() -> None:
         soporte_min=cfg["soporte_min"],
     )
     train, test = partir(tabla, cfg["test_desde"])
+    soporte = soporte_por_linea(
+        train, test, cfg["linea_min_viajes"], cfg["linea_min_dias"]
+    )
     settings.processed_dir.mkdir(parents=True, exist_ok=True)
     train.to_parquet(
         settings.processed_dir / "train.parquet", index=False, compression="zstd"
@@ -272,7 +324,7 @@ def main() -> None:
             "train": round(float(train[cfg["objetivo"] + "_bin"].mean()), 4),
             "test": round(float(test[cfg["objetivo"] + "_bin"].mean()), 4),
         },
-        "baselines_test": baselines(test, cfg["objetivo"]),
+        "baselines_test": baselines(test, cfg["objetivo"], soporte),
     }
     salida = RAIZ / "metrics" / "features.json"
     salida.write_text(

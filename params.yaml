@@ -39,6 +39,11 @@ features:
   incluir_trafico: false    # la capa 192 va después de la flota
   incluir_meteo: false     # sin fuente: no hay capa meteorológica capturada
   umbral_retraso_s: 300      # para la variante de clasificación binaria
+  # Soporte para informar una línea con cifra propia: viajes y días de servicio
+  # en la prueba, y los mismos viajes en entrenamiento. Por debajo se informa
+  # agrupada, no se tira (ADR-018).
+  linea_min_viajes: 100
+  linea_min_dias: 3
   # Split TEMPORAL, nunca aleatorio: con series de posiciones, un split
   # aleatorio filtra el futuro en el entrenamiento y te da métricas falsas.
   # Captura hasta el 18/09: prueba del 14 al 18/09 (bitácora 030).

@@ -9,6 +9,8 @@ tribunal busca primero (ADR-007).
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -187,3 +189,72 @@ def test_el_tramo_sin_soporte_suficiente_no_se_estima():
     )
     assert f["tramo_soporte_5min"] == 1
     assert np.isnan(f["tramo_ganado_5min"])
+
+
+# --------------------------------------------------------------------------- #
+# Soporte por línea (ADR-018)
+# --------------------------------------------------------------------------- #
+def _viajes(linea, n, dias):
+    """`n` viajes de la línea en `dias` días, dos filas por viaje.
+
+    El mismo `viaje_id` se repite de un día a otro, como en la captura real
+    (bitácora 027): un viaje es el par (día de servicio, `viaje_id`).
+    """
+    dia0 = pd.Timestamp("2026-09-14")
+    return pd.DataFrame(
+        [
+            {
+                "linea": linea,
+                "viaje_id": f"v{i // dias}",
+                "fecha_servicio": dia0 + pd.Timedelta(days=i % dias),
+            }
+            for i in range(n)
+            for _ in range(2)
+        ]
+    )
+
+
+def test_el_soporte_de_una_linea_se_cuenta_en_viajes_y_dias():
+    """100 viajes en 3 días de prueba y 100 de entrenamiento: cifra propia."""
+    # F solo está en entrenamiento: no aparece en el soporte.
+    train = pd.concat([_viajes(x, 100, 5) for x in "ABCF"] + [_viajes("E", 99, 5)])
+    test = pd.concat(
+        [
+            _viajes("A", 100, 3),  # justo en el umbral
+            _viajes("B", 99, 3),  # un viaje menos; en filas serían 198
+            _viajes("C", 100, 2),  # los viajes, pero en dos días
+            _viajes("D", 500, 5),  # no está en entrenamiento
+            _viajes("E", 100, 3),  # en entrenamiento no llega a 100
+        ]
+    )
+    s = features.soporte_por_linea(train, test, min_viajes=100, min_dias=3)
+    assert s["grupo"].to_dict() == {
+        "A": "propia",
+        "B": "poco_soporte",
+        "C": "poco_soporte",
+        "D": "sin_entrenamiento",
+        "E": "poco_soporte",
+    }
+    assert s.at["B", "viajes"] == 99 and s.at["A", "dias"] == 3
+    vacio = features.soporte_por_linea(train, test.iloc[:0])
+    assert vacio.empty and "grupo" in vacio.columns
+
+
+def test_los_baselines_traen_el_soporte_y_los_grupos():
+    test = pd.DataFrame(
+        {
+            "linea": ["A", "A", "B"],
+            "fecha_servicio": pd.Timestamp("2026-09-14"),
+            "viaje_id": ["a", "a", "b"],
+            "retraso_s": [10.0, 20.0, 0.0],
+            OBJ: [20.0, 20.0, 100.0],
+        }
+    )
+    s = features.soporte_por_linea(test[test["linea"] == "A"], test, 1, 1)
+    b = features.baselines(test, OBJ, s)
+    assert b["por_linea"]["A"]["grupo"] == "propia"
+    assert b["por_linea"]["A"]["viajes"] == 1
+    assert b["por_linea"]["B"]["grupo"] == "sin_entrenamiento"
+    assert b["por_grupo"]["sin_entrenamiento"]["persistencia"]["mae_s"] == 100.0
+    assert b["persistencia"]["mae_s"] == pytest.approx(36.67)  # (10 + 0 + 100) / 3
+    json.dumps(b)  # va a metrics/features.json: tiene que ser serializable

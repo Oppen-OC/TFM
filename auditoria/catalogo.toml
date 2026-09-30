@@ -1091,3 +1091,26 @@ buscar = '''    return mediodia - pd.Timedelta(hours=12)'''
 reemplazar = '''    return mediodia.normalize()'''
 detector = ["tests/test_etiquetado.py::test_el_dia_del_cambio_de_hora_el_horario_va_con_el_reloj_de_la_calle"]
 sondas = []
+
+[[mutante]]
+id = "088"
+nombre = "el soporte de una línea no exige días distintos"
+capa = "features"
+# Cien viajes de un solo día pasan por una línea bien observada.
+fichero = "src/project/features.py"
+buscar = '''        & (s["dias"] >= min_dias)'''
+reemplazar = '''        & (s["dias"] >= 1)'''
+detector = ["tests/test_features.py::test_el_soporte_de_una_linea_se_cuenta_en_viajes_y_dias"]
+sondas = []
+
+[[mutante]]
+id = "089"
+nombre = "el soporte de una línea se cuenta en filas y no en viajes"
+capa = "features"
+# Las paradas de un viaje están correlacionadas: contar filas infla el soporte
+# unas veinte veces.
+fichero = "src/project/features.py"
+buscar = '''        return t.drop_duplicates(["linea", *CLAVE_VIAJE]).groupby("linea").size()'''
+reemplazar = '''        return t.groupby("linea").size()'''
+detector = ["tests/test_features.py::test_el_soporte_de_una_linea_se_cuenta_en_viajes_y_dias"]
+sondas = []
