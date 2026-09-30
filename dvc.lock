@@ -57,8 +57,8 @@ stages:
       nfiles: 13
     - path: src/project/etiquetado.py
       hash: md5
-      md5: 45bcfaea2dd3051b24b97ce437aaae41
-      size: 22388
+      md5: 33f6cba18d6ec05b9b1ffa560c120a81
+      size: 22506
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
