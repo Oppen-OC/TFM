@@ -1,7 +1,8 @@
-# Selección de líneas, estrato de sensores y soporte mínimo por línea
+# Selección de líneas, estrato de sensores, soporte por línea y criterio de mejora
 
-_Diseño aprobado en conversación el 30/09/2026. Cierra el pendiente «selección de
-corredores» de `docs/07_decisiones.md`._
+_Diseño aprobado en conversación el 30/09/2026 y revisado el mismo día tras
+interrogar el plan (`/grill-me`). Cierra el pendiente «selección de corredores»
+de `docs/07_decisiones.md`._
 
 ## Problema
 
@@ -14,83 +15,94 @@ cuartas partes del dato.
 
 «Corredor» mezclaba tres decisiones distintas, que aquí se separan: qué líneas
 entran en la muestra, qué papel tiene la cobertura de sensores y qué líneas
-pueden informarse con cifra propia.
+pueden informarse con cifra propia. Al interrogar el plan apareció una cuarta que
+faltaba en todo el proyecto: qué cuenta como mejora.
 
 ## Decisiones
 
-1. **Muestra.** Se entrena y se evalúa con todas las líneas etiquetadas menos las
-   que no pasan el criterio de calidad de la etiqueta.
-2. **Criterio de exclusión.** Queda fuera la línea con menos del **40 %** de sus
-   posiciones en viajes asignados, contando solo los días no excluidos. El
-   criterio es sobre la etiqueta. Nunca se excluye una línea por el error del
-   modelo ni por su cobertura de sensores.
-3. **Sensores.** La cobertura de sensores de tráfico define un **estrato de
-   evaluación**, no recorta la muestra. Lo que aporte la capa 192 se informa
-   dentro del estrato con sensor.
-4. **Soporte.** Una línea tiene cifra propia en los resultados si reúne al menos
+1. **Muestra.** Se entrena y se evalúa con todas las líneas etiquetadas. No se
+   excluye ninguna.
+2. **Sensores.** La cobertura de sensores de tráfico define un **estrato de
+   evaluación**, no recorta la muestra.
+3. **Soporte.** Una línea tiene cifra propia en los resultados si reúne al menos
    **100 viajes en 3 días de servicio distintos** en la prueba y al menos 100
    viajes en entrenamiento. Las demás no se tiran: cuentan en la métrica global
    y se informan agrupadas.
+4. **Criterio de mejora.** Toda comparación —modelo contra persistencia, modelo
+   con tráfico contra modelo sin él— se informa como **diferencia sobre los
+   mismos viajes, con su intervalo del 95 %** remuestreando viajes. Hay mejora si
+   el intervalo no contiene el cero; si lo contiene, el resultado es «no se
+   distingue». No se fija un mínimo de magnitud: se informa el tamaño del efecto.
+5. **Dónde se juzga el tráfico.** En el conjunto y en el estrato con sensor, no
+   línea a línea. Las cifras por línea se enseñan con su intervalo, como
+   descripción.
 
-Todas son revisables; las condiciones están al final.
+Nunca se excluye una línea por el error del modelo ni por su cobertura de
+sensores.
 
-## El criterio, medido
+## La exclusión que se consideró y se descartó
 
-Indicador por línea, sobre `data/interim/viajes`: posiciones de los tramos con
-`motivo == "asignado"` entre las posiciones de todos los tramos con
-`motivo != "excluido"`.
+La primera versión de este diseño sacaba de la tabla las líneas con menos del
+40 % de sus posiciones en viajes asignados: la 25 (17,7 %), la 63 (29,0 %) y la
+73 (14,3 %). Se descartó por cuatro medidas:
 
-| línea | posiciones válidas | en viajes asignados | |
+- **La regla de soporte ya las aparta de las cifras por línea.** La 25 tiene 42
+  viajes en la prueba y cae en «poco soporte»; la 63 y la 73 no tienen ninguno en
+  entrenamiento y caen en «sin entrenamiento».
+- **Excluirlas solo movía el resultado global 0,08 s** (la persistencia, de 37,62
+  a 37,54 s de MAE).
+- **Lo que sí se etiqueta de ellas no es peor.** El margen del viaje asignado
+  sobre el segundo candidato, en su percentil 10, es de 449 s en la 25 y 534 s en
+  la 63, frente a 372 s de mediana en las demás líneas.
+- **El umbral no caía en el hueco natural.** El hueco mayor está entre la 24
+  (46,4 %) y la siguiente línea con volumen (70 %): un criterio de hueco sacaba
+  también la 24.
+
+A cambio, la exclusión obligaba a defender un umbral elegido después de ver los
+datos y un sesgo a favor de la hipótesis, porque la 25 es la línea peor cubierta
+por sensores (27 %, `docs/10`).
+
+El indicador se publica igualmente, por línea, como limitación declarada:
+
+| línea | posiciones válidas | en viajes asignados |
+|---|---|---|
+| 96, 98E, 100, 8 | 78.387 | 0 % (sin trazado u horario en el GTFS; no tienen filas) |
+| 73 | 15.396 | 14,3 % |
+| 25 | 206.710 | 17,7 % |
+| 63 | 35.823 | 29,0 % |
+| 24 | 140.297 | 46,4 % |
+| 14 | 839 | 57,1 % |
+| las otras 38 | | 70,0 - 92,4 % |
+
+## Lo que mide el umbral de soporte
+
+Semiancho del intervalo del 95 %, mediana entre las líneas de cada banda,
+remuestreando viajes en la prueba actual (5 días):
+
+| viajes en la prueba | del MAE de la persistencia | de la diferencia con un modelo parecido | con un modelo muy distinto |
 |---|---|---|---|
-| 96, 98E, 100, 8 | 78.387 | 0 % | sin trazado u horario en el GTFS |
-| 73 | 15.396 | **14,3 %** | fuera |
-| 25 | 206.710 | **17,7 %** | fuera |
-| 63 | 35.823 | **29,0 %** | fuera |
-| 24 | 140.297 | 46,4 % | dentro, señalada como dudosa |
-| 14 | 839 | 57,1 % | dentro |
-| las otras 38 | | 70,0 - 92,4 % | dentro |
+| menos de 100 | 3,2 s | 2,7 s | 6,9 s |
+| de 100 a 300 | 1,6 s | 0,9 s | 9,7 s |
+| 300 o más | 1,0 s | 0,6 s | 3,7 s |
 
-El umbral del 40 % cae en el hueco entre la 63 y la 24.
+El «parecido» es la persistencia encogida un 10 %; el «muy distinto», la media de
+la persistencia y el retraso medio de la línea en los 5 min anteriores. Son
+sustitutos: todavía no hay modelo.
 
-**Aplicado de forma uniforme, el criterio excluye tres líneas: 25, 63 y 73.** En
-la conversación solo se habló de la 25; la 63 y la 73 no tienen filas de
-entrenamiento y habrían caído en el grupo «sin entrenamiento», pero dejarlas
-dentro con un indicador peor que el de la línea excluida no sería defendible.
-Filas que salen de la tabla: 7.932 de la 25, 1.524 de la 63 y 567 de la 73, el
-0,67 % del total.
-
-Las cuatro líneas sin etiqueta ya están fuera por construcción: 117.715 de
-10.457.901 posiciones, el 1,1 %.
-
-**Lo que hay que declarar en la defensa.** La 25 es también la línea peor
-cubierta por sensores (27 %, `docs/10`). Excluirla por la calidad de su etiqueta
-favorece de rebote a la hipótesis de la fusión con tráfico. Se declara, y se
-acompaña del error del modelo base con y sin ella.
+Por línea, con 100 a 300 viajes, solo se distinguen mejoras de 1 a 2 s o más. El
+efecto del tráfico será menor (bitácora 032): de ahí la decisión 5.
 
 ## Cambios en el código
 
 ### `params.yaml → features`
 
 ```yaml
-  # Líneas fuera de la tabla por calidad de la etiqueta: menos del 40 % de sus
-  # posiciones en viajes asignados (ADR-018, bitácora 036). Lista explícita, no
-  # regla automática: que una línea entre o salga es una decisión, no un efecto
-  # de reejecutar. Comprobar con `medir_rutas lineas`.
-  excluir_lineas: ["25", "63", "73"]
-  linea_min_viajes: 100     # soporte para informar una línea con cifra propia
+  # Soporte para informar una línea con cifra propia: viajes y días de servicio
+  # en la prueba, y los mismos viajes en entrenamiento. Por debajo se informa
+  # agrupada, no se tira (ADR-018).
+  linea_min_viajes: 100
   linea_min_dias: 3
 ```
-
-### `features.construir`
-
-Parámetro nuevo `excluir_lineas: tuple[str, ...] = ()`. Las filas de esas líneas
-se quitan **al final**, junto al filtro de filas sin objetivo, cuando las
-variables ya están calculadas.
-
-Supuesto: los viajes etiquetados de una línea excluida siguen contando como
-sensor para las demás (`tramo_ganado_*`, `bus_anterior_*` solo mira la propia
-línea y no le afecta). Sus etiquetas son correctas; lo que falla es que son
-pocas y no son una muestra al azar de la línea.
 
 ### `features.soporte_por_linea`
 
@@ -108,68 +120,68 @@ Una fila por línea presente en `test`, con `viajes` y `dias` de la prueba,
 Un viaje es un par (`fecha_servicio`, `viaje_id`) distinto. Se cuenta en viajes y
 no en filas porque las paradas de un mismo viaje están correlacionadas.
 
-Vive junto a `baselines()` porque la usa el stage `features` hoy y la usará
-`evaluate.py` cuando exista.
+Vive junto a la función de los baselines porque la usa el stage `features` hoy y
+la usará la evaluación del modelo cuando exista.
 
-### `features.baselines` y `metrics/features.json`
+### Baselines y `metrics/features.json`
 
 `baselines_test.por_linea[<línea>]` gana `viajes`, `dias` y `grupo`. Aparece
 `baselines_test.por_grupo`, con horario y persistencia de los tres grupos.
 
-### `analysis/medir_rutas.py lineas`
+### Medidor `medir_rutas lineas`
 
-Columna nueva `pos_asignadas`: el indicador de arriba. Es el comando que
-reproduce el criterio.
+Columna nueva `pos_asignadas`: posiciones de los tramos con
+`motivo == "asignado"` entre las de los tramos con `motivo != "excluido"`.
 
 ### Medidor nuevo: `medir_soporte`, en `src/project/analysis/`
 
-Por línea de la prueba: viajes, días y el semiancho del intervalo del 95 % del
-MAE de la persistencia, remuestreando viajes enteros con semilla fija. Es la
-tabla que justifica el umbral de 100.
+Por línea de la prueba: viajes, días, grupo, el MAE de la persistencia y los
+semianchos de la tabla de arriba, remuestreando viajes enteros con semilla fija.
 
 ## Pruebas
 
-En `tests/test_features.py`, con pasos sintéticos como los existentes:
+En `tests/test_features.py`, con datos sintéticos:
 
-1. La línea excluida no tiene ninguna fila en la tabla.
-2. La línea excluida sigue contando como sensor: el `tramo_ganado` de otra línea
-   que comparte el tramo no cambia al excluirla.
-3. `soporte_por_linea`: 100 viajes en 3 días es `propia`; 99 viajes, o 100 en 2
-   días, es `poco_soporte`; sin viajes en `train` es `sin_entrenamiento`.
+1. El soporte se cuenta en viajes y días: 100 viajes en 3 días es `propia`; 99
+   viajes, 100 en 2 días o menos de 100 en entrenamiento, `poco_soporte`; sin
+   entrenamiento, `sin_entrenamiento`. El mismo `viaje_id` en días distintos son
+   viajes distintos. Una línea solo de entrenamiento no aparece. Una prueba vacía
+   devuelve una tabla vacía.
+2. Los baselines traen el soporte por línea y los tres grupos, y son
+   serializables.
 
-Un mutante por cada uno en `auditoria/catalogo.toml` (ADR-011): quitar el filtro,
-aplicarlo a la entrada en vez de al final, y relajar el umbral.
+Un mutante por cada guardia en `auditoria/catalogo.toml` (ADR-011): no exigir
+días distintos, y contar filas en vez de viajes.
 
 ## Qué invalida
 
-Solo el stage `features`: `train.parquet`, `test.parquet` y
-`metrics/features.json`. `curar` y `prepare` no se tocan. Se reejecuta con
-`uv run dvc repro features`.
+Solo el stage `features`, y solo `metrics/features.json`: la tabla no cambia ni
+en una fila. Es la comprobación de que el cambio no toca la muestra.
 
 ## Qué queda escrito
 
-- **ADR-018** en `docs/07_decisiones.md`, revisable, con las cuatro decisiones.
-- **Bitácora 036**: el indicador por línea y la tabla de soporte.
-- **`CLAUDE.md`**, sección Pipeline ML: una línea que apunte a ADR-018, para que
-  toda sesión la tenga en contexto.
+- **ADR-018** en `docs/07_decisiones.md`, revisable, con las cinco decisiones y
+  la exclusión descartada.
+- **Bitácora 036**: el indicador por línea, la tabla de soporte y los grupos.
+- **`CLAUDE.md`**, sección Pipeline ML: una línea que apunte a ADR-018.
 - **«Pendientes de decidir»**: sale «selección de corredores» y entra «cobertura
   de sensores por tramo».
 
 ## Fuera de este trabajo
 
 - El estrato de sensores en sí: necesita medir la cobertura por tramo entre
-  paradas (hoy solo está por posición: 69,4 % a menos de 50 m) y llega con la
-  capa 192 en `features.py`.
-- Los intervalos de confianza dentro del pipeline: llegan con `evaluate.py`.
-- Las líneas de caso para las figuras de la memoria y el demostrador.
-- La 24: no lleva marca en código. Tiene cifra propia, y la nota de «dudosa» va
-  en el ADR y en la memoria.
+  paradas y llega con la capa 192 en `features.py`.
+- El intervalo de la diferencia dentro del pipeline: llega con la evaluación del
+  modelo. Aquí solo se mide con sustitutos, en el medidor.
+- Cómo se codifica `linea` para que el modelo pueda predecir líneas que no ha
+  visto: se decide al escribir el entrenamiento.
+- Rehacer el corte entre entrenamiento y prueba con la captura posterior al
+  18/09. Las cifras de este trabajo son las de las 32 jornadas actuales.
 
 ## Qué reabriría cada decisión
 
-- **Exclusión:** que el indicador de una línea excluida supere el 40 %, o que el
-  de una incluida baje de ahí, al reprocesar con más captura o con un tracker
-  mejor.
+- **Muestra:** que el modelo, medido con y sin las líneas de indicador bajo, dé
+  resultados distintos más allá de su intervalo.
 - **Estrato:** que, medido, solo aporte ruido.
-- **Soporte:** que con la captura completa casi ninguna línea quede por debajo;
-  entonces el umbral sobra o puede subirse.
+- **Soporte:** que con la captura completa casi ninguna línea quede por debajo.
+- **Criterio de mejora:** que el tutor pida un mínimo de magnitud.
