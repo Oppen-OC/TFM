@@ -30,12 +30,12 @@ stages:
       nfiles: 32
     - path: src/project/ingest/reprocesar.py
       hash: md5
-      md5: 9de8269d7c719d3a1c468c70a5d3cf94
-      size: 6621
+      md5: babe5c6e245705f90d8bdb2f56569f54
+      size: 6666
     - path: src/project/ingest/sources.py
       hash: md5
-      md5: 072d334806a9fef7be86152520929472
-      size: 16477
+      md5: a92a23d95be8386433b6147105c9d5ca
+      size: 16767
     outs:
     - path: data/curated
       hash: md5
@@ -57,8 +57,8 @@ stages:
       nfiles: 13
     - path: src/project/etiquetado.py
       hash: md5
-      md5: 64706f26407f812080cf8a41b1aec38f
-      size: 22251
+      md5: 45bcfaea2dd3051b24b97ce437aaae41
+      size: 22388
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -73,8 +73,8 @@ stages:
       size: 8363
     - path: src/project/tracking.py
       hash: md5
-      md5: f959dc34bcd666037e946f8775111e89
-      size: 37943
+      md5: 5956002ab6539b21b0eb796d68363cd5
+      size: 38192
     params:
       params.yaml:
         prepare:
