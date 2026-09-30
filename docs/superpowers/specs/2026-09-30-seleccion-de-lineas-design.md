@@ -121,7 +121,7 @@ Vive junto a `baselines()` porque la usa el stage `features` hoy y la usará
 Columna nueva `pos_asignadas`: el indicador de arriba. Es el comando que
 reproduce el criterio.
 
-### `analysis/medir_soporte.py` (nuevo)
+### Medidor nuevo: `medir_soporte`, en `src/project/analysis/`
 
 Por línea de la prueba: viajes, días y el semiancho del intervalo del 95 % del
 MAE de la persistencia, remuestreando viajes enteros con semilla fija. Es la
