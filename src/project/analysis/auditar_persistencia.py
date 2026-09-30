@@ -38,6 +38,21 @@ la línea, que `append_raw` escribe siempre como `{"ts_ingest_utc":"..."`. El
 control `--control` comprueba que esa lectura rápida coincide con `read_raw`
 sobre un fichero concreto: si no coincidiese, las cifras de arriba no valdrían.
 
+    uv run python -m project.analysis.auditar_persistencia --copia C:/Users/oppen/tfm-data/raw
+
+`--copia` compara `raw/` con otra copia del crudo (la que se trae de la Pi), una
+fila por fichero que no coincide byte a byte. Responde a qué se perdería
+machacando una con la otra (bitácora 035):
+
+  repo, copia      sondeos (`ts_ingest_utc`) legibles a cada lado.
+  solo_repo        los que desaparecerían copiando la copia encima.
+  solo_copia       los que el repo no tiene, y `claves_nuevas` cuántos de esos
+                   traen una clave de sondeo (`clave_sondeo`, la que deduplica
+                   `reprocesar`) que no está en el fichero del repo. Dos
+                   colectores sondean en instantes distintos, así que
+                   `solo_copia` alto con `claves_nuevas` 0 es una copia que no
+                   aporta nada.
+
 Nada del pipeline importa de aquí: esto es exploración, no un stage de DVC.
 """
 
@@ -52,7 +67,7 @@ import duckdb
 import pandas as pd
 
 from project.config import settings
-from project.ingest.sources import SOURCES, read_raw
+from project.ingest.sources import SOURCES, clave_sondeo, parse, read_raw
 
 CABECERA = b"\x1f\x8b\x08"
 PREFIJO = '{"ts_ingest_utc":"'
@@ -200,15 +215,72 @@ def control(ruta: Path) -> None:
     print(f"    coinciden: {rapido == real}")
 
 
+def _claves(ruta: Path, source: str) -> set:
+    """Claves de sondeo de un fichero: las que usa `reprocesar` para deduplicar."""
+    claves = set()
+    for ts, payload in read_raw(ruta):
+        try:
+            df = parse(source, payload, ts)
+        except Exception:  # noqa: BLE001
+            continue
+        if not df.empty:
+            claves.add(clave_sondeo(df, ts))
+    return claves
+
+
+def comparar(copia: Path) -> tuple[pd.DataFrame, int]:
+    """`raw/` contra otra copia del crudo: los ficheros que difieren y cuántos
+    coinciden byte a byte."""
+    patron = "source=*/date=*/*.gz"
+    rutas = {
+        f.relative_to(r) for r in (settings.raw_dir, copia) for f in r.glob(patron)
+    }
+    filas, identicos = [], 0
+    for rel in sorted(rutas):
+        aqui, alli = settings.raw_dir / rel, copia / rel
+        if aqui.exists() and alli.exists() and aqui.read_bytes() == alli.read_bytes():
+            identicos += 1
+            continue
+        source = rel.parts[0].removeprefix("source=")
+        a = set(legibles(aqui)[0]) if aqui.exists() else set()
+        b = set(legibles(alli)[0]) if alli.exists() else set()
+        nuevas = 0
+        if b - a:
+            nuevas = len(
+                _claves(alli, source) - (_claves(aqui, source) if a else set())
+            )
+        filas.append(
+            {
+                "fuente": source,
+                "dia": rel.parts[1].removeprefix("date="),
+                "repo": len(a),
+                "copia": len(b),
+                "comunes": len(a & b),
+                "solo_repo": len(a - b),
+                "solo_copia": len(b - a),
+                "claves_nuevas": nuevas,
+            }
+        )
+    return pd.DataFrame(filas), identicos
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--sources", nargs="*", default=list(SOURCES))
     p.add_argument("--csv", type=Path, default=None)
     p.add_argument("--control", type=Path, default=None)
+    p.add_argument("--copia", type=Path, default=None)
     a = p.parse_args()
 
     if a.control:
         control(a.control)
+        raise SystemExit
+
+    if a.copia:
+        df, identicos = comparar(a.copia)
+        print(f"  ficheros idénticos byte a byte: {identicos}; distintos: {len(df)}")
+        if len(df):
+            print(df.to_string(index=False))
         raise SystemExit
 
     todas = []
