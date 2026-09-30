@@ -145,6 +145,7 @@ def escribir_feed(
     calendario: tuple[str, str],
     lineas: list[Linea],
     suprimidos: tuple[str, ...] = (),
+    anadidos: tuple[str, ...] = (),
 ) -> Path:
     formas = {v.forma.shape_id: v.forma for ln in lineas for v in ln.viajes}
     routes = [
@@ -217,7 +218,9 @@ def escribir_feed(
         }
     ]
     calendar_dates = [
-        {"service_id": "LAB", "date": d, "exception_type": 2} for d in suprimidos
+        {"service_id": "LAB", "date": d, "exception_type": tipo}
+        for tipo, dias in ((2, suprimidos), (1, anadidos))
+        for d in dias
     ] or [{"service_id": "LAB", "date": "20260101", "exception_type": 2}]
     feed_info = [
         {
@@ -294,7 +297,9 @@ class Bus:
     alterna: tuple[float, float] | None = None
     trayecto_alterno: str = "Este - Oeste"
 
-    def posiciones(self, rng: np.random.Generator) -> pd.DataFrame:
+    def posiciones(
+        self, rng: np.random.Generator, t0: datetime = T0_LOCAL
+    ) -> pd.DataFrame:
         largo = self.forma.largo
         fin = self.salida_s + (largo - self.parado_en_s) / self.v
         k0 = int(np.ceil((self.salida_s - self.antes_s) / CADENCIA_S))
@@ -313,9 +318,11 @@ class Bus:
             fuera = (t >= self.hueco[0]) & (t < self.hueco[1])
             t, x, y = t[~fuera], x[~fuera], y[~fuera]
         lat, lon = a_grados(x, y)
-        ts = pd.to_datetime(
-            [T0_LOCAL + timedelta(seconds=float(v)) for v in t]
-        ).tz_convert("UTC")
+        # `datetime + timedelta` con zona suma sobre el reloj de la calle: las
+        # 07:00 son las 07:00 también el día del cambio de hora.
+        ts = pd.to_datetime([t0 + timedelta(seconds=float(v)) for v in t]).tz_convert(
+            "UTC"
+        )
         return pd.DataFrame(
             {
                 "snapshot_id": (t // CADENCIA_S).astype(np.int64) + 1_000_000,
@@ -334,10 +341,11 @@ class Bus:
         )
 
 
-def flota(*buses: Bus, semilla: int = 7) -> pd.DataFrame:
+def flota(*buses: Bus, semilla: int = 7, dia: date = DIA) -> pd.DataFrame:
     rng = np.random.default_rng(semilla)
+    t0 = datetime(dia.year, dia.month, dia.day, tzinfo=TZ)
     return (
-        pd.concat([b.posiciones(rng) for b in buses], ignore_index=True)
+        pd.concat([b.posiciones(rng, t0) for b in buses], ignore_index=True)
         .sort_values("snapshot_id", kind="stable")
         .reset_index(drop=True)
     )
@@ -585,6 +593,47 @@ def test_la_ventana_de_servicio_va_de_corte_a_corte_en_hora_local(dia, horas):
     assert desde.tz_convert(TZ).hour == etiquetado.HORA_CORTE
     assert desde.tz_convert(TZ).date() == dia
     assert (hasta - desde) == pd.Timedelta(hours=horas)
+
+
+# El GTFS no mide sus horas desde la medianoche sino desde «mediodía menos 12 h»,
+# para que el horario coincida con el reloj de la calle también el día del cambio
+# de hora. Ese día las dos referencias se separan una hora.
+@pytest.mark.parametrize(
+    ("dia", "utc_mas"),
+    [(date(2026, 10, 25), 1), (date(2027, 3, 28), 2)],
+    ids=["cambio_a_invierno", "cambio_a_verano"],
+)
+def test_el_dia_del_cambio_de_hora_el_horario_va_con_el_reloj_de_la_calle(
+    tmp_path, dia, utc_mas
+):
+    """El viaje de las 07:10:00 sale a las 07:10:45 del reloj de la calle: +45 s.
+
+    Medido desde la medianoche local, el horario entero de ese día se desplaza
+    una hora. En octubre el bus casa con el viaje programado una hora después,
+    con un retraso creíble y el `trip_id` equivocado; en marzo no casa con
+    ninguno. Ninguno de los dos da error (trampa 015).
+    """
+    h = gtfs.cargar_horario(
+        escribir_feed(
+            tmp_path / "c.zip",
+            version="C",
+            vigencia=("20261001", "20270430"),
+            calendario=("20261001", "20270430"),
+            lineas=_lineas(),
+            anadidos=("20261025", "20270328"),  # los dos caen en domingo
+        )
+    )
+    bus = Bus("1", "Oeste - Este", IDA, 7 * 3600 + 600 + 45, 4.0)  # 1_01, +45 s
+    df = flota(bus, dia=dia)
+    # La verdad, escrita a mano en UTC: las 07:10:45 de la calle de ese día. La
+    # primera posición es de la regulación en cabecera, 285 s antes.
+    salida = pd.Timestamp(f"{dia} 07:10:45", tz="UTC") - pd.Timedelta(hours=utc_mas)
+    assert df["ts_utc"].min() == salida - pd.Timedelta(seconds=285), "escenario mal"
+
+    r = etiquetar(df, [h])
+    p = _comparar(r, "1_01", bus)
+    assert set(p["fecha_servicio"]) == {dia}
+    assert abs((p.loc["P1i00", "t_obs_utc"] - salida).total_seconds()) <= TOL_S
 
 
 def test_un_dia_suprimido_en_calendar_dates_no_tiene_viajes(tmp_path):

@@ -1078,3 +1078,16 @@ buscar = '''groupby(["stop_id", "_stop_objetivo"], sort=False)'''
 reemplazar = '''groupby(["linea", "stop_id", "_stop_objetivo"], sort=False)'''
 detector = ["tests/test_features.py::test_el_tramo_aguas_abajo_lo_miden_otros_buses_antes_de_t"]
 sondas = []
+
+[[mutante]]
+id = "087"
+nombre = "el horario se mide desde la medianoche local y no desde mediodía menos 12 h"
+capa = "etiquetado"
+trampa = "015"
+# Idéntico todos los días menos los dos de cambio de hora, en que desplaza el
+# horario entero una hora: en octubre el bus casa con el viaje de una hora después.
+fichero = "src/project/etiquetado.py"
+buscar = '''    return mediodia - pd.Timedelta(hours=12)'''
+reemplazar = '''    return mediodia.normalize()'''
+detector = ["tests/test_etiquetado.py::test_el_dia_del_cambio_de_hora_el_horario_va_con_el_reloj_de_la_calle"]
+sondas = []

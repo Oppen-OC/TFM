@@ -20,6 +20,7 @@ completa antes de tocar la capa correspondiente.**
 | [012](012-columna-pegada-por-posicion-tras-rastrear.md) | cerrada | tracking | `rastrear` reordena por sondeo y **reinicia el índice**: una columna calculada sobre su salida y pegada por posición a la entrada se cruza entre filas sin error. Un solo par desordenado dio al 99,7 % la abscisa de otra fila y una mejora falsa del 1,8 % (017) | `test_el_orden_de_las_filas_de_entrada_…` |
 | [013](013-puerta-fisica-corta-las-lineas-de-carretera.md) | cerrada | tracking | La puerta de 70 km/h medía el tiempo solo con el reloj del sondeo: una posición atrasada y la siguiente al día parecían ir a 88 km/h y partían la **24** en carretera (5 % de tramos asignados, fuera del denominador del éxito). Subir el umbral no es el arreglo: acepta saltos imposibles | `test_un_bus_cuyas_posiciones_llegan_con_retraso_…` |
 | [014](014-la-emt-alterna-el-trayecto-a-mitad-de-ruta.md) | cerrada | fuentes | La EMT publica a veces el `trayecto` **contrario** para un bus que sigue su marcha, 1-4 sondeos a mitad de ruta (7-9 % de los pasos de la 25). La clave (línea, trayecto) lo parte en tres sin error. Cruzar el trayecto al emparejar lo arregla y engancha buses opuestos: se cose después | `test_la_alternancia_del_trayecto_no_parte_…` |
+| [015](015-el-origen-del-horario-no-es-la-medianoche.md) | cerrada | etiquetado | Las horas del GTFS se miden desde **«mediodía menos 12 h»**, no desde la medianoche: coinciden salvo los dos días de cambio de hora. Con la medianoche, el 25/10 cada bus casa con el viaje programado **una hora después**, con retraso creíble y `trip_id` equivocado; en marzo se rechaza por desfase | `test_el_dia_del_cambio_de_hora_…` |
 
 ## Cómo se usa
 
@@ -40,6 +41,5 @@ trampa. Capas: `fuentes` · `tracking` · `etiquetado` · `pipeline` · `serving
 
 **`test:`** referencia un node id de pytest: `tests/<fichero>.py::<test_x>`.
 
-Al pasar a `cerrada`, la ficha **encoge** a síntoma + por qué + puntero al test.
-El detalle de la investigación vive en el commit. Si esta tabla pasa de ~40
-líneas, compacta las `cerrada`.
+Al pasar a `cerrada`, la ficha **encoge** a síntoma + por qué + puntero al test;
+el detalle vive en el commit. Si la tabla pasa de ~40 líneas, compacta las `cerrada`.

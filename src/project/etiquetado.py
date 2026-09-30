@@ -202,15 +202,18 @@ def _llegada(
 
 
 def _medianoche(dia: date) -> pd.Timestamp:
-    """Medianoche local del día de servicio.
+    """Origen de las horas del GTFS en el día de servicio: «mediodía menos 12 h».
 
-    El GTFS la define como «mediodía menos 12 h», que difiere de la medianoche
-    sólo los dos días de cambio de hora. Las jornadas procesadas hasta el 18/09
-    no incluyen ninguno, pero la captura cruza el del 25/10: ese día las dos
-    referencias se separan 1 h, y mientras esta función use la medianoche, el
-    horario de ese día de servicio queda desplazado una hora.
+    Es la medianoche local todos los días menos los dos de cambio de hora, en
+    que se separa de ella una hora. El GTFS lo define así para que el horario
+    coincida con el reloj de la calle después del cambio. Con la medianoche, el
+    horario entero de ese día se desplaza una hora: en octubre cada bus casa con
+    el viaje programado una hora después, sin error alguno (trampa 015).
     """
-    return pd.Timestamp(datetime(dia.year, dia.month, dia.day), tz=settings.tz_local)
+    mediodia = pd.Timestamp(
+        datetime(dia.year, dia.month, dia.day, 12), tz=settings.tz_local
+    )
+    return mediodia - pd.Timedelta(hours=12)
 
 
 def _dia_de_servicio(primera_local: pd.Timestamp) -> date:
