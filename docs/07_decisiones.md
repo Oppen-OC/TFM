@@ -436,14 +436,69 @@ es el payload con geometría y `mb_dia` entre `payloads_dia`, el habitual sin el
 
 ---
 
+## ADR-018 · Todas las líneas entran en la muestra; la cobertura de sensores es un estrato y una mejora es una diferencia con intervalo · revisable
+
+**Decisión.** Cinco, que sustituyen a la propuesta de acotar a 4-6 corredores:
+
+1. Se entrena y se evalúa con **todas las líneas etiquetadas**. No se excluye
+   ninguna.
+2. La cobertura de sensores de tráfico define un **estrato de evaluación**, no
+   recorta la muestra.
+3. Una línea se informa con cifra propia con al menos **100 viajes en 3 días de
+   servicio** en la prueba y 100 viajes en entrenamiento
+   (`features.soporte_por_linea`). Las demás cuentan en la métrica global y se
+   informan agrupadas en `poco_soporte` y `sin_entrenamiento`.
+4. **Qué es una mejora.** Toda comparación —modelo contra persistencia, modelo
+   con tráfico contra modelo sin él— se informa como diferencia sobre los mismos
+   viajes, con su intervalo del 95 % remuestreando viajes. Hay mejora si el
+   intervalo no contiene el cero; si lo contiene, el resultado es «no se
+   distingue». No hay mínimo de magnitud: se informa el tamaño del efecto.
+5. Lo que aporta el tráfico se juzga **en el conjunto y en el estrato con
+   sensor**, no línea a línea.
+
+**Nunca** se excluye una línea por el error del modelo ni por su cobertura de
+sensores.
+
+**Por qué.** Los dos motivos para acotar eran el coste de etiquetar las 47
+líneas y la cobertura de sensores. El primero desapareció: el pipeline etiqueta
+todas, y los cinco corredores propuestos eran el 24,5 % de las filas. Recortar
+por cobertura deja fuera justo las líneas periféricas y sesga la muestra a favor
+de la hipótesis (bitácora 026). El criterio de mejora no estaba escrito en
+ningún sitio: «por un margen claro» no es un criterio.
+
+**Consecuencias.** Con la prueba actual, de 5 días, 24 líneas tienen cifra
+propia, 9 poco soporte y 10 no tienen entrenamiento. Por línea, con 100 a 300
+viajes, solo se distinguen mejoras de 1 a 2 s o más; de ahí la decisión 5. La
+evaluación del modelo tendrá que calcular el intervalo de la diferencia
+remuestreando viajes, no filas.
+
+**Alternativas.** Acotar a corredores: descartada, por lo anterior. Excluir las
+líneas con menos del 40 % de sus posiciones en viajes asignados (25, 63 y 73):
+descartada, porque la regla de soporte ya las aparta de las cifras por línea,
+excluirlas movía el resultado global 0,08 s, lo que sí se etiqueta de ellas no es
+peor que en el resto, y obligaba a defender un umbral elegido después de ver los
+datos y un sesgo a favor de la hipótesis. Un mínimo de mejora en segundos:
+descartado por arbitrario.
+
+**Qué la reabriría.** Que el modelo, con y sin las líneas de indicador bajo, dé
+resultados distintos más allá de su intervalo. Que el estrato de sensores, una
+vez medido, solo aporte ruido. Que con la captura completa casi ninguna línea
+quede por debajo del soporte. Que el tutor pida un mínimo de magnitud.
+
+Reproducir: `uv run python -m project.analysis.medir_rutas lineas` y
+`uv run python -m project.analysis.medir_soporte`. Detalle en la bitácora 036.
+
+---
+
 ## Pendientes de decidir
 
-- **Selección de corredores.** `docs/05` propuso acotar a 4-6 corredores (93,
-  C3, 98E, 99, 81). El pipeline etiqueta hoy todas las líneas, sin filtro. En
-  contra de acotar: las líneas peor cubiertas por sensores son las que quedarían
-  fuera, y quitarlas sesga la muestra a favor de la hipótesis (bitácora 026).
-  Muerde al meter la capa 192 en `features.py`: donde no hay sensor cerca, la
-  variable queda vacía.
+- **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018
+  necesita saber qué tramos entre paradas tienen un sensor de la capa 192
+  encima. Hoy la cobertura solo está medida por posición (69,4 % a menos de
+  50 m, `docs/10`). Se mide al meter la capa 192 en `features.py`.
+- **Cómo se codifica la línea.** Diez líneas de la prueba no tienen ni un viaje
+  de entrenamiento. Que el modelo pueda predecirlas depende de cómo entre
+  `linea` como variable. Se decide al escribir `train.py`.
 - **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
   estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
   si 5 min bastan. Lo que no se capture no se recupera.

@@ -147,6 +147,12 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
   no son salida suficiente.
 - **Baselines obligatorios** antes de presumir de nada: horario teórico
   (retraso = 0) y persistencia (el retraso actual se mantiene).
+- **La muestra son todas las líneas etiquetadas.** La cobertura de sensores de
+  tráfico es un estrato de evaluación, nunca un recorte, y no se excluye una
+  línea por el error del modelo. Una línea se informa con cifra propia solo con
+  soporte mínimo (`features.soporte_por_linea`). **Una mejora es una diferencia
+  sobre los mismos viajes cuyo intervalo del 95 %, remuestreando viajes, no
+  contiene el cero.** ADR-018.
 - `data/` y `models/*.pkl` los versiona DVC, no git. No editar `dvc.lock` ni
   `uv.lock` a mano.
 
