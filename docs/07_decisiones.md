@@ -363,7 +363,8 @@ Pi, y solo cuando exista el modelo. La arquitectura de la propuesta al tutor
 
 - **El volumen no lo pide.** Día completo del 16/09/2026: 6.222 payloads (EMT
   2.821, Renfe 2.767, estado del tráfico 277, Valenbisi 267, intensidad 90), es
-  decir, 0,07 por segundo, y unos 314 MB sin comprimir (42 MB en gzip). Un broker
+  decir, 0,07 por segundo, y 317 MB sin comprimir (unos 42 MB en gzip). La
+  mediana de las 32 jornadas es de 6.336 payloads y 297 MB (bitácora 033). Un broker
   se justifica varios órdenes de magnitud por encima. Presentar Kafka como
   respuesta al volumen no resiste esa cifra.
 - **Desacoplar y reejecutar ya está resuelto.** El crudo se guarda antes de
@@ -391,8 +392,7 @@ ningún punto: válida, y con 0,07 mensajes/s puede bastar un proceso en
 Ahí se elige entre broker y proceso en `services/`, con la latencia y la memoria
 medidas.
 
-Reproducir la cifra: contar las líneas de
-`data/raw/source=*/date=2026-09-16/payloads.ndjson.gz` (una por payload).
+Reproducir la cifra: `uv run python -m project.analysis.medir_volumen --dias 2026-09-16`.
 
 ---
 
