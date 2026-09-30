@@ -234,7 +234,7 @@ uv run python -m project.analysis.diagnose           # GO / NO-GO de la hipótes
 uv run python auditoria/mutar.py                     # ¿detectan los tests? (~40 min)
 ```
 
-Dependencias todavía por añadir: `xgboost`, `shap`, `polars`.
+Dependencias todavía por añadir: `xgboost`, `shap`.
 
 **Entorno: Windows + PowerShell.** `run.sh` es bash y no funciona aquí tal cual:
 lanzar API y UI en terminales separadas.

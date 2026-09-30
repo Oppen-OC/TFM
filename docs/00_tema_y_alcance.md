@@ -40,7 +40,7 @@ aguas abajo de su ruta, y con cuánta antelación puede anticiparse?
 
 Registro completo, con consecuencias y condiciones de reapertura, en
 [`07_decisiones.md`](07_decisiones.md). Resumen: DVC como orquestador, ingesta
-fuera de DVC, Parquet + zstd, DuckDB/Polars, XGBoost, split temporal,
+fuera de DVC, Parquet + zstd, DuckDB, XGBoost, split temporal,
 Metrovalencia descartado, Renfe capturado desde el día 1 como plan B.
 
 ## Alcance

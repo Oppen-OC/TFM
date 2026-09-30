@@ -63,26 +63,42 @@ Nunca CSV.
 la primera captura: 76,7 MB en 12,5 h, ~147 MB/día, ~13 GB en 90 días. En CSV es
 inmanejable sobre un portátil.
 
-**Consecuencias.** Lectura con proyección de columnas y predicate pushdown. El
-particionado por fecha aún está por decidir (ver ADR-004).
+**Consecuencias.** Lectura con proyección de columnas y predicate pushdown.
+
+**Particionado (cerrado el 30/09/2026).** Por fecha, en todas las capas, que es
+lo que ya hacía el código:
+
+- `curated/source=<fuente>/date=<día>/`: día de **captura**, en UTC.
+- `interim/{emt_tracked,viajes,pasos}/date=<día>/`: día de **servicio**, de
+  04:00 a 04:00 en hora local (`prepare.ventana_servicio`).
+- `processed/train.parquet` y `test.parquet`: un fichero cada uno.
+
+Los dos días no son el mismo. Quien lea `curated/` por un día de servicio filtra
+por `ts_utc` sobre todas las particiones, no por `date=` (bitácora 011).
 
 **Alternativas.** CSV descartado por volumen. Formatos de tabla (Delta, Iceberg):
 sin evaluación registrada.
 
 ---
 
-## ADR-004 · DuckDB / Polars como motor analítico · cerrada
+## ADR-004 · DuckDB como motor analítico, pandas para transformar · cerrada
 
-**Decisión.** DuckDB y Polars sobre el portátil. Sin cluster.
+**Decisión.** DuckDB lee y filtra el Parquet; pandas y numpy hacen las
+transformaciones por día. Sobre el portátil, sin cluster. **Polars no se usa**
+(cerrado el 30/09/2026): la decisión original decía «DuckDB y Polars» y dejaba
+el reparto sin fijar, y el código lo resolvió solo. No está instalado ni se
+importa en ningún módulo.
 
 **Por qué.** El volumen es grande para pandas en memoria pero pequeño para Spark.
-DuckDB lee Parquet particionado sin cargarlo entero.
+DuckDB lee Parquet particionado sin cargarlo entero, y entrega a pandas un día
+cada vez.
 
-**Consecuencias.** `rastrear()` recorre snapshots en Python y está identificado
-como cuello de botella: con 12,5 h va sobrado, con 3 meses habrá que vectorizarlo
-o pasarlo a DuckDB (`docs/05`, sección 7).
+**Consecuencias.** `rastrear()` recorre snapshots en Python y se identificó como
+cuello de botella (`docs/05`, sección 7). Procesando por día y en paralelo no lo
+ha sido: `prepare` tarda 42 min sobre 32 jornadas con 8 procesos (bitácora 024).
 
-**Pendiente.** El criterio de reparto entre DuckDB y Polars no está fijado.
+**Qué la reabriría.** Que una transformación deje de caber en memoria por día, o
+que `prepare` pase de un par de horas con la captura completa.
 
 ---
 
@@ -169,7 +185,7 @@ dejan de citar `demo/selftest.py::"<check>"` y citan node ids; el validador
 hardcodeadas y `DATA_ROOT` es lo único que hay que cambiar para que el colector
 escriba en `/srv/tfm-data` en vez de en `data/`.
 
-**Lo que no cambió.** La ingesta sigue fuera del grafo de DVC (ADR-003), y
+**Lo que no cambió.** La ingesta sigue fuera del grafo de DVC (ADR-002), y
 `analysis/` tampoco entra: `diagnose.py` no produce entradas de `train`.
 
 **Deuda que deja.** La Raspberry sigue ejecutando su copia de `/opt/tfm/demo/` y
@@ -396,15 +412,52 @@ Reproducir la cifra: `uv run python -m project.analysis.medir_volumen --dias 202
 
 ---
 
+## ADR-017 · La geometría de tráfico se guarda una vez; el crudo llega sin ella · cerrada
+
+**Decisión.** Las capas 192 y 188 se piden con `returnGeometry=false`. La
+geometría se descarga una vez a `data/reference/<fuente>_geometria.parquet` y no
+se repite en cada sondeo (`Source.geometria_estatica`, `collect.asegurar_geometria`).
+
+**Por qué.** Repetir la geometría era el 74 % del disco (`docs/05`). Medido sobre
+el crudo, por payload: la 192 pasa de 258 kB a 64 kB y la 188 de 156 kB a 74 kB.
+
+**Consecuencias.** El crudo deja de ser la respuesta completa de la fuente desde
+el 19/08/2026. Los días 15-18/08 sí traen la geometría en cada sondeo. Si el
+Ajuntament cambiara el trazado de un tramo, el colector no lo vería: la
+referencia es la del primer sondeo.
+
+**Alternativas.** Crudo íntegro, por su valor probatorio: descartada por el
+disco. Ese valor lo conservan los cuatro primeros días.
+
+**Qué la reabriría.** Un tramo cuyo `idtramo` no esté en la referencia.
+
+Reproducir la cifra: `uv run python -m project.analysis.medir_volumen`. `max_kb`
+es el payload con geometría y `mb_dia` entre `payloads_dia`, el habitual sin ella.
+
+---
+
 ## Pendientes de decidir
 
-- **Selección de corredores.** `docs/05` mide 57,7 % de cobertura de tráfico y
-  propone acotar a 4-6 corredores (93, C3, 98E, 99, 81) en vez de las 47 líneas.
-  Es un criterio objetivo de selección de muestra, pero la decisión no está
-  formalmente cerrada.
-- **Geometría en el crudo de tráfico.** El 74 % del disco lo genera repetir la
-  geometría de los 446 tramos en cada sondeo. `&returnGeometry=false` ahorraría
-  ~90 % de esa fuente, pero el crudo verbatim tiene valor probatorio para la
-  memoria.
-- **Particionado de Parquet.** Por fecha es lo obvio; no está fijado.
-- **Reparto DuckDB / Polars.** Ver ADR-004.
+- **Selección de corredores.** `docs/05` propuso acotar a 4-6 corredores (93,
+  C3, 98E, 99, 81). El pipeline etiqueta hoy todas las líneas, sin filtro. En
+  contra de acotar: las líneas peor cubiertas por sensores son las que quedarían
+  fuera, y quitarlas sesga la muestra a favor de la hipótesis (bitácora 026).
+  Muerde al meter la capa 192 en `features.py`: donde no hay sensor cerca, la
+  variable queda vacía.
+- **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
+  estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
+  si 5 min bastan. Lo que no se capture no se recupera.
+- **Corte entre entrenamiento y prueba.** `features.test_desde` está en el 14/09
+  con la captura hasta el 18/09: el entrenamiento es casi todo agosto y la prueba
+  es lectiva (bitácoras 030 y 031). Se rehace al entrar la captura posterior.
+- **Horizonte de predicción.** `features.horizonte_paradas` vale 1. La segunda
+  mitad de la pregunta del trabajo, con cuánta antelación, pide más (ADR-006,
+  bitácora 030).
+- **Horario del 08 al 11/09.** Se etiqueta con el de verano. Las versiones que lo
+  cubren están archivadas tras el plan de pago de Transitland (bitácora 024):
+  pagar, excluir esos días o aceptarlos declarándolo.
+- **Servido en tiempo real.** Broker o proceso en `services/` (ADR-016). Se
+  decide con el modelo ya entrenado.
+- **Tope del índice de trampas.** `.claude/tests/test_trampas.py` lo limita a 45
+  líneas y cada ficha ocupa una: con 16 fichas solo cabe uniendo párrafos. Medir
+  caracteres o subir el tope.
