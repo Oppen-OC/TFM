@@ -56,6 +56,21 @@ rsync -av pi@raspberrypi.local:/srv/tfm-data/raw/ ./copia-tfm/raw/
 
 Basta con `raw/`: `curated/` se regenera con `reprocesar.py`.
 
+## Traer los datos al repo
+
+Eso de arriba es una copia aparte. Para que el pipeline vea los días nuevos hay
+que dejarlos en `data/raw/`, y ahí un `rsync -av` a secas **no vale**: la Pi
+solo tiene la última hora del 18/08 y machacaría el día que capturó el portátil
+(bitácora 035). Desde WSL, en la raíz del repo:
+
+```bash
+bash deploy_pi/pull_data.sh --dry-run     # qué traería
+bash deploy_pi/pull_data.sh               # solo añade; nunca sobrescribe
+bash deploy_pi/pull_data.sh --verificar   # qué difiere de la Pi, sin escribir
+```
+
+Deja fuera el día en curso, que aún crece. Después, `uv run dvc repro`.
+
 ## Qué hace el fichero de servicio
 
 - `Restart=always` con `StartLimitIntervalSec=0`: vuelve siempre, sin rendirse
