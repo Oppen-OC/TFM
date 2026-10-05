@@ -38,6 +38,8 @@ from pathlib import Path
 
 import duckdb
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import yaml
 
 from project.config import RAIZ, settings
@@ -46,24 +48,87 @@ from project.gtfs import Horario, cargar_horario, versiones
 from project.tracking import rastrear
 
 SALIDAS = ("emt_tracked", "viajes", "pasos")
-COLUMNAS_POSICIONES = [
-    "snapshot_id",
-    "linea",
-    "trayecto",
-    "trayecto_publicado",
-    "lat",
-    "lon",
-    "ts_utc",
-    "vehicle_id",
-    "fecha_servicio",
-    "feed_version",
-    "shape_id",
-    "abscisa_m",
-    "dist_trazado_m",
-    "fiable",
-    "viaje_id",
-    "estado",
-]
+
+# Un esquema por tabla, el mismo todos los días. Un día excluido o sin horario no
+# pasa por el map-matching ni por la asignación, y escrito tal cual sale sin
+# columnas o con tipo `null`: DuckDB falla al leer el glob y pandas cambia el
+# dtype según qué partición entre primero (issue #2). Lo que falte va nulo.
+_TS = pa.timestamp("ns", tz=settings.tz_local)
+ESQUEMAS = {
+    "emt_tracked": pa.schema(
+        [
+            ("snapshot_id", pa.int64()),
+            ("linea", pa.string()),
+            ("trayecto", pa.string()),
+            ("trayecto_publicado", pa.string()),
+            ("lat", pa.float64()),
+            ("lon", pa.float64()),
+            ("ts_utc", pa.timestamp("us", tz=settings.tz_local)),
+            ("vehicle_id", pa.string()),
+            ("fecha_servicio", pa.date32()),
+            ("feed_version", pa.string()),
+            ("shape_id", pa.string()),
+            ("abscisa_m", pa.float64()),
+            ("dist_trazado_m", pa.float64()),
+            ("fiable", pa.bool_()),
+            ("viaje_id", pa.string()),
+            ("estado", pa.string()),
+        ]
+    ),
+    "viajes": pa.schema(
+        [
+            ("viaje_id", pa.string()),
+            ("vehicle_id", pa.string()),
+            ("fecha_servicio", pa.date32()),
+            ("linea", pa.string()),
+            ("trayecto", pa.string()),
+            ("feed_version", pa.string()),
+            ("fuera_de_vigencia", pa.bool_()),
+            ("posiciones", pa.int64()),
+            ("t_inicio", _TS),
+            ("t_fin", _TS),
+            ("motivo", pa.string()),
+            ("trip_id", pa.string()),
+            ("shape_id", pa.string()),
+            ("coste_s", pa.float64()),
+            ("desfase_s", pa.float64()),
+            ("margen_s", pa.float64()),
+        ]
+    ),
+    "pasos": pa.schema(
+        [
+            ("stop_id", pa.string()),
+            ("stop_sequence", pa.int64()),
+            ("abscisa_parada_m", pa.float64()),
+            ("t_obs_s", pa.float64()),
+            ("t_prog_s", pa.float64()),
+            ("retraso_s", pa.float64()),
+            ("viaje_id", pa.string()),
+            ("vehicle_id", pa.string()),
+            ("fecha_servicio", pa.date32()),
+            ("linea", pa.string()),
+            ("trayecto", pa.string()),
+            ("feed_version", pa.string()),
+            ("fuera_de_vigencia", pa.bool_()),
+            ("trip_id", pa.string()),
+            ("shape_id", pa.string()),
+            ("desfase_s", pa.float64()),
+            ("margen_s", pa.float64()),
+            ("coste_s", pa.float64()),
+            ("t_obs_utc", pa.timestamp("ns", tz="UTC")),
+        ]
+    ),
+}
+
+
+def con_esquema(nombre: str, df: pd.DataFrame) -> pa.Table:
+    """`df` con el esquema fijo de la tabla: las columnas que falten, nulas."""
+    esquema = ESQUEMAS[nombre]
+    df = df.copy()
+    for c in esquema.names:
+        if c not in df:
+            df[c] = pd.Series(None, index=df.index, dtype="object")
+    return pa.Table.from_pandas(df[esquema.names], schema=esquema, preserve_index=False)
 
 
 def etiquetar_dia(
@@ -150,16 +215,13 @@ def procesar_dia(dia: str, p: Parametros, salida: Path) -> dict:
             "ventana_servicio y etiquetado.HORA_CORTE no coinciden"
         )
     for nombre, df in (
-        (
-            "emt_tracked",
-            r.posiciones[[c for c in COLUMNAS_POSICIONES if c in r.posiciones]],
-        ),
+        ("emt_tracked", r.posiciones),
         ("viajes", r.viajes),
         ("pasos", r.pasos),
     ):
         d = salida / nombre / f"date={dia}"
         d.mkdir(parents=True, exist_ok=True)
-        df.to_parquet(d / "part.parquet", index=False, compression="zstd")
+        pq.write_table(con_esquema(nombre, df), d / "part.parquet", compression="zstd")
     motivos = r.viajes["motivo"].value_counts().to_dict() if len(r.viajes) else {}
     return {
         "dia": dia,

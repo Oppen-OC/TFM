@@ -807,3 +807,35 @@ def test_un_dia_excluido_no_se_etiqueta_y_se_cuenta(horario_a):
         flota(bus), [horario_a], excluir_fechas=(("2026-08-31", "2026-09-07"),)
     )
     _comparar(otro, "1_01", bus)
+
+
+def test_un_dia_excluido_se_escribe_con_el_mismo_esquema(horario_a, tmp_path):
+    """Issue #2: el día excluido no pasa por el map-matching ni por la
+    asignación, y escrito tal cual perdía `trip_id`, `shape_id`, `abscisa_m`...
+    DuckDB falla al leer el glob; pandas rellena con NaN y el dtype depende de
+    qué partición entre primero. Cada tabla se escribe con su esquema fijo.
+    """
+    import duckdb
+
+    bus = Bus("1", "Oeste - Este", IDA, 7 * 3600 + 600, 4.0)
+    dia = DIA.isoformat()
+    normal = etiquetar(flota(bus), [horario_a])
+    excluido = etiquetar(flota(bus), [horario_a], excluir_fechas=((dia, dia),))
+    sin_horario = etiquetar(flota(bus), [])
+    # El esquema no tira nada que el etiquetado produzca en un día normal.
+    for nombre, df in (("viajes", normal.viajes), ("pasos", normal.pasos)):
+        assert set(df.columns) == set(prepare.ESQUEMAS[nombre].names), nombre
+    for nombre, attr in (
+        ("emt_tracked", "posiciones"),
+        ("viajes", "viajes"),
+        ("pasos", "pasos"),
+    ):
+        for etiqueta, r in (("a", normal), ("b", excluido), ("c", sin_horario)):
+            d = tmp_path / nombre / f"date={etiqueta}"
+            d.mkdir(parents=True)
+            t = prepare.con_esquema(nombre, getattr(r, attr))
+            assert t.schema == prepare.ESQUEMAS[nombre], (nombre, etiqueta)
+            prepare.pq.write_table(t, d / "part.parquet")
+        # Sin union_by_name: es como falló medir_rutas.
+        glob = (tmp_path / nombre / "*" / "*.parquet").as_posix()
+        duckdb.sql(f"select * from read_parquet('{glob}')").fetchall()

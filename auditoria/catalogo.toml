@@ -1137,3 +1137,18 @@ buscar = '''        dif_lejos=(0.5 * r - y).abs() - (r - y).abs(),'''
 reemplazar = '''        dif_lejos=(1.0 * r - y).abs() - (r - y).abs(),'''
 detector = ["tests/test_medir_soporte.py::test_los_predictores_sustitutos_estan_definidos_en_todas_las_filas"]
 sondas = []
+
+[[mutante]]
+id = "092"
+nombre = "prepare escribe cada día con las columnas que traiga"
+capa = "pipeline"
+# El día excluido o sin horario no pasa por el map-matching: sin el relleno
+# pierde `trip_id`, `shape_id`, `abscisa_m`... y DuckDB falla al leer el glob
+# (issue #2).
+fichero = "src/project/prepare.py"
+buscar = '''        if c not in df:
+            df[c] = pd.Series(None, index=df.index, dtype="object")'''
+reemplazar = '''        if c not in df:
+            esquema = esquema.remove(esquema.get_field_index(c))'''
+detector = ["tests/test_etiquetado.py::test_un_dia_excluido_se_escribe_con_el_mismo_esquema"]
+sondas = []
