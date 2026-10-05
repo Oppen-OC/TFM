@@ -48,8 +48,9 @@ features:
   linea_min_dias: 3
   # Split TEMPORAL, nunca aleatorio: con series de posiciones, un split
   # aleatorio filtra el futuro en el entrenamiento y te da métricas falsas.
-  # Captura hasta el 18/09: prueba del 14 al 18/09 (bitácora 030).
-  test_desde: "2026-09-14"
+  # Captura hasta el 04/10: prueba de dos semanas enteras (21/09-04/10, lunes a
+  # domingo); entrenamiento, agosto y la semana lectiva del 14 al 20/09 (ADR-007).
+  test_desde: "2026-09-21"
 
 train:
   objective: reg:squarederror

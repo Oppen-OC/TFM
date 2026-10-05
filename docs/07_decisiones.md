@@ -141,6 +141,15 @@ entrenamiento y produce métricas infladas.
 haya pasado esos días (obras, festivos, meteorología). Hay que declararlo como
 limitación en la memoria.
 
+**Corte (05/10).** `test_desde = 2026-09-21` con la captura hasta el 04/10: la
+prueba son dos semanas enteras, de lunes a domingo, y el entrenamiento agosto
+(15-30/08) más la semana lectiva del 14 al 20/09. El 31/08-11/09 está excluido
+(ADR-014) y el 10-14/09 falta en la captura (bitácora 021). Con el corte del 14/09
+y la captura hasta el 18/09, el entrenamiento era solo agosto frente a una prueba
+lectiva (bitácora 037). Se descartó el 28/09: dos semanas lectivas en
+entrenamiento, pero una sola de prueba, y el soporte por línea pide días de
+prueba (bitácora 036).
+
 **Por qué está aquí.** Es el primer error que busca un tribunal en un trabajo de
 series temporales. La decisión no se rediscute: se defiende.
 
@@ -526,15 +535,9 @@ Reproducir: `uv run python -m project.analysis.medir_rutas lineas` y
 - **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
   estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
   si 5 min bastan. Lo que no se capture no se recupera.
-- **Corte entre entrenamiento y prueba.** `features.test_desde` está en el 14/09
-  con la captura hasta el 18/09: el entrenamiento es casi todo agosto y la prueba
-  es lectiva (bitácoras 030 y 031). Se rehace al entrar la captura posterior.
 - **Horizonte de predicción.** `features.horizonte_paradas` vale 1. La segunda
   mitad de la pregunta del trabajo, con cuánta antelación, pide más (ADR-006,
   bitácora 030).
-- **Horario del 08 al 11/09.** Se etiqueta con el de verano. Las versiones que lo
-  cubren están archivadas tras el plan de pago de Transitland (bitácora 024):
-  pagar, excluir esos días o aceptarlos declarándolo.
 - **Servido en tiempo real.** Broker o proceso en `services/` (ADR-016). Se
   decide con el modelo ya entrenado.
 - **Tope del índice de trampas.** `.claude/tests/test_trampas.py` lo limita a 45
