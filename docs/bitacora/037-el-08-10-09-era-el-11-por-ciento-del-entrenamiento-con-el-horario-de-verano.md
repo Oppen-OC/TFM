@@ -78,8 +78,11 @@ cerró antes de reejecutar (`19cdfaf`).
 
 Abierto:
 
-- Mover el corte con la captura posterior al 18/09 (en la Pi, sin traer) para
-  que el entrenamiento tenga septiembre lectivo. No volver a incluir estos días.
+- ~~Mover el corte con la captura posterior al 18/09.~~ Hecho el 05/10
+  (`c721899`, ADR-007): con la captura hasta el 04/10 y `test_desde =
+  2026-09-21`, el entrenamiento son 1.525.118 filas de 23 días (agosto y la
+  semana del 14 al 20/09) y la prueba 840.022 de 14. Positivos: 5,39 % frente a
+  7,09 %; el desfase entre periodos se reduce pero no desaparece.
 - Si aparece la versión del GTFS del 10/09 (Transitland de pago), el 08-11/09
   se puede recuperar (ADR-014, condición de reapertura).
 

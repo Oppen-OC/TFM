@@ -1,0 +1,14 @@
+viajes sin intervalo (único de su línea en la parada): 0
+pliegues: 5493 (4.9 %); conflictos 4784, adelantados 33.8 % frente a 3.9 % de los asignados: ~1429 cazados. Sin delatar: ~4065 (3.6 %), como mínimo 709 (0.6 %)
+                   asignados  rechazos_obs  rechazos_pred  pct_mal_cota  pct_mal_calibrada  pasos_mal_calibrada
+todo               112322.00       5648.00        5398.00          4.67               4.89            121164.00
+H <= 8 min          15262.00       2559.00        2313.00         11.00              12.17             43467.00
+8-15 min            63808.00       2825.00        2828.00          4.90               4.89             70064.00
+15-30 min           25490.00        259.00         249.00          1.74               1.81              9203.00
+> 30 min             7762.00          5.00           7.00          0.05               0.03                58.00
+punta 7-9 y 13-15   24826.00       1315.00        1336.00          5.10               5.01             27485.00
+resto               87496.00       4333.00        4061.00          4.55               4.86             93744.00
+salen con más de 300 s de retraso: 53.1 % plegados al viaje siguiente, 19.8 % rechazados por margen
+
+P(retraso > x), Lynden-Bell: {60: np.float64(0.4896), 120: np.float64(0.2582), 180: np.float64(0.1462), 300: np.float64(0.0669), 420: np.float64(0.0373), 600: np.float64(0.0196)}
+total de pasos asignados: 2477462

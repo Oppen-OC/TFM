@@ -41,6 +41,13 @@ Un bus que va más de medio intervalo tarde queda más cerca del viaje
 - Cola del retraso de salida, corregida del truncamiento: P(δ > 60 s) = 0,49;
   P(δ > 300 s) = 0,062; P(δ > 600 s) = 0,020.
 
+**Remedido con la captura hasta el 04/10** (48 días, `c721899`, salida en
+`auditoria/resultados/asignacion_c721899.txt`): 112.322 asignados, pliegues
+**4,9 %** y sin delatar **3,6 %** (mínimo 0,6 %); 12,2 % con H ≤ 8 min; de los
+que salen con más de 300 s, 53,1 % plegados. Rechazos predichos 5.398 frente a
+5.648 observados. Septiembre tiene más líneas de intervalo corto: la cifra sube
+con él.
+
 ## Cómo se midió
 
 ```bash

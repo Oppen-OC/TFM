@@ -5,29 +5,29 @@ stages:
     deps:
     - path: data/raw/source=emt_buses
       hash: md5
-      md5: f46c2834183651286996ff725a69951a.dir
-      size: 364675631
-      nfiles: 32
+      md5: 40e367328b03fb2b1246b9b835b9ed6f.dir
+      size: 542480314
+      nfiles: 48
     - path: data/raw/source=renfe_cercanias
       hash: md5
-      md5: aea9efc1cb365df1d2710ef9b61b988d.dir
-      size: 658043226
-      nfiles: 35
+      md5: 5670dc50e9fead2ad7e908cd6a6225cc.dir
+      size: 989902856
+      nfiles: 51
     - path: data/raw/source=trafico_estado
       hash: md5
-      md5: 60f90ceebfad2909aef3bf505cf71517.dir
-      size: 355924985
-      nfiles: 32
+      md5: 11f2f0245bb9dcfd19fe1115ae6be454.dir
+      size: 403684655
+      nfiles: 48
     - path: data/raw/source=trafico_intensidad
       hash: md5
-      md5: 29c27db3dde30e22f5ed994559b61c98.dir
-      size: 50760669
-      nfiles: 32
+      md5: 3c5ed5956c8d44de09beee99fc843f7a.dir
+      size: 66878580
+      nfiles: 48
     - path: data/raw/source=valenbisi
       hash: md5
-      md5: 1c2bfc03a6ef51d35914d5cef59b663b.dir
-      size: 153401112
-      nfiles: 32
+      md5: b97bb8086db174c3879ce429e2372177.dir
+      size: 244795478
+      nfiles: 48
     - path: src/project/ingest/reprocesar.py
       hash: md5
       md5: babe5c6e245705f90d8bdb2f56569f54
@@ -39,17 +39,17 @@ stages:
     outs:
     - path: data/curated
       hash: md5
-      md5: ae401ac4b37c84574a4e568855410592.dir
-      size: 265282212
-      nfiles: 163
+      md5: 6cd1f5b45ed11af57da974e3b6edde34.dir
+      size: 393352505
+      nfiles: 243
   prepare:
     cmd: uv run python -m project.prepare
     deps:
     - path: data/curated
       hash: md5
-      md5: ae401ac4b37c84574a4e568855410592.dir
-      size: 265282212
-      nfiles: 163
+      md5: 6cd1f5b45ed11af57da974e3b6edde34.dir
+      size: 393352505
+      nfiles: 243
     - path: data/raw/gtfs
       hash: md5
       md5: 58e47750a59418f7aed19ec560781cde.dir
@@ -93,31 +93,31 @@ stages:
     outs:
     - path: data/interim/emt_tracked
       hash: md5
-      md5: c1402170f995f535a893ad63eed50b70.dir
-      size: 269439495
-      nfiles: 32
+      md5: 40b366671c3cf0fbb06c23033b904ce4.dir
+      size: 424762701
+      nfiles: 48
     - path: data/interim/pasos
       hash: md5
-      md5: fe4d486d84f3f45dc1e180215a7d9e35.dir
-      size: 43286167
-      nfiles: 32
+      md5: 620f7df005bb3f71f2931b05df59a014.dir
+      size: 74698618
+      nfiles: 48
     - path: data/interim/viajes
       hash: md5
-      md5: f680714f57c149d35526f7af85f9ef10.dir
-      size: 6518622
-      nfiles: 32
+      md5: 78ab40b7aa8acd679e1f1ce03101c20d.dir
+      size: 10051494
+      nfiles: 48
     - path: metrics/prepare.json
       hash: md5
-      md5: 90996086ad881109e74929e048290dc4
-      size: 12070
+      md5: 7f4874615271efb6d7577c179d1cb009
+      size: 18779
   features:
     cmd: uv run python -m project.features
     deps:
     - path: data/interim/pasos
       hash: md5
-      md5: fe4d486d84f3f45dc1e180215a7d9e35.dir
-      size: 43286167
-      nfiles: 32
+      md5: 620f7df005bb3f71f2931b05df59a014.dir
+      size: 74698618
+      nfiles: 48
     - path: src/project/features.py
       hash: md5
       md5: d35b130a5ee740e9fc54ee58a4a0ea63
@@ -142,17 +142,17 @@ stages:
           umbral_retraso_s: 300
           linea_min_viajes: 100
           linea_min_dias: 3
-          test_desde: '2026-09-14'
+          test_desde: '2026-09-21'
     outs:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 85e785d1907b797e60a95342e29e1019
-      size: 27006683
+      md5: 1d36be7aa7c2fc4289ccb566e54db03b
+      size: 76942686
     - path: data/processed/train.parquet
       hash: md5
-      md5: 6521ecb19b568fc4857897211985f4c7
-      size: 101709118
+      md5: 8fe99e9357b489556000acfdea5718cb
+      size: 141125475
     - path: metrics/features.json
       hash: md5
-      md5: 8ec4d8a2733891762c16fe86e5b69d0f
-      size: 14294
+      md5: 39a2173261eb7b05189fd4aacb78650c
+      size: 14300
