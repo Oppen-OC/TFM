@@ -69,8 +69,8 @@ stages:
       size: 7756
     - path: src/project/prepare.py
       hash: md5
-      md5: 3650aacdb0571c6690c47beb1c50e6bf
-      size: 8363
+      md5: 02a2c59606255083e13187a9a8b02b33
+      size: 10852
     - path: src/project/tracking.py
       hash: md5
       md5: 5956002ab6539b21b0eb796d68363cd5
@@ -89,34 +89,34 @@ stages:
           min_avance: 0.8
           excluir_fechas:
           - - '2026-08-31'
-            - '2026-09-07'
+            - '2026-09-11'
     outs:
     - path: data/interim/emt_tracked
       hash: md5
-      md5: 0f41c05d9eca96e7af3c85f43cd1f100.dir
-      size: 282493993
+      md5: c1402170f995f535a893ad63eed50b70.dir
+      size: 269439495
       nfiles: 32
     - path: data/interim/pasos
       hash: md5
-      md5: a956b3d98b975cbb77acbccf284b5cf3.dir
-      size: 47600540
+      md5: fe4d486d84f3f45dc1e180215a7d9e35.dir
+      size: 43286167
       nfiles: 32
     - path: data/interim/viajes
       hash: md5
-      md5: bfd5d890b1e9f4e6fb65a5f6c3dd2088.dir
-      size: 6798228
+      md5: f680714f57c149d35526f7af85f9ef10.dir
+      size: 6518622
       nfiles: 32
     - path: metrics/prepare.json
       hash: md5
-      md5: 8dc9f9967c591b93bb9c84258167b504
-      size: 12606
+      md5: 90996086ad881109e74929e048290dc4
+      size: 12070
   features:
     cmd: uv run python -m project.features
     deps:
     - path: data/interim/pasos
       hash: md5
-      md5: a956b3d98b975cbb77acbccf284b5cf3.dir
-      size: 47600540
+      md5: fe4d486d84f3f45dc1e180215a7d9e35.dir
+      size: 43286167
       nfiles: 32
     - path: src/project/features.py
       hash: md5
@@ -146,13 +146,13 @@ stages:
     outs:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 713f2bc678749198bea52ae2ffeafaea
-      size: 27003139
+      md5: 85e785d1907b797e60a95342e29e1019
+      size: 27006683
     - path: data/processed/train.parquet
       hash: md5
-      md5: 9588fe63989479a1f6d588fba3ef94a4
-      size: 115627909
+      md5: 6521ecb19b568fc4857897211985f4c7
+      size: 101709118
     - path: metrics/features.json
       hash: md5
-      md5: d9dc27143c3cd877090a60b9893c4484
-      size: 14293
+      md5: 8ec4d8a2733891762c16fe86e5b69d0f
+      size: 14294

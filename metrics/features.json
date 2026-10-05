@@ -1,14 +1,14 @@
 {
   "filas": {
-    "train": 1236585,
+    "train": 1101471,
     "test": 269493
   },
   "dias": {
-    "train": 19,
+    "train": 16,
     "test": 5
   },
   "positivos": {
-    "train": 0.057,
+    "train": 0.0488,
     "test": 0.0585
   },
   "baselines_test": {
