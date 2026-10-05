@@ -348,7 +348,14 @@ septiembre para el 31/08-07/09 en ningún archivo (`docs/09`,
 pero descargarlas exige el plan de pago de Transitland; `ingest.transitland`
 queda como consulta de metadatos.
 
-**Reabrir si** aparece una versión archivada (Transitland) que cubra 15-23/08.
+**Ampliada al 11/09 (05/10).** Etiquetados con el de verano, el 08-10/09 eran
+135.114 filas de `train.parquet` (el 10,9 %), con 4-6 veces los conflictos y
+los rechazos por margen de un día de agosto (bitácora 024). Se excluyen igual
+que el 31/08-07/09. Consecuencia: el entrenamiento queda entero en agosto y la
+prueba en septiembre lectivo. Se corrige moviendo el corte con la captura
+posterior al 18/09, no volviendo a incluir estos días.
+
+**Reabrir si** aparece una versión archivada (Transitland) que cubra 15-23/08 o el 08-11/09.
 
 ---
 

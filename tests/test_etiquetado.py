@@ -789,11 +789,12 @@ def test_cada_clave_de_params_prepare_llega_al_etiquetado():
         return [plano(x) for x in v] if isinstance(v, (list, tuple)) else v
 
     assert all(plano(getattr(p, k)) == plano(v) for k, v in cfg.items())
-    assert p.excluido(date(2026, 9, 3)) and not p.excluido(date(2026, 9, 8))
+    assert p.excluido(date(2026, 9, 3)) and p.excluido(date(2026, 9, 8))
+    assert not p.excluido(date(2026, 8, 30)) and not p.excluido(date(2026, 9, 12))
 
 
 def test_un_dia_excluido_no_se_etiqueta_y_se_cuenta(horario_a):
-    """Del 31/08 al 07/09 ningún horario publicado describe lo que circuló
+    """Del 31/08 al 11/09 ningún horario que tengamos describe lo que circuló
     (bitácora 024): esos días se excluyen de forma declarada, no se etiquetan
     con un horario que no es, y cada tramo queda contado como `excluido`.
     """
