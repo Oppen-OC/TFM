@@ -1152,3 +1152,40 @@ reemplazar = '''        if c not in df:
             esquema = esquema.remove(esquema.get_field_index(c))'''
 detector = ["tests/test_etiquetado.py::test_un_dia_excluido_se_escribe_con_el_mismo_esquema"]
 sondas = []
+
+[[mutante]]
+id = "093"
+nombre = "la cola de la asignación se estima sin corregir el truncamiento"
+capa = "analysis"
+# Sin restar los viajes cuyo umbral queda por debajo, Lynden-Bell es la
+# distribución empírica: la cola sale corta y la cota de malas asignaciones,
+# también.
+fichero = "src/project/analysis/medir_asignacion.py"
+buscar = '''    r = np.searchsorted(t, t, side="right") - np.searchsorted(np.sort(c), t)'''
+reemplazar = '''    r = np.searchsorted(t, t, side="right")'''
+detector = ["tests/test_medir_asignacion.py::test_la_cola_truncada_recupera_la_distribucion"]
+sondas = []
+
+[[mutante]]
+id = "094"
+nombre = "la estimación calibrada es la cota bruta"
+capa = "analysis"
+# La bruta cuenta otra vez como adelanto al bus mal asignado: con cola gruesa
+# dobla la verdad.
+fichero = "src/project/analysis/medir_asignacion.py"
+buscar = '''    return mal, mal * rechazos_obs / rech if rech else float("nan"), rech'''
+reemplazar = '''    return mal, mal, rech'''
+detector = ["tests/test_medir_asignacion.py::test_la_cota_acota_y_la_calibrada_recupera_lo_que_no_se_ve"]
+sondas = []
+
+[[mutante]]
+id = "095"
+nombre = "cada viaje asignado cuenta por uno, sin la probabilidad inversa"
+capa = "analysis"
+# Los viajes de intervalo corto se ven menos (más se rechazan o se pliegan): sin
+# el peso, la cota olvida justo los que más fallan.
+fichero = "src/project/analysis/medir_asignacion.py"
+buscar = '''        peso=1 / np.clip(bien, 0.05, None),'''
+reemplazar = '''        peso=1.0,'''
+detector = ["tests/test_medir_asignacion.py::test_la_cota_acota_y_la_calibrada_recupera_lo_que_no_se_ve"]
+sondas = []

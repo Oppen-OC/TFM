@@ -349,8 +349,8 @@ pero descargarlas exige el plan de pago de Transitland; `ingest.transitland`
 queda como consulta de metadatos.
 
 **Ampliada al 11/09 (05/10).** Etiquetados con el de verano, el 08-10/09 eran
-135.114 filas de `train.parquet` (el 10,9 %), con 4-6 veces los conflictos y
-los rechazos por margen de un día de agosto (bitácora 024). Se excluyen igual
+135.114 filas de `train.parquet` (el 10,9 %), con 5-6 veces los conflictos y
+8-9 veces los rechazos por margen de un día medio de agosto (bitácora 037). Se excluyen igual
 que el 31/08-07/09. Consecuencia: el entrenamiento queda entero en agosto y la
 prueba en septiembre lectivo. Se corrige moviendo el corte con la captura
 posterior al 18/09, no volviendo a incluir estos días.
@@ -510,6 +510,12 @@ Reproducir: `uv run python -m project.analysis.medir_rutas lineas` y
   necesita saber qué tramos entre paradas tienen un sensor de la capa 192
   encima. Hoy la cobertura solo está medida por posición (69,4 % a menos de
   50 m, `docs/10`). Se mide al meter la capa 192 en `features.py`.
+- **Estrato por intervalo de paso.** La asignación pliega al viaje siguiente el
+  11 % de los viajes con intervalo de 8 min o menos y menos del 2 % de los de
+  más de 15 (bitácora 038), y se lleva la mitad de los retrasos de más de
+  5 min. Falta decidir si el intervalo es un segundo estrato junto al de
+  sensores, y si la variante binaria se publica solo en las bandas largas. Se
+  decide al escribir `evaluate.py`.
 - **Cómo se codifica la línea.** Diez líneas de la prueba no tienen ni un viaje
   de entrenamiento. Que el modelo pueda predecirlas depende de cómo entre
   `linea` como variable. Se decide al escribir `train.py`.

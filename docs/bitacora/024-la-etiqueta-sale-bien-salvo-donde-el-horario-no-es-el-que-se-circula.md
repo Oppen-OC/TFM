@@ -111,10 +111,13 @@ Abierto:
    **Sigue abierto el 08-11/09:** las versiones del 10 al 18/09 lo cubren con
    horario de septiembre, pero descargar zips archivados exige el plan de pago
    de Transitland (401 con la key gratuita). Hoy se etiqueta con el de verano.
+   **Cerrado el 05/10:** excluido también el 08-11/09; era el 10,9 % del
+   entrenamiento (entrada 037).
 2. Los 7.218 conflictos y los tramos cortos: cuántos son buses partidos por el
    tracker, que pierden la etiqueta de un tramo.
 3. El sesgo declarado de la asignación: un bus que va más de medio intervalo
-   fuera de horario se asigna al viaje contiguo, sin que nada lo delate.
+   fuera de horario se asigna al viaje contiguo, sin que nada lo delate. **Acotado
+   el 05/10** en la entrada 038: 4,1 % de los viajes, 3,0 % sin delatar.
 
 ## Para la memoria
 
