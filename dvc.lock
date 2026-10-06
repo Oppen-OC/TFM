@@ -165,8 +165,8 @@ stages:
       size: 143145417
     - path: src/project/evaluate.py
       hash: md5
-      md5: 6b668f54f46352b9562b2546c263049f
-      size: 8221
+      md5: b57addc0e99986eab905c6127f44cdfd
+      size: 8805
     - path: src/project/features.py
       hash: md5
       md5: 6fb62ee06b4f08b66191db1f44f08d1b
@@ -198,7 +198,7 @@ stages:
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: 33e467c97cb1fe5c5035f8aa564a5f1a
+      md5: eedcbba97ff123bd76c757f0413b9929
       size: 24518136
   evaluate:
     cmd: uv run python -m project.evaluate
@@ -218,12 +218,12 @@ stages:
       nfiles: 13
     - path: models/model.pkl
       hash: md5
-      md5: 33e467c97cb1fe5c5035f8aa564a5f1a
+      md5: eedcbba97ff123bd76c757f0413b9929
       size: 24518136
     - path: src/project/evaluate.py
       hash: md5
-      md5: 6b668f54f46352b9562b2546c263049f
-      size: 8221
+      md5: b57addc0e99986eab905c6127f44cdfd
+      size: 8805
     - path: src/project/features.py
       hash: md5
       md5: 6fb62ee06b4f08b66191db1f44f08d1b
@@ -244,5 +244,5 @@ stages:
     outs:
     - path: metrics/eval.json
       hash: md5
-      md5: bb482fd4971c3f427e8b02ed9e1a1af2
-      size: 32414
+      md5: 904febc955802a854fc3ba5d524a15e0
+      size: 36871

@@ -1,7 +1,7 @@
 {
   "modelo": {
     "n_arboles": 1517,
-    "mlflow_run_id": "32a8d78ffdd0467189e3725a3307ada3"
+    "mlflow_run_id": "a1b8fb7ff26747bb91010568a125be0f"
   },
   "remuestreo": {
     "unidad": "viaje",
@@ -52,6 +52,32 @@
           -8.85
         ]
       }
+    },
+    "modelo_menos_remuestreando_dias": {
+      "persistencia": {
+        "mae_s": -12.41,
+        "mae_ic95": [
+          -12.76,
+          -12.01
+        ],
+        "rmse_s": -24.3,
+        "rmse_ic95": [
+          -25.99,
+          -22.7
+        ]
+      },
+      "persistencia_tramo": {
+        "mae_s": -2.09,
+        "mae_ic95": [
+          -2.25,
+          -1.95
+        ],
+        "rmse_s": -9.35,
+        "rmse_ic95": [
+          -10.89,
+          -7.9
+        ]
+      }
     }
   },
   "por_grupo": {
@@ -97,6 +123,32 @@
           "rmse_ic95": [
             -6.12,
             -2.49
+          ]
+        }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": -12.39,
+          "mae_ic95": [
+            -12.78,
+            -11.98
+          ],
+          "rmse_s": -13.82,
+          "rmse_ic95": [
+            -20.5,
+            -10.68
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -0.97,
+          "mae_ic95": [
+            -1.46,
+            -0.51
+          ],
+          "rmse_s": -3.79,
+          "rmse_ic95": [
+            -6.77,
+            -2.26
           ]
         }
       }
@@ -145,6 +197,32 @@
             -9.07
           ]
         }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": -12.42,
+          "mae_ic95": [
+            -12.77,
+            -12.0
+          ],
+          "rmse_s": -24.77,
+          "rmse_ic95": [
+            -26.41,
+            -23.12
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -2.13,
+          "mae_ic95": [
+            -2.29,
+            -1.99
+          ],
+          "rmse_s": -9.62,
+          "rmse_ic95": [
+            -11.18,
+            -8.15
+          ]
+        }
       }
     },
     "sin_entrenamiento": {
@@ -189,6 +267,32 @@
           "rmse_ic95": [
             11.6,
             28.11
+          ]
+        }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": 17.41,
+          "mae_ic95": [
+            17.41,
+            17.41
+          ],
+          "rmse_s": 20.11,
+          "rmse_ic95": [
+            20.11,
+            20.11
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": 17.41,
+          "mae_ic95": [
+            17.41,
+            17.41
+          ],
+          "rmse_s": 20.11,
+          "rmse_ic95": [
+            20.11,
+            20.11
           ]
         }
       }
@@ -239,6 +343,32 @@
             -10.89
           ]
         }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": -11.89,
+          "mae_ic95": [
+            -12.11,
+            -11.66
+          ],
+          "rmse_s": -23.36,
+          "rmse_ic95": [
+            -25.28,
+            -22.02
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -2.22,
+          "mae_ic95": [
+            -2.44,
+            -2.08
+          ],
+          "rmse_s": -12.0,
+          "rmse_ic95": [
+            -14.38,
+            -10.35
+          ]
+        }
       }
     },
     "8-15 min": {
@@ -283,6 +413,32 @@
           "rmse_ic95": [
             -10.26,
             -8.64
+          ]
+        }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": -12.68,
+          "mae_ic95": [
+            -13.1,
+            -12.17
+          ],
+          "rmse_s": -24.99,
+          "rmse_ic95": [
+            -26.9,
+            -22.84
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -2.01,
+          "mae_ic95": [
+            -2.18,
+            -1.87
+          ],
+          "rmse_s": -9.41,
+          "rmse_ic95": [
+            -10.97,
+            -7.94
           ]
         }
       }
@@ -331,6 +487,32 @@
             -6.46
           ]
         }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": -12.65,
+          "mae_ic95": [
+            -13.61,
+            -11.91
+          ],
+          "rmse_s": -27.35,
+          "rmse_ic95": [
+            -31.28,
+            -24.27
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -2.06,
+          "mae_ic95": [
+            -2.4,
+            -1.82
+          ],
+          "rmse_s": -7.32,
+          "rmse_ic95": [
+            -9.62,
+            -5.62
+          ]
+        }
       }
     },
     "> 30 min": {
@@ -375,6 +557,32 @@
           "rmse_ic95": [
             -4.4,
             -2.9
+          ]
+        }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": -11.61,
+          "mae_ic95": [
+            -11.88,
+            -11.37
+          ],
+          "rmse_s": -14.28,
+          "rmse_ic95": [
+            -15.73,
+            -13.07
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -2.22,
+          "mae_ic95": [
+            -2.34,
+            -2.1
+          ],
+          "rmse_s": -3.59,
+          "rmse_ic95": [
+            -4.4,
+            -3.01
           ]
         }
       }
