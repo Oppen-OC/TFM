@@ -54,8 +54,8 @@ features:
 
 train:
   # Brazo elegido por analysis/elegir_brazo.py en la validación (ADR-021).
-  objective: reg:squarederror
-  residuo: false            # aprender objetivo − retraso_s y sumarlo en predict
+  objective: reg:absoluteerror
+  residuo: true             # aprender objetivo − retraso_s y sumarlo en predict
   eval_metric: mae          # la parada mira la métrica titular, no el RMSE
   n_estimators: 3000        # tope: con la parada por MAE, 800 se quedaba corto
   max_depth: 8

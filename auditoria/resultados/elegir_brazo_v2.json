@@ -1,0 +1,223 @@
+{
+  "brazos": [
+    {
+      "nombre": "nivel_cuadratica",
+      "objective": "reg:squarederror",
+      "residuo": false,
+      "cambios": 0,
+      "mae_s": 26.97,
+      "validacion": {
+        "n_arboles": 276,
+        "dias": [
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20"
+        ],
+        "modelo": {
+          "mae_s": 26.97,
+          "rmse_s": 54.05
+        },
+        "horario": {
+          "mae_s": 141.32,
+          "rmse_s": 196.18
+        },
+        "persistencia": {
+          "mae_s": 36.81,
+          "rmse_s": 69.1
+        },
+        "persistencia_tramo": {
+          "mae_s": 27.67,
+          "rmse_s": 56.48
+        },
+        "modelo_menos_persistencia_tramo": {
+          "mae_s": -0.71,
+          "mae_ic95": [
+            -0.96,
+            -0.4
+          ],
+          "rmse_s": -2.43,
+          "rmse_ic95": [
+            -8.3,
+            4.26
+          ]
+        }
+      },
+      "ic_frente_al_mejor": [
+        1.3,
+        1.83
+      ]
+    },
+    {
+      "nombre": "nivel_absoluta",
+      "objective": "reg:absoluteerror",
+      "residuo": false,
+      "cambios": 1,
+      "mae_s": 26.36,
+      "validacion": {
+        "n_arboles": 863,
+        "dias": [
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20"
+        ],
+        "modelo": {
+          "mae_s": 26.36,
+          "rmse_s": 54.12
+        },
+        "horario": {
+          "mae_s": 141.32,
+          "rmse_s": 196.18
+        },
+        "persistencia": {
+          "mae_s": 36.81,
+          "rmse_s": 69.1
+        },
+        "persistencia_tramo": {
+          "mae_s": 27.67,
+          "rmse_s": 56.48
+        },
+        "modelo_menos_persistencia_tramo": {
+          "mae_s": -1.32,
+          "mae_ic95": [
+            -1.56,
+            -1.01
+          ],
+          "rmse_s": -2.36,
+          "rmse_ic95": [
+            -8.74,
+            4.93
+          ]
+        }
+      },
+      "ic_frente_al_mejor": [
+        0.7,
+        1.22
+      ]
+    },
+    {
+      "nombre": "residuo_cuadratica",
+      "objective": "reg:squarederror",
+      "residuo": true,
+      "cambios": 1,
+      "mae_s": 26.11,
+      "validacion": {
+        "n_arboles": 204,
+        "dias": [
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20"
+        ],
+        "modelo": {
+          "mae_s": 26.11,
+          "rmse_s": 46.88
+        },
+        "horario": {
+          "mae_s": 141.32,
+          "rmse_s": 196.18
+        },
+        "persistencia": {
+          "mae_s": 36.81,
+          "rmse_s": 69.1
+        },
+        "persistencia_tramo": {
+          "mae_s": 27.67,
+          "rmse_s": 56.48
+        },
+        "modelo_menos_persistencia_tramo": {
+          "mae_s": -1.57,
+          "mae_ic95": [
+            -1.64,
+            -1.48
+          ],
+          "rmse_s": -9.6,
+          "rmse_ic95": [
+            -11.04,
+            -8.04
+          ]
+        }
+      },
+      "ic_frente_al_mejor": [
+        0.64,
+        0.71
+      ]
+    },
+    {
+      "nombre": "residuo_absoluta",
+      "objective": "reg:absoluteerror",
+      "residuo": true,
+      "cambios": 2,
+      "mae_s": 25.43,
+      "validacion": {
+        "n_arboles": 1517,
+        "dias": [
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16",
+          "2026-09-17",
+          "2026-09-18",
+          "2026-09-19",
+          "2026-09-20"
+        ],
+        "modelo": {
+          "mae_s": 25.43,
+          "rmse_s": 47.07
+        },
+        "horario": {
+          "mae_s": 141.32,
+          "rmse_s": 196.18
+        },
+        "persistencia": {
+          "mae_s": 36.81,
+          "rmse_s": 69.1
+        },
+        "persistencia_tramo": {
+          "mae_s": 27.67,
+          "rmse_s": 56.48
+        },
+        "modelo_menos_persistencia_tramo": {
+          "mae_s": -2.24,
+          "mae_ic95": [
+            -2.32,
+            -2.16
+          ],
+          "rmse_s": -9.41,
+          "rmse_ic95": [
+            -10.75,
+            -7.91
+          ]
+        }
+      },
+      "ic_frente_al_mejor": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "mejor_mae": "residuo_absoluta",
+  "elegido": "residuo_absoluta",
+  "sin_linea_menos_con_linea": {
+    "mae_s": 0.17,
+    "mae_ic95": [
+      0.15,
+      0.19
+    ],
+    "rmse_s": 0.07,
+    "rmse_ic95": [
+      0.01,
+      0.14
+    ]
+  },
+  "linea_sale": false
+}
