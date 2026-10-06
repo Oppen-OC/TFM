@@ -1229,7 +1229,8 @@ sondas = []
 id = "099"
 nombre = "linea pasa a categórica con las categorías que vea cada tabla"
 capa = "features"
-# La misma línea, otro código en la prueba: el modelo lee otra línea sin error.
+# La misma línea, otro código en la prueba: un modelo que recibe los códigos lee
+# otra línea sin error. XGBoost 3.2 con pandas recodifica por valor (bitácora 040).
 fichero = "src/project/features.py"
 buscar = '''        x["linea"] = pd.Categorical(x["linea"].astype(str), categories=categorias)'''
 reemplazar = '''        x["linea"] = x["linea"].astype(str).astype("category")'''
@@ -1243,7 +1244,77 @@ capa = "features"
 # El listón del tráfico baja a 36,8 s: cualquier modelo que aprenda el sesgo del
 # horario parecería aportar.
 fichero = "src/project/features.py"
-buscar = '''                g["retraso_s"] + g["tramo_sesgo_s"].fillna(0.0), g[objetivo]'''
-reemplazar = '''                g["retraso_s"], g[objetivo]'''
+buscar = '''        "persistencia_tramo": t["retraso_s"] + t["tramo_sesgo_s"].fillna(0.0),'''
+reemplazar = '''        "persistencia_tramo": t["retraso_s"],'''
 detector = ["tests/test_features.py::test_los_baselines_traen_el_soporte_y_los_grupos"]
+sondas = []
+
+[[mutante]]
+id = "101"
+nombre = "train escribe sus columnas y deja fuera las de la flota"
+capa = "modelo"
+# El modelo entrena sin la flota como sensor y nada falla: la tabla las trae,
+# pero no las mira (train/serve skew).
+fichero = "src/project/train.py"
+buscar = '''    return features.variables(tuple(cfg["lags_min"]), features.ventanas_flota(cfg))'''
+reemplazar = '''    return features.variables(tuple(cfg["lags_min"]), ())'''
+detector = ["tests/test_modelo.py::test_el_modelo_ve_exactamente_las_variables_de_features"]
+sondas = []
+
+[[mutante]]
+id = "102"
+nombre = "la validación de la parada temprana son los primeros días"
+capa = "modelo"
+# Los árboles se eligen con agosto, el periodo más lejano de la prueba.
+fichero = "src/project/train.py"
+buscar = '''    val = train["fecha_servicio"] >= corte'''
+reemplazar = '''    val = train["fecha_servicio"] < np.sort(train["fecha_servicio"].unique())[dias]'''
+detector = ["tests/test_modelo.py::test_la_validacion_son_los_ultimos_dias_del_entrenamiento"]
+sondas = []
+
+[[mutante]]
+id = "103"
+nombre = "el modelo guardado no se reajusta con los días de validación"
+capa = "modelo"
+# Pierde 3 de los 7 días lectivos del entrenamiento, los más cercanos a la prueba.
+fichero = "src/project/train.py"
+buscar = '''    final.fit(x(train), train[objetivo], verbose=False)'''
+reemplazar = '''    final.fit(x(ajuste), ajuste[objetivo], verbose=False)'''
+detector = ["tests/test_modelo.py::test_el_modelo_final_se_reajusta_con_los_dias_de_validacion"]
+sondas = []
+
+[[mutante]]
+id = "104"
+nombre = "predict recalcula las categorías de linea con la tabla que recibe"
+capa = "modelo"
+# XGBoost 3.2 recodifica por valor las líneas que vio, pero una que no vio la
+# rechaza con error: la línea 8 de la prueba tira la evaluación (bitácora 040).
+fichero = "src/project/predict.py"
+buscar = '''    x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])'''
+reemplazar = '''    x = features.matriz(tabla, artefacto["columnas"], features.categorias_linea(tabla))'''
+detector = ["tests/test_modelo.py::test_predict_reutiliza_las_categorias_guardadas_con_el_modelo"]
+sondas = []
+
+[[mutante]]
+id = "105"
+nombre = "el intervalo de la diferencia remuestrea filas"
+capa = "modelo"
+# Las paradas de un viaje están correlacionadas: el intervalo sale varias veces
+# más estrecho y declara mejoras que no lo son (ADR-018).
+fichero = "src/project/evaluate.py"
+buscar = '''        .groupby(viaje)'''
+reemplazar = '''        .groupby(np.arange(len(viaje)))'''
+detector = ["tests/test_modelo.py::test_el_intervalo_remuestrea_viajes_y_no_filas"]
+sondas = []
+
+[[mutante]]
+id = "106"
+nombre = "el intervalo de paso cuenta las llegadas a la cabecera"
+capa = "modelo"
+# Los finales del otro sentido parten el intervalo: el 92 % de los viajes caía en
+# la banda de 8 min o menos (bitácora 038).
+fichero = "src/project/evaluate.py"
+buscar = '''    pv = pv[pv["stop_sequence"] < ultima]'''
+reemplazar = '''    pv = pv[pv["stop_sequence"] <= ultima]'''
+detector = ["tests/test_modelo.py::test_el_intervalo_de_paso_es_el_de_los_que_salen_de_la_cabecera"]
 sondas = []

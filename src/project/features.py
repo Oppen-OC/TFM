@@ -87,8 +87,11 @@ def matriz(
     """Las variables del modelo, con `linea` categórica sobre `categorias`.
 
     pandas numera las categorías por las que ve en cada tabla: sin fijarlas, la
-    misma línea tiene otro código en la prueba y el modelo lee otra línea sin
-    ningún error. La que el entrenamiento no vio queda nula.
+    misma línea tiene otro código en la prueba. XGBoost (≥ 3.1) guarda las del
+    entrenamiento y recodifica por valor, así que una línea que vio se lee bien
+    igual; la que no vio, en cambio, la rechaza con error. Fijadas, esa queda
+    nula y se predice como dato faltante, y la matriz no depende de que la
+    librería recodifique (bitácora 040).
     """
     x = tabla[columnas].copy()
     if "linea" in x:

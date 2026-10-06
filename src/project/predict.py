@@ -2,8 +2,9 @@
 
 El modelo se guarda con sus columnas y con las categorías de `linea` del
 entrenamiento (`train.py`). La entrada pasa por `features.matriz` con ESAS, no
-con las que traiga la tabla: recalcularlas aquí numera las líneas de otra forma
-y el modelo lee otra línea sin error alguno (ADR-019).
+con las que traiga la tabla: con las de la tabla, una línea que el
+entrenamiento no vio hace que XGBoost rechace la petición entera con error;
+con las guardadas queda nula y se predice como dato faltante (ADR-019).
 """
 
 from __future__ import annotations

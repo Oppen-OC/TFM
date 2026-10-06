@@ -540,7 +540,10 @@ tramo: la variable es nula hasta que acumula `soporte_min` viajes.
 
 **Alternativas.** `linea` como texto: XGBoost no lo admite. Categórica con las
 categorías de cada tabla: cada tabla numera las suyas, y la prueba lee otra
-línea sin error (mutante 099). Codificación por media del objetivo: fuga si se
+línea sin error (mutante 099) si el modelo recibe los códigos. XGBoost 3.2,
+con entrada pandas, recodifica por valor las líneas que vio y rechaza con error
+la que no vio: la 8 de la prueba tiraría la evaluación entera (mutante 104,
+bitácora 040). Codificación por media del objetivo: fuga si se
 calcula con la fila dentro. El par (línea, parada) como categórica: miles de
 niveles; la mediana histórica condensa lo mismo en una columna. El sesgo
 congelado con el entrenamiento: 27,48 s frente a 26,48 s con todo lo anterior al

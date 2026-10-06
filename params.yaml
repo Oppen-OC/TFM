@@ -65,5 +65,6 @@ train:
   random_state: 42
   # La parada temprana se mide en los últimos días del ENTRENAMIENTO, nunca en
   # la prueba. Con el número de árboles que sale, se reajusta con el
-  # entrenamiento entero: son 3 de sus 7 días lectivos.
+  # entrenamiento entero: son los más cercanos a la prueba (18-20/09, de
+  # viernes a domingo).
   dias_validacion: 3

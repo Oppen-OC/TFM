@@ -8,9 +8,10 @@ Ninguna lista de columnas se escribe a mano: es el train/serve skew.
 
 La parada temprana se mide en los últimos `dias_validacion` días del
 entrenamiento, nunca en la prueba. Con los árboles que salen, el modelo se
-reajusta con el entrenamiento ENTERO: esos días son 3 de sus 7 lectivos y los
-más cercanos a la prueba, que tiene más retrasos (5,4 % frente a 7,1 % de más
-de 5 min).
+reajusta con el entrenamiento ENTERO: esos días son los más cercanos a la
+prueba, que tiene más retrasos (5,4 % frente a 7,1 % de más de 5 min). Con el
+corte del 21/09 son el 18-20/09, viernes, sábado y domingo: no tienen la
+composición de la prueba, que son dos semanas enteras.
 
 Guarda en `settings.model_path` el modelo, sus columnas, sus categorías, los
 árboles y el run de MLflow donde `evaluate.py` añade las métricas de la prueba.

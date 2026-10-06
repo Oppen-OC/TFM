@@ -84,14 +84,22 @@ def test_el_modelo_final_se_reajusta_con_los_dias_de_validacion():
 
 
 def test_predict_reutiliza_las_categorias_guardadas_con_el_modelo():
-    """Una tabla con una sola línea numeraría la C como 0, que en el modelo es la A."""
+    """Una tabla con la C y una línea que el entrenamiento no vio, la Z.
+
+    XGBoost (≥ 3.1) guarda las categorías y recodifica por valor las que vio: la
+    C se lee como C aunque la tabla la numere 0. La Z, con las categorías de la
+    tabla, la rechaza con error y tira la evaluación entera (la prueba trae la
+    línea 8, sin entrenamiento). Con las guardadas queda nula: dato faltante.
+    """
     t = _tabla()
     art = train.entrenar(t, train.columnas(CFG), OBJ, PARAMS)
     solo_c = t[t["linea"] == "C"].head(50)
-    sola = predict.predecir(art, solo_c)
+    nueva = t.tail(5).assign(linea="Z")
+    pred = predict.predecir(art, pd.concat([solo_c, nueva], ignore_index=True))
     mezcla = predict.predecir(art, t).loc[solo_c.index]
-    np.testing.assert_allclose(sola, mezcla, rtol=1e-6)
-    assert sola.mean() > 150
+    np.testing.assert_allclose(pred.iloc[:50], mezcla, rtol=1e-6)
+    assert pred.iloc[:50].mean() > 150
+    assert pred.iloc[50:].notna().all()
 
 
 def test_el_intervalo_remuestrea_viajes_y_no_filas():
