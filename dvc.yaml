@@ -11,10 +11,8 @@
 #                         ▲
 #               data/raw/gtfs (todas las versiones del feed)
 #
-# `dvc repro` llega hasta `features` y falla en `train`: `train.py`, `predict.py`
-# y `evaluate.py` siguen vacíos. Ese fallo es el comportamiento correcto, no el
-# bug que había antes: hasta 08/2026 el bloque `stages:` vivía en params.yaml y
-# `dvc repro` simplemente no ejecutaba nada.
+# Hasta 08/2026 el bloque `stages:` vivía en params.yaml y `dvc repro`
+# simplemente no ejecutaba nada.
 
 stages:
   curar:
@@ -83,11 +81,24 @@ stages:
       - models/model.pkl
 
   evaluate:
+    # El modelo contra los tres baselines, con la diferencia y su intervalo
+    # remuestreando viajes (ADR-018), por grupo de soporte y por banda de
+    # intervalo programado, que sale del GTFS (bitácora 038). El soporte de cada
+    # línea cuenta sus viajes de entrenamiento.
     cmd: uv run python -m project.evaluate
     deps:
+      - data/processed/train.parquet
       - data/processed/test.parquet
       - models/model.pkl
+      - data/raw/gtfs
+      - src/project/evaluate.py
       - src/project/predict.py
+      - src/project/features.py
+      - src/project/gtfs.py
+    params:
+      - features.objetivo
+      - features.linea_min_viajes
+      - features.linea_min_dias
     metrics:
       - metrics/eval.json:
           cache: false

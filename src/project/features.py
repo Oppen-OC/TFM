@@ -308,30 +308,43 @@ def soporte_por_linea(
     return s
 
 
-def baselines(test: pd.DataFrame, objetivo: str, soporte: pd.DataFrame) -> dict:
-    """MAE y RMSE de los baselines: horario (0), persistencia y persistencia más
-    el sesgo del tramo (nulo = 0).
+def ventanas_flota(cfg: dict) -> tuple[int, ...]:
+    """Las ventanas de la flota según `params.yaml → features`; ninguna si no entra."""
+    return tuple(cfg["ventanas_flota_min"]) if cfg["incluir_flota"] else ()
+
+
+def predicciones_baseline(t: pd.DataFrame) -> dict[str, pd.Series]:
+    """Lo que predice cada baseline, fila a fila: horario (0), persistencia y
+    persistencia más el sesgo del tramo (nulo = 0).
 
     El tercero es el listón del tráfico: batir la persistencia es, sobre todo,
-    aprender el sesgo fijo del horario (bitácora 039). Globales, por línea con su
-    soporte, y por grupo de soporte (`soporte_por_linea`).
+    aprender el sesgo fijo del horario (bitácora 039). `evaluate.py` compara el
+    modelo con estas mismas series: definirlas dos veces es medir contra otro
+    listón sin saberlo.
     """
+    return {
+        "horario": pd.Series(0.0, index=t.index),
+        "persistencia": t["retraso_s"],
+        "persistencia_tramo": t["retraso_s"] + t["tramo_sesgo_s"].fillna(0.0),
+    }
 
-    def errores(pred: pd.Series, real: pd.Series) -> dict:
-        e = (pred - real).to_numpy()
-        return {
-            "mae_s": round(float(np.abs(e).mean()), 2),
-            "rmse_s": round(float(np.sqrt((e**2).mean())), 2),
-        }
+
+def errores(pred: pd.Series, real: pd.Series) -> dict:
+    e = (pred - real).to_numpy()
+    return {
+        "mae_s": round(float(np.abs(e).mean()), 2),
+        "rmse_s": round(float(np.sqrt((e**2).mean())), 2),
+    }
+
+
+def baselines(test: pd.DataFrame, objetivo: str, soporte: pd.DataFrame) -> dict:
+    """MAE y RMSE de `predicciones_baseline`: globales, por línea con su soporte,
+    y por grupo de soporte (`soporte_por_linea`)."""
 
     def los_dos(g: pd.DataFrame) -> dict:
         return {
             "filas": int(len(g)),
-            "horario": errores(pd.Series(0.0, index=g.index), g[objetivo]),
-            "persistencia": errores(g["retraso_s"], g[objetivo]),
-            "persistencia_tramo": errores(
-                g["retraso_s"] + g["tramo_sesgo_s"].fillna(0.0), g[objetivo]
-            ),
+            **{k: errores(v, g[objetivo]) for k, v in predicciones_baseline(g).items()},
         }
 
     fuera = {k: v for k, v in los_dos(test).items() if k != "filas"}
@@ -353,7 +366,7 @@ def main() -> None:
     cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
     if cfg["incluir_trafico"] or cfg["incluir_meteo"]:
         raise NotImplementedError("capa 192 y meteo: después de la fase 2")
-    flota = tuple(cfg["ventanas_flota_min"]) if cfg["incluir_flota"] else ()
+    flota = ventanas_flota(cfg)
     pasos = pd.concat(
         pd.read_parquet(f)
         for f in sorted((settings.interim_dir / "pasos").rglob("*.parquet"))

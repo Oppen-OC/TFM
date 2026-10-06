@@ -63,3 +63,7 @@ train:
   early_stopping_rounds: 50
   n_jobs: -1
   random_state: 42
+  # La parada temprana se mide en los últimos días del ENTRENAMIENTO, nunca en
+  # la prueba. Con el número de árboles que sale, se reajusta con el
+  # entrenamiento entero: son 3 de sus 7 días lectivos.
+  dias_validacion: 3

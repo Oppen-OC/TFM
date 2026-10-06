@@ -44,7 +44,8 @@ import yaml
 
 from project.config import RAIZ, settings
 from project.etiquetado import Parametros
-from project.gtfs import Horario, cargar_horario, elegir_horario, versiones
+from project.evaluate import intervalos
+from project.gtfs import cargar_horario, elegir_horario, versiones
 from project.prepare import cargar_parametros
 
 
@@ -84,27 +85,6 @@ def cota(v: pd.DataFrame, m: float) -> pd.DataFrame:
     )
 
 
-def _intervalos(h: Horario, dia) -> pd.DataFrame:
-    """trip_id → intervalo con el anterior y el siguiente de su línea en su 1.ª parada."""
-    vj = h.viajes[h.viajes["service_id"].isin(h.servicios(dia))][["trip_id", "linea"]]
-    pv = h.paradas_de_viaje.merge(vj, on="trip_id").drop_duplicates(
-        ["trip_id", "stop_id"]
-    )
-    primera = pv.loc[pv.groupby("trip_id")["stop_sequence"].idxmin()]
-    # Toda cabecera es también el final de los viajes del otro sentido: contadas
-    # sus llegadas, el intervalo sale por la mitad (en el 92 % de los viajes,
-    # ≤ 8 min). Compiten los que salen o pasan, no los que terminan.
-    ultima = pv.groupby("trip_id")["stop_sequence"].transform("max")
-    pv = pv[pv["stop_sequence"] < ultima]
-    pv = pv.sort_values(["linea", "stop_id", "t_prog_s"], kind="stable")
-    g = pv.groupby(["linea", "stop_id"])["t_prog_s"]
-    pv["h_ant_s"] = pv["t_prog_s"] - g.shift(1)
-    pv["h_sig_s"] = g.shift(-1) - pv["t_prog_s"]
-    return primera[["trip_id", "stop_id", "t_prog_s"]].merge(
-        pv[["trip_id", "stop_id", "h_ant_s", "h_sig_s"]], on=["trip_id", "stop_id"]
-    )
-
-
 def cargar() -> tuple[pd.DataFrame, Parametros]:
     p = cargar_parametros()
     viajes = pd.read_parquet(settings.interim_dir / "viajes")
@@ -119,7 +99,7 @@ def cargar() -> tuple[pd.DataFrame, Parametros]:
     partes = []
     for dia, sub in viajes.groupby("fecha_servicio"):
         h, _ = elegir_horario(horarios, dia)
-        partes.append(sub.merge(_intervalos(h, dia), on="trip_id", how="left"))
+        partes.append(sub.merge(intervalos(h, dia), on="trip_id", how="left"))
     v = pd.concat(partes, ignore_index=True).merge(pasos, on="viaje_id", how="left")
     v["hora"] = (v["t_prog_s"] // 3600) % 24
     return v, p
