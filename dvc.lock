@@ -34,8 +34,8 @@ stages:
       size: 6666
     - path: src/project/ingest/sources.py
       hash: md5
-      md5: a92a23d95be8386433b6147105c9d5ca
-      size: 16767
+      md5: a824eb38f1a9743f662bdd62da17bb6a
+      size: 19594
     outs:
     - path: data/curated
       hash: md5
@@ -120,8 +120,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: bafba44e72f022e01b524f492fc03293
-      size: 16965
+      md5: 6fb62ee06b4f08b66191db1f44f08d1b
+      size: 17083
     params:
       params.yaml:
         features:
@@ -163,19 +163,29 @@ stages:
       hash: md5
       md5: 849b200532f4d08636e0d21055d34826
       size: 143145417
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 6b668f54f46352b9562b2546c263049f
+      size: 8221
     - path: src/project/features.py
       hash: md5
-      md5: bafba44e72f022e01b524f492fc03293
-      size: 16965
+      md5: 6fb62ee06b4f08b66191db1f44f08d1b
+      size: 17083
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
     - path: src/project/train.py
       hash: md5
-      md5: 9fe9ec9469df209be6a2e53e6ca2abdb
-      size: 4381
+      md5: 8338d478e66b2442f53560471e16e946
+      size: 6013
     params:
       params.yaml:
         train:
-          objective: reg:squarederror
-          n_estimators: 800
+          objective: reg:absoluteerror
+          residuo: true
+          eval_metric: mae
+          n_estimators: 3000
           max_depth: 8
           learning_rate: 0.05
           subsample: 0.8
@@ -184,12 +194,12 @@ stages:
           early_stopping_rounds: 50
           n_jobs: -1
           random_state: 42
-          dias_validacion: 3
+          dias_validacion: 7
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: ba9f9ed74592adef3536c20e2d062050
-      size: 3285409
+      md5: 33e467c97cb1fe5c5035f8aa564a5f1a
+      size: 24518136
   evaluate:
     cmd: uv run python -m project.evaluate
     deps:
@@ -208,24 +218,24 @@ stages:
       nfiles: 13
     - path: models/model.pkl
       hash: md5
-      md5: ba9f9ed74592adef3536c20e2d062050
-      size: 3285409
+      md5: 33e467c97cb1fe5c5035f8aa564a5f1a
+      size: 24518136
     - path: src/project/evaluate.py
       hash: md5
       md5: 6b668f54f46352b9562b2546c263049f
       size: 8221
     - path: src/project/features.py
       hash: md5
-      md5: bafba44e72f022e01b524f492fc03293
-      size: 16965
+      md5: 6fb62ee06b4f08b66191db1f44f08d1b
+      size: 17083
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
       size: 9426
     - path: src/project/predict.py
       hash: md5
-      md5: 1cf0f387ba69ccd61f228c0f2ed67e75
-      size: 1142
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
     params:
       params.yaml:
         features.linea_min_dias: 3
@@ -234,5 +244,5 @@ stages:
     outs:
     - path: metrics/eval.json
       hash: md5
-      md5: f7e7537da423e5ac3b5aa50932f2dd09
-      size: 32277
+      md5: bb482fd4971c3f427e8b02ed9e1a1af2
+      size: 32414
