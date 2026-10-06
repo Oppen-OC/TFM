@@ -364,7 +364,19 @@ que el 31/08-07/09. Consecuencia: el entrenamiento queda entero en agosto y la
 prueba en septiembre lectivo. Se corrige moviendo el corte con la captura
 posterior al 18/09, no volviendo a incluir estos días.
 
-**Reabrir si** aparece una versión archivada (Transitland) que cubra 15-23/08 o el 08-11/09.
+**Versión posterior archivada y no usada (06/10).** La `05-10-2026` (vigente
+28/09-04/11) contradice el 3,6-7,0 % de los pasos etiquetados del 28/09-04/10.
+Quita la línea 13, que siguió circulando y etiquetándose con retrasos
+plausibles. En la 35 prolonga el horario excepcional (`601`) donde la
+`19-09-2026` vuelve al normal (`606`), y ajustar los viajes observados a uno u
+otro no decide cuál circuló (bitácora 042). Se guarda en `data/raw/gtfs_archivo/`,
+fuera de `gtfs_dir`, y la prueba sigue etiquetada con la `19-09-2026`: cubre el
+periodo entero y casa con lo observado. Es una excepción declarada a «manda la
+más reciente».
+
+**Reabrir si** aparece una versión archivada (Transitland) que cubra 15-23/08 o el
+08-11/09, o si una versión posterior al 19/09 resulta casar mejor con lo
+observado en la 13 o la 35.
 
 ---
 

@@ -200,3 +200,15 @@ días quedan excluidos de forma definitiva (ADR-014).
 Las versiones del 10 al 18/09 sí servirían para el **08-11/09**, que hoy se
 etiqueta con la `01-09-2026` porque la `19-09-2026` empieza el 12/09. No son
 descargables con la key gratuita.
+
+**Después del 19/09 la EMT publicó una versión casi cada día** (14 hasta el
+06/10), con el calendario corriendo: empieza unos 8 días antes de la captura y
+acaba unas 4 semanas después. La del 06/10 (`21a5e04c727f`, `05-10-2026`,
+vigente 28/09-04/11) se descargó de VLCi y está en `data/raw/gtfs_archivo/`,
+**fuera de `gtfs_dir`** para que la etiqueta no la use: quita la línea 13 y
+prolonga el horario excepcional de la 35 (bitácora 042, ADR-014). Para
+contrastar otra versión con lo etiquetado:
+
+```bash
+uv run python -m project.analysis.comparar_gtfs data/raw/gtfs_archivo/google_transit2026-10-04.zip
+```
