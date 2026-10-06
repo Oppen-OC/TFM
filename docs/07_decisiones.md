@@ -605,6 +605,68 @@ Transitland de pago (ADR-014).
 
 ---
 
+## ADR-021 · Protocolo del modelo v2: un listón, cuatro brazos en validación y la prueba una vez · cerrada
+
+Escrito y commiteado **antes** de entrenar ningún brazo.
+
+**Decisión.**
+1. **Métrica primaria:** la diferencia de MAE global entre el modelo y
+   `persistencia_tramo` en la prueba, con su intervalo del 95 % remuestreando
+   viajes (`evaluate.diferencia`). Hay mejora si el intervalo no contiene el
+   cero (ADR-018). El RMSE, los grupos de soporte, las bandas de intervalo y las
+   líneas se informan, pero no deciden.
+2. **Validación:** la semana del 14 al 20/09 (`train.dias_validacion: 7`), de
+   lunes a domingo, con la composición de la prueba. El ajuste es agosto. Tras
+   la parada temprana se reajusta con todo el entrenamiento, como en la v1.
+3. **Cuatro brazos, fijados aquí:** pérdida {`reg:squarederror`,
+   `reg:absoluteerror`} × objetivo {nivel, residuo sobre `retraso_s`}.
+   - El residuo significa que el modelo aprende `objetivo − retraso_s` y
+     `predict` suma `retraso_s` de vuelta.
+   - Todos con parada temprana por MAE (`eval_metric: mae`), tope de 3.000
+     árboles y el resto de hiperparámetros de la v1.
+   - Ninguno lleva `tramo_sesgo_soporte`, que crece con el calendario
+     (bitácora 041).
+4. **Elección.** Gana el brazo con menor MAE en la validación, con una
+   excepción: si su diferencia, sobre los mismos viajes, con un brazo con menos
+   cambios respecto a la v1 tiene un intervalo que contiene el cero, gana el de
+   menos cambios. Los cambios se cuentan así: nivel + cuadrática, 0; nivel +
+   absoluta, 1; residuo + cuadrática, 1; residuo + absoluta, 2. Si empatan dos
+   con el mismo número de cambios, decide el MAE.
+5. **Ablación de `linea`** sobre el brazo elegido, también en la validación. Si
+   el modelo sin `linea` no se distingue del modelo con ella, `linea` sale
+   (ADR-019).
+6. **La prueba se evalúa una sola vez**, con el modelo resultante.
+   - Se declara lo probado en la validación: 4 brazos y 1 ablación.
+   - La v1 (bitácora 041) se conserva como referencia.
+
+**Por qué.** La v1 empató con el listón, y su validación (viernes a domingo) no
+anticipó la prueba. Elegir una variante mirando la prueba convierte la prueba en
+validación y la cifra final deja de ser honesta. Con el protocolo escrito
+antes, la elección se puede defender. Los brazos salen de dos hipótesis con un
+mecanismo detrás:
+- el MAE premia la mediana y la pérdida cuadrática estima la media;
+- un árbol reconstruye a trozos la identidad `retraso_s → objetivo`.
+
+**Consecuencias.**
+- `predict` necesita saber si el modelo es de residuo, y lo lee del artefacto.
+- Quitar una variable de `features.variables()` obliga a reejecutar
+  `features`; la tabla no cambia.
+- Los brazos se entrenan con `analysis/elegir_brazo.py`, fuera del grafo de
+  DVC: solo elige, y lo que entra en `train` es el valor fijado en
+  `params.yaml`. Cada brazo se registra en MLflow.
+
+**Alternativas.**
+- Búsqueda de hiperparámetros: multiplica los brazos y el sobreajuste a la
+  validación. Queda fuera hasta que algún modelo bata al listón.
+- Validar con el 18-20/09: no tiene la composición de la prueba.
+- Evaluar cada brazo en la prueba y quedarse el mejor: es elegir con la prueba.
+
+**Qué la reabriría.** Que ningún brazo bata a `persistencia_tramo` en la
+validación. Entonces el problema no es la pérdida ni el objetivo, sino las
+variables.
+
+---
+
 ## Pendientes de decidir
 
 - **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018
@@ -615,10 +677,6 @@ Transitland de pago (ADR-014).
   banda de intervalo programado (≤ 8, 8-15, 15-30, > 30 min y `sin_intervalo`),
   como el estrato de sensores (bitácora 038). Falta decidir si la variante
   binaria se publica solo en las bandas largas: se decide con el clasificador.
-- **Métrica primaria y protocolo del modelo.** Sin declarar: hoy se informan dos
-  métricas, frente a dos baselines y en cuatro cortes. Propuesta: MAE global
-  frente a la persistencia más el sesgo del tramo, variantes elegidas en la
-  validación y la prueba evaluada una sola vez (bitácora 041).
 - **Unidad de remuestreo del intervalo.** El ADR-018 remuestrea viajes. Si los
   días de la prueba difieren entre sí, remuestrear días daría un intervalo más
   ancho y más honrado, pero exige bastantes más de 5 días. Se mide al rehacer el
