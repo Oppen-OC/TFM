@@ -23,6 +23,9 @@ Diseño deliberado:
 4. Latido en `<out>/_status.json` cada minuto. Corriendo desapegado del
    terminal es la única forma de saber si sigue vivo sin adivinar.
 
+5. El GTFS estático se guarda también, cada versión nueva una vez, porque
+   tampoco tiene histórico: la EMT lo republica casi a diario (bitácora 042).
+
 Escribe a disco y seguirá haciéndolo: Kafka no entra en la captura (ADR-016).
 Son unos 6.200 payloads al día, 0,07 por segundo, y un broker en este camino
 solo añadiría un punto de fallo sobre datos que no se pueden recapturar. Si se
@@ -46,7 +49,18 @@ import httpx
 import pandas as pd
 
 from project.config import settings
-from project.ingest.sources import SOURCES, append_raw, clave_sondeo, now_utc, parse
+from project.ingest.sources import (
+    GTFS_FUENTE,
+    GTFS_PAQUETE,
+    GTFS_PERIODO_S,
+    SOURCES,
+    append_raw,
+    clave_sondeo,
+    guardar_gtfs,
+    gtfs_url,
+    now_utc,
+    parse,
+)
 
 log = logging.getLogger("collect")
 HEADERS = {"User-Agent": "TFM-UPV-BigData/0.1 (investigacion academica)"}
@@ -253,6 +267,40 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
             pass
 
 
+async def capturar_gtfs(client: httpx.AsyncClient, root: Path) -> None:
+    """Cada `GTFS_PERIODO_S`, guarda la versión vigente del GTFS si es nueva.
+
+    `ok` cuenta versiones nuevas y `dup` comprobaciones sin cambio. Tras un
+    error se reintenta en media hora: la EMT publica una vez al día.
+    """
+    st = STATS[GTFS_FUENTE]
+    while not PARAR.is_set():
+        ts = now_utc()
+        espera = GTFS_PERIODO_S
+        try:
+            r = await client.get(GTFS_PAQUETE)
+            r.raise_for_status()
+            url, modificado = gtfs_url(r.json())
+            z = await client.get(url, timeout=120)
+            z.raise_for_status()
+            ruta = guardar_gtfs(root, z.content, url, ts, modificado)
+            if ruta is None:
+                st["dup"] += 1
+            else:
+                st["ok"] += 1
+                st["ultimo_ok"] = ts
+                log.info("gtfs: versión nueva -> %s", ruta.name)
+        except Exception as exc:  # noqa: BLE001
+            st["err"] += 1
+            st["ultimo_error"] = f"{type(exc).__name__}: {exc}"[:200]
+            log.warning("%s: %s: %s", GTFS_FUENTE, type(exc).__name__, exc)
+            espera = 1800
+        try:
+            await asyncio.wait_for(PARAR.wait(), timeout=espera)
+        except asyncio.TimeoutError:
+            pass
+
+
 async def latir(root: Path) -> None:
     # Latido inmediato: si esperas al primer ciclo, durante un minuto entero
     # `--status` dice que no hay nada y parece que el colector no ha arrancado.
@@ -286,9 +334,12 @@ async def main(minutos: int, claves: list[str], root: Path) -> None:
     async with httpx.AsyncClient(
         timeout=20, headers=HEADERS, limits=limites, follow_redirects=True
     ) as client:
-        for k in claves:
+        fuentes = [k for k in claves if k in SOURCES]
+        for k in fuentes:
             await asegurar_geometria(client, k, root)
-        tareas = [asyncio.create_task(sondear(client, k, root)) for k in claves]
+        tareas = [asyncio.create_task(sondear(client, k, root)) for k in fuentes]
+        if GTFS_FUENTE in claves:
+            tareas.append(asyncio.create_task(capturar_gtfs(client, root)))
         tareas.append(asyncio.create_task(latir(root)))
         try:
             if minutos > 0:
@@ -331,6 +382,7 @@ if __name__ == "__main__":
             "trafico_intensidad",
             "renfe_cercanias",
             "valenbisi",
+            GTFS_FUENTE,
         ],
     )
     p.add_argument("--out", type=Path, default=settings.data_root)

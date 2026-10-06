@@ -17,7 +17,9 @@ import asyncio
 import copy
 import dataclasses
 import gzip
+import io
 import json
+import zipfile
 from collections import defaultdict, deque
 from pathlib import Path
 
@@ -25,6 +27,7 @@ import httpx
 import pandas as pd
 import pytest
 
+from project import gtfs
 from project.ingest import collect, reprocesar, sources
 
 T0 = pd.Timestamp("2026-08-16T10:00:00Z")
@@ -331,3 +334,85 @@ def test_reprocesar_completa_el_sondeo_que_llego_a_medias(
         reconstruido[reconstruido["snapshot_id"] != sid].reset_index(drop=True),
         del_colector[del_colector["snapshot_id"] != sid].reset_index(drop=True),
     )
+
+
+# --------------------------------------------------------------------------- #
+# GTFS estático
+# --------------------------------------------------------------------------- #
+URL_GTFS = "https://opendata.vlci.valencia.es/x/download/google_transit2026-10-04.zip"
+
+
+def _zip(**ficheros: str) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        for nombre, texto in ficheros.items():
+            z.writestr(nombre, texto)
+    return buf.getvalue()
+
+
+def test_cada_version_del_gtfs_se_guarda_una_vez_y_fuera_del_etiquetado(tmp_path):
+    """La EMT republica el GTFS casi a diario y no guarda histórico (bitácora 042).
+
+    Cada versión nueva se guarda una vez, por sha1, en el crudo. Nunca en el
+    directorio del que el etiquetado elige horario: una versión posterior puede
+    reescribir días ya etiquetados y se revisa antes de usarla.
+    """
+    v1 = _zip(**{"stop_times.txt": "trip_id\nA\n"})
+    v2 = _zip(**{"stop_times.txt": "trip_id\nB\n"})
+    p1 = sources.guardar_gtfs(tmp_path, v1, URL_GTFS, T0, "2026-10-05T19:36:23")
+    assert p1 is not None and p1.read_bytes() == v1
+    assert p1.name.endswith("_google_transit2026-10-04.zip")
+    assert (
+        sources.guardar_gtfs(tmp_path, v1, URL_GTFS, T0 + pd.Timedelta(hours=6)) is None
+    )
+    p2 = sources.guardar_gtfs(tmp_path, v2, URL_GTFS, T0 + pd.Timedelta(days=1))
+    assert p2 is not None and "date=2026-08-17" in str(p2)
+
+    assert len(list(tmp_path.rglob("*.zip"))) == 2
+    assert gtfs.versiones(tmp_path / "raw" / "gtfs") == []
+    capturas = [
+        json.loads(x)
+        for f in sorted(tmp_path.rglob("capturas.ndjson"))
+        for x in f.read_text(encoding="utf-8").splitlines()
+    ]
+    assert [c["sha1"][:12] for c in capturas] == [p1.name[:12], p2.name[:12]]
+    assert capturas[0]["last_modified"] == "2026-10-05T19:36:23"
+
+
+@pytest.mark.parametrize(
+    "contenido",
+    [b"<html>en mantenimiento</html>", _zip(**{"routes.txt": "route_id\n1\n"})],
+    ids=["no_es_zip", "zip_sin_horario"],
+)
+def test_lo_que_no_es_un_gtfs_no_se_guarda(tmp_path, contenido):
+    with pytest.raises(ValueError):
+        sources.guardar_gtfs(tmp_path, contenido, URL_GTFS, T0)
+    assert not list(tmp_path.rglob("*.zip"))
+
+
+def test_el_colector_guarda_el_gtfs_que_anuncia_vlci(tmp_path, colector):
+    """`package_show` da la URL del zip del día; el colector lo baja y lo guarda."""
+    gtfs_zip = _zip(**{"stop_times.txt": "trip_id\nA\n"})
+    paquete = {
+        "result": {
+            "resources": [
+                {"format": "ZIP", "url": URL_GTFS, "last_modified": "2026-10-05"}
+            ]
+        }
+    }
+
+    def responder(request: httpx.Request) -> httpx.Response:
+        if "package_show" in str(request.url):
+            return httpx.Response(200, json=paquete)
+        colector.PARAR.set()  # una sola vuelta del bucle
+        return httpx.Response(200, content=gtfs_zip)
+
+    async def una_vuelta() -> None:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as c:
+            await colector.capturar_gtfs(c, tmp_path)
+
+    asyncio.run(una_vuelta())
+
+    (guardado,) = list((tmp_path / "raw").rglob("*.zip"))
+    assert guardado.read_bytes() == gtfs_zip
+    assert colector.STATS[sources.GTFS_FUENTE]["ok"] == 1

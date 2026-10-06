@@ -1318,3 +1318,38 @@ buscar = '''    pv = pv[pv["stop_sequence"] < ultima]'''
 reemplazar = '''    pv = pv[pv["stop_sequence"] <= ultima]'''
 detector = ["tests/test_modelo.py::test_el_intervalo_de_paso_es_el_de_los_que_salen_de_la_cabecera"]
 sondas = []
+
+[[mutante]]
+id = "107"
+nombre = "el GTFS se guarda en cada comprobación aunque no haya cambiado"
+capa = "persistencia"
+# Cuatro copias al día de un zip de 7 MB, y ninguna señal de cuándo publicó la
+# EMT una versión nueva.
+fichero = "src/project/ingest/sources.py"
+buscar = '''    if any(base.glob(f"date=*/{sha1[:12]}_*.zip")):'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_persistencia.py::test_cada_version_del_gtfs_se_guarda_una_vez_y_fuera_del_etiquetado"]
+sondas = []
+
+[[mutante]]
+id = "108"
+nombre = "el GTFS capturado va al directorio del que el etiquetado elige horario"
+capa = "persistencia"
+# Una versión posterior pasaría a mandar sin revisarla: la del 05/10 deja sin
+# etiquetar la línea 13 en media prueba (bitácora 042).
+fichero = "src/project/ingest/sources.py"
+buscar = '''    base = root / "raw" / f"source={GTFS_FUENTE}"'''
+reemplazar = '''    base = root / "raw" / "gtfs"'''
+detector = ["tests/test_persistencia.py::test_cada_version_del_gtfs_se_guarda_una_vez_y_fuera_del_etiquetado"]
+sondas = []
+
+[[mutante]]
+id = "109"
+nombre = "se guarda como GTFS un zip sin horario"
+capa = "persistencia"
+# Un zip sin stop_times.txt pasaría por una versión y ocuparía su sha1.
+fichero = "src/project/ingest/sources.py"
+buscar = '''    if "stop_times.txt" not in nombres:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_persistencia.py::test_lo_que_no_es_un_gtfs_no_se_guarda"]
+sondas = []
