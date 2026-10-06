@@ -564,12 +564,14 @@ Reproducir: `uv run python -m project.analysis.medir_sesgo_tramo` y
   necesita saber qué tramos entre paradas tienen un sensor de la capa 192
   encima. Hoy la cobertura solo está medida por posición (69,4 % a menos de
   50 m, `docs/10`). Se mide al meter la capa 192 en `features.py`.
-- **Estrato por intervalo de paso.** La asignación pliega al viaje siguiente el
-  11 % de los viajes con intervalo de 8 min o menos y menos del 2 % de los de
-  más de 15 (bitácora 038), y se lleva la mitad de los retrasos de más de
-  5 min. Falta decidir si el intervalo es un segundo estrato junto al de
-  sensores, y si la variante binaria se publica solo en las bandas largas. Se
-  decide al escribir `evaluate.py`.
+- **Variante binaria por banda de intervalo.** `evaluate.py` ya estratifica por
+  banda de intervalo programado (≤ 8, 8-15, 15-30, > 30 min y `sin_intervalo`),
+  como el estrato de sensores (bitácora 038). Falta decidir si la variante
+  binaria se publica solo en las bandas largas: se decide con el clasificador.
+- **Métrica primaria y protocolo del modelo.** Sin declarar: hoy se informan dos
+  métricas, frente a dos baselines y en cuatro cortes. Propuesta: MAE global
+  frente a la persistencia más el sesgo del tramo, variantes elegidas en la
+  validación y la prueba evaluada una sola vez (bitácora 041).
 - **Unidad de remuestreo del intervalo.** El ADR-018 remuestrea viajes. Si los
   días de la prueba difieren entre sí, remuestrear días daría un intervalo más
   ancho y más honrado, pero exige bastantes más de 5 días. Se mide al rehacer el

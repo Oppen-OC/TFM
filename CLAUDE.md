@@ -158,21 +158,23 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 ## Estado
 
-**Hasta la tabla de entrenamiento existe; del modelo hacia abajo, no.**
+**El pipeline llega de punta a punta; el modelo todavía no bate al listón.**
 
 Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
 explore), `tracking.py`, `gtfs.py`, `mapmatching.py`, `etiquetado.py`,
 `prepare.py`, `features.py` (fase 1, bitácora 030; fase 2, la flota como sensor:
 bitácora 032; sesgo del horario por tramo y `linea` categórica: bitácora 039,
-ADR-019; la capa 192, pendiente) y `analysis/`.
-`dvc repro` llega hasta `features`: los pasos por parada con `retraso_s` salen en
-`data/interim/pasos/` y la tabla partida en `data/processed/{train,test}.parquet`,
-con los baselines en `metrics/features.json`. Las variables del modelo las da
-`features.variables()`; `train.py` y `predict.py` las leen de ahí.
+ADR-019; la capa 192, pendiente), `train.py`, `predict.py`, `evaluate.py` y
+`analysis/`.
+`dvc repro` corre entero: los pasos por parada con `retraso_s` salen en
+`data/interim/pasos/`, la tabla partida en `data/processed/{train,test}.parquet`
+con los baselines en `metrics/features.json`, el modelo en `models/model.pkl` y
+su evaluación, con la diferencia por viajes y su intervalo, en
+`metrics/eval.json`. Las variables del modelo las da `features.variables()`;
+`train.py` y `predict.py` las leen de ahí. El primer modelo empata con la
+persistencia más el sesgo del tramo (bitácora 041).
 
-Vacíos, 0 líneas: `train.py`, `predict.py`, `evaluate.py` y
-`services/model_service.py`. `dvc repro` falla en `train`, y ese fallo es el
-esperado.
+Vacío, 0 líneas: `services/model_service.py`.
 
 Las reglas de este fichero son **prescriptivas**, no descriptivas: dicen cómo debe
 escribirse el código que falta. No asumas que ya está implementado — comprueba
