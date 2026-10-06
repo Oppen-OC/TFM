@@ -570,6 +570,41 @@ Reproducir: `uv run python -m project.analysis.medir_sesgo_tramo` y
 
 ---
 
+## ADR-020 · El colector guarda cada versión del GTFS; el etiquetado no la usa sin revisarla · cerrada
+
+**Decisión.** El colector consulta cada 6 h el GTFS vigente en VLCi y guarda
+cada versión nueva, una vez por sha1, en `raw/source=gtfs_emt/date=<día>/`, con
+una línea en `capturas.ndjson`. **No** va a `settings.gtfs_dir`. Una versión
+entra en el etiquetado a mano, después de contrastarla con lo ya etiquetado
+(`analysis/comparar_gtfs`).
+
+**Por qué.** El GTFS tampoco guarda histórico. La EMT lo republica casi a
+diario (14 versiones entre el 19/09 y el 06/10), y una publicación posterior
+puede reescribir días ya etiquetados (bitácora 042). Hasta ahora se descargaba
+a mano, y así se perdieron las versiones del 10-18/09, que solo están en
+Transitland de pago (ADR-014).
+
+**Consecuencias.**
+- Unos 7 MB por versión nueva, una al día: unos 2,5 GB al año en la Pi.
+- `pull_data.sh` lo trae a `data/raw/source=gtfs_emt/` sin cambios (patrón
+  `source=*/date=*/`), y `reprocesar` lo ignora porque solo recorre `SOURCES`.
+- Pasar una versión a `gtfs_dir` cambia etiquetas y obliga a reejecutar
+  `prepare`.
+- Está en las dos copias del colector: `demo/` en la rama `raspberry`, que es
+  lo que corre la Pi, y `src/project/ingest/` en `develop`, para que el
+  redespliegue pendiente del ADR-009 no lo pierda.
+
+**Alternativas.**
+- Seguir descargando a mano: es lo que perdió las versiones de septiembre.
+- Guardar directamente en `gtfs_dir`: la versión del 05/10 habría dejado la
+  línea 13 sin etiquetar en media prueba, sin ningún aviso.
+- Pagar Transitland: cuesta dinero y depende de un tercero. Queda como
+  respaldo para lo ya perdido.
+
+**Qué la reabriría.** Que VLCi publique el histórico de versiones.
+
+---
+
 ## Pendientes de decidir
 
 - **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018

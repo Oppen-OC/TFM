@@ -206,8 +206,10 @@ descargables con la key gratuita.
 acaba unas 4 semanas después. La del 06/10 (`21a5e04c727f`, `05-10-2026`,
 vigente 28/09-04/11) se descargó de VLCi y está en `data/raw/gtfs_archivo/`,
 **fuera de `gtfs_dir`** para que la etiqueta no la use: quita la línea 13 y
-prolonga el horario excepcional de la 35 (bitácora 042, ADR-014). Para
-contrastar otra versión con lo etiquetado:
+prolonga el horario excepcional de la 35 (bitácora 042, ADR-014). Desde el
+despliegue del ADR-020, el colector guarda cada versión nueva en
+`raw/source=gtfs_emt/`, también fuera de `gtfs_dir`. Para contrastar otra
+versión con lo etiquetado:
 
 ```bash
 uv run python -m project.analysis.comparar_gtfs data/raw/gtfs_archivo/google_transit2026-10-04.zip
