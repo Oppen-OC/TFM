@@ -16,8 +16,9 @@ siguiente el 11 % de los viajes y se lleva la mitad de los retrasos de más de
 5 min; con más de 15, menos del 2 % (bitácora 038). Las bandas largas son la
 referencia limpia.
 
-El intervalo da por buenos los días de la prueba: es un suelo de la
-incertidumbre, no su medida (ADR-018, límite conocido).
+El intervalo por viajes da por buenos los días de la prueba: es un suelo de la
+incertidumbre, no su medida (ADR-018, límite conocido). Por eso, en el conjunto,
+los grupos y las bandas se da también remuestreando días de servicio.
 """
 
 from __future__ import annotations
@@ -134,22 +135,34 @@ def diferencia(
     }
 
 
-def resumen(t: pd.DataFrame, objetivo: str) -> dict:
+def resumen(t: pd.DataFrame, objetivo: str, dias: bool = False) -> dict:
     """Errores del modelo y de los baselines, y lo que el modelo gana a las dos
-    persistencias. `t` trae `_prediccion` y `_viaje`."""
+    persistencias. `t` trae `_prediccion` y `_viaje`.
+
+    Con `dias`, también el intervalo remuestreando días de servicio: el de
+    viajes da por buenos los días de la prueba y es un suelo (ADR-018). No se
+    pide por línea, que puede tener solo tres días.
+    """
     real = t[objetivo]
     base = features.predicciones_baseline(t)
     e_modelo = t["_prediccion"] - real
-    return {
+
+    def frente_a(grupo: pd.Series) -> dict:
+        return {
+            k: diferencia(e_modelo, base[k] - real, grupo)
+            for k in ("persistencia", "persistencia_tramo")
+        }
+
+    r = {
         "filas": int(len(t)),
         "viajes": int(t["_viaje"].nunique()),
         "modelo": features.errores(t["_prediccion"], real),
         **{k: features.errores(v, real) for k, v in base.items()},
-        "modelo_menos": {
-            k: diferencia(e_modelo, base[k] - real, t["_viaje"])
-            for k in ("persistencia", "persistencia_tramo")
-        },
+        "modelo_menos": frente_a(t["_viaje"]),
     }
+    if dias:
+        r["modelo_menos_remuestreando_dias"] = frente_a(t["fecha_servicio"])
+    return r
 
 
 def main() -> None:
@@ -174,16 +187,16 @@ def main() -> None:
         ),
     )
 
-    def por(t: pd.DataFrame, col: str) -> dict:
-        return {str(k): resumen(g, obj) for k, g in t.groupby(col, observed=True)}
+    def por(t: pd.DataFrame, col: str, dias: bool) -> dict:
+        return {str(k): resumen(g, obj, dias) for k, g in t.groupby(col, observed=True)}
 
     metricas = {
         "modelo": {k: art[k] for k in ("n_arboles", "mlflow_run_id")},
         "remuestreo": {"unidad": "viaje", "replicas": REPLICAS, "semilla": SEMILLA},
-        "global": resumen(t, obj),
-        "por_grupo": por(t, "_grupo"),
-        "por_banda": por(t, "_banda"),
-        "por_linea": por(t[t["_grupo"] == "propia"], "linea"),
+        "global": resumen(t, obj, dias=True),
+        "por_grupo": por(t, "_grupo", dias=True),
+        "por_banda": por(t, "_banda", dias=True),
+        "por_linea": por(t[t["_grupo"] == "propia"], "linea", dias=False),
     }
     salida = RAIZ / "metrics" / "eval.json"
     salida.write_text(

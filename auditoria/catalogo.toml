@@ -1394,3 +1394,15 @@ buscar = '''    return min([mejor, *empatan], key=lambda b: (b["cambios"], b["ma
 reemplazar = '''    return mejor'''
 detector = ["tests/test_modelo.py::test_si_no_se_distingue_gana_el_de_menos_cambios_y_entre_iguales_el_mae"]
 sondas = []
+
+[[mutante]]
+id = "113"
+nombre = "el intervalo por días remuestrea viajes"
+capa = "modelo"
+# Se informaría dos veces el mismo suelo y se perdería lo que cambia de un día a
+# otro, que es lo que el ADR-018 declara como límite conocido.
+fichero = "src/project/evaluate.py"
+buscar = '''        r["modelo_menos_remuestreando_dias"] = frente_a(t["fecha_servicio"])'''
+reemplazar = '''        r["modelo_menos_remuestreando_dias"] = frente_a(t["_viaje"])'''
+detector = ["tests/test_modelo.py::test_el_intervalo_por_dias_recoge_lo_que_cambia_de_un_dia_a_otro"]
+sondas = []

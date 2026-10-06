@@ -1,0 +1,87 @@
+{
+  "ablacion": {
+    "sin_flota": {
+      "variables_quitadas": [
+        "tramo_ganado_15min",
+        "tramo_ganado_5min",
+        "tramo_soporte_15min",
+        "tramo_soporte_5min"
+      ],
+      "menos_completo": {
+        "mae_s": 0.11,
+        "mae_ic95": [
+          0.09,
+          0.13
+        ],
+        "rmse_s": 0.15,
+        "rmse_ic95": [
+          0.09,
+          0.22
+        ]
+      }
+    },
+    "sin_flota_ni_ventanas_linea": {
+      "variables_quitadas": [
+        "linea_pasos_15min",
+        "linea_pasos_1min",
+        "linea_pasos_5min",
+        "linea_retraso_15min",
+        "linea_retraso_1min",
+        "linea_retraso_5min",
+        "tramo_ganado_15min",
+        "tramo_ganado_5min",
+        "tramo_soporte_15min",
+        "tramo_soporte_5min"
+      ],
+      "menos_completo": {
+        "mae_s": 0.01,
+        "mae_ic95": [
+          -0.01,
+          0.03
+        ],
+        "rmse_s": 0.02,
+        "rmse_ic95": [
+          -0.04,
+          0.08
+        ]
+      }
+    }
+  },
+  "lineas_no_vistas": {
+    "lineas": [
+      "10",
+      "11",
+      "14",
+      "59",
+      "60",
+      "63",
+      "64",
+      "73",
+      "9",
+      "C1"
+    ],
+    "filas": 9124,
+    "viajes": 678,
+    "modelo": {
+      "mae_s": 31.05,
+      "rmse_s": 47.96
+    },
+    "persistencia_tramo": {
+      "mae_s": 33.04,
+      "rmse_s": 55.69
+    },
+    "modelo_menos_persistencia_tramo": {
+      "mae_s": -1.99,
+      "mae_ic95": [
+        -2.52,
+        -1.47
+      ],
+      "rmse_s": -7.73,
+      "rmse_ic95": [
+        -10.88,
+        -4.67
+      ]
+    },
+    "respaldo": false
+  }
+}

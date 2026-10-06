@@ -238,3 +238,34 @@ def test_si_no_se_distingue_gana_el_de_menos_cambios_y_entre_iguales_el_mae():
         _brazo("residuo_absoluta", 2, 24.4, [0.0, 0.0]),  # el mejor
     ]
     assert elegir_brazo.elegir(brazos)["nombre"] == "residuo_cuadratica"
+
+
+def test_el_intervalo_por_dias_recoge_lo_que_cambia_de_un_dia_a_otro():
+    """ADR-018: el intervalo por viajes da por buenos los días de la prueba.
+
+    Cuatro días: en cada uno el modelo gana distinto, con muchos viajes iguales
+    dentro del día. Por viajes, el intervalo sale estrecho; por días, recoge
+    que el resultado depende del día.
+    """
+    rng = np.random.default_rng(2)
+    filas = []
+    for d, efecto in enumerate([-6.0, 1.0, -9.0, 2.0]):
+        for v in range(40):
+            for _ in range(5):
+                filas.append(
+                    {
+                        "fecha_servicio": pd.Timestamp("2026-09-21")
+                        + pd.Timedelta(days=d),
+                        "_viaje": d * 100 + v,
+                        "retraso_s": 0.0,
+                        "tramo_sesgo_s": 0.0,
+                        OBJ: 50.0,
+                        "_prediccion": 50.0 + 20.0 + efecto + rng.normal(0, 0.1),
+                    }
+                )
+    t = pd.DataFrame(filas)
+    r = evaluate.resumen(t, OBJ, dias=True)
+    viajes = r["modelo_menos"]["persistencia_tramo"]["mae_ic95"]
+    dias = r["modelo_menos_remuestreando_dias"]["persistencia_tramo"]["mae_ic95"]
+    assert dias[1] - dias[0] > 5 * (viajes[1] - viajes[0])
+    assert "modelo_menos_remuestreando_dias" not in evaluate.resumen(t, OBJ)
