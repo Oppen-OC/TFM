@@ -1,0 +1,146 @@
+{
+  "rev": "2edc535",
+  "segundos": 728,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 90.1
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 91.3
+    },
+    {
+      "id": "096",
+      "nombre": "el sesgo del tramo cuenta los días anteriores por fecha, no por hora de fin",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 92.1
+    },
+    {
+      "id": "097",
+      "nombre": "el sesgo del tramo cuenta lo acabado antes del final del día",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 91.8
+    },
+    {
+      "id": "098",
+      "nombre": "el sesgo del tramo mezcla versiones del horario",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 92.9
+    },
+    {
+      "id": "099",
+      "nombre": "linea pasa a categórica con las categorías que vea cada tabla",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_las_categorias_de_linea_se_fijan_con_el_entrenamiento"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_las_categorias_de_linea_se_fijan_con_el_entrenamiento"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 92.5
+    },
+    {
+      "id": "100",
+      "nombre": "el tercer baseline es la persistencia",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_los_baselines_traen_el_soporte_y_los_grupos"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_los_baselines_traen_el_soporte_y_los_grupos"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 86.0
+    }
+  ]
+}
