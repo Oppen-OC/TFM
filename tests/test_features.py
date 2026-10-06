@@ -21,10 +21,13 @@ T0 = pd.Timestamp("2026-09-16 08:00", tz="Europe/Madrid")
 OBJ = "retraso_siguiente_parada_s"
 
 
-def _paso(viaje, seq, t_min, retraso, linea="1", stop=None, dia="2026-09-16"):
+def _paso(
+    viaje, seq, t_min, retraso, linea="1", stop=None, dia="2026-09-16", feed="F1"
+):
     return {
         "viaje_id": viaje,
         "fecha_servicio": pd.Timestamp(dia),
+        "feed_version": feed,
         "linea": linea,
         "trayecto": "Ida",
         "stop_id": stop or f"P{seq:02d}",
@@ -250,6 +253,7 @@ def test_los_baselines_traen_el_soporte_y_los_grupos():
             "viaje_id": ["a", "a", "b"],
             "retraso_s": [10.0, 20.0, 0.0],
             OBJ: [20.0, 20.0, 100.0],
+            "tramo_sesgo_s": [10.0, np.nan, 50.0],
         }
     )
     s = features.soporte_por_linea(test[test["linea"] == "A"], test, 1, 1)
@@ -259,4 +263,70 @@ def test_los_baselines_traen_el_soporte_y_los_grupos():
     assert b["por_linea"]["B"]["grupo"] == "sin_entrenamiento"
     assert b["por_grupo"]["sin_entrenamiento"]["persistencia"]["mae_s"] == 100.0
     assert b["persistencia"]["mae_s"] == pytest.approx(36.67)  # (10 + 0 + 100) / 3
+    # + sesgo del tramo, sin estimar = 0: |20 − 20| + |20 − 20| + |50 − 100|
+    assert b["persistencia_tramo"]["mae_s"] == pytest.approx(16.67)
     json.dumps(b)  # va a metrics/features.json: tiene que ser serializable
+
+
+# --------------------------------------------------------------------------- #
+# El sesgo estático del horario en cada tramo (bitácoras 032 y 039)
+# --------------------------------------------------------------------------- #
+DIA1, DIA2 = "2026-09-15", "2026-09-16"
+
+
+def _recorre(viaje, t_ini, ganado, dia=DIA2, linea="1", feed="F1"):
+    """P01 -> P02 en 2 min, ganando `ganado` s sobre lo que dice el horario."""
+    return [
+        _paso(viaje, 1, t_ini, 0, linea=linea, dia=dia, feed=feed),
+        _paso(viaje, 2, t_ini + 2, ganado, linea=linea, dia=dia, feed=feed),
+    ]
+
+
+def test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia():
+    """Mediana de lo que gana la persistencia en (horario, línea, tramo) con lo
+    que ACABÓ el tramo antes de la primera observación del día de la fila.
+
+    Ni el propio día, aunque sea antes de t (en inferencia aún no hay mediana
+    del día), ni el nocturno de la víspera que acaba ya dentro del día, ni otra
+    versión del horario, ni otra línea: el sesgo es del horario de esa línea.
+    """
+    filas = [
+        *_recorre("X", -1440, 30, dia=DIA1),  # víspera: cuenta
+        *_recorre("Y", -1400, 50, dia=DIA1),  # víspera: cuenta
+        *_recorre("Z", -1380, 70, dia=DIA1),  # víspera: cuenta
+        *_recorre("N", -1, 5000, dia=DIA1),  # nocturno: acaba a +1, ya en el día
+        *_recorre("V", -1300, 4000, dia=DIA1, feed="F0"),  # otro horario
+        *_recorre("L", -1300, 4000, dia=DIA1, linea="2"),  # otra línea
+        *_recorre("B", 0, 777),  # el mismo día, antes de A: no cuenta
+        *_recorre("A", 10, 999),  # la fila evaluada
+    ]
+    t = _construir(filas, horizonte=1, soporte_min=2)
+    a = _fila(t, "A", 1)
+    assert a["tramo_sesgo_s"] == 50.0  # mediana de 30, 50 y 70
+    assert a["tramo_sesgo_soporte"] == 3
+    assert np.isnan(_fila(t, "X", 1)["tramo_sesgo_s"])  # sin historia
+    assert {"tramo_sesgo_s", "tramo_sesgo_soporte"} <= set(features.variables())
+
+
+def test_el_sesgo_del_tramo_sin_soporte_no_se_estima():
+    filas = [*_recorre("X", -1440, 30, dia=DIA1), *_recorre("A", 10, 0)]
+    a = _fila(_construir(filas, horizonte=1, soporte_min=2), "A", 1)
+    assert a["tramo_sesgo_soporte"] == 1
+    assert np.isnan(a["tramo_sesgo_s"])
+
+
+def test_las_categorias_de_linea_se_fijan_con_el_entrenamiento():
+    """pandas numera las categorías por las que ve en cada tabla.
+
+    Sin fijarlas, la línea «2» tiene un código en entrenamiento y otro en una
+    prueba sin la «1»: el modelo lee otra línea y no falla nada. La que el
+    entrenamiento no vio queda nula, no se inventa un código.
+    """
+    train = pd.DataFrame({"linea": ["10", "2", "1", "2"], "x": 0.0})
+    cats = features.categorias_linea(train)
+    assert cats == ["1", "10", "2"]
+    prueba = pd.DataFrame({"linea": ["2", "8"], "x": 0.0})
+    x = features.matriz(prueba, ["x", "linea"], cats)
+    assert list(x.columns) == ["x", "linea"]
+    assert list(x["linea"].cat.categories) == cats
+    assert x["linea"].cat.codes.tolist() == [2, -1]

@@ -513,6 +513,48 @@ Reproducir: `uv run python -m project.analysis.medir_rutas lineas` y
 
 ---
 
+## ADR-019 · `linea` entra como categórica fijada; el sesgo del horario por tramo es variable y listón · revisable
+
+**Decisión.** Tres, en `features.py`:
+
+1. `linea` entra al modelo como **categórica nativa**, con las categorías del
+   entrenamiento fijadas (`features.categorias_linea`) y aplicadas en
+   entrenamiento e inferencia por `features.matriz`. Una línea que el
+   entrenamiento no vio queda nula.
+2. **Sesgo del tramo** (`tramo_sesgo_s`, `tramo_sesgo_soporte`): mediana de lo
+   que gana la persistencia en (versión del horario, línea, parada, parada
+   objetivo), con lo que acabó el tramo antes de la primera observación del día.
+3. **Tercer baseline**, `persistencia_tramo`: la persistencia más ese sesgo. Lo
+   que aporte el tráfico se mide contra él, no contra la persistencia.
+
+**Por qué.** La línea sola apenas explica el error de la persistencia: corregirla
+por línea, con lo aprendido en entrenamiento, baja el MAE de la prueba de 36,40
+a 36,33 s (bitácora 039). Entra porque es barata, su efecto es estable entre
+periodos (correlación 0,86) y deja al árbol cruzarla con otras variables. Lo que
+pesa es el tramo: 36,80 → 26,48 s. Es el sesgo fijo del horario (bitácora 032);
+un modelo que bata la persistencia lo hará sobre todo por aprenderlo.
+
+**Consecuencias.** `train.py` guarda las categorías con el modelo y `predict.py`
+las lee de ahí. El primer día de una versión nueva del horario no hay sesgo del
+tramo: la variable es nula hasta que acumula `soporte_min` viajes.
+
+**Alternativas.** `linea` como texto: XGBoost no lo admite. Categórica con las
+categorías de cada tabla: cada tabla numera las suyas, y la prueba lee otra
+línea sin error (mutante 099). Codificación por media del objetivo: fuga si se
+calcula con la fila dentro. El par (línea, parada) como categórica: miles de
+niveles; la mediana histórica condensa lo mismo en una columna. El sesgo
+congelado con el entrenamiento: 27,48 s frente a 26,48 s con todo lo anterior al
+día y la versión del horario en la clave.
+
+**Qué la reabriría.** Que el modelo sin `linea` no se distinga del modelo con
+ella (ADR-018, criterio de mejora): fuera por simplicidad. Que el sesgo cambie
+dentro de una versión del horario más de lo que capta la mediana acumulada.
+
+Reproducir: `uv run python -m project.analysis.medir_sesgo_tramo` y
+`metrics/features.json` (`persistencia_tramo`). Detalle en la bitácora 039.
+
+---
+
 ## Pendientes de decidir
 
 - **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018
@@ -525,9 +567,6 @@ Reproducir: `uv run python -m project.analysis.medir_rutas lineas` y
   5 min. Falta decidir si el intervalo es un segundo estrato junto al de
   sensores, y si la variante binaria se publica solo en las bandas largas. Se
   decide al escribir `evaluate.py`.
-- **Cómo se codifica la línea.** Diez líneas de la prueba no tienen ni un viaje
-  de entrenamiento. Que el modelo pueda predecirlas depende de cómo entre
-  `linea` como variable. Se decide al escribir `train.py`.
 - **Unidad de remuestreo del intervalo.** El ADR-018 remuestrea viajes. Si los
   días de la prueba difieren entre sí, remuestrear días daría un intervalo más
   ancho y más honrado, pero exige bastantes más de 5 días. Se mide al rehacer el

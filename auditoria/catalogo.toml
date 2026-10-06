@@ -1189,3 +1189,61 @@ buscar = '''        peso=1 / np.clip(bien, 0.05, None),'''
 reemplazar = '''        peso=1.0,'''
 detector = ["tests/test_medir_asignacion.py::test_la_cota_acota_y_la_calibrada_recupera_lo_que_no_se_ve"]
 sondas = []
+
+[[mutante]]
+id = "096"
+nombre = "el sesgo del tramo cuenta los días anteriores por fecha, no por hora de fin"
+capa = "features"
+# El nocturno de la víspera acaba el tramo ya dentro del día: con el corte por
+# fecha ve el futuro unos minutos.
+fichero = "src/project/features.py"
+buscar = '''        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].min())'''
+reemplazar = '''        antes = hecho & (p["fecha_servicio"] < p["fecha_servicio"].iloc[filas[0]])'''
+detector = ["tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"]
+sondas = []
+
+[[mutante]]
+id = "097"
+nombre = "el sesgo del tramo cuenta lo acabado antes del final del día"
+capa = "features"
+# Mete el propio día, también lo posterior a t: fuga.
+fichero = "src/project/features.py"
+buscar = '''        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].min())'''
+reemplazar = '''        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].max())'''
+detector = ["tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"]
+sondas = []
+
+[[mutante]]
+id = "098"
+nombre = "el sesgo del tramo mezcla versiones del horario"
+capa = "features"
+# El sesgo es del horario: el de agosto no es el de septiembre (26,48 s frente a
+# 26,96 s de la persistencia corregida, bitácora 039).
+fichero = "src/project/features.py"
+buscar = '''CLAVE_TRAMO = ["feed_version", "linea", "stop_id", "_stop_objetivo"]'''
+reemplazar = '''CLAVE_TRAMO = ["linea", "stop_id", "_stop_objetivo"]'''
+detector = ["tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"]
+sondas = []
+
+[[mutante]]
+id = "099"
+nombre = "linea pasa a categórica con las categorías que vea cada tabla"
+capa = "features"
+# La misma línea, otro código en la prueba: el modelo lee otra línea sin error.
+fichero = "src/project/features.py"
+buscar = '''        x["linea"] = pd.Categorical(x["linea"].astype(str), categories=categorias)'''
+reemplazar = '''        x["linea"] = x["linea"].astype(str).astype("category")'''
+detector = ["tests/test_features.py::test_las_categorias_de_linea_se_fijan_con_el_entrenamiento"]
+sondas = []
+
+[[mutante]]
+id = "100"
+nombre = "el tercer baseline es la persistencia"
+capa = "features"
+# El listón del tráfico baja a 36,8 s: cualquier modelo que aprenda el sesgo del
+# horario parecería aportar.
+fichero = "src/project/features.py"
+buscar = '''                g["retraso_s"] + g["tramo_sesgo_s"].fillna(0.0), g[objetivo]'''
+reemplazar = '''                g["retraso_s"], g[objetivo]'''
+detector = ["tests/test_features.py::test_los_baselines_traen_el_soporte_y_los_grupos"]
+sondas = []

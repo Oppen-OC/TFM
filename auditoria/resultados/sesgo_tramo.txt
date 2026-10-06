@@ -1,0 +1,7 @@
+persistencia: MAE 36.80 s
++ mediana por global: MAE 36.40 s
++ mediana por linea: MAE 36.33 s
++ mediana por linea y hora: MAE 36.33 s
++ mediana por linea y parada objetivo: MAE 27.48 s
++ mediana por horario, linea, parada y parada objetivo: MAE 26.58 s
+media por línea, entrenamiento frente a prueba: correlación 0.864, rango -13.6 a 10.5 s; líneas de la prueba sin entrenamiento: ['8']

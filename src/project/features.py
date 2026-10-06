@@ -11,7 +11,8 @@ exige serlo, el modelo ve el futuro y la prueba sale mejor de lo que es.
 Fase 1 (bitácora 030): variables del propio viaje, de la línea y del
 calendario. Fase 2 (bitácora 032): la flota como sensor del tramo aguas abajo,
 con lo que ganaron otros buses, de cualquier línea, al recorrerlo antes de t.
-La capa municipal 192 va después.
+Sesgo del tramo (bitácora 039): lo que el horario de cada línea se equivoca, de
+forma fija, en cada par de paradas. La capa municipal 192 va después.
 
 Esta transformación se comparte entre entrenamiento e inferencia: vive aquí y
 solo aquí (train/serve skew).
@@ -32,6 +33,8 @@ CLAVE_VIAJE = ["fecha_servicio", "viaje_id"]
 # mediana del desfase en las primeras `paradas_referencia` paradas: en la parada
 # 1 o 2 incluye el retraso de paradas FUTURAS. No entran en la tabla.
 FUERA_DE_LA_TABLA = ["desfase_s", "margen_s", "coste_s"]
+# El sesgo es del horario: de su versión, de la línea y del par de paradas.
+CLAVE_TRAMO = ["feed_version", "linea", "stop_id", "_stop_objetivo"]
 
 
 def variables(
@@ -64,11 +67,33 @@ def variables(
             for n in ventanas_flota_min
             for c in (f"tramo_ganado_{n}min", f"tramo_soporte_{n}min")
         ],
+        "tramo_sesgo_s",
+        "tramo_sesgo_soporte",
         "hora",
         "dia_semana",
         "fin_de_semana",
         "linea",
     ]
+
+
+def categorias_linea(train: pd.DataFrame) -> list[str]:
+    """Las líneas del entrenamiento: se guardan con el modelo y no se recalculan."""
+    return sorted(train["linea"].astype(str).unique())
+
+
+def matriz(
+    tabla: pd.DataFrame, columnas: list[str], categorias: list[str]
+) -> pd.DataFrame:
+    """Las variables del modelo, con `linea` categórica sobre `categorias`.
+
+    pandas numera las categorías por las que ve en cada tabla: sin fijarlas, la
+    misma línea tiene otro código en la prueba y el modelo lee otra línea sin
+    ningún error. La que el entrenamiento no vio queda nula.
+    """
+    x = tabla[columnas].copy()
+    if "linea" in x:
+        x["linea"] = pd.Categorical(x["linea"].astype(str), categories=categorias)
+    return x
 
 
 def _ventana_linea(p: pd.DataFrame, minutos: int) -> tuple[pd.Series, pd.Series]:
@@ -126,6 +151,37 @@ def _tramo_flota(
     return pd.Series(mediana, index=p.index), pd.Series(soporte, index=p.index)
 
 
+def _sesgo_tramo(
+    p: pd.DataFrame, ganado: pd.Series, soporte_min: int
+) -> tuple[pd.Series, pd.Series]:
+    """Mediana de lo que gana la persistencia en el tramo, con lo acabado antes del día.
+
+    Es el sesgo estático del horario: el GTFS da mal el tiempo entre ciertas
+    paradas, y siempre hacia el mismo lado (bitácora 032). Por día de servicio,
+    solo cuenta lo que ACABÓ el tramo antes de la primera observación de ese día:
+    ni el propio día, que en inferencia aún no tiene mediana, ni los nocturnos de
+    la víspera que terminan ya dentro de él. Clave `CLAVE_TRAMO`: el sesgo de un
+    horario no es el de la versión siguiente. Con menos de `soporte_min`, nulo.
+    """
+    mediana = np.full(len(p), np.nan)
+    soporte = np.zeros(len(p))
+    hecho = p["_stop_objetivo"].notna() & ganado.notna()
+    for filas in p.groupby("fecha_servicio", sort=True).indices.values():
+        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].min())
+        if not antes.any():
+            continue
+        st = (
+            ganado[antes]
+            .groupby([p.loc[antes, c] for c in CLAVE_TRAMO], sort=False)
+            .agg(["median", "size"])
+        )
+        r = st.reindex(pd.MultiIndex.from_frame(p.iloc[filas][CLAVE_TRAMO]))
+        n = r["size"].fillna(0).to_numpy()
+        soporte[filas] = n
+        mediana[filas] = np.where(n >= soporte_min, r["median"].to_numpy(), np.nan)
+    return pd.Series(mediana, index=p.index), pd.Series(soporte, index=p.index)
+
+
 def construir(
     pasos: pd.DataFrame,
     objetivo: str,
@@ -162,6 +218,10 @@ def construir(
         p[f"tramo_ganado_{n}min"], p[f"tramo_soporte_{n}min"] = _tramo_flota(
             p, p[objetivo] - p["retraso_s"], n, soporte_min
         )
+
+    p["tramo_sesgo_s"], p["tramo_sesgo_soporte"] = _sesgo_tramo(
+        p, p[objetivo] - p["retraso_s"], soporte_min
+    )
 
     # El último viaje de la línea que pasó por la parada objetivo ANTES de t. El
     # propio viaje no puede: aún no ha llegado a ella.
@@ -249,10 +309,12 @@ def soporte_por_linea(
 
 
 def baselines(test: pd.DataFrame, objetivo: str, soporte: pd.DataFrame) -> dict:
-    """MAE y RMSE de los baselines obligatorios: horario (0) y persistencia.
+    """MAE y RMSE de los baselines: horario (0), persistencia y persistencia más
+    el sesgo del tramo (nulo = 0).
 
-    Globales, por línea con su soporte, y por grupo de soporte
-    (`soporte_por_linea`).
+    El tercero es el listón del tráfico: batir la persistencia es, sobre todo,
+    aprender el sesgo fijo del horario (bitácora 039). Globales, por línea con su
+    soporte, y por grupo de soporte (`soporte_por_linea`).
     """
 
     def errores(pred: pd.Series, real: pd.Series) -> dict:
@@ -267,6 +329,9 @@ def baselines(test: pd.DataFrame, objetivo: str, soporte: pd.DataFrame) -> dict:
             "filas": int(len(g)),
             "horario": errores(pd.Series(0.0, index=g.index), g[objetivo]),
             "persistencia": errores(g["retraso_s"], g[objetivo]),
+            "persistencia_tramo": errores(
+                g["retraso_s"] + g["tramo_sesgo_s"].fillna(0.0), g[objetivo]
+            ),
         }
 
     fuera = {k: v for k, v in los_dos(test).items() if k != "filas"}
