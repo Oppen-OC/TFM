@@ -57,7 +57,7 @@ train:
   objective: reg:absoluteerror
   residuo: true             # aprender objetivo − retraso_s y sumarlo en predict
   eval_metric: mae          # la parada mira la métrica titular, no el RMSE
-  n_estimators: 3000        # tope: con la parada por MAE, 800 se quedaba corto
+  n_estimators: 3000        # tope: el brazo elegido paró en 1.517 (elegir_brazo_v2.json)
   max_depth: 8
   learning_rate: 0.05
   subsample: 0.8

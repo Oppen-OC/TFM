@@ -665,6 +665,24 @@ mecanismo detrás:
 validación. Entonces el problema no es la pérdida ni el objetivo, sino las
 variables.
 
+**Matices de la revisión (06/10, tras evaluar).** Lo de arriba es el texto
+commiteado antes de entrenar y no se toca. La revisión del tribunal precisó
+tres cosas:
+- **La prueba no estaba sin ver.** La v1 ya se había evaluado en ella. Además,
+  el espacio de brazos, la retirada de `tramo_sesgo_soporte` y la clave del
+  listón se decidieron después de verla (bitácoras 039 y 041). La v2 es la
+  **segunda** evaluación de la prueba, con el diseño fijado tras la primera.
+  La confirmación limpia es evaluar la v2 congelada en días posteriores al
+  04/10.
+- **La validación casa con la prueba en los días de la semana, no en todo.**
+  - El 8,8 % de sus filas no tiene sesgo del tramo, frente al 0,18 % de la
+    prueba: el 14/09 es el primer día del horario `19-09-2026`.
+  - Diez líneas aparecen solo en ella. Para los brazos, ajustados con agosto,
+    son líneas no vistas.
+- **Los «cambios» se cuentan respecto a la configuración base de la v2**
+  (nivel + cuadrática, con parada por MAE y validación de 7 días), no respecto
+  a la v1, que difiere en más cosas.
+
 ---
 
 ## Pendientes de decidir

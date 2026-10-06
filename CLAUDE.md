@@ -158,7 +158,7 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 ## Estado
 
-**El pipeline llega de punta a punta; el modelo todavía no bate al listón.**
+**El pipeline llega de punta a punta; el modelo v2 bate al listón sin tráfico.**
 
 Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
 explore), `tracking.py`, `gtfs.py`, `mapmatching.py`, `etiquetado.py`,
@@ -171,8 +171,9 @@ ADR-019; la capa 192, pendiente), `train.py`, `predict.py`, `evaluate.py` y
 con los baselines en `metrics/features.json`, el modelo en `models/model.pkl` y
 su evaluación, con la diferencia por viajes y su intervalo, en
 `metrics/eval.json`. Las variables del modelo las da `features.variables()`;
-`train.py` y `predict.py` las leen de ahí. El primer modelo empata con la
-persistencia más el sesgo del tramo (bitácora 041).
+`train.py` y `predict.py` las leen de ahí. La v1 empataba con la persistencia
+más el sesgo del tramo (bitácora 041). La v2, residuo con pérdida absoluta
+(ADR-021), la bate por 2,09 s de MAE sin la capa 192 (bitácora 043).
 
 Vacío, 0 líneas: `services/model_service.py`.
 

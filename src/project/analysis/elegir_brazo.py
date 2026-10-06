@@ -24,7 +24,8 @@ import yaml
 from project import evaluate, features, predict, train
 from project.config import RAIZ, settings
 
-# nombre: (objective, residuo, cambios respecto a la v1)
+# nombre: (objective, residuo, cambios respecto a la configuración base: nivel +
+# cuadrática con parada por MAE y validación de 7 días; ADR-021, matices)
 BRAZOS = {
     "nivel_cuadratica": ("reg:squarederror", False, 0),
     "nivel_absoluta": ("reg:absoluteerror", False, 1),
