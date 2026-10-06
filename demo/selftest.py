@@ -185,6 +185,56 @@ check("gids de dos sondeos consecutivos son disjuntos", len(b0 & b1) == 0,
 check("los bloques son contiguos (truncate + reinsert)",
       min(b1) - max(b0) == 1, f"salto={min(b1)-max(b0)}")
 
+print("\n5. Copia de cada versión del GTFS estático")
+print("-" * 70)
+# El GTFS no guarda histórico y la EMT lo republica casi a diario, a veces
+# reescribiendo días ya pasados (bitácora 042): se guarda cada versión nueva.
+import io  # noqa: E402
+import tempfile  # noqa: E402
+import zipfile  # noqa: E402
+
+from sources import gtfs_url, guardar_gtfs  # noqa: E402
+
+
+def zip_gtfs(texto: str) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("stop_times.txt", texto)
+    return buf.getvalue()
+
+
+with tempfile.TemporaryDirectory() as d:
+    raiz = Path(d)
+    v1, v2 = zip_gtfs("trip_id\nA\n"), zip_gtfs("trip_id\nB\n")
+    t0 = pd.Timestamp("2026-10-06 10:00", tz="UTC")
+    url = "https://opendata.vlci.valencia.es/x/download/google_transit2026-10-04.zip"
+    p1 = guardar_gtfs(raiz, v1, url, t0, "2026-10-05T19:36:23")
+    p2 = guardar_gtfs(raiz, v1, url, t0 + pd.Timedelta(hours=6))
+    p3 = guardar_gtfs(raiz, v2, url, t0 + pd.Timedelta(days=1))
+    check("gtfs: la misma versión dos veces se guarda una",
+          p1 is not None and p1.exists() and p2 is None, f"p1={p1} p2={p2}")
+    check("gtfs: una versión nueva se guarda aparte, en el día de su captura",
+          p3 is not None and "date=2026-10-07" in str(p3)
+          and len(list(raiz.rglob("*.zip"))) == 2)
+    check("gtfs: el nombre lleva el sha1 y el del fichero publicado",
+          p1 is not None and p1.name.endswith("_google_transit2026-10-04.zip"))
+    try:
+        guardar_gtfs(raiz, b"<html>en mantenimiento</html>", url, t0)
+        rechazado = False
+    except ValueError:
+        rechazado = True
+    check("gtfs: lo que no es un GTFS no se guarda",
+          rechazado and len(list(raiz.rglob("*.zip"))) == 2)
+    lineas = [json.loads(x) for f in raiz.rglob("capturas.ndjson")
+              for x in f.read_text(encoding="utf-8").splitlines()]
+    check("gtfs: cada versión guardada deja su línea en capturas.ndjson",
+          len(lineas) == 2 and lineas[0]["last_modified"] == "2026-10-05T19:36:23",
+          f"{lineas}")
+paquete = {"result": {"resources": [
+    {"format": "ZIP", "url": url, "last_modified": "2026-10-05T19:36:23"}]}}
+check("gtfs: la URL del zip sale de package_show",
+      gtfs_url(paquete) == (url, "2026-10-05T19:36:23"))
+
 print("\n" + "=" * 70)
 print(f"  {OK} comprobaciones OK, {len(FALLOS)} fallos")
 if FALLOS:

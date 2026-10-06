@@ -17,11 +17,15 @@ Lo mismo ocurre con `fechaActualizacion` de Renfe, que es un ISO naive local.
 from __future__ import annotations
 
 import gzip
+import hashlib
+import io
 import json
 import math
+import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -344,3 +348,56 @@ def read_raw(path: Path):
         for line in fh:
             rec = json.loads(line)
             yield pd.Timestamp(rec["ts_ingest_utc"]), rec["payload"]
+
+
+# --------------------------------------------------------------------------- #
+# GTFS estático: una copia de cada versión publicada
+# --------------------------------------------------------------------------- #
+# No es tiempo real, pero tampoco guarda histórico: la EMT lo republica casi a
+# diario en VLCi y cada versión sustituye a la anterior, a veces reescribiendo
+# días ya pasados (bitácora 042). Lo que no se guarde el día que se publica
+# sólo queda en Transitland, de pago. No se parsea: el zip es el crudo.
+GTFS_FUENTE = "gtfs_emt"
+GTFS_PAQUETE = ("https://opendata.vlci.valencia.es/api/3/action/package_show"
+                "?id=google-transit-lines-stops-bus-schedules")
+GTFS_PERIODO_S = 6 * 3600
+
+
+def gtfs_url(paquete: dict) -> tuple[str, str | None]:
+    """URL del zip y su `last_modified`, de la respuesta de `package_show`."""
+    r = next(r for r in paquete["result"]["resources"]
+             if str(r.get("format", "")).upper() == "ZIP")
+    return r["url"], r.get("last_modified")
+
+
+def guardar_gtfs(root: Path, contenido: bytes, url: str, ts_ingest: pd.Timestamp,
+                 last_modified: str | None = None) -> Path | None:
+    """Guarda el zip si es un GTFS y su sha1 no está ya en disco; None si ya estaba.
+
+    Va a `raw/source=gtfs_emt/date=<día>/`, que `pull_data.sh` trae al PC, y NO
+    al directorio del que el etiquetado elige horario: una versión nueva se
+    revisa antes de usarla (bitácora 042, ADR-014).
+    """
+    try:
+        with zipfile.ZipFile(io.BytesIO(contenido)) as z:
+            nombres = z.namelist()
+    except zipfile.BadZipFile as exc:  # p. ej. una página de mantenimiento
+        raise ValueError(f"no es un zip: {contenido[:60]!r}") from exc
+    if "stop_times.txt" not in nombres:
+        raise ValueError("zip sin stop_times.txt: no es un GTFS")
+    sha1 = hashlib.sha1(contenido).hexdigest()
+    base = root / "raw" / f"source={GTFS_FUENTE}"
+    if any(base.glob(f"date=*/{sha1[:12]}_*.zip")):
+        return None
+    destino = (base / f"date={ts_ingest.strftime('%Y-%m-%d')}"
+               / f"{sha1[:12]}_{Path(urlparse(url).path).name}")
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    tmp = destino.with_suffix(".tmp")
+    tmp.write_bytes(contenido)
+    tmp.replace(destino)  # atómico: un corte no deja un zip a medias
+    linea = json.dumps({"ts_ingest_utc": ts_ingest.isoformat(), "url": url,
+                        "last_modified": last_modified, "sha1": sha1,
+                        "bytes": len(contenido)}, ensure_ascii=False)
+    with open(destino.parent / "capturas.ndjson", "a", encoding="utf-8") as fh:
+        fh.write(linea + "\n")
+    return destino
