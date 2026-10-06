@@ -7,14 +7,19 @@ con las categorías de `linea` fijadas aquí y guardadas con el modelo (ADR-019)
 Ninguna lista de columnas se escribe a mano: es el train/serve skew.
 
 La parada temprana se mide en los últimos `dias_validacion` días del
-entrenamiento, nunca en la prueba. Con los árboles que salen, el modelo se
-reajusta con el entrenamiento ENTERO: esos días son los más cercanos a la
-prueba, que tiene más retrasos (5,4 % frente a 7,1 % de más de 5 min). Con el
-corte del 21/09 son el 18-20/09, viernes, sábado y domingo: no tienen la
-composición de la prueba, que son dos semanas enteras.
+entrenamiento, nunca en la prueba: la semana del 14-20/09, de lunes a domingo
+como la prueba (ADR-021). Con los árboles que salen, el modelo se reajusta con
+el entrenamiento ENTERO: esos días son los más cercanos a la prueba, que tiene
+más retrasos (5,4 % frente a 7,1 % de más de 5 min).
 
-Guarda en `settings.model_path` el modelo, sus columnas, sus categorías, los
-árboles y el run de MLflow donde `evaluate.py` añade las métricas de la prueba.
+Con `residuo`, el árbol aprende cuánto se aparta el objetivo de la persistencia
+y `predict` le suma `retraso_s`: un árbol reconstruye a trozos la identidad
+`retraso_s → objetivo`, y eso cuesta error (ADR-021). Qué brazo se usa lo elige
+`analysis/elegir_brazo.py` en la validación.
+
+Guarda en `settings.model_path` el modelo, sus columnas, sus categorías, si es
+de residuo, los árboles y el run de MLflow donde `evaluate.py` añade las
+métricas de la prueba.
 """
 
 from __future__ import annotations
@@ -29,7 +34,7 @@ import pandas as pd
 import yaml
 from xgboost import XGBRegressor
 
-from project import features
+from project import evaluate, features, predict
 from project.config import RAIZ, settings
 
 EXPERIMENTO = "retraso_siguiente_parada"
@@ -49,44 +54,77 @@ def separar_validacion(
     return train[~val], train[val]
 
 
-def entrenar(
-    train: pd.DataFrame, variables: list[str], objetivo: str, params: dict
+FIJOS = {"enable_categorical": True, "tree_method": "hist"}
+# Claves de `params.yaml → train` que son de este módulo, no de XGBoost.
+PROPIAS = ("dias_validacion", "residuo")
+
+
+def _xgb(params: dict, **cambios) -> XGBRegressor:
+    p = {k: v for k, v in params.items() if k not in PROPIAS}
+    return XGBRegressor(**{**p, **cambios}, **FIJOS)
+
+
+def _y(t: pd.DataFrame, objetivo: str, residuo: bool) -> pd.Series:
+    """Lo que aprende el árbol: el objetivo, o cuánto se aparta de la persistencia."""
+    return t[objetivo] - t["retraso_s"] if residuo else t[objetivo]
+
+
+def ajustar(
+    ajuste: pd.DataFrame,
+    val: pd.DataFrame,
+    variables: list[str],
+    categorias: list[str],
+    objetivo: str,
+    params: dict,
 ) -> dict:
-    """Parada temprana con la validación y reajuste con todo `train`."""
-    p = dict(params)
-    dias = p.pop("dias_validacion")
-    categorias = features.categorias_linea(train)
+    """Ajusta con `ajuste` y para con `val` (parada temprana). Devuelve el artefacto."""
 
     def x(t: pd.DataFrame) -> pd.DataFrame:
         return features.matriz(t, variables, categorias)
 
-    fijos = {"enable_categorical": True, "tree_method": "hist"}
-    ajuste, val = separar_validacion(train, dias)
-    m = XGBRegressor(**p, **fijos)
+    r = params["residuo"]
+    m = _xgb(params)
     m.fit(
-        x(ajuste), ajuste[objetivo], eval_set=[(x(val), val[objetivo])], verbose=False
+        x(ajuste),
+        _y(ajuste, objetivo, r),
+        eval_set=[(x(val), _y(val, objetivo, r))],
+        verbose=False,
     )
-    n = m.best_iteration + 1
-    pred_val = pd.Series(m.predict(x(val)), index=val.index)
+    return {"modelo": m, "columnas": variables, "categorias": categorias, "residuo": r}
 
-    final = XGBRegressor(
-        **{**p, "n_estimators": n, "early_stopping_rounds": None}, **fijos
-    )
-    final.fit(x(train), train[objetivo], verbose=False)
+
+def validar(pred: pd.Series, val: pd.DataFrame, objetivo: str) -> dict:
+    """Errores en la validación, y la diferencia con el listón por viajes (ADR-018)."""
+    real = val[objetivo]
+    base = features.predicciones_baseline(val)
+    viaje = val.groupby(features.CLAVE_VIAJE, sort=False).ngroup()
     return {
-        "modelo": final,
-        "columnas": variables,
-        "categorias": categorias,
-        "n_arboles": n,
-        "validacion": {
-            "dias": sorted(val["fecha_servicio"].dt.strftime("%Y-%m-%d").unique()),
-            "modelo": features.errores(pred_val, val[objetivo]),
-            **{
-                k: features.errores(v, val[objetivo])
-                for k, v in features.predicciones_baseline(val).items()
-            },
-        },
+        "dias": sorted(val["fecha_servicio"].dt.strftime("%Y-%m-%d").unique()),
+        "modelo": features.errores(pred, real),
+        **{k: features.errores(v, real) for k, v in base.items()},
+        "modelo_menos_persistencia_tramo": evaluate.diferencia(
+            pred - real, base["persistencia_tramo"] - real, viaje
+        ),
     }
+
+
+def entrenar(
+    train: pd.DataFrame, variables: list[str], objetivo: str, params: dict
+) -> dict:
+    """Parada temprana con la validación y reajuste con todo `train`."""
+    categorias = features.categorias_linea(train)
+    ajuste, val = separar_validacion(train, params["dias_validacion"])
+    art = ajustar(ajuste, val, variables, categorias, objetivo, params)
+    n = art["modelo"].best_iteration + 1
+    validacion = validar(predict.predecir(art, val), val, objetivo)
+
+    final = _xgb(params, n_estimators=n, early_stopping_rounds=None)
+    final.fit(
+        features.matriz(train, variables, categorias),
+        _y(train, objetivo, params["residuo"]),
+        verbose=False,
+    )
+    return {**art, "modelo": final, "n_arboles": n, "validacion": validacion}
 
 
 def main() -> None:
@@ -105,14 +143,15 @@ def main() -> None:
             {"variables": art["columnas"], "categorias": art["categorias"]},
             "variables.json",
         )
+        plano = pd.json_normalize(art["validacion"], sep=".").iloc[0]
         mlflow.log_metrics(
             {
-                f"val.{k}.{m}": v
-                for k, d in art["validacion"].items()
-                if k != "dias"
-                for m, v in d.items()
+                f"val.{k}": float(v)
+                for k, v in plano.items()
+                if isinstance(v, (int, float))
             }
         )
+        mlflow.log_dict(art["validacion"], "validacion.json")
         mlflow.xgboost.log_model(art["modelo"], name="modelo")
 
     ruta = RAIZ / settings.model_path

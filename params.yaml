@@ -53,8 +53,11 @@ features:
   test_desde: "2026-09-21"
 
 train:
+  # Brazo elegido por analysis/elegir_brazo.py en la validación (ADR-021).
   objective: reg:squarederror
-  n_estimators: 800
+  residuo: false            # aprender objetivo − retraso_s y sumarlo en predict
+  eval_metric: mae          # la parada mira la métrica titular, no el RMSE
+  n_estimators: 3000        # tope: con la parada por MAE, 800 se quedaba corto
   max_depth: 8
   learning_rate: 0.05
   subsample: 0.8
@@ -64,7 +67,6 @@ train:
   n_jobs: -1
   random_state: 42
   # La parada temprana se mide en los últimos días del ENTRENAMIENTO, nunca en
-  # la prueba. Con el número de árboles que sale, se reajusta con el
-  # entrenamiento entero: son los más cercanos a la prueba (18-20/09, de
-  # viernes a domingo).
-  dias_validacion: 3
+  # la prueba: la semana del 14-20/09, de lunes a domingo como la prueba
+  # (ADR-021). Con el número de árboles que sale, se reajusta con todo.
+  dias_validacion: 7

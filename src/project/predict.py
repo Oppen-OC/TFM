@@ -24,6 +24,11 @@ def cargar(ruta: Path | None = None) -> dict:
 
 
 def predecir(artefacto: dict, tabla: pd.DataFrame) -> pd.Series:
-    """Retraso en la parada siguiente, en segundos, con el índice de `tabla`."""
+    """Retraso en la parada siguiente, en segundos, con el índice de `tabla`.
+
+    Un modelo de residuo predice cuánto se aparta de la persistencia: se le suma
+    `retraso_s` (ADR-021). El modo lo dice el artefacto, no quien llama.
+    """
     x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])
-    return pd.Series(artefacto["modelo"].predict(x), index=tabla.index)
+    pred = pd.Series(artefacto["modelo"].predict(x), index=tabla.index)
+    return pred + tabla["retraso_s"] if artefacto["residuo"] else pred

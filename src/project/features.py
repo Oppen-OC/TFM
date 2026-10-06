@@ -67,8 +67,9 @@ def variables(
             for n in ventanas_flota_min
             for c in (f"tramo_ganado_{n}min", f"tramo_soporte_{n}min")
         ],
+        # Sin `tramo_sesgo_soporte`: crece con el calendario y la prueba lo ve
+        # fuera del rango del entrenamiento (bitácora 041, ADR-021).
         "tramo_sesgo_s",
-        "tramo_sesgo_soporte",
         "hora",
         "dia_semana",
         "fin_de_semana",

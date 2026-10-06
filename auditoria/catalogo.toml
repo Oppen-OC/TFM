@@ -1278,8 +1278,10 @@ nombre = "el modelo guardado no se reajusta con los días de validación"
 capa = "modelo"
 # Pierde 3 de los 7 días lectivos del entrenamiento, los más cercanos a la prueba.
 fichero = "src/project/train.py"
-buscar = '''    final.fit(x(train), train[objetivo], verbose=False)'''
-reemplazar = '''    final.fit(x(ajuste), ajuste[objetivo], verbose=False)'''
+buscar = '''        features.matriz(train, variables, categorias),
+        _y(train, objetivo, params["residuo"]),'''
+reemplazar = '''        features.matriz(ajuste, variables, categorias),
+        _y(ajuste, objetivo, params["residuo"]),'''
 detector = ["tests/test_modelo.py::test_el_modelo_final_se_reajusta_con_los_dias_de_validacion"]
 sondas = []
 
@@ -1352,4 +1354,43 @@ fichero = "src/project/ingest/sources.py"
 buscar = '''    if "stop_times.txt" not in nombres:'''
 reemplazar = '''    if False:'''
 detector = ["tests/test_persistencia.py::test_lo_que_no_es_un_gtfs_no_se_guarda"]
+sondas = []
+
+[[mutante]]
+id = "110"
+nombre = "predict devuelve el residuo de un modelo de residuo"
+capa = "modelo"
+# Predice cuánto se aparta de la persistencia y lo da como retraso: el error es
+# del orden de retraso_s y nada lo delata (ADR-021).
+fichero = "src/project/predict.py"
+buscar = '''    return pred + tabla["retraso_s"] if artefacto["residuo"] else pred'''
+reemplazar = '''    return pred'''
+detector = ["tests/test_modelo.py::test_el_modelo_de_residuo_predice_el_retraso_y_no_el_residuo"]
+sondas = []
+
+[[mutante]]
+id = "111"
+nombre = "tramo_sesgo_soporte vuelve a las variables del modelo"
+capa = "features"
+# Crece con el calendario: mediana 276 en entrenamiento y 768 en la prueba, que
+# el árbol ve fuera de rango (bitácora 041).
+fichero = "src/project/features.py"
+buscar = '''        "tramo_sesgo_s",
+        "hora",'''
+reemplazar = '''        "tramo_sesgo_s",
+        "tramo_sesgo_soporte",
+        "hora",'''
+detector = ["tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"]
+sondas = []
+
+[[mutante]]
+id = "112"
+nombre = "la elección del brazo ignora el empate con los más simples"
+capa = "modelo"
+# Gana siempre el de menor MAE aunque no se distinga de uno más simple: la regla
+# escrita antes de entrenar (ADR-021) dejaría de aplicarse.
+fichero = "src/project/analysis/elegir_brazo.py"
+buscar = '''    return min([mejor, *empatan], key=lambda b: (b["cambios"], b["mae_s"]))'''
+reemplazar = '''    return mejor'''
+detector = ["tests/test_modelo.py::test_si_no_se_distingue_gana_el_de_menos_cambios_y_entre_iguales_el_mae"]
 sondas = []

@@ -16,11 +16,13 @@ import numpy as np
 import pandas as pd
 
 from project import evaluate, features, gtfs, predict, train
+from project.analysis import elegir_brazo
 
 OBJ = "retraso_siguiente_parada_s"
 CFG = {"lags_min": [1, 5], "incluir_flota": True, "ventanas_flota_min": [5]}
 PARAMS = {
     "objective": "reg:squarederror",
+    "eval_metric": "mae",
     "n_estimators": 80,
     "max_depth": 3,
     "learning_rate": 0.3,
@@ -28,6 +30,7 @@ PARAMS = {
     "n_jobs": 1,
     "random_state": 0,
     "dias_validacion": 2,
+    "residuo": False,
 }
 NIVEL = {"A": 0.0, "B": 100.0, "C": 200.0, "D": 500.0}
 
@@ -189,3 +192,49 @@ def test_el_intervalo_de_paso_es_el_de_los_que_salen_de_la_cabecera():
         13: "sin_intervalo",
         14: "8-15 min",
     }
+
+
+def test_el_modelo_de_residuo_predice_el_retraso_y_no_el_residuo():
+    """Con `residuo`, el árbol aprende `objetivo − retraso_s` y predict lo suma.
+
+    La persistencia aquí mueve cientos de segundos: si predict devolviera el
+    residuo, el error sería del orden de `retraso_s`, sin ningún aviso.
+    """
+    t = _tabla()
+    t["retraso_s"] = np.random.default_rng(3).normal(0, 300, len(t))
+    t[OBJ] = t["linea"].map(NIVEL) + t["retraso_s"]
+    art = train.entrenar(t, train.columnas(CFG), OBJ, {**PARAMS, "residuo": True})
+    assert art["residuo"] is True
+    error = (predict.predecir(art, t) - t[OBJ]).abs().mean()
+    assert error < 30, error
+    v = art["validacion"]["modelo_menos_persistencia_tramo"]
+    assert set(v) == {"mae_s", "mae_ic95", "rmse_s", "rmse_ic95"}
+
+
+def _brazo(nombre, cambios, mae, ic):
+    return {
+        "nombre": nombre,
+        "cambios": cambios,
+        "mae_s": mae,
+        "ic_frente_al_mejor": ic,
+    }
+
+
+def test_gana_el_brazo_de_menor_mae_si_se_distingue_de_los_mas_simples():
+    brazos = [
+        _brazo("nivel_cuadratica", 0, 25.4, [0.8, 1.2]),
+        _brazo("nivel_absoluta", 1, 25.0, [0.3, 0.6]),
+        _brazo("residuo_absoluta", 2, 24.4, [0.0, 0.0]),
+    ]
+    assert elegir_brazo.elegir(brazos)["nombre"] == "residuo_absoluta"
+
+
+def test_si_no_se_distingue_gana_el_de_menos_cambios_y_entre_iguales_el_mae():
+    """ADR-021: un brazo más simple que no se distingue del mejor gana."""
+    brazos = [
+        _brazo("nivel_cuadratica", 0, 25.4, [0.8, 1.2]),  # se distingue: pierde
+        _brazo("nivel_absoluta", 1, 24.6, [-0.1, 0.4]),  # no se distingue
+        _brazo("residuo_cuadratica", 1, 24.5, [-0.2, 0.3]),  # tampoco, menor MAE
+        _brazo("residuo_absoluta", 2, 24.4, [0.0, 0.0]),  # el mejor
+    ]
+    assert elegir_brazo.elegir(brazos)["nombre"] == "residuo_cuadratica"

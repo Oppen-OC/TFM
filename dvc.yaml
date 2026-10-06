@@ -75,6 +75,8 @@ stages:
       - data/processed/train.parquet
       - src/project/train.py
       - src/project/features.py
+      - src/project/predict.py
+      - src/project/evaluate.py
     params:
       - train
     outs:

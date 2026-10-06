@@ -305,7 +305,10 @@ def test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia():
     assert a["tramo_sesgo_s"] == 50.0  # mediana de 30, 50 y 70
     assert a["tramo_sesgo_soporte"] == 3
     assert np.isnan(_fila(t, "X", 1)["tramo_sesgo_s"])  # sin historia
-    assert {"tramo_sesgo_s", "tramo_sesgo_soporte"} <= set(features.variables())
+    assert "tramo_sesgo_s" in features.variables()
+    # El soporte se queda en la tabla pero no entra al modelo: crece con el
+    # calendario y la prueba lo ve fuera de rango (bitácora 041, ADR-021).
+    assert "tramo_sesgo_soporte" not in features.variables()
 
 
 def test_el_sesgo_del_tramo_sin_soporte_no_se_estima():
