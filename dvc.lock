@@ -120,8 +120,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 26ac25f4ea268c8c0b40df14945e2a9b
-      size: 16742
+      md5: bafba44e72f022e01b524f492fc03293
+      size: 16965
     params:
       params.yaml:
         features:
@@ -156,3 +156,83 @@ stages:
       hash: md5
       md5: 0932b3dcdd544e0b73d6f23cc25effb1
       size: 18933
+  train:
+    cmd: uv run python -m project.train
+    deps:
+    - path: data/processed/train.parquet
+      hash: md5
+      md5: 849b200532f4d08636e0d21055d34826
+      size: 143145417
+    - path: src/project/features.py
+      hash: md5
+      md5: bafba44e72f022e01b524f492fc03293
+      size: 16965
+    - path: src/project/train.py
+      hash: md5
+      md5: 9fe9ec9469df209be6a2e53e6ca2abdb
+      size: 4381
+    params:
+      params.yaml:
+        train:
+          objective: reg:squarederror
+          n_estimators: 800
+          max_depth: 8
+          learning_rate: 0.05
+          subsample: 0.8
+          colsample_bytree: 0.8
+          min_child_weight: 10
+          early_stopping_rounds: 50
+          n_jobs: -1
+          random_state: 42
+          dias_validacion: 3
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: ba9f9ed74592adef3536c20e2d062050
+      size: 3285409
+  evaluate:
+    cmd: uv run python -m project.evaluate
+    deps:
+    - path: data/processed/test.parquet
+      hash: md5
+      md5: 51400f709780d224e4a75180c2a658db
+      size: 78133864
+    - path: data/processed/train.parquet
+      hash: md5
+      md5: 849b200532f4d08636e0d21055d34826
+      size: 143145417
+    - path: data/raw/gtfs
+      hash: md5
+      md5: 58e47750a59418f7aed19ec560781cde.dir
+      size: 76792028
+      nfiles: 13
+    - path: models/model.pkl
+      hash: md5
+      md5: ba9f9ed74592adef3536c20e2d062050
+      size: 3285409
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 6b668f54f46352b9562b2546c263049f
+      size: 8221
+    - path: src/project/features.py
+      hash: md5
+      md5: bafba44e72f022e01b524f492fc03293
+      size: 16965
+    - path: src/project/gtfs.py
+      hash: md5
+      md5: eddb6c0ab87e20c72fbdb9b835d129a9
+      size: 9426
+    - path: src/project/predict.py
+      hash: md5
+      md5: 1cf0f387ba69ccd61f228c0f2ed67e75
+      size: 1142
+    params:
+      params.yaml:
+        features.linea_min_dias: 3
+        features.linea_min_viajes: 100
+        features.objetivo: retraso_siguiente_parada_s
+    outs:
+    - path: metrics/eval.json
+      hash: md5
+      md5: f7e7537da423e5ac3b5aa50932f2dd09
+      size: 32277
