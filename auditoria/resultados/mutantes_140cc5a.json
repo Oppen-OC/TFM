@@ -1,0 +1,127 @@
+{
+  "rev": "140cc5a",
+  "segundos": 1328,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 185.7
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 207.1
+    },
+    {
+      "id": "103",
+      "nombre": "el modelo guardado no se reajusta con los días de validación",
+      "capa": "modelo",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_modelo.py::test_el_modelo_final_se_reajusta_con_los_dias_de_validacion"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_modelo.py::test_el_modelo_final_se_reajusta_con_los_dias_de_validacion"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 184.9
+    },
+    {
+      "id": "110",
+      "nombre": "predict devuelve el residuo de un modelo de residuo",
+      "capa": "modelo",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_modelo.py::test_el_modelo_de_residuo_predice_el_retraso_y_no_el_residuo"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_modelo.py::test_el_modelo_de_residuo_predice_el_retraso_y_no_el_residuo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 186.3
+    },
+    {
+      "id": "111",
+      "nombre": "tramo_sesgo_soporte vuelve a las variables del modelo",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 191.7
+    },
+    {
+      "id": "112",
+      "nombre": "la elección del brazo ignora el empate con los más simples",
+      "capa": "modelo",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_modelo.py::test_si_no_se_distingue_gana_el_de_menos_cambios_y_entre_iguales_el_mae"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_modelo.py::test_si_no_se_distingue_gana_el_de_menos_cambios_y_entre_iguales_el_mae"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 179.9
+    }
+  ]
+}
