@@ -523,6 +523,13 @@ quede por debajo del soporte. Que el tutor pida un mínimo de magnitud.
 Reproducir: `uv run python -m project.analysis.medir_rutas lineas` y
 `uv run python -m project.analysis.medir_soporte`. Detalle en la bitácora 036.
 
+**Unidad de remuestreo (06/10).** Con 14 días de prueba, `evaluate` da también
+el intervalo remuestreando días, en el conjunto, los grupos y las bandas. Por
+línea no, porque una línea puede tener solo tres días. Hay mejora si **ninguno
+de los dos** intervalos contiene el cero. El de días es el más ancho, así que en
+la práctica manda él: con la v2, [−2,25, −1,95] frente a [−2,14, −2,04] por
+viajes (bitácora 045).
+
 ---
 
 ## ADR-019 · `linea` entra como categórica fijada; el sesgo del horario por tramo es variable y listón · revisable
@@ -695,10 +702,6 @@ tres cosas:
   banda de intervalo programado (≤ 8, 8-15, 15-30, > 30 min y `sin_intervalo`),
   como el estrato de sensores (bitácora 038). Falta decidir si la variante
   binaria se publica solo en las bandas largas: se decide con el clasificador.
-- **Unidad de remuestreo del intervalo.** El ADR-018 remuestrea viajes. Si los
-  días de la prueba difieren entre sí, remuestrear días daría un intervalo más
-  ancho y más honrado, pero exige bastantes más de 5 días. Se mide al rehacer el
-  corte con la captura posterior al 18/09.
 - **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
   estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
   si 5 min bastan. Lo que no se capture no se recupera.
