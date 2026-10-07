@@ -128,6 +128,12 @@ usuario final consume ("¿llego tarde o no?").
 **Consecuencias.** Dos conjuntos de métricas. La binaria se reporta siempre junto
 a la tasa base de la clase positiva: sin ella, un F1 no se puede leer.
 
+**Precisión (07/10).** «Siguiente parada» es la parada `stop_sequence + h` del
+horario, si se observó. Hasta esta fecha era el h-ésimo paso *observado*: con
+una parada sin observar saltaba a la de después, y el horario y la distancia
+hasta el objetivo sabían de un hueco que aún no había ocurrido (0,54 % de las
+filas de prueba). Sin esa parada, la fila no tiene objetivo (bitácora 046).
+
 ---
 
 ## ADR-007 · Split temporal, nunca aleatorio · cerrada
@@ -728,8 +734,9 @@ condicionar por el resultado.
 - Un retraso se sabe 80,7 s después del paso, de mediana.
 - Con una parada de horizonte, el 45 % de las filas de la prueba no llega a
   tiempo: queda fuera de la población.
-- Sobre la población, el modelo mejora a `persistencia_tramo` en −1,17 s.
-- En el *nowcast* es peor (+9,6 s): no se usa ahí.
+- Sobre la población, el modelo mejora a `persistencia_tramo` en −1,01 s,
+  en torno a un 4 % de su error en todos los horizontes.
+- En el *nowcast* es peor (+7,7 s): no se usa ahí.
 - La antelación necesita un horizonte de más de una parada (bitácora 046).
 - El ADR-018 sigue mandando sobre la población: hay mejora si ningún intervalo,
   ni por viajes ni por días, contiene el cero.
@@ -741,6 +748,18 @@ condicionar por el resultado.
 - Primaria sobre todas las filas: mezcla un 45 % de predicciones que llegan
   tarde.
 - Filtrar por el horizonte real: es condicionar por el resultado.
+
+**Límites declarados** (segunda revisión del tribunal, sin cuantificar en el
+repo):
+- La asignación compara el viaje ganador con patrones rivales, cada uno con sus
+  propios primeros cruces, y exige margen sobre el segundo. Puede saberse
+  después del tercer paso del ganador.
+- `conflicto` descarta un viaje si otro vehículo, quizá más tarde ese día, lo
+  reclama con menor coste. Y los filtros de recorrido mínimo miran el viaje
+  entero. Las dos cosas seleccionan filas por el futuro.
+- `emt_tracked.fiable` sale del trazado elegido por (línea, trayecto) y día, no
+  del candidato con el que `cruces` decide el viaje. En torno al 1 % de los
+  viajes, las posiciones que mira `t_disp` pueden diferir de las de `cruces`.
 
 **Qué la reabriría.** Un horizonte de más de una parada, que cambia qué filas
 llegan a tiempo, o que `cruces` deje de usar la posición k1+1.
