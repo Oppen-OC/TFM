@@ -522,12 +522,47 @@ def test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir():
     """Horario hasta la parada objetivo menos lo que ya se ha ido en saber el
     paso. Sin el paso siguiente real: eso sería el resultado (ADR-022)."""
     filas = [
-        _paso("A", 1, 10, 0, llega=0.5),  # 120 s de horario, 30 s ya consumidos
-        _paso("A", 2, 12, 0, llega=3),  # 60 s de horario, 180 s consumidos
+        _paso("A", 1, 10, 0, llega=0.5),
+        _paso("A", 2, 12, 0, llega=3),
         _paso("A", 3, 13, 0),
     ]
+    # El horario no es lo observado: según él, la parada 2 es un minuto antes.
+    # Si el previsto mirara el paso real, saldría 90 y −120.
+    filas[1]["t_prog_s"] -= 60
     t = _construir(filas, horizonte=1)
-    assert _fila(t, "A", 1)["horizonte_previsto_s"] == pytest.approx(90.0)
-    assert _fila(t, "A", 2)["horizonte_previsto_s"] == pytest.approx(-120.0)
+    # 60 s de horario hasta la parada 2, 30 s ya consumidos en saber el paso
+    assert _fila(t, "A", 1)["horizonte_previsto_s"] == pytest.approx(30.0)
+    # 120 s de horario hasta la 3, 180 s consumidos
+    assert _fila(t, "A", 2)["horizonte_previsto_s"] == pytest.approx(-60.0)
     assert features.poblacion(t).tolist() == [True, False]
     assert "horizonte_previsto_s" not in features.variables((5,), (5,))
+
+
+def test_si_k1_mas_1_llego_antes_que_k1_manda_la_llegada_mas_tardia():
+    """Una posición atrasada llega en un sondeo posterior (trampa 013): el paso
+    no se sabe hasta que están las dos."""
+    pos, llegadas = _posiciones("A", [0, 30, 60, 90])
+    llegadas[pos["snapshot_id"][2]] = _s(200)  # la posición de los 60 s, tarde
+    pasos = pd.DataFrame(
+        {
+            "fecha_servicio": DIA,
+            "viaje_id": "A",
+            "stop_sequence": [1],
+            "t_obs_utc": [
+                _s(40)
+            ],  # k1 = 60 s (llega a los 200), k1+1 = 90 s (a los 105)
+        }
+    )
+    t = features.instante_disponible(
+        pasos, pos, llegadas, max_hueco_s=120, paradas_referencia=1
+    )
+    assert t.tolist() == [_s(200)]
+
+
+def test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_visto():
+    """Si la parada 3 no se observó, la 2 no tiene objetivo: saltar a la 4
+    metería en la fila un hueco que aún no ha ocurrido."""
+    filas = [_paso("A", s, 2 * s, 10 * s) for s in (1, 2, 4, 5)]
+    t = _construir(filas, horizonte=1)
+    assert set(t["stop_sequence"]) == {1, 4}
+    assert _fila(t, "A", 1)[OBJ] == 20.0

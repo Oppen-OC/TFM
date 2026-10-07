@@ -3,8 +3,8 @@
     uv run python -m project.features            # lo que ejecuta `dvc repro features`
 
 Una fila es el paso de un viaje por la parada i; el objetivo es el retraso en
-su h-ésimo paso siguiente observado (ADR-006), y la variante binaria, si pasa
-de `umbral_retraso_s`. El «ahora» de la fila no es `t_obs(i)`, cuando ocurrió
+la parada `h` posiciones más allá en el horario, si se observó (ADR-006), y la
+variante binaria, si pasa de `umbral_retraso_s`. El «ahora» de la fila no es `t_obs(i)`, cuando ocurrió
 el paso, sino `t_disp(i)`, cuando se SUPO: la llegada del sondeo que lo
 confirma, unos 37 s después de mediana (trampa 017). Toda variable usa solo lo
 que había LLEGADO antes de ese instante. Con una ventana que incluye t, un «bus
@@ -254,7 +254,10 @@ def instante_disponible(
     )
     dt2 = (tras["_t2"] - tras["_tk"]).dt.total_seconds()
     usa_siguiente = (dt2 > 0) & (dt2 <= max_hueco_s)
-    llega = tras["_llega2"].where(usa_siguiente, tras["_llega"])
+    # La más tardía de las dos: una posición atrasada puede llegar en un sondeo
+    # posterior al de la siguiente (trampa 013).
+    llega2 = tras["_llega2"].where(usa_siguiente)
+    llega = tras["_llega"].where(llega2.isna() | (tras["_llega"] >= llega2), llega2)
     llega = llega.fillna(ultima["_llega"])
     paso = llega.where(llega.isna() | (llega >= tras["_t"]), tras["_t"])
 
@@ -262,7 +265,11 @@ def instante_disponible(
     r = r.sort_values([*clave, "_seq"], kind="stable")
     vg = r.groupby(clave, sort=False)
     k = np.minimum(paradas_referencia, vg["_paso"].transform("size")) - 1
-    ref = r[vg.cumcount() == k][[*clave, "_paso"]].rename(columns={"_paso": "_ref"})
+    # El más tardío de los primeros pasos, no el último: nada garantiza que se
+    # sepan en orden.
+    r["_ref"] = vg["_paso"].cummax()
+    ref = r[vg.cumcount() == k][[*clave, "_ref"]]
+    r = r.drop(columns="_ref")
     r = r.merge(ref, on=clave, how="left")
     t = r["_paso"].where(r["_paso"] >= r["_ref"], r["_ref"])
     # Se vuelve al orden de `pasos` por `_fila`: merge_asof y merge reordenan.
@@ -298,17 +305,24 @@ def construir(
     p["_td"] = _ns(p["t_disp_utc"]).astype("int64")  # cuándo se supo: el «ahora»
     g = p.groupby(CLAVE_VIAJE, sort=False)
 
-    p[objetivo] = g["retraso_s"].shift(-horizonte)
+    # La parada objetivo es la que está `horizonte` posiciones más allá en el
+    # horario, no el h-ésimo paso observado: si se saltara una, la fila sabría de
+    # un hueco que aún no ha ocurrido. En el GTFS de la EMT `stop_sequence` es
+    # consecutivo. Sin esa parada, la fila no tiene objetivo ni tramo.
+    sigue = g["stop_sequence"].shift(-horizonte) == p["stop_sequence"] + horizonte
+
+    def destino(col: str) -> pd.Series:
+        return g[col].shift(-horizonte).where(sigue)
+
+    p[objetivo] = destino("retraso_s")
     p["retraso_lag1_s"] = g["retraso_s"].shift(1)
     p["retraso_lag2_s"] = g["retraso_s"].shift(2)
     p["retraso_delta_s"] = p["retraso_s"] - p["retraso_lag1_s"]
-    p["t_prog_hasta_objetivo_s"] = g["t_prog_s"].shift(-horizonte) - p["t_prog_s"]
-    p["dist_objetivo_m"] = (
-        g["abscisa_parada_m"].shift(-horizonte) - p["abscisa_parada_m"]
-    )
-    p["_stop_objetivo"] = g["stop_id"].shift(-horizonte)
-    p["_t_fin"] = g["_t"].shift(-horizonte)
-    p["_td_fin"] = g["_td"].shift(-horizonte)
+    p["t_prog_hasta_objetivo_s"] = destino("t_prog_s") - p["t_prog_s"]
+    p["dist_objetivo_m"] = destino("abscisa_parada_m") - p["abscisa_parada_m"]
+    p["_stop_objetivo"] = destino("stop_id")
+    p["_t_fin"] = destino("_t")
+    p["_td_fin"] = destino("_td")
     # Claves, no variables. El útil mira el paso siguiente REAL: describe, no
     # estratifica. El previsto usa solo lo que se sabe al predecir: el horario
     # hasta la parada objetivo menos lo que ya se fue en saber el paso.

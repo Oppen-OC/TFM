@@ -1486,8 +1486,8 @@ trampa = "017"
 # La velocidad del cruce usa la posición siguiente: sin ella no hay paso. Con
 # k1, el retardo sale 30 s corto y el horizonte, otro tanto de largo.
 fichero = "src/project/features.py"
-buscar = '''    llega = tras["_llega2"].where(usa_siguiente, tras["_llega"])'''
-reemplazar = '''    llega = tras["_llega"]'''
+buscar = '''    llega2 = tras["_llega2"].where(usa_siguiente)'''
+reemplazar = '''    llega2 = tras["_llega"].where(usa_siguiente)'''
 detector = ["tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces", "tests/test_features.py::test_t_disp_no_es_anterior_a_ninguna_posicion_que_usa_cruces_de_verdad"]
 sondas = []
 
@@ -1521,4 +1521,28 @@ fichero = "src/project/features.py"
 buscar = '''    return tabla["horizonte_previsto_s"] > 0'''
 reemplazar = '''    return tabla["horizonte_previsto_s"].notna()'''
 detector = ["tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"]
+sondas = []
+
+[[mutante]]
+id = "124"
+nombre = "con k1+1 manda su llegada aunque k1 llegara después"
+capa = "features"
+# Una posición atrasada llega en un sondeo posterior (trampa 013): el paso se
+# daría por sabido antes de tener las dos.
+fichero = "src/project/features.py"
+buscar = '''    llega = tras["_llega"].where(llega2.isna() | (tras["_llega"] >= llega2), llega2)'''
+reemplazar = '''    llega = llega2.fillna(tras["_llega"])'''
+detector = ["tests/test_features.py::test_si_k1_mas_1_llego_antes_que_k1_manda_la_llegada_mas_tardia"]
+sondas = []
+
+[[mutante]]
+id = "125"
+nombre = "el objetivo es el siguiente paso observado aunque se salte paradas"
+capa = "features"
+# La fila sabría de un hueco que aún no ha ocurrido: entra en el horario y la
+# distancia hasta el objetivo, y en el horizonte previsto.
+fichero = "src/project/features.py"
+buscar = '''    sigue = g["stop_sequence"].shift(-horizonte) == p["stop_sequence"] + horizonte'''
+reemplazar = '''    sigue = g["stop_sequence"].shift(-horizonte).notna()'''
+detector = ["tests/test_features.py::test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_visto"]
 sondas = []
