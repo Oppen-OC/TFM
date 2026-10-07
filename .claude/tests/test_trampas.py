@@ -17,6 +17,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from _md import frontmatter
+
 import pytest
 
 RAIZ = Path(__file__).resolve().parents[2]
@@ -26,7 +28,6 @@ CAMPOS = ("id", "titulo", "estado", "capa", "detectada", "test")
 ESTADOS = {"vigente", "mitigada", "cerrada"}
 CAPAS = {"fuentes", "tracking", "etiquetado", "pipeline", "serving"}
 
-RE_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 RE_CAMPO = re.compile(r"^([a-z_]+):\s*(.*)$")
 RE_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Node id de pytest: `tests/x.py::test_y`. Hasta 08/2026 se admitía además
@@ -41,16 +42,7 @@ def _fichas() -> list[Path]:
 
 
 def _frontmatter(ruta: Path) -> dict[str, str]:
-    m = RE_FRONTMATTER.match(ruta.read_text(encoding="utf-8"))
-    assert m, f"{ruta.name}: sin frontmatter delimitado por ---"
-    campos: dict[str, str] = {}
-    for linea in m.group(1).splitlines():
-        if not linea.strip():
-            continue
-        c = RE_CAMPO.match(linea)
-        assert c, f"{ruta.name}: línea de frontmatter no es `clave: valor`: {linea!r}"
-        campos[c.group(1)] = c.group(2).strip()
-    return campos
+    return frontmatter(ruta, RE_CAMPO)
 
 
 # Recolectado una vez: si el directorio no existe, todo el módulo debe fallar

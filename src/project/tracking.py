@@ -667,6 +667,10 @@ def rastrear(
             dtype=float,
         )
         prev["_dt"] = dt_fila
+        prev["lat_pred"] = prev["lat"]
+        prev["lon_pred"] = prev["lon"]
+        if con_abscisa:
+            prev["abs_pred"] = prev["abscisa_m"]
 
         if predictivo:
             # Modelo de velocidad constante: si venía moviéndose, seguirá. El
@@ -675,8 +679,6 @@ def rastrear(
             # `2*lat - _plat`, pero ante un sondeo que falta evita extrapolar el
             # doble de lo que toca (trampa 009).
             tiene = prev["_plat"].notna()
-            prev["lat_pred"] = prev["lat"]
-            prev["lon_pred"] = prev["lon"]
             f = prev.loc[tiene, "_dt"] / prev.loc[tiene, "_pdt"]
             prev.loc[tiene, "lat_pred"] = prev.loc[tiene, "lat"] + f * (
                 prev.loc[tiene, "lat"] - prev.loc[tiene, "_plat"]
@@ -688,18 +690,12 @@ def rastrear(
                 # Lo mismo sobre el recorrido: avanza lo que avanzó, escalado por
                 # la duración del paso.
                 sobre_ruta = tiene & prev["_pabs"].notna() & prev["abscisa_m"].notna()
-                prev["abs_pred"] = prev["abscisa_m"]
                 fs = prev.loc[sobre_ruta, "_dt"] / prev.loc[sobre_ruta, "_pdt"]
                 prev.loc[sobre_ruta, "abs_pred"] = prev.loc[
                     sobre_ruta, "abscisa_m"
                 ] + fs * (
                     prev.loc[sobre_ruta, "abscisa_m"] - prev.loc[sobre_ruta, "_pabs"]
                 )
-        else:
-            prev["lat_pred"] = prev["lat"]
-            prev["lon_pred"] = prev["lon"]
-            if con_abscisa:
-                prev["abs_pred"] = prev["abscisa_m"]
 
         emparejados_b: set[int] = set()
         for clave, gb in cur.groupby(["linea", "trayecto"], sort=False):
@@ -776,24 +772,3 @@ def resumen(df: pd.DataFrame) -> dict:
         else None,
         "vel_kmh_max": round(float(tr["vel_kmh"].max()), 1) if len(tr) else None,
     }
-
-
-if __name__ == "__main__":
-    import sys
-    from pathlib import Path
-
-    from project.config import settings
-
-    ruta = Path(
-        sys.argv[1] if len(sys.argv) > 1 else settings.curated_dir / "source=emt_buses"
-    )
-    df = pd.read_parquet(ruta)
-    out = rastrear(df)
-    for k, v in resumen(out).items():
-        print(f"  {k:26} {v}")
-    # Vista previa fuera de DVC. La salida del pipeline es el directorio
-    # `emt_tracked/`, particionado por día de servicio, y la escribe `prepare.py`.
-    destino = settings.interim_dir / "emt_tracked.parquet"
-    destino.parent.mkdir(parents=True, exist_ok=True)
-    out.to_parquet(destino, index=False)
-    print(f"\n  -> {destino}")

@@ -25,7 +25,8 @@ import io
 import json
 import math
 import zipfile
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -121,13 +122,11 @@ def resolver_convencion(
 # --------------------------------------------------------------------------- #
 @dataclass(frozen=True)
 class Source:
-    name: str
     url: str
     period_s: int
     notes: str
-    parser: str
-    layer_id: int | None = None
-    tags: tuple[str, ...] = field(default_factory=tuple)
+    parser: Callable[[dict, pd.Timestamp], pd.DataFrame]
+    tags: tuple[str, ...] = ()
     # Capas cuya geometría no cambia nunca: se descarga una vez a reference/ y
     # a partir de ahí se piden sin geometría. En la capa 192 eso es el 90 % del
     # payload, y era el 74 % del disco de toda la captura.
@@ -140,65 +139,21 @@ class Source:
         return self.url.replace("&outSR=4326", "&outSR=4326&returnGeometry=false")
 
 
-SOURCES: dict[str, Source] = {
-    "emt_buses": Source(
-        name="emt_buses",
-        url=f"{EMT_LAYER}/query?{QUERY_ARGS}",
-        period_s=30,
-        notes="Posición GPS de la flota EMT. Refresco medido ~29 s. Sin id de vehículo.",
-        parser="parse_emt",
-        layer_id=384,
-        tags=("tiempo_real", "nucleo"),
-    ),
-    "trafico_estado": Source(
-        name="trafico_estado",
-        url=f"{TRAFICO}/192/query?{QUERY_ARGS}",
-        # 60 s era la cadencia inicial. En agosto, en 2.033 sondeos solo 8
-        # tramos cambiaron de estado, y se bajó a 5 min. En periodo lectivo la
-        # capa se anima: congestión en unos 34 tramos por laborable, con picos a
-        # las 8 y a las 18 h (bitácora 031). La cadencia no se ha vuelto a
-        # evaluar con ese dato.
-        period_s=300,
-        notes="Estado de congestión por tramo (410 útiles). Sin timestamp propio. Casi estático en agosto; con perfil de punta en periodo lectivo.",
-        parser="parse_trafico_estado",
-        layer_id=192,
-        geometria_estatica=True,
-        tags=("tiempo_real", "nucleo"),
-    ),
-    "trafico_intensidad": Source(
-        name="trafico_intensidad",
-        url=f"{TRAFICO}/188/query?{QUERY_ARGS}",
-        # Medido: 1 solo cambio del agregado en 294 sondeos a lo largo de 42 h.
-        period_s=900,
-        notes="Intensidad por tramo (354 con lectura). lectura=-1 = sin dato. Prácticamente estática.",
-        parser="parse_trafico_intensidad",
-        layer_id=188,
-        geometria_estatica=True,
-        tags=("tiempo_real",),
-    ),
-    "valenbisi": Source(
-        name="valenbisi",
-        url=f"{TRAFICO}/228/query?{QUERY_ARGS}",
-        period_s=300,
-        notes="273 estaciones. La fuente sólo refresca cada ~10 min: no pollear a 30 s.",
-        parser="parse_valenbisi",
-        layer_id=228,
-        tags=("tiempo_real",),
-    ),
-    "renfe_cercanias": Source(
-        name="renfe_cercanias",
-        url=RENFE,
-        period_s=30,
-        notes="Flota nacional; filtrar nucleo=='40' para València. Trae retrasoMin YA calculado.",
-        parser="parse_renfe",
-        tags=("tiempo_real", "etiqueta_gratis"),
-    ),
-}
-
-
 # --------------------------------------------------------------------------- #
 # Parsers  (payload crudo -> DataFrame normalizado)
 # --------------------------------------------------------------------------- #
+# Lo que se guarda una vez en reference/ de las capas de geometría estática.
+COLS_GEOMETRIA = (
+    "idtramo",
+    "denominacion",
+    "des_tramo",
+    "fiwareid",
+    "lat",
+    "lon",
+    "geom_wkt",
+)
+
+
 def _wkt_paths(paths: list) -> str:
     """Polilínea de ArcGIS -> WKT. Necesario para el join espacial punto-tramo."""
     partes = [
@@ -381,17 +336,56 @@ def parse_renfe(
     ]
 
 
-PARSERS = {
-    "parse_emt": parse_emt,
-    "parse_trafico_estado": parse_trafico_estado,
-    "parse_trafico_intensidad": parse_trafico_intensidad,
-    "parse_valenbisi": parse_valenbisi,
-    "parse_renfe": parse_renfe,
+# El catálogo va detrás de los parsers: cada fuente guarda el suyo.
+SOURCES: dict[str, Source] = {
+    "emt_buses": Source(
+        url=f"{EMT_LAYER}/query?{QUERY_ARGS}",
+        period_s=30,
+        notes="Posición GPS de la flota EMT. Refresco medido ~29 s. Sin id de vehículo.",
+        parser=parse_emt,
+        tags=("tiempo_real", "nucleo"),
+    ),
+    "trafico_estado": Source(
+        url=f"{TRAFICO}/192/query?{QUERY_ARGS}",
+        # 60 s era la cadencia inicial. En agosto, en 2.033 sondeos solo 8
+        # tramos cambiaron de estado, y se bajó a 5 min. En periodo lectivo la
+        # capa se anima: congestión en unos 34 tramos por laborable, con picos a
+        # las 8 y a las 18 h (bitácora 031). La cadencia no se ha vuelto a
+        # evaluar con ese dato.
+        period_s=300,
+        notes="Estado de congestión por tramo (410 útiles). Sin timestamp propio. Casi estático en agosto; con perfil de punta en periodo lectivo.",
+        parser=parse_trafico_estado,
+        geometria_estatica=True,
+        tags=("tiempo_real", "nucleo"),
+    ),
+    "trafico_intensidad": Source(
+        url=f"{TRAFICO}/188/query?{QUERY_ARGS}",
+        # Medido: 1 solo cambio del agregado en 294 sondeos a lo largo de 42 h.
+        period_s=900,
+        notes="Intensidad por tramo (354 con lectura). lectura=-1 = sin dato. Prácticamente estática.",
+        parser=parse_trafico_intensidad,
+        geometria_estatica=True,
+        tags=("tiempo_real",),
+    ),
+    "valenbisi": Source(
+        url=f"{TRAFICO}/228/query?{QUERY_ARGS}",
+        period_s=300,
+        notes="273 estaciones. La fuente sólo refresca cada ~10 min: no pollear a 30 s.",
+        parser=parse_valenbisi,
+        tags=("tiempo_real",),
+    ),
+    "renfe_cercanias": Source(
+        url=RENFE,
+        period_s=30,
+        notes="Flota nacional; filtrar nucleo=='40' para València. Trae retrasoMin YA calculado.",
+        parser=parse_renfe,
+        tags=("tiempo_real", "etiqueta_gratis"),
+    ),
 }
 
 
 def parse(source: str, payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
-    return PARSERS[SOURCES[source].parser](payload, ts_ingest)
+    return SOURCES[source].parser(payload, ts_ingest)
 
 
 def clave_sondeo(df: pd.DataFrame, ts_ingest: pd.Timestamp) -> int | str:

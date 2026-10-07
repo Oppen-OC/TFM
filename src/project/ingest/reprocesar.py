@@ -42,7 +42,13 @@ from pathlib import Path
 import pandas as pd
 
 from project.config import settings
-from project.ingest.sources import SOURCES, clave_sondeo, parse, read_raw
+from project.ingest.sources import (
+    COLS_GEOMETRIA,
+    SOURCES,
+    clave_sondeo,
+    parse,
+    read_raw,
+)
 
 
 def reprocesar(root: Path, source: str, dry: bool) -> dict:
@@ -68,19 +74,7 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
                 continue
             if "geom_wkt" in df.columns:
                 if geo is None:
-                    cols = [
-                        c
-                        for c in (
-                            "idtramo",
-                            "denominacion",
-                            "des_tramo",
-                            "fiwareid",
-                            "lat",
-                            "lon",
-                            "geom_wkt",
-                        )
-                        if c in df.columns
-                    ]
+                    cols = [c for c in COLS_GEOMETRIA if c in df.columns]
                     geo = df[cols].drop_duplicates(subset=["idtramo"])
                 df = df.drop(columns=["geom_wkt"])
             clave = clave_sondeo(df, ts_ingest)
@@ -97,18 +91,17 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
     por_dia: dict[str, list[pd.DataFrame]] = defaultdict(list)
     for dia, df in elegidos.values():
         por_dia[dia].append(df)
-    filas = sum(len(d) for v in por_dia.values() for d in v)
+    r = {
+        "fuente": source,
+        "payloads": n_payloads,
+        "dias": len(por_dia),
+        "filas": sum(len(d) for v in por_dia.values() for d in v),
+        "errores": errores,
+        "duplicados": duplicados,
+        "completados": len(completados),
+    }
     if dry:
-        return {
-            "fuente": source,
-            "payloads": n_payloads,
-            "dias": len(por_dia),
-            "filas": filas,
-            "errores": errores,
-            "duplicados": duplicados,
-            "completados": len(completados),
-            "estado": "simulado",
-        }
+        return {**r, "estado": "simulado"}
 
     destino = root / "curated" / f"source={source}"
     if destino.exists():
@@ -130,16 +123,7 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
         ref.parent.mkdir(parents=True, exist_ok=True)
         geo.to_parquet(ref, index=False, compression="zstd")
 
-    return {
-        "fuente": source,
-        "payloads": n_payloads,
-        "dias": len(por_dia),
-        "filas": filas,
-        "errores": errores,
-        "duplicados": duplicados,
-        "completados": len(completados),
-        "estado": "reescrito",
-    }
+    return {**r, "estado": "reescrito"}
 
 
 if __name__ == "__main__":

@@ -10,13 +10,15 @@ si una entrada `abierto` está estancada, si hay hallazgos en `docs/` sin fichar
 vive en el comando `/bitacora`.
 
 Sin dependencias nuevas: el frontmatter es `clave: valor` plano y se parsea con
-regex, igual que en `test_trampas.py`.
+regex en `_md.py`, compartido con los demás registros.
 """
 
 from __future__ import annotations
 
 import re
 from pathlib import Path
+
+from _md import frontmatter
 
 import pytest
 
@@ -50,7 +52,6 @@ SECCIONES = (
     "## para la memoria",
 )
 
-RE_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 RE_CAMPO = re.compile(r"^([a-z_]+):\s*(.*)$")
 RE_FECHA = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 RE_FILA = re.compile(
@@ -63,16 +64,7 @@ def _entradas() -> list[Path]:
 
 
 def _frontmatter(ruta: Path) -> dict[str, str]:
-    m = RE_FRONTMATTER.match(ruta.read_text(encoding="utf-8"))
-    assert m, f"{ruta.name}: sin frontmatter delimitado por ---"
-    campos: dict[str, str] = {}
-    for linea in m.group(1).splitlines():
-        if not linea.strip():
-            continue
-        c = RE_CAMPO.match(linea)
-        assert c, f"{ruta.name}: línea de frontmatter no es `clave: valor`: {linea!r}"
-        campos[c.group(1)] = c.group(2).strip()
-    return campos
+    return frontmatter(ruta, RE_CAMPO)
 
 
 def _seccion(ruta: Path, titulo: str) -> str:

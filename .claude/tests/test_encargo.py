@@ -16,6 +16,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from _md import frontmatter
+
 RAIZ = Path(__file__).resolve().parents[2]
 CLAUDE_MD = RAIZ / "CLAUDE.md"
 ENCARGO = RAIZ / ".claude" / "commands" / "encargo.md"
@@ -25,7 +27,6 @@ SECCION = "## Encargos incompletos"
 
 # Las dimensiones se declaran como `- **clave** — glosa` dentro de la sección.
 RE_DIMENSION = re.compile(r"^- \*\*([a-z]+)\*\* — ", re.MULTILINE)
-RE_FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 RE_CAMPO = re.compile(r"^([a-z-]+):\s*(.*)$")
 
 DIMENSIONES_ESPERADAS = {
@@ -49,16 +50,7 @@ def _seccion_encargos() -> str:
 
 
 def _frontmatter(ruta: Path) -> dict[str, str]:
-    m = RE_FRONTMATTER.match(ruta.read_text(encoding="utf-8"))
-    assert m, f"{ruta.name}: sin frontmatter delimitado por ---"
-    campos: dict[str, str] = {}
-    for linea in m.group(1).splitlines():
-        if not linea.strip():
-            continue
-        c = RE_CAMPO.match(linea)
-        assert c, f"{ruta.name}: línea de frontmatter no es `clave: valor`: {linea!r}"
-        campos[c.group(1)] = c.group(2).strip()
-    return campos
+    return frontmatter(ruta, RE_CAMPO)
 
 
 def test_claude_md_declara_las_ocho_dimensiones() -> None:

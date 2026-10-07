@@ -31,6 +31,7 @@ import dataclasses
 import json
 import shutil
 import time
+from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime, timedelta
 from functools import partial
@@ -143,9 +144,9 @@ def etiquetar_dia(
 
 
 def cargar_parametros(ruta: Path = RAIZ / "params.yaml") -> Parametros:
+    # Sin filtrar claves: una que `Parametros` no conoce es un umbral que nadie
+    # lee, y debe fallar aquí (así sobrevivieron las copias del tracker).
     cfg = yaml.safe_load(ruta.read_text(encoding="utf-8"))["prepare"]
-    campos = {f.name for f in dataclasses.fields(Parametros)}
-    cfg = {k: v for k, v in cfg.items() if k in campos}
     if "excluir_fechas" in cfg:  # YAML da listas; el dataclass es inmutable
         cfg["excluir_fechas"] = tuple(tuple(map(str, r)) for r in cfg["excluir_fechas"])
     return Parametros(**cfg)
@@ -248,11 +249,9 @@ def main(dias: list[str] | None, procesos: int, salida: Path, metricas: Path) ->
     total: dict = {"dias": len(por_dia), "feeds": [r.name for r in rutas]}
     for clave in ("posiciones", "descartadas_sin_trayecto", "viajes", "pasos"):
         total[clave] = sum(d[clave] for d in por_dia)
-    motivos: dict[str, int] = {}
-    for d in por_dia:
-        for k, v in d["viajes_por_motivo"].items():
-            motivos[k] = motivos.get(k, 0) + v
-    total["viajes_por_motivo"] = motivos
+    total["viajes_por_motivo"] = dict(
+        sum((Counter(d["viajes_por_motivo"]) for d in por_dia), Counter())
+    )
     total["parametros"] = dataclasses.asdict(p)
     total["por_dia"] = por_dia
     metricas.parent.mkdir(parents=True, exist_ok=True)

@@ -239,13 +239,8 @@ CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) ejecuta `ruff check`,
 
 | Variable | Por defecto | Uso |
 |---|---|---|
-| `APP_NAME` | `tfm` | Nombre de la aplicación |
-| `ENV` | `development` | Entorno de ejecución |
-| `LOG_LEVEL` | `info` | Nivel de logging |
-| `API_HOST` | `0.0.0.0` | Host de bind de la API |
-| `API_PORT` | `8000` | Puerto de la API |
+| `API_URL` | `http://127.0.0.1:8000` | URL a la que se conecta la UI |
 | `MODEL_PATH` | `models/model.pkl` | Ruta del modelo serializado |
-| `API_KEY` | *(vacío)* | Clave de API |
 
 ---
 

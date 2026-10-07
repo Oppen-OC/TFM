@@ -37,11 +37,12 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import json
 import logging
 import signal
+import time
 from collections import defaultdict, deque
-from datetime import timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -50,6 +51,7 @@ import pandas as pd
 
 from project.config import settings
 from project.ingest.sources import (
+    COLS_GEOMETRIA,
     GTFS_FUENTE,
     GTFS_PAQUETE,
     GTFS_PERIODO_S,
@@ -88,6 +90,12 @@ PARAR = asyncio.Event()
 INICIO = None
 
 
+async def dormir(segundos: float) -> None:
+    """Espera `segundos`, o menos si piden parar."""
+    with contextlib.suppress(asyncio.TimeoutError):
+        await asyncio.wait_for(PARAR.wait(), timeout=segundos)
+
+
 def recordar(source: str, sid) -> bool:
     """True si el snapshot es nuevo. Mantiene la memoria acotada."""
     s = VISTOS_SET[source]
@@ -115,19 +123,7 @@ def flush(root: Path, source: str) -> None:
         ref = root / "reference" / f"{source}_geometria.parquet"
         if not ref.exists():
             ref.parent.mkdir(parents=True, exist_ok=True)
-            cols = [
-                c
-                for c in (
-                    "idtramo",
-                    "denominacion",
-                    "des_tramo",
-                    "fiwareid",
-                    "lat",
-                    "lon",
-                    "geom_wkt",
-                )
-                if c in df.columns
-            ]
+            cols = [c for c in COLS_GEOMETRIA if c in df.columns]
             geo = df[cols].drop_duplicates(subset=["idtramo"])
             geo.to_parquet(ref, index=False, compression="zstd")
             log.info("geometría de %s -> %s (%d tramos)", source, ref.name, len(geo))
@@ -260,11 +256,7 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
             log.warning("%s: %s: %s", key, type(exc).__name__, exc)
 
         # Retroceso exponencial acotado: si la fuente cae, no la martilleamos.
-        espera = src.period_s * min(2**fallos, 16) if fallos else src.period_s
-        try:
-            await asyncio.wait_for(PARAR.wait(), timeout=espera)
-        except asyncio.TimeoutError:
-            pass
+        await dormir(src.period_s * min(2**fallos, 16) if fallos else src.period_s)
 
 
 async def capturar_gtfs(client: httpx.AsyncClient, root: Path) -> None:
@@ -295,10 +287,7 @@ async def capturar_gtfs(client: httpx.AsyncClient, root: Path) -> None:
             st["ultimo_error"] = f"{type(exc).__name__}: {exc}"[:200]
             log.warning("%s: %s: %s", GTFS_FUENTE, type(exc).__name__, exc)
             espera = 1800
-        try:
-            await asyncio.wait_for(PARAR.wait(), timeout=espera)
-        except asyncio.TimeoutError:
-            pass
+        await dormir(espera)
 
 
 async def latir(root: Path) -> None:
@@ -309,10 +298,7 @@ async def latir(root: Path) -> None:
     except Exception as exc:  # noqa: BLE001
         log.warning("latido inicial: %s", exc)
     while not PARAR.is_set():
-        try:
-            await asyncio.wait_for(PARAR.wait(), timeout=LATIDO_SEG)
-        except asyncio.TimeoutError:
-            pass
+        await dormir(LATIDO_SEG)
         try:
             escribir_latido(root)
         except Exception as exc:  # noqa: BLE001
@@ -341,13 +327,10 @@ async def main(minutos: int, claves: list[str], root: Path) -> None:
         if GTFS_FUENTE in claves:
             tareas.append(asyncio.create_task(capturar_gtfs(client, root)))
         tareas.append(asyncio.create_task(latir(root)))
-        try:
-            if minutos > 0:
-                await asyncio.wait_for(PARAR.wait(), timeout=minutos * 60)
-            else:
-                await PARAR.wait()  # indefinido
-        except asyncio.TimeoutError:
-            pass
+        if minutos > 0:
+            await dormir(minutos * 60)
+        else:
+            await PARAR.wait()  # indefinido
         PARAR.set()
         for t in tareas:
             t.cancel()
@@ -373,18 +356,7 @@ async def main(minutos: int, claves: list[str], root: Path) -> None:
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--minutes", type=int, default=1440, help="0 = indefinido")
-    p.add_argument(
-        "--sources",
-        nargs="*",
-        default=[
-            "emt_buses",
-            "trafico_estado",
-            "trafico_intensidad",
-            "renfe_cercanias",
-            "valenbisi",
-            GTFS_FUENTE,
-        ],
-    )
+    p.add_argument("--sources", nargs="*", default=[*SOURCES, GTFS_FUENTE])
     p.add_argument("--out", type=Path, default=settings.data_root)
     p.add_argument(
         "--status", action="store_true", help="mostrar el latido del colector y salir"
@@ -415,9 +387,7 @@ if __name__ == "__main__":
         handlers=handlers,
         format="%(asctime)s UTC %(levelname)-7s %(message)s",
     )
-    logging.Formatter.converter = lambda *args: pd.Timestamp.now(
-        tz=timezone.utc
-    ).timetuple()
+    logging.Formatter.converter = time.gmtime
 
     # httpx registra una línea INFO por petición: 5 fuentes cada 30 s son
     # ~14.000 líneas al día sin una sola información útil.
@@ -425,9 +395,6 @@ if __name__ == "__main__":
         logging.getLogger(ruidoso).setLevel(logging.WARNING)
 
     signal.signal(signal.SIGINT, lambda *_: PARAR.set())
-    try:
-        signal.signal(signal.SIGTERM, lambda *_: PARAR.set())
-    except (AttributeError, ValueError):
-        pass  # SIGTERM no existe en Windows
+    signal.signal(signal.SIGTERM, lambda *_: PARAR.set())
 
     asyncio.run(main(a.minutes, a.sources, a.out))

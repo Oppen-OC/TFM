@@ -5365,7 +5365,6 @@ dependencies = [
 dev = [
     { name = "dvc" },
     { name = "dvc-gdrive" },
-    { name = "httpx" },
     { name = "ipykernel" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "matplotlib", version = "3.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -5398,7 +5397,6 @@ requires-dist = [
 dev = [
     { name = "dvc", specifier = ">=3.67.1" },
     { name = "dvc-gdrive", specifier = ">=3.0.1" },
-    { name = "httpx", specifier = ">=0.28.1" },
     { name = "ipykernel", specifier = ">=7.3.0" },
     { name = "matplotlib", specifier = ">=3.10.9" },
     { name = "nbclient", specifier = ">=0.11.0" },
