@@ -13,16 +13,22 @@
   },
   "disponibilidad_test": {
     "retardo_s_p10_p50_p90": [
-      26.0,
-      47.7,
-      67.9
+      57.3,
+      80.7,
+      116.0
     ],
     "horizonte_util_s_p10_p50_p90": [
-      -11.5,
-      35.5,
-      109.7
+      -65.9,
+      -1.5,
+      71.3
     ],
-    "horizonte_util_no_positivo": 0.1824
+    "horizonte_util_no_positivo": 0.5125,
+    "horizonte_previsto_s_p10_p50_p90": [
+      -44.2,
+      4.1,
+      60.1
+    ],
+    "fuera_de_la_poblacion": 0.4511
   },
   "baselines_test": {
     "horario": {
