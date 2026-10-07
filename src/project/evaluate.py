@@ -10,8 +10,9 @@ y, sobre todo, con la persistencia más el sesgo del tramo: el listón del
 tráfico (ADR-019).
 
 Se informa en conjunto, por grupo de soporte de la línea, por banda de
-intervalo programado y por línea con soporte propio. La banda separa dos
-calidades de etiqueta: con 8 min o menos, la asignación pliega al viaje
+intervalo programado, por horizonte útil (lo que queda desde que se SABE el
+paso hasta la parada siguiente, trampa 017) y por línea con soporte propio.
+La banda separa dos calidades de etiqueta: con 8 min o menos, la asignación pliega al viaje
 siguiente el 11 % de los viajes y se lleva la mitad de los retrasos de más de
 5 min; con más de 15, menos del 2 % (bitácora 038). Las bandas largas son la
 referencia limpia.
@@ -38,6 +39,10 @@ REPLICAS = 1000
 SEMILLA = 0
 BANDAS = [-np.inf, 8 * 60, 15 * 60, 30 * 60, np.inf]
 NOMBRES = ["<= 8 min", "8-15 min", "15-30 min", "> 30 min"]
+# Horizonte útil: lo que queda desde que se sabe el paso hasta la parada siguiente
+# (trampa 017). Hasta 0, la predicción llega cuando el bus ya ha pasado.
+HORIZONTES = [-np.inf, 0, 30, 60, 120, np.inf]
+NOMBRES_HORIZONTE = ["<= 0 s", "0-30 s", "30-60 s", "60-120 s", "> 120 s"]
 SIN_INTERVALO = "sin_intervalo"
 
 
@@ -182,6 +187,9 @@ def main() -> None:
         _prediccion=predict.predecir(art, test),
         _viaje=test.groupby(features.CLAVE_VIAJE, sort=False).ngroup(),
         _grupo=test["linea"].map(soporte["grupo"]),
+        _horizonte=pd.cut(
+            test["horizonte_util_s"], HORIZONTES, labels=NOMBRES_HORIZONTE
+        ),
         _banda=pd.Categorical(
             banda_intervalo(test, horarios), categories=[*NOMBRES, SIN_INTERVALO]
         ),
@@ -196,6 +204,7 @@ def main() -> None:
         "global": resumen(t, obj, dias=True),
         "por_grupo": por(t, "_grupo", dias=True),
         "por_banda": por(t, "_banda", dias=True),
+        "por_horizonte": por(t, "_horizonte", dias=True),
         "por_linea": por(t[t["_grupo"] == "propia"], "linea", dias=False),
     }
     salida = RAIZ / "metrics" / "eval.json"

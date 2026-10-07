@@ -22,6 +22,7 @@ completa antes de tocar la capa correspondiente.**
 | [014](014-la-emt-alterna-el-trayecto-a-mitad-de-ruta.md) | cerrada | fuentes | La EMT publica a veces el `trayecto` **contrario** para un bus que sigue su marcha, 1-4 sondeos a mitad de ruta (7-9 % de los pasos de la 25). La clave (línea, trayecto) lo parte en tres sin error. Cruzar el trayecto al emparejar lo arregla y engancha buses opuestos: se cose después | `test_la_alternancia_del_trayecto_no_parte_…` |
 | [015](015-el-origen-del-horario-no-es-la-medianoche.md) | cerrada | etiquetado | Las horas del GTFS se miden desde **«mediodía menos 12 h»**, no desde la medianoche: coinciden salvo los dos días de cambio de hora. Con la medianoche, el 25/10 cada bus casa con el viaje programado **una hora después**, con retraso creíble y `trip_id` equivocado; en marzo se rechaza por desfase | `test_el_dia_del_cambio_de_hora_…` |
 | [016](016-la-pi-no-tiene-el-corpus-entero.md) | mitigada | fuentes | La Pi **no tiene el corpus entero**: el 15-18/08 lo capturó el portátil. Un `rsync -av` de la Pi sobre `data/raw/` deja el 18/08 de la EMT en 115 sondeos en vez de 1.109, sin error. Traer solo con `deploy_pi/pull_data.sh` | — (`pull_data.sh --verificar`) |
+| [017](017-las-variables-en-t-obs-ven-pasos-que-aun-no-han-llegado.md) | vigente | pipeline | Las variables calculadas en `t_obs` ven pasos que **aún no han llegado**: un paso se conoce ~37 s después (p50; p90 60 s) y en el 11-13 % de las filas el bus ya pasó la parada siguiente. El orden de eventos es correcto y los tests de fuga no lo ven | — |
 
 ## Cómo se usa
 
@@ -30,10 +31,7 @@ código y la documentación de la fuente, lo volvería a hacer*. Typo, off-by-on
 import olvidado, cualquier cosa visible en el stack trace: **no entra** — eso va a
 GitHub Issues (`gh issue create`).
 
-**Nada se mueve de sitio.** Fichero numerado, inmutable. Al resolverse cambia `estado`, no la ruta.
-
-**Estados.** `vigente` muerde hoy · `mitigada` hay workaround, sin test · `cerrada`
-hay test que la guarda. **Sin guardia no se cierra.**
+**Nada se mueve de sitio.** Fichero numerado, inmutable: al resolverse cambia `estado`, no la ruta. **Estados:** `vigente` muerde hoy · `mitigada` hay workaround, sin test · `cerrada` hay test que la guarda. **Sin guardia no se cierra.**
 
 **Ficha nueva:** copia el frontmatter de cualquiera (`id`, `titulo`, `estado`,
 `capa`, `detectada`, `test`) y las cuatro secciones fijas — Síntoma, Causa, **Por

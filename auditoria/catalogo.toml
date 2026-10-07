@@ -1406,3 +1406,74 @@ buscar = '''        r["modelo_menos_remuestreando_dias"] = frente_a(t["fecha_ser
 reemplazar = '''        r["modelo_menos_remuestreando_dias"] = frente_a(t["_viaje"])'''
 detector = ["tests/test_modelo.py::test_el_intervalo_por_dias_recoge_lo_que_cambia_de_un_dia_a_otro"]
 sondas = []
+
+[[mutante]]
+id = "114"
+nombre = "las ventanas de la línea miran cuándo ocurrió el paso, no cuándo llegó"
+capa = "features"
+# Ven pasos que aún no habían llegado: la cifra sale mejor que en tiempo real,
+# sin error (trampa 017).
+fichero = "src/project/features.py"
+buscar = '''    t = p["_td"].to_numpy()
+    r = p["retraso_s"].to_numpy()'''
+reemplazar = '''    t = p["_t"].to_numpy()
+    r = p["retraso_s"].to_numpy()'''
+detector = ["tests/test_features.py::test_la_ventana_de_la_linea_solo_cuenta_lo_que_ya_habia_llegado"]
+sondas = []
+
+[[mutante]]
+id = "115"
+nombre = "la flota del tramo cuenta a quien acabó el tramo aunque aún no se supiera"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''    t = p["_td"].to_numpy()  # el ahora de la fila
+    t_fin = p["_td_fin"].to_numpy()  # cuándo se supo que el otro acabó el tramo'''
+reemplazar = '''    t = p["_t"].to_numpy()  # el ahora de la fila
+    t_fin = p["_t_fin"].to_numpy()  # cuándo se supo que el otro acabó el tramo'''
+detector = ["tests/test_features.py::test_el_tramo_solo_lo_miden_los_que_se_sabe_que_lo_acabaron"]
+sondas = []
+
+[[mutante]]
+id = "116"
+nombre = "el bus anterior se elige por cuándo pasó, no por cuándo se supo"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''                "_td": "_td_prev",
+                "_t": "_t_prev",'''
+reemplazar = '''                "_t": "_td_prev",
+                "_td": "_t_prev",'''
+detector = ["tests/test_features.py::test_el_bus_anterior_es_el_ultimo_que_se_sabe_que_paso"]
+sondas = []
+
+[[mutante]]
+id = "117"
+nombre = "el paso se da por sabido con la posición de antes del cruce"
+capa = "features"
+# Una posición justo en t_obs es la anterior al cruce: con ella aún no se sabe
+# que el bus salió de la parada.
+fichero = "src/project/features.py"
+buscar = '''direction="forward", allow_exact_matches=False'''
+reemplazar = '''direction="forward", allow_exact_matches=True'''
+detector = ["tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_primera_posicion_posterior"]
+sondas = []
+
+[[mutante]]
+id = "118"
+nombre = "el sesgo del día cuenta lo que acabó antes aunque se supiera después"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''        antes = hecho & (p["_td_fin"] < p["_td"].iloc[filas].min())'''
+reemplazar = '''        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].min())'''
+detector = ["tests/test_features.py::test_el_sesgo_del_dia_solo_cuenta_lo_que_se_sabia_al_empezarlo"]
+sondas = []
+
+[[mutante]]
+id = "119"
+nombre = "el horizonte útil se mide desde que ocurrió el paso"
+capa = "features"
+# Es el horizonte nominal: oculta el 11-13 % de filas que llegan tarde.
+fichero = "src/project/features.py"
+buscar = '''    p["horizonte_util_s"] = (p["_t_fin"] - p["_td"]) / 1e9'''
+reemplazar = '''    p["horizonte_util_s"] = (p["_t_fin"] - p["_t"]) / 1e9'''
+detector = ["tests/test_features.py::test_el_horizonte_util_es_lo_que_queda_cuando_se_sabe_el_paso"]
+sondas = []

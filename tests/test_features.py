@@ -22,8 +22,17 @@ OBJ = "retraso_siguiente_parada_s"
 
 
 def _paso(
-    viaje, seq, t_min, retraso, linea="1", stop=None, dia="2026-09-16", feed="F1"
+    viaje,
+    seq,
+    t_min,
+    retraso,
+    linea="1",
+    stop=None,
+    dia="2026-09-16",
+    feed="F1",
+    llega=0.0,
 ):
+    """`llega`: minutos desde el paso hasta que el dato está en nuestro disco."""
     return {
         "viaje_id": viaje,
         "fecha_servicio": pd.Timestamp(dia),
@@ -36,6 +45,7 @@ def _paso(
         "t_prog_s": 8 * 3600 + 60.0 * t_min,
         "retraso_s": float(retraso),
         "t_obs_utc": T0 + pd.Timedelta(minutes=t_min),
+        "t_disp_utc": T0 + pd.Timedelta(minutes=t_min + llega),
     }
 
 
@@ -333,3 +343,110 @@ def test_las_categorias_de_linea_se_fijan_con_el_entrenamiento():
     assert list(x.columns) == ["x", "linea"]
     assert list(x["linea"].cat.categories) == cats
     assert x["linea"].cat.codes.tolist() == [2, -1]
+
+
+# --------------------------------------------------------------------------- #
+# Disponibilidad: lo ocurrido no es lo conocido (trampa 017)
+# --------------------------------------------------------------------------- #
+def test_la_ventana_de_la_linea_solo_cuenta_lo_que_ya_habia_llegado():
+    """El «ahora» de la fila es cuándo se supo su paso, no cuándo ocurrió.
+
+    A pasa a los 10 min y se sabe a los 10,5: la ventana de 5 min es
+    [5,5, 10,5) en instantes de LLEGADA. B pasó antes que A pero se supo
+    después: no cuenta. E pasó después que A pero se supo antes: cuenta.
+    """
+    filas = [
+        _paso("A", 1, 10, 0, llega=0.5),  # la fila evaluada
+        _paso("A", 2, 12, 0),
+        _paso("B", 1, 7, 999, llega=4),  # se sabe a los 11: no cuenta
+        _paso("C", 1, 8, 30, llega=1),  # a los 9: cuenta
+        _paso("D", 1, 9.8, 60, llega=0.5),  # a los 10,3: cuenta
+        _paso("E", 1, 10.2, 90, llega=0.1),  # a los 10,3: cuenta
+        _paso("F", 1, 4, 999, llega=1.2),  # a los 5,2: fuera de la ventana
+    ]
+    f = _fila(_construir(filas, horizonte=1, lags_min=(5,)), "A", 1)
+    assert f["linea_pasos_5min"] == 3
+    assert f["linea_retraso_5min"] == 60.0  # media de 30, 60 y 90
+
+
+def test_el_tramo_solo_lo_miden_los_que_se_sabe_que_lo_acabaron():
+    filas = [
+        _paso("A", 1, 10, 0, llega=0.5),  # ahora: 10,5
+        _paso("A", 2, 12, 0),
+        _paso("B", 1, 6, 0),
+        _paso("B", 2, 9, 999, llega=2),  # acabó a los 9, se supo a los 11
+        *_tramo("C", 5, 8, 60),
+        _paso("D", 1, 6, 0),
+        _paso("D", 2, 9, 120, llega=0.5),  # se supo a los 9,5: cuenta
+    ]
+    t = _construir(filas, horizonte=1, ventanas_flota_min=(5,), soporte_min=2)
+    f = _fila(t, "A", 1)
+    assert f["tramo_soporte_5min"] == 2
+    assert f["tramo_ganado_5min"] == 90.0  # mediana de 60 y 120
+
+
+def test_el_bus_anterior_es_el_ultimo_que_se_sabe_que_paso():
+    filas = [
+        _paso("A", 1, 10, 0, llega=0.5),  # ahora: 10,5; parada objetivo P02
+        _paso("A", 2, 12, 0),
+        _paso("B", 2, 9, 999, llega=2),  # pasó a los 9, se supo a los 11
+        _paso("C", 2, 8, 50, llega=0.5),  # pasó a los 8, se supo a los 8,5
+    ]
+    f = _fila(_construir(filas, horizonte=1), "A", 1)
+    assert f["bus_anterior_retraso_s"] == 50.0
+    assert f["bus_anterior_edad_s"] == pytest.approx(150.0)  # 10,5 − 8 min
+
+
+def test_el_horizonte_util_es_lo_que_queda_cuando_se_sabe_el_paso():
+    """De saberse el paso por i a pasar por i + 1. Negativo: llegó tarde."""
+    filas = [
+        _paso("A", 1, 10, 0, llega=0.5),
+        _paso("A", 2, 12, 0, llega=3),
+        _paso("A", 3, 13, 0),
+    ]
+    t = _construir(filas, horizonte=1)
+    assert _fila(t, "A", 1)["horizonte_util_s"] == pytest.approx(90.0)
+    assert _fila(t, "A", 2)["horizonte_util_s"] == pytest.approx(-120.0)
+    assert "horizonte_util_s" not in features.variables((5,), (5,))
+
+
+def test_el_sesgo_del_dia_solo_cuenta_lo_que_se_sabia_al_empezarlo():
+    filas = [
+        *_recorre("X", -1440, 30, dia=DIA1),
+        *_recorre("Y", -1400, 50, dia=DIA1),
+        _paso("Z", 1, 3, 0, dia=DIA1),
+        _paso("Z", 2, 5, 9999, dia=DIA1, llega=10),  # acabó a los 5, se supo a los 15
+        *_recorre("A", 10, 0),  # primera fila del día: ahora, 10 min
+    ]
+    a = _fila(_construir(filas, horizonte=1, soporte_min=2), "A", 1)
+    assert a["tramo_sesgo_s"] == 40.0  # mediana de 30 y 50, sin Z
+
+
+def test_el_paso_se_sabe_cuando_llega_la_primera_posicion_posterior():
+    """t_disp: la llegada del sondeo con la primera posición del viaje TRAS t_obs.
+
+    Una posición justo en t_obs es la de antes del cruce (`cruces` acota así la
+    interpolación). Tras la última posición, la parada final se extrapola: se
+    sabe con esa posición, pero nunca antes de que ocurra.
+    """
+    h = pd.Timestamp("2026-09-16 10:00", tz="UTC")
+    s = lambda x: h + pd.Timedelta(seconds=x)  # noqa: E731
+    dia = pd.Timestamp("2026-09-16")
+    pasos = pd.DataFrame(
+        {
+            "fecha_servicio": dia,
+            "viaje_id": ["A", "A", "A", "A"],
+            "t_obs_utc": [s(5), s(30), s(80), s(120)],
+        }
+    )
+    posiciones = pd.DataFrame(
+        {
+            "fecha_servicio": [dia, dia, dia, dia, dia - pd.Timedelta(days=1)],
+            "viaje_id": ["A", "A", "A", "B", "A"],
+            "ts_utc": [s(0), s(30), s(60), s(10), s(40)],
+            "snapshot_id": [1, 2, 3, 9, 7],
+        }
+    )
+    llegadas = pd.Series({1: s(20), 2: s(65), 3: s(100), 9: s(12), 7: s(41)})
+    t = features.instante_disponible(pasos, posiciones, llegadas)
+    assert t.tolist() == [s(65), s(100), s(100), s(120)]

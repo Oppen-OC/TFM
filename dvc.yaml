@@ -59,6 +59,9 @@ stages:
     cmd: uv run python -m project.features
     deps:
       - data/interim/pasos
+      # cuándo se SABE cada paso: posiciones del viaje y llegada de su sondeo
+      - data/interim/emt_tracked
+      - data/curated
       - src/project/features.py
     params:
       - features
