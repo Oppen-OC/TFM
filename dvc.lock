@@ -130,8 +130,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: b09bc67916af6ead9675486690abcda5
-      size: 23883
+      md5: 70485dcf71ab9093e9ff778d93553b14
+      size: 24657
     params:
       params.yaml:
         features:
@@ -158,31 +158,31 @@ stages:
     outs:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 13c1d372a0b186b38e1650c6f1530992
-      size: 88864025
+      md5: 26a90b64819be89bfe3417bd68bf4622
+      size: 88698476
     - path: data/processed/train.parquet
       hash: md5
-      md5: e8e55b1246d49f2c4b24ea24e4a3ccd1
-      size: 162552069
+      md5: 4b33ac02894454f4c421f9261c4c28c0
+      size: 161878698
     - path: metrics/features.json
       hash: md5
-      md5: 4d8f8a57c9ae5f7b81528a4050fe73be
-      size: 19301
+      md5: 6cf8d4c608d7a5b0e98ed81bbc184ba0
+      size: 19304
   train:
     cmd: uv run python -m project.train
     deps:
     - path: data/processed/train.parquet
       hash: md5
-      md5: e8e55b1246d49f2c4b24ea24e4a3ccd1
-      size: 162552069
+      md5: 4b33ac02894454f4c421f9261c4c28c0
+      size: 161878698
     - path: src/project/evaluate.py
       hash: md5
       md5: d455d02ea3f84ef61a9639699ad0cb32
       size: 9810
     - path: src/project/features.py
       hash: md5
-      md5: b09bc67916af6ead9675486690abcda5
-      size: 23883
+      md5: 70485dcf71ab9093e9ff778d93553b14
+      size: 24657
     - path: src/project/predict.py
       hash: md5
       md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
@@ -210,19 +210,19 @@ stages:
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: 312c39f0f0263a35eee6bc9ffa7f69f1
-      size: 11889886
+      md5: b4c8a2a28b8720e42238e4061e972117
+      size: 5803539
   evaluate:
     cmd: uv run python -m project.evaluate
     deps:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 13c1d372a0b186b38e1650c6f1530992
-      size: 88864025
+      md5: 26a90b64819be89bfe3417bd68bf4622
+      size: 88698476
     - path: data/processed/train.parquet
       hash: md5
-      md5: e8e55b1246d49f2c4b24ea24e4a3ccd1
-      size: 162552069
+      md5: 4b33ac02894454f4c421f9261c4c28c0
+      size: 161878698
     - path: data/raw/gtfs
       hash: md5
       md5: 58e47750a59418f7aed19ec560781cde.dir
@@ -230,16 +230,16 @@ stages:
       nfiles: 13
     - path: models/model.pkl
       hash: md5
-      md5: 312c39f0f0263a35eee6bc9ffa7f69f1
-      size: 11889886
+      md5: b4c8a2a28b8720e42238e4061e972117
+      size: 5803539
     - path: src/project/evaluate.py
       hash: md5
       md5: d455d02ea3f84ef61a9639699ad0cb32
       size: 9810
     - path: src/project/features.py
       hash: md5
-      md5: b09bc67916af6ead9675486690abcda5
-      size: 23883
+      md5: 70485dcf71ab9093e9ff778d93553b14
+      size: 24657
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -256,5 +256,5 @@ stages:
     outs:
     - path: metrics/eval.json
       hash: md5
-      md5: 7523b0c7397c38fb79f275e5b6fb2c9e
-      size: 44350
+      md5: 07185a8a07d73b8e8e62f13cbfa54052
+      size: 44333
