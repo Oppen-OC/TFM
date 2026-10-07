@@ -1,0 +1,204 @@
+{
+  "rev": "e37a914",
+  "segundos": 1167,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 116.7
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 122.4
+    },
+    {
+      "id": "096",
+      "nombre": "el sesgo del tramo cuenta los días anteriores por fecha, no por hora de fin",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_sesgo_del_dia_solo_cuenta_lo_que_se_sabia_al_empezarlo",
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 109.8
+    },
+    {
+      "id": "097",
+      "nombre": "el sesgo del tramo cuenta lo acabado antes del final del día",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 108.4
+    },
+    {
+      "id": "114",
+      "nombre": "las ventanas de la línea miran cuándo ocurrió el paso, no cuándo llegó",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_la_ventana_de_la_linea_solo_cuenta_lo_que_ya_habia_llegado"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_la_ventana_de_la_linea_solo_cuenta_lo_que_ya_habia_llegado"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 103.7
+    },
+    {
+      "id": "115",
+      "nombre": "la flota del tramo cuenta a quien acabó el tramo aunque aún no se supiera",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_tramo_solo_lo_miden_los_que_se_sabe_que_lo_acabaron"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_tramo_solo_lo_miden_los_que_se_sabe_que_lo_acabaron"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 103.1
+    },
+    {
+      "id": "116",
+      "nombre": "el bus anterior se elige por cuándo pasó, no por cuándo se supo",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_bus_anterior_es_el_ultimo_que_se_sabe_que_paso"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_bus_anterior_es_el_ultimo_que_se_sabe_que_paso"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 98.1
+    },
+    {
+      "id": "117",
+      "nombre": "el paso se da por sabido con la posición de antes del cruce",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_primera_posicion_posterior"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_primera_posicion_posterior"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 96.2
+    },
+    {
+      "id": "118",
+      "nombre": "el sesgo del día cuenta lo que acabó antes aunque se supiera después",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_sesgo_del_dia_solo_cuenta_lo_que_se_sabia_al_empezarlo"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_sesgo_del_dia_solo_cuenta_lo_que_se_sabia_al_empezarlo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 101.8
+    },
+    {
+      "id": "119",
+      "nombre": "el horizonte útil se mide desde que ocurrió el paso",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_horizonte_util_es_lo_que_queda_cuando_se_sabe_el_paso"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_horizonte_util_es_lo_que_queda_cuando_se_sabe_el_paso"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 100.2
+    }
+  ]
+}
