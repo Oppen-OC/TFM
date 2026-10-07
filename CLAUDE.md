@@ -151,8 +151,12 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
   tráfico es un estrato de evaluación, nunca un recorte, y no se excluye una
   línea por el error del modelo. Una línea se informa con cifra propia solo con
   soporte mínimo (`features.soporte_por_linea`). **Una mejora es una diferencia
-  sobre los mismos viajes cuyo intervalo del 95 %, remuestreando viajes, no
-  contiene el cero.** ADR-018.
+  sobre los mismos viajes cuyo intervalo del 95 %, remuestreando viajes y
+  remuestreando días, no contiene el cero**, sobre las filas en las que la
+  predicción aún llega a tiempo (`features.poblacion`). ADR-018 y ADR-022.
+- **El «ahora» de una fila es cuándo se supo su retraso (`t_disp`), no cuándo
+  ocurrió el paso (`t_obs`).** Ninguna variable cuenta lo que no había llegado
+  (trampa 017, ADR-022).
 - `data/` y `models/*.pkl` los versiona DVC, no git. No editar `dvc.lock` ni
   `uv.lock` a mano.
 
@@ -173,7 +177,9 @@ su evaluación, con la diferencia por viajes y su intervalo, en
 `metrics/eval.json`. Las variables del modelo las da `features.variables()`;
 `train.py` y `predict.py` las leen de ahí. La v1 empataba con la persistencia
 más el sesgo del tramo (bitácora 041). La v2, residuo con pérdida absoluta
-(ADR-021), la bate por 2,09 s de MAE sin la capa 192 (bitácora 043).
+(ADR-021), con las variables a la hora en que se sabe cada paso (ADR-022,
+trampa 017), la bate por 1,17 s de MAE sobre las predicciones que llegan a
+tiempo, sin la capa 192 (bitácora 046).
 
 Vacío, 0 líneas: `services/model_service.py`.
 

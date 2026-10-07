@@ -692,6 +692,61 @@ tres cosas:
 
 ---
 
+## ADR-022 · El «ahora» de cada fila es cuándo se supo su retraso, y la primaria mide lo que aún llega a tiempo · cerrada
+
+**Decisión.**
+1. **`t_disp(i)`, cuándo se sabe el retraso del paso**
+   (`features.instante_disponible`), es el más tardío de dos instantes:
+   - la llegada a nuestro disco del sondeo con la última posición que usa
+     `cruces`: la primera tras el cruce (k1), o la siguiente (k1+1) si llega
+     en menos de `max_hueco_cruce_s`, porque con ella corrige la velocidad;
+   - el `t_disp` del paso número `paradas_referencia` del viaje, porque el
+     viaje programado, y con él el retraso, se elige con esos primeros pasos.
+
+   Solo cuentan las posiciones fiables, como en `cruces`. En la parada final,
+   la última posición, y nunca antes de `t_obs`.
+2. **Toda variable cuenta solo lo que había llegado antes del `t_disp` de la
+   fila:** las ventanas de línea, la flota del tramo, el bus anterior y el
+   corte del sesgo del día.
+3. **Horizonte previsto:** `t_prog_hasta_objetivo_s − (t_disp − t_obs)`, el
+   horario hasta la parada objetivo menos lo que ya se ha ido en saber el paso.
+   Solo usa lo que se sabe al predecir.
+4. **Población** (`features.poblacion`): horizonte previsto > 0. `train`
+   entrena con ella y `evaluate` da la primaria sobre ella. El resto se
+   informa aparte como *nowcast*. Los estratos van por horizonte previsto:
+   0-30, 30-60, 60-120 y más de 120 s.
+5. Se calcula en `features`, cruzando `pasos` con `emt_tracked` y con la
+   llegada de cada sondeo en el curated.
+
+**Por qué.** Trampa 017. La primera versión de esta decisión tomaba k1 y
+olvidaba la asignación. El tribunal lo encontró: más de la mitad de la mejora
+estaba en el primer paso de cada viaje (−23 s), cuyo retraso no se conoce hasta
+el tercero. Estratificar por el horizonte real, `t_obs(i+1) − t_disp(i)`, es
+condicionar por el resultado.
+
+**Consecuencias.**
+- Un retraso se sabe 80,7 s después del paso, de mediana.
+- Con una parada de horizonte, el 45 % de las filas de la prueba no llega a
+  tiempo: queda fuera de la población.
+- Sobre la población, el modelo mejora a `persistencia_tramo` en −1,17 s.
+- En el *nowcast* es peor (+9,6 s): no se usa ahí.
+- La antelación necesita un horizonte de más de una parada (bitácora 046).
+- El ADR-018 sigue mandando sobre la población: hay mejora si ningún intervalo,
+  ni por viajes ni por días, contiene el cero.
+
+**Alternativas.**
+- Calcular `t_disp` dentro de `cruces`: obliga a reejecutar `prepare` (más de
+  1 h) y a tocar la capa más protegida. El cruce en `features` repite la misma
+  regla, y un test de extremo a extremo contra `cruces` lo guarda.
+- Primaria sobre todas las filas: mezcla un 45 % de predicciones que llegan
+  tarde.
+- Filtrar por el horizonte real: es condicionar por el resultado.
+
+**Qué la reabriría.** Un horizonte de más de una parada, que cambia qué filas
+llegan a tiempo, o que `cruces` deje de usar la posición k1+1.
+
+---
+
 ## Pendientes de decidir
 
 - **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018
