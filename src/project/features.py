@@ -197,16 +197,29 @@ def _ns(t: pd.Series) -> pd.Series:
 
 
 def instante_disponible(
-    pasos: pd.DataFrame, posiciones: pd.DataFrame, llegadas: pd.Series
+    pasos: pd.DataFrame,
+    posiciones: pd.DataFrame,
+    llegadas: pd.Series,
+    max_hueco_s: float,
+    paradas_referencia: int,
 ) -> pd.Series:
-    """Cuándo se SABE cada paso (trampa 017), con el índice de `pasos`.
+    """Cuándo se SABE el retraso de cada paso (trampa 017), con el índice de `pasos`.
 
-    `cruces` interpola la salida de la parada entre la última posición anterior
-    al cruce y la primera posterior: sin esta segunda no hay paso. Se sabe cuando
-    llega a nuestro disco el sondeo que la trae (`llegadas`: `snapshot_id` →
-    `ts_ingest_utc`), con la latencia de la fuente dentro. La parada final se
-    extrapola tras la última posición: se sabe con ella, pero nunca antes de que
-    ocurra. NaT si el viaje no tiene posiciones.
+    Dos esperas, y manda la más larga:
+
+    1. **El paso.** `etiquetado.cruces` interpola la salida de la parada con la
+       primera posición tras el cruce (k1) y corrige la velocidad con la
+       siguiente (k1+1) si llega en menos de `max_hueco_s`. Se sabe cuando llega
+       a nuestro disco el sondeo de la última que usa (`llegadas`: `snapshot_id`
+       → `ts_ingest_utc`, con la latencia de la fuente dentro). La parada final
+       se extrapola tras la última posición: se sabe con ella, pero nunca antes
+       de que ocurra.
+    2. **La asignación.** El retraso necesita el viaje programado, que se elige
+       con los `paradas_referencia` primeros pasos del viaje: ninguno se sabe
+       antes que el último de ellos.
+
+    `posiciones` son las fiables del viaje, las mismas que mira `cruces`. NaT si
+    el viaje no tiene ninguna.
     """
     clave = ["_dia", "viaje_id"]
 
@@ -219,19 +232,50 @@ def instante_disponible(
             }
         ).reset_index(drop=True)
 
-    pa = tabla(pasos, "t_obs_utc").rename_axis("_fila").reset_index()
+    pa = tabla(pasos, "t_obs_utc").assign(_seq=pasos["stop_sequence"].to_numpy())
+    pa = pa.rename_axis("_fila").reset_index()
     po = tabla(posiciones, "ts_utc").assign(
         _llega=_ns(posiciones["snapshot_id"].map(llegadas)).to_numpy()
     )
+    po = po.sort_values([*clave, "_t"], kind="stable")
+    g = po.groupby(clave, sort=False)
+    po["_tk"], po["_t2"], po["_llega2"] = (
+        po["_t"],
+        g["_t"].shift(-1),
+        g["_llega"].shift(-1),
+    )
+
     pa, po = pa.sort_values("_t", kind="stable"), po.sort_values("_t", kind="stable")
     tras = pd.merge_asof(
         pa, po, on="_t", by=clave, direction="forward", allow_exact_matches=False
     )
-    ultima = pd.merge_asof(pa, po, on="_t", by=clave, direction="backward")
-    llega = tras["_llega"].fillna(ultima["_llega"])
-    t = llega.where(llega.isna() | (llega >= tras["_t"]), tras["_t"])
-    # merge_asof devuelve en el orden de `pa`: se vuelve al de `pasos` por `_fila`.
-    return pd.Series(t.array, index=tras["_fila"]).sort_index().set_axis(pasos.index)
+    ultima = pd.merge_asof(
+        pa, po[[*clave, "_t", "_llega"]], on="_t", by=clave, direction="backward"
+    )
+    dt2 = (tras["_t2"] - tras["_tk"]).dt.total_seconds()
+    usa_siguiente = (dt2 > 0) & (dt2 <= max_hueco_s)
+    llega = tras["_llega2"].where(usa_siguiente, tras["_llega"])
+    llega = llega.fillna(ultima["_llega"])
+    paso = llega.where(llega.isna() | (llega >= tras["_t"]), tras["_t"])
+
+    r = tras[["_fila", *clave, "_seq"]].assign(_paso=paso)
+    r = r.sort_values([*clave, "_seq"], kind="stable")
+    vg = r.groupby(clave, sort=False)
+    k = np.minimum(paradas_referencia, vg["_paso"].transform("size")) - 1
+    ref = r[vg.cumcount() == k][[*clave, "_paso"]].rename(columns={"_paso": "_ref"})
+    r = r.merge(ref, on=clave, how="left")
+    t = r["_paso"].where(r["_paso"] >= r["_ref"], r["_ref"])
+    # Se vuelve al orden de `pasos` por `_fila`: merge_asof y merge reordenan.
+    return pd.Series(t.array, index=r["_fila"]).sort_index().set_axis(pasos.index)
+
+
+def poblacion(tabla: pd.DataFrame) -> pd.Series:
+    """Las filas en las que la predicción todavía puede servir (ADR-022).
+
+    Con lo que se sabe al predecir, al bus le queda tiempo para llegar a la
+    parada objetivo. Las demás son *nowcast*: se informan aparte.
+    """
+    return tabla["horizonte_previsto_s"] > 0
 
 
 def construir(
@@ -265,8 +309,13 @@ def construir(
     p["_stop_objetivo"] = g["stop_id"].shift(-horizonte)
     p["_t_fin"] = g["_t"].shift(-horizonte)
     p["_td_fin"] = g["_td"].shift(-horizonte)
-    # Clave, no variable: mira el paso siguiente. Negativo: se supo tarde.
+    # Claves, no variables. El útil mira el paso siguiente REAL: describe, no
+    # estratifica. El previsto usa solo lo que se sabe al predecir: el horario
+    # hasta la parada objetivo menos lo que ya se fue en saber el paso.
     p["horizonte_util_s"] = (p["_t_fin"] - p["_td"]) / 1e9
+    p["horizonte_previsto_s"] = (
+        p["t_prog_hasta_objetivo_s"] - (p["_td"] - p["_t"]) / 1e9
+    )
 
     for n in lags_min:
         p[f"linea_retraso_{n}min"], p[f"linea_pasos_{n}min"] = _ventana_linea(p, n)
@@ -421,7 +470,8 @@ def baselines(test: pd.DataFrame, objetivo: str, soporte: pd.DataFrame) -> dict:
 
 
 def main() -> None:
-    cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
+    params = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
+    cfg, etiqueta = params["features"], params["prepare"]
     if cfg["incluir_trafico"] or cfg["incluir_meteo"]:
         raise NotImplementedError("capa 192 y meteo: después de la fase 2")
     flota = ventanas_flota(cfg)
@@ -434,9 +484,10 @@ def main() -> None:
     )
     posiciones = pd.read_parquet(
         settings.interim_dir / "emt_tracked",
-        columns=["fecha_servicio", "viaje_id", "ts_utc", "snapshot_id"],
+        columns=["fecha_servicio", "viaje_id", "ts_utc", "snapshot_id", "fiable"],
     )
-    posiciones = posiciones[posiciones["viaje_id"].notna()]
+    # Las mismas que mira `cruces`: las fiables del viaje.
+    posiciones = posiciones[posiciones["viaje_id"].notna() & posiciones["fiable"]]
     curado = (settings.curated_dir / "source=emt_buses").as_posix()
     llegadas = duckdb.sql(
         "select snapshot_id, min(ts_ingest_utc) as llega from read_parquet("
@@ -446,7 +497,13 @@ def main() -> None:
         pd.to_datetime(llegadas["llega"], utc=True).to_numpy(),
         index=llegadas["snapshot_id"],
     )
-    pasos["t_disp_utc"] = instante_disponible(pasos, posiciones, llegadas)
+    pasos["t_disp_utc"] = instante_disponible(
+        pasos,
+        posiciones,
+        llegadas,
+        max_hueco_s=etiqueta["max_hueco_cruce_s"],
+        paradas_referencia=etiqueta["paradas_referencia"],
+    )
     sin_llegada = int(pasos["t_disp_utc"].isna().sum())
     if sin_llegada:
         raise ValueError(f"{sin_llegada} pasos sin posición que los confirme")
@@ -496,6 +553,11 @@ def main() -> None:
             "horizonte_util_no_positivo": round(
                 float((test["horizonte_util_s"] <= 0).mean()), 4
             ),
+            "horizonte_previsto_s_p10_p50_p90": [
+                round(float(x), 1)
+                for x in test["horizonte_previsto_s"].quantile([0.1, 0.5, 0.9])
+            ],
+            "fuera_de_la_poblacion": round(float((~poblacion(test)).mean()), 4),
         },
         "baselines_test": baselines(test, cfg["objetivo"], soporte),
     }

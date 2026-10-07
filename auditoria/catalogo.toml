@@ -1454,7 +1454,7 @@ capa = "features"
 fichero = "src/project/features.py"
 buscar = '''direction="forward", allow_exact_matches=False'''
 reemplazar = '''direction="forward", allow_exact_matches=True'''
-detector = ["tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_primera_posicion_posterior"]
+detector = ["tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces"]
 sondas = []
 
 [[mutante]]
@@ -1476,4 +1476,49 @@ fichero = "src/project/features.py"
 buscar = '''    p["horizonte_util_s"] = (p["_t_fin"] - p["_td"]) / 1e9'''
 reemplazar = '''    p["horizonte_util_s"] = (p["_t_fin"] - p["_t"]) / 1e9'''
 detector = ["tests/test_features.py::test_el_horizonte_util_es_lo_que_queda_cuando_se_sabe_el_paso"]
+sondas = []
+
+[[mutante]]
+id = "120"
+nombre = "el paso se da por sabido con k1 aunque cruces use también k1+1"
+capa = "features"
+trampa = "017"
+# La velocidad del cruce usa la posición siguiente: sin ella no hay paso. Con
+# k1, el retardo sale 30 s corto y el horizonte, otro tanto de largo.
+fichero = "src/project/features.py"
+buscar = '''    llega = tras["_llega2"].where(usa_siguiente, tras["_llega"])'''
+reemplazar = '''    llega = tras["_llega"]'''
+detector = ["tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces", "tests/test_features.py::test_t_disp_no_es_anterior_a_ninguna_posicion_que_usa_cruces_de_verdad"]
+sondas = []
+
+[[mutante]]
+id = "121"
+nombre = "el retraso de las primeras paradas se da por sabido antes de asignar el viaje"
+capa = "features"
+# Ahí estaba más de la mitad de la mejora de la v2 (−23 s en el primer paso).
+fichero = "src/project/features.py"
+buscar = '''    t = r["_paso"].where(r["_paso"] >= r["_ref"], r["_ref"])'''
+reemplazar = '''    t = r["_paso"]'''
+detector = ["tests/test_features.py::test_el_retraso_de_las_primeras_paradas_se_sabe_al_asignar_el_viaje"]
+sondas = []
+
+[[mutante]]
+id = "122"
+nombre = "el horizonte previsto mira el paso siguiente real"
+capa = "features"
+# Estratificar o filtrar por el resultado: no es una antelación.
+fichero = "src/project/features.py"
+buscar = '''        p["t_prog_hasta_objetivo_s"] - (p["_td"] - p["_t"]) / 1e9'''
+reemplazar = '''        (p["_t_fin"] - p["_td"]) / 1e9'''
+detector = ["tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"]
+sondas = []
+
+[[mutante]]
+id = "123"
+nombre = "la población incluye el nowcast"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''    return tabla["horizonte_previsto_s"] > 0'''
+reemplazar = '''    return tabla["horizonte_previsto_s"].notna()'''
+detector = ["tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"]
 sondas = []

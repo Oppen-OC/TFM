@@ -422,31 +422,112 @@ def test_el_sesgo_del_dia_solo_cuenta_lo_que_se_sabia_al_empezarlo():
     assert a["tramo_sesgo_s"] == 40.0  # mediana de 30 y 50, sin Z
 
 
-def test_el_paso_se_sabe_cuando_llega_la_primera_posicion_posterior():
-    """t_disp: la llegada del sondeo con la primera posición del viaje TRAS t_obs.
+H = pd.Timestamp("2026-09-16 10:00", tz="UTC")
+DIA = pd.Timestamp("2026-09-16")
 
-    Una posición justo en t_obs es la de antes del cruce (`cruces` acota así la
-    interpolación). Tras la última posición, la parada final se extrapola: se
-    sabe con esa posición, pero nunca antes de que ocurra.
+
+def _s(x: float) -> pd.Timestamp:
+    return H + pd.Timedelta(seconds=x)
+
+
+def _posiciones(viaje: str, ts: list[float], retraso_llegada: float = 15):
+    pos = pd.DataFrame(
+        {
+            "fecha_servicio": DIA,
+            "viaje_id": viaje,
+            "ts_utc": [_s(x) for x in ts],
+            "snapshot_id": [f"{viaje}{i}" for i in range(len(ts))],
+        }
+    )
+    llegadas = pd.Series(
+        [_s(x + retraso_llegada) for x in ts], index=pos["snapshot_id"]
+    )
+    return pos, llegadas
+
+
+def test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces():
+    """`cruces` interpola con la primera posición TRAS el cruce (k1) y corrige
+    la velocidad con la siguiente (k1+1) si llega en menos de `max_hueco_s`.
+
+    Posiciones a los 0, 30, 60, 90, 150 y 300 s, que llegan 15 s después.
+    Una posición justo en t_obs es la de antes del cruce. Tras la última, la
+    parada final se sabe con ella, pero nunca antes de que ocurra.
     """
-    h = pd.Timestamp("2026-09-16 10:00", tz="UTC")
-    s = lambda x: h + pd.Timedelta(seconds=x)  # noqa: E731
-    dia = pd.Timestamp("2026-09-16")
+    pos, llegadas = _posiciones("A", [0, 30, 60, 90, 150, 300])
+    otro, ll_otro = _posiciones("B", [40])
     pasos = pd.DataFrame(
         {
-            "fecha_servicio": dia,
-            "viaje_id": ["A", "A", "A", "A"],
-            "t_obs_utc": [s(5), s(30), s(80), s(120)],
+            "fecha_servicio": DIA,
+            "viaje_id": "A",
+            "stop_sequence": [1, 2, 3, 4, 5],
+            # 30: k1 = 60, k1+1 = 90 · 70: k1 = 90, k1+1 = 150
+            # 130: k1 = 150; k1+1 = 300 está a más de 120 s · 200: k1 = 300 · 400: final
+            "t_obs_utc": [_s(30), _s(70), _s(130), _s(200), _s(400)],
         }
     )
-    posiciones = pd.DataFrame(
+    t = features.instante_disponible(
+        pasos,
+        pd.concat([pos, otro]),
+        pd.concat([llegadas, ll_otro]),
+        max_hueco_s=120,
+        paradas_referencia=1,
+    )
+    assert t.tolist() == [_s(105), _s(165), _s(165), _s(315), _s(400)]
+
+
+def test_el_retraso_de_las_primeras_paradas_se_sabe_al_asignar_el_viaje():
+    """El viaje programado se elige con los tres primeros pasos: el retraso de
+    las paradas 1 y 2 no se conoce hasta que se sabe el tercero."""
+    pos, llegadas = _posiciones("A", [0, 30, 60, 90, 150, 300])
+    pasos = pd.DataFrame(
         {
-            "fecha_servicio": [dia, dia, dia, dia, dia - pd.Timedelta(days=1)],
-            "viaje_id": ["A", "A", "A", "B", "A"],
-            "ts_utc": [s(0), s(30), s(60), s(10), s(40)],
-            "snapshot_id": [1, 2, 3, 9, 7],
+            "fecha_servicio": DIA,
+            "viaje_id": "A",
+            "stop_sequence": [1, 2, 3, 4],
+            "t_obs_utc": [_s(30), _s(70), _s(130), _s(200)],
         }
     )
-    llegadas = pd.Series({1: s(20), 2: s(65), 3: s(100), 9: s(12), 7: s(41)})
-    t = features.instante_disponible(pasos, posiciones, llegadas)
-    assert t.tolist() == [s(65), s(100), s(100), s(120)]
+    t = features.instante_disponible(
+        pasos, pos, llegadas, max_hueco_s=120, paradas_referencia=3
+    )
+    assert t.tolist() == [_s(165), _s(165), _s(165), _s(315)]
+
+
+def test_t_disp_no_es_anterior_a_ninguna_posicion_que_usa_cruces_de_verdad():
+    """De extremo a extremo, con `etiquetado.cruces`: es lo que habría atrapado
+    que t_disp se quedaba en k1 cuando el paso usa también k1+1 (trampa 017)."""
+    from project.etiquetado import cruces
+
+    ts = np.array([0.0, 30, 60, 90, 180])
+    abscisa = np.array([0.0, 100, 250, 400, 600])
+    tc = cruces(ts, abscisa, np.ones(5, bool), np.array([120.0, 420.0]), 120.0, 15.0)
+    # parada a 120 m: k0 = 30 s, k1 = 60 s y k1+1 = 90 s; a 420 m: k0 = 90, k1 = 180
+    assert 30 < tc[0] < 60 and 90 < tc[1] < 180
+    pos, llegadas = _posiciones("A", list(ts), retraso_llegada=10)
+    pasos = pd.DataFrame(
+        {
+            "fecha_servicio": DIA,
+            "viaje_id": "A",
+            "stop_sequence": [1, 2],
+            "t_obs_utc": [_s(x) for x in tc],
+        }
+    )
+    t = features.instante_disponible(
+        pasos, pos, llegadas, max_hueco_s=120, paradas_referencia=1
+    )
+    assert t.tolist() == [_s(100), _s(190)]
+
+
+def test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir():
+    """Horario hasta la parada objetivo menos lo que ya se ha ido en saber el
+    paso. Sin el paso siguiente real: eso sería el resultado (ADR-022)."""
+    filas = [
+        _paso("A", 1, 10, 0, llega=0.5),  # 120 s de horario, 30 s ya consumidos
+        _paso("A", 2, 12, 0, llega=3),  # 60 s de horario, 180 s consumidos
+        _paso("A", 3, 13, 0),
+    ]
+    t = _construir(filas, horizonte=1)
+    assert _fila(t, "A", 1)["horizonte_previsto_s"] == pytest.approx(90.0)
+    assert _fila(t, "A", 2)["horizonte_previsto_s"] == pytest.approx(-120.0)
+    assert features.poblacion(t).tolist() == [True, False]
+    assert "horizonte_previsto_s" not in features.variables((5,), (5,))

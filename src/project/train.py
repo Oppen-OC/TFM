@@ -131,6 +131,8 @@ def main() -> None:
     params = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
     cfg, p = params["features"], params["train"]
     train = pd.read_parquet(settings.processed_dir / "train.parquet")
+    # Se entrena con las filas en las que el modelo se va a usar (ADR-022).
+    train = train[features.poblacion(train)].reset_index(drop=True)
 
     mlflow.set_experiment(EXPERIMENTO)
     with mlflow.start_run() as run:

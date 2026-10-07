@@ -39,10 +39,10 @@ REPLICAS = 1000
 SEMILLA = 0
 BANDAS = [-np.inf, 8 * 60, 15 * 60, 30 * 60, np.inf]
 NOMBRES = ["<= 8 min", "8-15 min", "15-30 min", "> 30 min"]
-# Horizonte útil: lo que queda desde que se sabe el paso hasta la parada siguiente
-# (trampa 017). Hasta 0, la predicción llega cuando el bus ya ha pasado.
-HORIZONTES = [-np.inf, 0, 30, 60, 120, np.inf]
-NOMBRES_HORIZONTE = ["<= 0 s", "0-30 s", "30-60 s", "60-120 s", "> 120 s"]
+# Horizonte previsto: con lo que se sabe al predecir, cuánto le queda al bus
+# para la parada objetivo (ADR-022). La población es lo que tiene más de 0.
+HORIZONTES = [0, 30, 60, 120, np.inf]
+NOMBRES_HORIZONTE = ["0-30 s", "30-60 s", "60-120 s", "> 120 s"]
 SIN_INTERVALO = "sin_intervalo"
 
 
@@ -188,7 +188,7 @@ def main() -> None:
         _viaje=test.groupby(features.CLAVE_VIAJE, sort=False).ngroup(),
         _grupo=test["linea"].map(soporte["grupo"]),
         _horizonte=pd.cut(
-            test["horizonte_util_s"], HORIZONTES, labels=NOMBRES_HORIZONTE
+            test["horizonte_previsto_s"], HORIZONTES, labels=NOMBRES_HORIZONTE
         ),
         _banda=pd.Categorical(
             banda_intervalo(test, horarios), categories=[*NOMBRES, SIN_INTERVALO]
@@ -198,14 +198,27 @@ def main() -> None:
     def por(t: pd.DataFrame, col: str, dias: bool) -> dict:
         return {str(k): resumen(g, obj, dias) for k, g in t.groupby(col, observed=True)}
 
+    # La primaria, sobre las predicciones que aún pueden servir; el resto es
+    # nowcast y se informa aparte (ADR-022).
+    pob = features.poblacion(t)
     metricas = {
         "modelo": {k: art[k] for k in ("n_arboles", "mlflow_run_id")},
-        "remuestreo": {"unidad": "viaje", "replicas": REPLICAS, "semilla": SEMILLA},
-        "global": resumen(t, obj, dias=True),
-        "por_grupo": por(t, "_grupo", dias=True),
-        "por_banda": por(t, "_banda", dias=True),
-        "por_horizonte": por(t, "_horizonte", dias=True),
-        "por_linea": por(t[t["_grupo"] == "propia"], "linea", dias=False),
+        "remuestreo": {
+            "unidad": "viaje y día",
+            "replicas": REPLICAS,
+            "semilla": SEMILLA,
+        },
+        "poblacion": {
+            "criterio": "horizonte_previsto_s > 0 (ADR-022)",
+            "filas": int(pob.sum()),
+            "filas_nowcast": int((~pob).sum()),
+        },
+        "global": resumen(t[pob], obj, dias=True),
+        "nowcast": resumen(t[~pob], obj, dias=True),
+        "por_grupo": por(t[pob], "_grupo", dias=True),
+        "por_banda": por(t[pob], "_banda", dias=True),
+        "por_horizonte": por(t[pob], "_horizonte", dias=True),
+        "por_linea": por(t[pob & (t["_grupo"] == "propia")], "linea", dias=False),
     }
     salida = RAIZ / "metrics" / "eval.json"
     salida.write_text(

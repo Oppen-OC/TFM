@@ -65,6 +65,9 @@ stages:
       - src/project/features.py
     params:
       - features
+      # t_disp repite lo que usa `cruces` y la asignación del viaje (ADR-022)
+      - prepare.max_hueco_cruce_s
+      - prepare.paradas_referencia
     outs:
       - data/processed/train.parquet
       - data/processed/test.parquet
