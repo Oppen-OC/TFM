@@ -1,0 +1,146 @@
+{
+  "rev": "1210055",
+  "segundos": 806,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 101.1
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 107.0
+    },
+    {
+      "id": "117",
+      "nombre": "el paso se da por sabido con la posición de antes del cruce",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 102.0
+    },
+    {
+      "id": "120",
+      "nombre": "el paso se da por sabido con k1 aunque cruces use también k1+1",
+      "capa": "features",
+      "trampa": "017",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces",
+        "tests/test_features.py::test_t_disp_no_es_anterior_a_ninguna_posicion_que_usa_cruces_de_verdad"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_features.py::test_el_paso_se_sabe_cuando_llega_la_ultima_posicion_que_usa_cruces",
+        "tests/test_features.py::test_t_disp_no_es_anterior_a_ninguna_posicion_que_usa_cruces_de_verdad"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_features.py::test_t_disp_no_es_anterior_a_ninguna_posicion_que_usa_cruces_de_verdad",
+      "guardia_ficha_cae": true,
+      "sondas": {},
+      "segundos": 99.2
+    },
+    {
+      "id": "121",
+      "nombre": "el retraso de las primeras paradas se da por sabido antes de asignar el viaje",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_retraso_de_las_primeras_paradas_se_sabe_al_asignar_el_viaje"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_retraso_de_las_primeras_paradas_se_sabe_al_asignar_el_viaje"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 101.1
+    },
+    {
+      "id": "122",
+      "nombre": "el horizonte previsto mira el paso siguiente real",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 96.8
+    },
+    {
+      "id": "123",
+      "nombre": "la población incluye el nowcast",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 94.5
+    }
+  ]
+}
