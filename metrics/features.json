@@ -11,6 +11,19 @@
     "train": 0.0539,
     "test": 0.0709
   },
+  "disponibilidad_test": {
+    "retardo_s_p10_p50_p90": [
+      26.0,
+      47.7,
+      67.9
+    ],
+    "horizonte_util_s_p10_p50_p90": [
+      -11.5,
+      35.5,
+      109.7
+    ],
+    "horizonte_util_no_positivo": 0.1824
+  },
   "baselines_test": {
     "horario": {
       "mae_s": 144.54,

@@ -1197,7 +1197,7 @@ capa = "features"
 # El nocturno de la víspera acaba el tramo ya dentro del día: con el corte por
 # fecha ve el futuro unos minutos.
 fichero = "src/project/features.py"
-buscar = '''        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].min())'''
+buscar = '''        antes = hecho & (p["_td_fin"] < p["_td"].iloc[filas].min())'''
 reemplazar = '''        antes = hecho & (p["fecha_servicio"] < p["fecha_servicio"].iloc[filas[0]])'''
 detector = ["tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"]
 sondas = []
@@ -1208,8 +1208,8 @@ nombre = "el sesgo del tramo cuenta lo acabado antes del final del día"
 capa = "features"
 # Mete el propio día, también lo posterior a t: fuga.
 fichero = "src/project/features.py"
-buscar = '''        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].min())'''
-reemplazar = '''        antes = hecho & (p["_t_fin"] < p["_t"].iloc[filas].max())'''
+buscar = '''        antes = hecho & (p["_td_fin"] < p["_td"].iloc[filas].min())'''
+reemplazar = '''        antes = hecho & (p["_td_fin"] < p["_td"].iloc[filas].max())'''
 detector = ["tests/test_features.py::test_el_sesgo_del_tramo_solo_ve_lo_acabado_antes_del_dia"]
 sondas = []
 
