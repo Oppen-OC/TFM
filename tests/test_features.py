@@ -607,3 +607,68 @@ def test_la_disponibilidad_se_une_a_los_pasos_por_clave_y_no_por_posicion():
     assert r["x"].tolist() == [1, 2, 3]
     with pytest.raises(ValueError):
         features.con_disponibilidad(pasos, disp.iloc[:2])
+
+
+# --------------------------------------------------------------------------- #
+# Tanda 3b: último paso conocido, objetivo por clave y fugas con h = 2
+# --------------------------------------------------------------------------- #
+def test_solo_cuenta_el_ultimo_paso_conocido_del_viaje():
+    """Si al saber el paso por la 1 ya se sabe también el de la 2, la fila de la
+    1 no predice nada: se predice desde la 2. Pasa en las paradas que esperan a
+    la asignación y en los pasos que llegan en el mismo sondeo."""
+    filas = [
+        _paso("A", 1, 10, 0, llega=3),  # se sabe a los 13, como la 2
+        _paso("A", 2, 12, 0, llega=1),  # a los 13
+        _paso("A", 3, 16, 0, llega=0.5),  # a los 16,5
+        _paso("A", 4, 20, 0),
+    ]
+    t = _construir(filas, horizonte=1)
+    assert t.set_index("stop_sequence")["ultimo_conocido"].to_dict() == {
+        1: False,
+        2: True,
+        3: True,
+    }
+    assert features.poblacion(t).tolist() == [False, True, True]
+
+
+def test_el_objetivo_a_h_paradas_no_exige_haber_visto_las_intermedias():
+    """Exigirlo seleccionaría filas por un hueco que aún no ha ocurrido."""
+    filas = [_paso("A", s, 2 * s, 10 * s) for s in (1, 2, 4, 5)]
+    t = _construir(filas, horizonte=2)
+    assert set(t["stop_sequence"]) == {2}  # 1 -> 3 no observada; 4 -> 6, no existe
+    assert _fila(t, "A", 2)[OBJ] == 40.0
+
+
+def test_con_h_2_el_bus_anterior_no_es_el_propio_paso_objetivo():
+    """El paso por la parada objetivo del propio viaje se sabe a la vez que el
+    de la fila (llegan en el mismo sondeo): no puede contar como bus anterior."""
+    filas = [
+        _paso("A", 1, 10, 0, llega=2),  # se sabe a los 12
+        _paso("A", 2, 11, 0, llega=1),  # a los 12
+        _paso("A", 3, 11.5, 999, llega=0.5),  # a los 12: es el objetivo
+        _paso("B", 3, 9, 50, llega=0.5),  # a los 9,5: el bus anterior
+    ]
+    f = _fila(_construir(filas, horizonte=2), "A", 1)
+    assert f[OBJ] == 999
+    assert f["bus_anterior_retraso_s"] == 50.0
+
+
+def test_con_h_2_la_flota_del_tramo_no_ve_el_tramo_del_propio_viaje():
+    filas = [
+        _paso("A", 1, 10, 0, llega=2),  # ahora: 12
+        _paso("A", 2, 11, 0, llega=1),
+        _paso("A", 3, 11.5, 999, llega=0.5),  # acaba el tramo 1 -> 3 a los 12
+        *[
+            p
+            for v, ini, fin, g in (("B", 4, 8, 60), ("C", 5, 9, 120))
+            for p in (
+                _paso(v, 1, ini, 0),
+                _paso(v, 2, ini + 1, 0),
+                _paso(v, 3, fin, g),
+            )
+        ],
+    ]
+    t = _construir(filas, horizonte=2, ventanas_flota_min=(15,), soporte_min=2)
+    f = _fila(t, "A", 1)
+    assert f["tramo_soporte_15min"] == 2
+    assert f["tramo_ganado_15min"] == 90.0  # mediana de 60 y 120, sin el 999

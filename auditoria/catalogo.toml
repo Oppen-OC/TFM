@@ -1518,8 +1518,8 @@ id = "123"
 nombre = "la población incluye el nowcast"
 capa = "features"
 fichero = "src/project/features.py"
-buscar = '''    return tabla["horizonte_previsto_s"] > 0'''
-reemplazar = '''    return tabla["horizonte_previsto_s"].notna()'''
+buscar = '''    return (tabla["horizonte_previsto_s"] > 0) & tabla["ultimo_conocido"]'''
+reemplazar = '''    return tabla["horizonte_previsto_s"].notna() & tabla["ultimo_conocido"]'''
 detector = ["tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"]
 sondas = []
 
@@ -1542,9 +1542,9 @@ capa = "features"
 # La fila sabría de un hueco que aún no ha ocurrido: entra en el horario y la
 # distancia hasta el objetivo, y en el horizonte previsto.
 fichero = "src/project/features.py"
-buscar = '''    sigue = g["stop_sequence"].shift(-horizonte) == p["stop_sequence"] + horizonte'''
-reemplazar = '''    sigue = g["stop_sequence"].shift(-horizonte).notna()'''
-detector = ["tests/test_features.py::test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_visto"]
+buscar = '''        return objetivo_de[col]'''
+reemplazar = '''        return g[col].shift(-horizonte)'''
+detector = ["tests/test_features.py::test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_visto", "tests/test_features.py::test_el_objetivo_a_h_paradas_no_exige_haber_visto_las_intermedias"]
 sondas = []
 
 [[mutante]]
@@ -1573,5 +1573,51 @@ buscar = '''    r = clave(pasos).merge(
     )'''
 reemplazar = '''    r = clave(pasos).assign(t_disp_utc=disponibilidad["t_disp_utc"].to_numpy()[: len(pasos)])'''
 detector = ["tests/test_features.py::test_la_disponibilidad_se_une_a_los_pasos_por_clave_y_no_por_posicion"]
+sondas = []
+
+[[mutante]]
+id = "128"
+nombre = "un paso que se sabe a la vez que el siguiente cuenta como último conocido"
+capa = "features"
+# Las paradas que esperan a la asignación y los pasos del mismo sondeo vuelven a
+# la población: la persistencia usa un dato viejo y la ganancia se infla.
+fichero = "src/project/features.py"
+buscar = '''    p["ultimo_conocido"] = siguiente.isna() | (p["_td"] < siguiente)'''
+reemplazar = '''    p["ultimo_conocido"] = siguiente.isna() | (p["_td"] <= siguiente)'''
+detector = ["tests/test_features.py::test_solo_cuenta_el_ultimo_paso_conocido_del_viaje"]
+sondas = []
+
+[[mutante]]
+id = "129"
+nombre = "la población no exige el último paso conocido"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''    return (tabla["horizonte_previsto_s"] > 0) & tabla["ultimo_conocido"]'''
+reemplazar = '''    return tabla["horizonte_previsto_s"] > 0'''
+detector = ["tests/test_features.py::test_solo_cuenta_el_ultimo_paso_conocido_del_viaje"]
+sondas = []
+
+[[mutante]]
+id = "130"
+nombre = "el bus anterior admite el paso que se sabe a la vez que la fila"
+capa = "features"
+# Con h > 1 es el propio paso objetivo del viaje: fuga directa de la etiqueta.
+fichero = "src/project/features.py"
+buscar = '''        direction="backward",
+        allow_exact_matches=False,'''
+reemplazar = '''        direction="backward",
+        allow_exact_matches=True,'''
+detector = ["tests/test_features.py::test_con_h_2_el_bus_anterior_no_es_el_propio_paso_objetivo"]
+sondas = []
+
+[[mutante]]
+id = "131"
+nombre = "la flota del tramo admite lo que acabó justo en el ahora"
+capa = "features"
+# Con h > 1 entra el tramo del propio viaje, que se sabe a la vez que la fila.
+fichero = "src/project/features.py"
+buscar = '''        hi = np.searchsorted(tf, t[idx], side="left")'''
+reemplazar = '''        hi = np.searchsorted(tf, t[idx], side="right")'''
+detector = ["tests/test_features.py::test_con_h_2_la_flota_del_tramo_no_ve_el_tramo_del_propio_viaje"]
 sondas = []
 

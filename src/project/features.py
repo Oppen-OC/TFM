@@ -283,9 +283,11 @@ def poblacion(tabla: pd.DataFrame) -> pd.Series:
     """Las filas en las que la predicción todavía puede servir (ADR-022).
 
     Con lo que se sabe al predecir, al bus le queda tiempo para llegar a la
-    parada objetivo. Las demás son *nowcast*: se informan aparte.
+    parada objetivo, y la fila es el último paso conocido de su viaje: si ya se
+    sabe uno posterior, se predice desde ese. Las demás son *nowcast*: se
+    informan aparte.
     """
-    return tabla["horizonte_previsto_s"] > 0
+    return (tabla["horizonte_previsto_s"] > 0) & tabla["ultimo_conocido"]
 
 
 def construir(
@@ -309,13 +311,28 @@ def construir(
     g = p.groupby(CLAVE_VIAJE, sort=False)
 
     # La parada objetivo es la que está `horizonte` posiciones más allá en el
-    # horario, no el h-ésimo paso observado: si se saltara una, la fila sabría de
-    # un hueco que aún no ha ocurrido. En el GTFS de la EMT `stop_sequence` es
-    # consecutivo. Sin esa parada, la fila no tiene objetivo ni tramo.
-    sigue = g["stop_sequence"].shift(-horizonte) == p["stop_sequence"] + horizonte
+    # horario, buscada por clave: ni el h-ésimo paso observado, que saltaría una
+    # parada sin observar, ni exigir haber visto las intermedias. Las dos cosas
+    # dependen de huecos que aún no han ocurrido. En el GTFS de la EMT
+    # `stop_sequence` es consecutivo. Sin esa parada, la fila no tiene objetivo
+    # ni tramo.
+    cols = ["retraso_s", "t_prog_s", "abscisa_parada_m", "stop_id", "_t", "_td"]
+    llegada = p[[*CLAVE_VIAJE, "stop_sequence", *cols]].assign(
+        stop_sequence=p["stop_sequence"] - horizonte
+    )
+    objetivo_de = (
+        p[[*CLAVE_VIAJE, "stop_sequence"]]
+        .merge(
+            llegada,
+            on=[*CLAVE_VIAJE, "stop_sequence"],
+            how="left",
+            validate="many_to_one",
+        )
+        .set_axis(p.index)
+    )
 
     def destino(col: str) -> pd.Series:
-        return g[col].shift(-horizonte).where(sigue)
+        return objetivo_de[col]
 
     p[objetivo] = destino("retraso_s")
     p["retraso_lag1_s"] = g["retraso_s"].shift(1)
@@ -330,6 +347,11 @@ def construir(
     # estratifica. El previsto usa solo lo que se sabe al predecir: el horario
     # hasta la parada objetivo menos lo que ya se fue en saber el paso.
     p["horizonte_util_s"] = (p["_t_fin"] - p["_td"]) / 1e9
+    # Clave: si al saber este paso ya se sabe el siguiente del viaje, la
+    # predicción se hace desde aquel. Pasa en las paradas que esperan a la
+    # asignación y en los pasos que llegan en el mismo sondeo.
+    siguiente = g["_td"].shift(-1)
+    p["ultimo_conocido"] = siguiente.isna() | (p["_td"] < siguiente)
     p["horizonte_previsto_s"] = (
         p["t_prog_hasta_objetivo_s"] - (p["_td"] - p["_t"]) / 1e9
     )
