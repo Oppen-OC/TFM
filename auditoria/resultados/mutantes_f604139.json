@@ -1,0 +1,165 @@
+{
+  "rev": "f604139",
+  "segundos": 1184,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 134.9
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 142.3
+    },
+    {
+      "id": "123",
+      "nombre": "la población incluye el nowcast",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_features.py::test_el_horizonte_previsto_solo_usa_lo_que_se_sabe_al_predecir"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 120.5
+    },
+    {
+      "id": "125",
+      "nombre": "el objetivo es el siguiente paso observado aunque se salte paradas",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_objetivo_a_h_paradas_no_exige_haber_visto_las_intermedias",
+        "tests/test_features.py::test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_visto"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_features.py::test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_visto",
+        "tests/test_features.py::test_el_objetivo_a_h_paradas_no_exige_haber_visto_las_intermedias"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 119.1
+    },
+    {
+      "id": "128",
+      "nombre": "un paso que se sabe a la vez que el siguiente cuenta como último conocido",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_solo_cuenta_el_ultimo_paso_conocido_del_viaje"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_solo_cuenta_el_ultimo_paso_conocido_del_viaje"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 119.6
+    },
+    {
+      "id": "129",
+      "nombre": "la población no exige el último paso conocido",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [
+        "tests/test_features.py::test_solo_cuenta_el_ultimo_paso_conocido_del_viaje"
+      ],
+      "esperado_cae": false,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 139.6
+    },
+    {
+      "id": "130",
+      "nombre": "el bus anterior admite el paso que se sabe a la vez que la fila",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_con_h_2_el_bus_anterior_no_es_el_propio_paso_objetivo",
+        "tests/test_features.py::test_el_bus_anterior_es_el_ultimo_que_paso_por_la_parada_objetivo_antes_de_t"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_features.py::test_con_h_2_el_bus_anterior_no_es_el_propio_paso_objetivo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 143.5
+    },
+    {
+      "id": "131",
+      "nombre": "la flota del tramo admite lo que acabó justo en el ahora",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_con_h_2_la_flota_del_tramo_no_ve_el_tramo_del_propio_viaje",
+        "tests/test_features.py::test_el_tramo_aguas_abajo_lo_miden_otros_buses_antes_de_t"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_features.py::test_con_h_2_la_flota_del_tramo_no_ve_el_tramo_del_propio_viaje"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 142.1
+    }
+  ]
+}

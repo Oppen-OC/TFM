@@ -622,13 +622,18 @@ def test_solo_cuenta_el_ultimo_paso_conocido_del_viaje():
         _paso("A", 3, 16, 0, llega=0.5),  # a los 16,5
         _paso("A", 4, 20, 0),
     ]
+    # Según el horario, la parada 2 es 5 min más tarde: a la 1 le sobra
+    # horizonte (420 − 180 s) y queda fuera solo por no ser el último paso
+    # conocido; a la 2 no le queda (−60 − 60 s), aunque sí lo es.
+    filas[1]["t_prog_s"] += 300
     t = _construir(filas, horizonte=1)
     assert t.set_index("stop_sequence")["ultimo_conocido"].to_dict() == {
         1: False,
         2: True,
         3: True,
     }
-    assert features.poblacion(t).tolist() == [False, True, True]
+    assert (t["horizonte_previsto_s"] > 0).tolist() == [True, False, True]
+    assert features.poblacion(t).tolist() == [False, False, True]
 
 
 def test_el_objetivo_a_h_paradas_no_exige_haber_visto_las_intermedias():
