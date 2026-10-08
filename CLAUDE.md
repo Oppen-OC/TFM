@@ -180,8 +180,9 @@ su evaluación, con la diferencia por viajes y su intervalo, en
 `train.py` y `predict.py` las leen de ahí. La v1 empataba con la persistencia
 más el sesgo del tramo (bitácora 041). La v2, residuo con pérdida absoluta
 (ADR-021), con las variables a la hora en que se sabe cada paso (ADR-022,
-trampa 017), la bate por 1,01 s de MAE sobre las predicciones que llegan a
-tiempo, sin la capa 192 (bitácora 046).
+trampa 017), la bate sobre las predicciones que llegan a tiempo, sin la capa
+192. A una parada no anticipa; de 2 a 14 min por delante mejora un 3-4 % al
+listón (barrido de horizontes, ADR-023, bitácora 047).
 
 Vacío, 0 líneas: `services/model_service.py`.
 

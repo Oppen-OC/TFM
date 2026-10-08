@@ -129,10 +129,13 @@ usuario final consume ("¿llego tarde o no?").
 a la tasa base de la clase positiva: sin ella, un F1 no se puede leer.
 
 **Precisión (07/10).** «Siguiente parada» es la parada `stop_sequence + h` del
-horario, si se observó. Hasta esta fecha era el h-ésimo paso *observado*: con
-una parada sin observar saltaba a la de después, y el horario y la distancia
-hasta el objetivo sabían de un hueco que aún no había ocurrido (0,54 % de las
-filas de prueba). Sin esa parada, la fila no tiene objetivo (bitácora 046).
+horario, si se observó, buscada por clave. Hasta esta fecha era el h-ésimo
+paso *observado*: con una parada sin observar saltaba a la de después, y el
+horario y la distancia hasta el objetivo sabían de un hueco que aún no había
+ocurrido (0,54 % de las filas de prueba). Sin esa parada, la fila no tiene
+objetivo (bitácora 046). Desde el 08/10 tampoco se exige haber observado las
+paradas intermedias: con *h* > 1 eso también seleccionaba filas por huecos
+futuros (bitácora 047).
 
 ---
 
@@ -717,9 +720,12 @@ tres cosas:
 3. **Horizonte previsto:** `t_prog_hasta_objetivo_s − (t_disp − t_obs)`, el
    horario hasta la parada objetivo menos lo que ya se ha ido en saber el paso.
    Solo usa lo que se sabe al predecir.
-4. **Población** (`features.poblacion`): horizonte previsto > 0. `train`
-   entrena con ella y `evaluate` da la primaria sobre ella. El resto se
-   informa aparte como *nowcast*. Los estratos van por horizonte previsto:
+4. **Población** (`features.poblacion`): horizonte previsto > 0 y, desde el
+   08/10, que la fila sea el **último paso conocido** de su viaje en su
+   `t_disp`. Si al saber el paso ya se sabe el siguiente, se predice desde ese:
+   pasa en las paradas que esperan a la asignación y en los pasos que llegan
+   en el mismo sondeo. `train` entrena con la población y `evaluate` da la
+   primaria sobre ella. El resto se informa aparte como *nowcast*. Los estratos van por horizonte previsto:
    0-30, 30-60, 60-120 y más de 120 s.
 5. Se calcula en `features`, cruzando `pasos` con `emt_tracked` y con la
    llegada de cada sondeo en el curated.
@@ -783,8 +789,11 @@ llegan a tiempo, o que `cruces` deje de usar la posición k1+1.
    - `features_h`, `train_h` y `evaluate_h` (`foreach`) escriben en
      `data/processed/h<h>/`, `models/h<h>/` y `metrics/horizontes/h<h>/`.
    - El horizonte 1 conserva sus rutas, porque la bitácora las cita.
-5. La antelación se lee por horizonte previsto en minutos (0-1, 1-2, 2-5, 5-10
-   y más de 10), dentro de cada horizonte.
+5. La antelación se lee **sobre la cohorte común**, los mismos orígenes en
+   todos los horizontes (`analysis/antelacion.py`), porque las poblaciones de
+   cada horizonte tienen composiciones distintas. Los estratos por horizonte
+   previsto (0-30 s, 30-60 s, 1-2, 2-5, 5-10 y más de 10 min) se informan solo
+   con 2.000 filas o más.
 
 **Por qué.** A una parada de horizonte, el retraso se sabe cuando casi no
 queda tiempo: el horizonte previsto mediano es de 4 s y el 45 % de las filas
@@ -793,8 +802,11 @@ pide horizontes más largos.
 
 **Consecuencias.**
 - Cinco modelos y unas 3-4 h de máquina para reconstruir el barrido.
-- Con *h* grande, la flota del tramo y el sesgo tienen menos soporte, porque
-  hay menos viajes que recorran ese mismo par de paradas: hay más nulos.
+- Cada horizonte tiene su población: la parte *nowcast* pasa del 46 % con
+  *h* = 1 a entre el 12 y el 17 % con *h* ≥ 2. Por eso la curva se lee sobre la
+  cohorte común.
+- La configuración del ADR-021 se eligió con *h* = 1: la curva es la de un solo
+  brazo, no la del mejor por horizonte.
 - La columna objetivo se sigue llamando `retraso_siguiente_parada_s`, aunque
   con *h* > 1 sea la parada *h*.
 

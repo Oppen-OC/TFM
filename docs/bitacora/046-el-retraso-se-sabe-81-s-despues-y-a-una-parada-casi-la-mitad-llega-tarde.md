@@ -11,6 +11,12 @@ evidencia: uv run dvc repro (metrics/features.json, disponibilidad_test; metrics
 trampa: 017
 ---
 
+> **Revisada por la bitácora 047 (08/10).** La población añade que la fila sea
+> el último paso conocido de su viaje, y el objetivo ya no exige las paradas
+> intermedias. Con eso, en *h* = 1 la mejora es de −1,06 s. Partida por la
+> antelación real, la parte con más de 30 s no mejora al listón (+0,28 s): a una
+> parada no hay antelación útil. Las cifras de abajo son las del 07/10.
+
 ## Qué se observó
 
 **Cuándo se sabe un retraso.** El retraso de un paso por parada no se conoce
