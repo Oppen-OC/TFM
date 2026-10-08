@@ -1,8 +1,9 @@
 {
   "modelo": {
     "n_arboles": 348,
-    "mlflow_run_id": "f3dfde9553744f76ae677ef41f31c0e7"
+    "mlflow_run_id": "5d614ed430c14265bca27df1d0085d43"
   },
+  "horizonte_paradas": 1,
   "remuestreo": {
     "unidad": "viaje y día",
     "replicas": 1000,
@@ -810,7 +811,7 @@
         }
       }
     },
-    "60-120 s": {
+    "1-2 min": {
       "filas": 69173,
       "viajes": 30418,
       "modelo": {
@@ -882,74 +883,146 @@
         }
       }
     },
-    "> 120 s": {
-      "filas": 10942,
-      "viajes": 8635,
+    "2-5 min": {
+      "filas": 10843,
+      "viajes": 8557,
       "modelo": {
-        "mae_s": 33.45,
-        "rmse_s": 48.71
+        "mae_s": 33.35,
+        "rmse_s": 48.4
       },
       "horario": {
-        "mae_s": 168.71,
-        "rmse_s": 225.69
+        "mae_s": 168.99,
+        "rmse_s": 225.96
       },
       "persistencia": {
-        "mae_s": 79.75,
-        "rmse_s": 95.91
+        "mae_s": 79.28,
+        "rmse_s": 95.42
       },
       "persistencia_tramo": {
-        "mae_s": 35.56,
-        "rmse_s": 50.33
+        "mae_s": 35.47,
+        "rmse_s": 50.04
       },
       "modelo_menos": {
         "persistencia": {
-          "mae_s": -46.3,
+          "mae_s": -45.94,
           "mae_ic95": [
-            -47.33,
-            -45.26
+            -46.98,
+            -44.97
           ],
-          "rmse_s": -47.2,
+          "rmse_s": -47.02,
           "rmse_ic95": [
-            -48.62,
-            -45.7
+            -48.52,
+            -45.62
           ]
         },
         "persistencia_tramo": {
-          "mae_s": -2.11,
+          "mae_s": -2.12,
           "mae_ic95": [
-            -2.36,
-            -1.87
+            -2.37,
+            -1.89
           ],
-          "rmse_s": -1.62,
+          "rmse_s": -1.64,
           "rmse_ic95": [
-            -1.93,
-            -1.33
+            -1.95,
+            -1.35
           ]
         }
       },
       "modelo_menos_remuestreando_dias": {
         "persistencia": {
-          "mae_s": -46.3,
+          "mae_s": -45.94,
           "mae_ic95": [
-            -48.37,
-            -44.4
+            -48.14,
+            -43.9
           ],
-          "rmse_s": -47.2,
+          "rmse_s": -47.02,
           "rmse_ic95": [
-            -49.72,
-            -44.86
+            -49.53,
+            -44.5
           ]
         },
         "persistencia_tramo": {
-          "mae_s": -2.11,
+          "mae_s": -2.12,
           "mae_ic95": [
-            -2.69,
+            -2.7,
             -1.63
           ],
-          "rmse_s": -1.62,
+          "rmse_s": -1.64,
           "rmse_ic95": [
-            -2.23,
-            -1.15
+            -2.25,
+            -1.16
+          ]
+        }
+      }
+    },
+    "5-10 min": {
+      "filas": 99,
+      "viajes": 99,
+      "modelo": {
+        "mae_s": 44.7,
+        "rmse_s": 75.31
+      },
+      "horario": {
+        "mae_s": 138.05,
+        "rmse_s": 193.44
+      },
+      "persistencia": {
+        "mae_s": 130.47,
+        "rmse_s": 139.06
+      },
+      "persistencia_tramo": {
+        "mae_s": 45.45,
+        "rmse_s": 75.58
+      },
+      "modelo_menos": {
+        "persistencia": {
+          "mae_s": -85.77,
+          "mae_ic95": [
+            -99.31,
+            -70.91
+          ],
+          "rmse_s": -63.76,
+          "rmse_ic95": [
+            -91.74,
+            -39.09
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -0.75,
+          "mae_ic95": [
+            -2.42,
+            0.83
+          ],
+          "rmse_s": -0.27,
+          "rmse_ic95": [
+            -1.45,
+            1.09
+          ]
+        }
+      },
+      "modelo_menos_remuestreando_dias": {
+        "persistencia": {
+          "mae_s": -85.77,
+          "mae_ic95": [
+            -98.04,
+            -73.34
+          ],
+          "rmse_s": -63.76,
+          "rmse_ic95": [
+            -98.06,
+            -35.36
+          ]
+        },
+        "persistencia_tramo": {
+          "mae_s": -0.75,
+          "mae_ic95": [
+            -2.43,
+            1.06
+          ],
+          "rmse_s": -0.27,
+          "rmse_ic95": [
+            -1.38,
+            1.54
           ]
         }
       }

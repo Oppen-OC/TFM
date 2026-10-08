@@ -113,16 +113,11 @@ stages:
   features:
     cmd: uv run python -m project.features
     deps:
-    - path: data/curated
+    - path: data/interim/disponibilidad
       hash: md5
-      md5: 6cd1f5b45ed11af57da974e3b6edde34.dir
-      size: 393352505
-      nfiles: 243
-    - path: data/interim/emt_tracked
-      hash: md5
-      md5: 40b366671c3cf0fbb06c23033b904ce4.dir
-      size: 424762701
-      nfiles: 48
+      md5: aceb0b88beaa6708a51ea6ee549a0ee1.dir
+      size: 5398505
+      nfiles: 1
     - path: data/interim/pasos
       hash: md5
       md5: 620f7df005bb3f71f2931b05df59a014.dir
@@ -130,13 +125,18 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 70485dcf71ab9093e9ff778d93553b14
-      size: 24657
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
     params:
       params.yaml:
         features:
           objetivo: retraso_siguiente_parada_s
           horizonte_paradas: 1
+          horizontes_barrido:
+          - 2
+          - 3
+          - 5
+          - 10
           lags_min:
           - 1
           - 5
@@ -153,8 +153,6 @@ stages:
           linea_min_viajes: 100
           linea_min_dias: 3
           test_desde: '2026-09-21'
-        prepare.max_hueco_cruce_s: 120
-        prepare.paradas_referencia: 3
     outs:
     - path: data/processed/test.parquet
       hash: md5
@@ -177,20 +175,20 @@ stages:
       size: 161878698
     - path: src/project/evaluate.py
       hash: md5
-      md5: d455d02ea3f84ef61a9639699ad0cb32
-      size: 9810
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 70485dcf71ab9093e9ff778d93553b14
-      size: 24657
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
     - path: src/project/predict.py
       hash: md5
       md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
       size: 1374
     - path: src/project/train.py
       hash: md5
-      md5: e5d9ae4a6a79f832534feb010d6d09b6
-      size: 6157
+      md5: 83fa3814a7867d36e7fab635a42a06e1
+      size: 6574
     params:
       params.yaml:
         train:
@@ -210,7 +208,7 @@ stages:
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: b4c8a2a28b8720e42238e4061e972117
+      md5: cbc604b916d883dadf0653ca0c0df923
       size: 5803539
   evaluate:
     cmd: uv run python -m project.evaluate
@@ -230,16 +228,16 @@ stages:
       nfiles: 13
     - path: models/model.pkl
       hash: md5
-      md5: b4c8a2a28b8720e42238e4061e972117
+      md5: cbc604b916d883dadf0653ca0c0df923
       size: 5803539
     - path: src/project/evaluate.py
       hash: md5
-      md5: d455d02ea3f84ef61a9639699ad0cb32
-      size: 9810
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 70485dcf71ab9093e9ff778d93553b14
-      size: 24657
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -256,5 +254,601 @@ stages:
     outs:
     - path: metrics/eval.json
       hash: md5
-      md5: 07185a8a07d73b8e8e62f13cbfa54052
-      size: 44333
+      md5: 2c7cae2a113335219f9e7ee1e8d845a7
+      size: 45873
+  disponibilidad:
+    cmd: uv run python -m project.features --disponibilidad
+    deps:
+    - path: data/curated
+      hash: md5
+      md5: 6cd1f5b45ed11af57da974e3b6edde34.dir
+      size: 393352505
+      nfiles: 243
+    - path: data/interim/emt_tracked
+      hash: md5
+      md5: 40b366671c3cf0fbb06c23033b904ce4.dir
+      size: 424762701
+      nfiles: 48
+    - path: data/interim/pasos
+      hash: md5
+      md5: 620f7df005bb3f71f2931b05df59a014.dir
+      size: 74698618
+      nfiles: 48
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    params:
+      params.yaml:
+        prepare.max_hueco_cruce_s: 120
+        prepare.paradas_referencia: 3
+    outs:
+    - path: data/interim/disponibilidad
+      hash: md5
+      md5: aceb0b88beaa6708a51ea6ee549a0ee1.dir
+      size: 5398505
+      nfiles: 1
+  features_h@2:
+    cmd: uv run python -m project.features --horizonte 2
+    deps:
+    - path: data/interim/disponibilidad
+      hash: md5
+      md5: aceb0b88beaa6708a51ea6ee549a0ee1.dir
+      size: 5398505
+      nfiles: 1
+    - path: data/interim/pasos
+      hash: md5
+      md5: 620f7df005bb3f71f2931b05df59a014.dir
+      size: 74698618
+      nfiles: 48
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    params:
+      params.yaml:
+        features:
+          objetivo: retraso_siguiente_parada_s
+          horizonte_paradas: 1
+          horizontes_barrido:
+          - 2
+          - 3
+          - 5
+          - 10
+          lags_min:
+          - 1
+          - 5
+          - 15
+          ventana_trafico_min: 10
+          incluir_flota: true
+          ventanas_flota_min:
+          - 5
+          - 15
+          soporte_min: 2
+          incluir_trafico: false
+          incluir_meteo: false
+          umbral_retraso_s: 300
+          linea_min_viajes: 100
+          linea_min_dias: 3
+          test_desde: '2026-09-21'
+    outs:
+    - path: data/processed/h2
+      hash: md5
+      md5: 544e65d14e48068f1b765ba08703d0c9.dir
+      size: 236173377
+      nfiles: 2
+    - path: metrics/horizontes/h2/features.json
+      hash: md5
+      md5: 8e128283b02d7f957ff43a858ca781c5
+      size: 19305
+  features_h@3:
+    cmd: uv run python -m project.features --horizonte 3
+    deps:
+    - path: data/interim/disponibilidad
+      hash: md5
+      md5: aceb0b88beaa6708a51ea6ee549a0ee1.dir
+      size: 5398505
+      nfiles: 1
+    - path: data/interim/pasos
+      hash: md5
+      md5: 620f7df005bb3f71f2931b05df59a014.dir
+      size: 74698618
+      nfiles: 48
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    params:
+      params.yaml:
+        features:
+          objetivo: retraso_siguiente_parada_s
+          horizonte_paradas: 1
+          horizontes_barrido:
+          - 2
+          - 3
+          - 5
+          - 10
+          lags_min:
+          - 1
+          - 5
+          - 15
+          ventana_trafico_min: 10
+          incluir_flota: true
+          ventanas_flota_min:
+          - 5
+          - 15
+          soporte_min: 2
+          incluir_trafico: false
+          incluir_meteo: false
+          umbral_retraso_s: 300
+          linea_min_viajes: 100
+          linea_min_dias: 3
+          test_desde: '2026-09-21'
+    outs:
+    - path: data/processed/h3
+      hash: md5
+      md5: 6a31d65681b3343b70a8cdaa8cb8509b.dir
+      size: 223083309
+      nfiles: 2
+    - path: metrics/horizontes/h3/features.json
+      hash: md5
+      md5: 90c72eec066257a008e2fe0fe27edbad
+      size: 19315
+  features_h@5:
+    cmd: uv run python -m project.features --horizonte 5
+    deps:
+    - path: data/interim/disponibilidad
+      hash: md5
+      md5: aceb0b88beaa6708a51ea6ee549a0ee1.dir
+      size: 5398505
+      nfiles: 1
+    - path: data/interim/pasos
+      hash: md5
+      md5: 620f7df005bb3f71f2931b05df59a014.dir
+      size: 74698618
+      nfiles: 48
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    params:
+      params.yaml:
+        features:
+          objetivo: retraso_siguiente_parada_s
+          horizonte_paradas: 1
+          horizontes_barrido:
+          - 2
+          - 3
+          - 5
+          - 10
+          lags_min:
+          - 1
+          - 5
+          - 15
+          ventana_trafico_min: 10
+          incluir_flota: true
+          ventanas_flota_min:
+          - 5
+          - 15
+          soporte_min: 2
+          incluir_trafico: false
+          incluir_meteo: false
+          umbral_retraso_s: 300
+          linea_min_viajes: 100
+          linea_min_dias: 3
+          test_desde: '2026-09-21'
+    outs:
+    - path: data/processed/h5
+      hash: md5
+      md5: 2c3e20eb4f811ab4fac369744dfaa62a.dir
+      size: 197361141
+      nfiles: 2
+    - path: metrics/horizontes/h5/features.json
+      hash: md5
+      md5: 78b006f7d720e617ac201d50691c1dd1
+      size: 19354
+  features_h@10:
+    cmd: uv run python -m project.features --horizonte 10
+    deps:
+    - path: data/interim/disponibilidad
+      hash: md5
+      md5: aceb0b88beaa6708a51ea6ee549a0ee1.dir
+      size: 5398505
+      nfiles: 1
+    - path: data/interim/pasos
+      hash: md5
+      md5: 620f7df005bb3f71f2931b05df59a014.dir
+      size: 74698618
+      nfiles: 48
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    params:
+      params.yaml:
+        features:
+          objetivo: retraso_siguiente_parada_s
+          horizonte_paradas: 1
+          horizontes_barrido:
+          - 2
+          - 3
+          - 5
+          - 10
+          lags_min:
+          - 1
+          - 5
+          - 15
+          ventana_trafico_min: 10
+          incluir_flota: true
+          ventanas_flota_min:
+          - 5
+          - 15
+          soporte_min: 2
+          incluir_trafico: false
+          incluir_meteo: false
+          umbral_retraso_s: 300
+          linea_min_viajes: 100
+          linea_min_dias: 3
+          test_desde: '2026-09-21'
+    outs:
+    - path: data/processed/h10
+      hash: md5
+      md5: 49828386a9a5c16263046cfc542f7594.dir
+      size: 137238346
+      nfiles: 2
+    - path: metrics/horizontes/h10/features.json
+      hash: md5
+      md5: 2a83b42c0d96e056f305e24a2dbc6834
+      size: 19439
+  train_h@2:
+    cmd: uv run python -m project.train --horizonte 2
+    deps:
+    - path: data/processed/h2
+      hash: md5
+      md5: 544e65d14e48068f1b765ba08703d0c9.dir
+      size: 236173377
+      nfiles: 2
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    - path: src/project/train.py
+      hash: md5
+      md5: 83fa3814a7867d36e7fab635a42a06e1
+      size: 6574
+    params:
+      params.yaml:
+        train:
+          objective: reg:absoluteerror
+          residuo: true
+          eval_metric: mae
+          n_estimators: 3000
+          max_depth: 8
+          learning_rate: 0.05
+          subsample: 0.8
+          colsample_bytree: 0.8
+          min_child_weight: 10
+          early_stopping_rounds: 50
+          n_jobs: -1
+          random_state: 42
+          dias_validacion: 7
+    outs:
+    - path: models/h2/model.pkl
+      hash: md5
+      md5: ec4bf2e797c7cbd735063cf9e8337e5d
+      size: 5133444
+  train_h@3:
+    cmd: uv run python -m project.train --horizonte 3
+    deps:
+    - path: data/processed/h3
+      hash: md5
+      md5: 6a31d65681b3343b70a8cdaa8cb8509b.dir
+      size: 223083309
+      nfiles: 2
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    - path: src/project/train.py
+      hash: md5
+      md5: 83fa3814a7867d36e7fab635a42a06e1
+      size: 6574
+    params:
+      params.yaml:
+        train:
+          objective: reg:absoluteerror
+          residuo: true
+          eval_metric: mae
+          n_estimators: 3000
+          max_depth: 8
+          learning_rate: 0.05
+          subsample: 0.8
+          colsample_bytree: 0.8
+          min_child_weight: 10
+          early_stopping_rounds: 50
+          n_jobs: -1
+          random_state: 42
+          dias_validacion: 7
+    outs:
+    - path: models/h3/model.pkl
+      hash: md5
+      md5: d52c8c137da30a6b804c4f2f40f86f45
+      size: 5975065
+  train_h@5:
+    cmd: uv run python -m project.train --horizonte 5
+    deps:
+    - path: data/processed/h5
+      hash: md5
+      md5: 2c3e20eb4f811ab4fac369744dfaa62a.dir
+      size: 197361141
+      nfiles: 2
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    - path: src/project/train.py
+      hash: md5
+      md5: 83fa3814a7867d36e7fab635a42a06e1
+      size: 6574
+    params:
+      params.yaml:
+        train:
+          objective: reg:absoluteerror
+          residuo: true
+          eval_metric: mae
+          n_estimators: 3000
+          max_depth: 8
+          learning_rate: 0.05
+          subsample: 0.8
+          colsample_bytree: 0.8
+          min_child_weight: 10
+          early_stopping_rounds: 50
+          n_jobs: -1
+          random_state: 42
+          dias_validacion: 7
+    outs:
+    - path: models/h5/model.pkl
+      hash: md5
+      md5: aa8f10a4e172a3588f4b953e8d70d592
+      size: 4373724
+  train_h@10:
+    cmd: uv run python -m project.train --horizonte 10
+    deps:
+    - path: data/processed/h10
+      hash: md5
+      md5: 49828386a9a5c16263046cfc542f7594.dir
+      size: 137238346
+      nfiles: 2
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    - path: src/project/train.py
+      hash: md5
+      md5: 83fa3814a7867d36e7fab635a42a06e1
+      size: 6574
+    params:
+      params.yaml:
+        train:
+          objective: reg:absoluteerror
+          residuo: true
+          eval_metric: mae
+          n_estimators: 3000
+          max_depth: 8
+          learning_rate: 0.05
+          subsample: 0.8
+          colsample_bytree: 0.8
+          min_child_weight: 10
+          early_stopping_rounds: 50
+          n_jobs: -1
+          random_state: 42
+          dias_validacion: 7
+    outs:
+    - path: models/h10/model.pkl
+      hash: md5
+      md5: c9cde6681333466e17c8cb1ed4da000b
+      size: 3699704
+  evaluate_h@2:
+    cmd: uv run python -m project.evaluate --horizonte 2
+    deps:
+    - path: data/processed/h2
+      hash: md5
+      md5: 544e65d14e48068f1b765ba08703d0c9.dir
+      size: 236173377
+      nfiles: 2
+    - path: data/raw/gtfs
+      hash: md5
+      md5: 58e47750a59418f7aed19ec560781cde.dir
+      size: 76792028
+      nfiles: 13
+    - path: models/h2/model.pkl
+      hash: md5
+      md5: ec4bf2e797c7cbd735063cf9e8337e5d
+      size: 5133444
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/gtfs.py
+      hash: md5
+      md5: eddb6c0ab87e20c72fbdb9b835d129a9
+      size: 9426
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    params:
+      params.yaml:
+        features.linea_min_dias: 3
+        features.linea_min_viajes: 100
+        features.objetivo: retraso_siguiente_parada_s
+    outs:
+    - path: metrics/horizontes/h2/eval.json
+      hash: md5
+      md5: 53eefb8500f7e2a3b5e442e82a951efe
+      size: 45957
+  evaluate_h@3:
+    cmd: uv run python -m project.evaluate --horizonte 3
+    deps:
+    - path: data/processed/h3
+      hash: md5
+      md5: 6a31d65681b3343b70a8cdaa8cb8509b.dir
+      size: 223083309
+      nfiles: 2
+    - path: data/raw/gtfs
+      hash: md5
+      md5: 58e47750a59418f7aed19ec560781cde.dir
+      size: 76792028
+      nfiles: 13
+    - path: models/h3/model.pkl
+      hash: md5
+      md5: d52c8c137da30a6b804c4f2f40f86f45
+      size: 5975065
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/gtfs.py
+      hash: md5
+      md5: eddb6c0ab87e20c72fbdb9b835d129a9
+      size: 9426
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    params:
+      params.yaml:
+        features.linea_min_dias: 3
+        features.linea_min_viajes: 100
+        features.objetivo: retraso_siguiente_parada_s
+    outs:
+    - path: metrics/horizontes/h3/eval.json
+      hash: md5
+      md5: 11ae59850b278d1263dfe60477c7cbf4
+      size: 47509
+  evaluate_h@5:
+    cmd: uv run python -m project.evaluate --horizonte 5
+    deps:
+    - path: data/processed/h5
+      hash: md5
+      md5: 2c3e20eb4f811ab4fac369744dfaa62a.dir
+      size: 197361141
+      nfiles: 2
+    - path: data/raw/gtfs
+      hash: md5
+      md5: 58e47750a59418f7aed19ec560781cde.dir
+      size: 76792028
+      nfiles: 13
+    - path: models/h5/model.pkl
+      hash: md5
+      md5: aa8f10a4e172a3588f4b953e8d70d592
+      size: 4373724
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/gtfs.py
+      hash: md5
+      md5: eddb6c0ab87e20c72fbdb9b835d129a9
+      size: 9426
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    params:
+      params.yaml:
+        features.linea_min_dias: 3
+        features.linea_min_viajes: 100
+        features.objetivo: retraso_siguiente_parada_s
+    outs:
+    - path: metrics/horizontes/h5/eval.json
+      hash: md5
+      md5: d3bf5183e6dda756e970473f9b39b585
+      size: 47558
+  evaluate_h@10:
+    cmd: uv run python -m project.evaluate --horizonte 10
+    deps:
+    - path: data/processed/h10
+      hash: md5
+      md5: 49828386a9a5c16263046cfc542f7594.dir
+      size: 137238346
+      nfiles: 2
+    - path: data/raw/gtfs
+      hash: md5
+      md5: 58e47750a59418f7aed19ec560781cde.dir
+      size: 76792028
+      nfiles: 13
+    - path: models/h10/model.pkl
+      hash: md5
+      md5: c9cde6681333466e17c8cb1ed4da000b
+      size: 3699704
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 1dfbeff88114c78eb0feb8bd0a87db5a
+      size: 10406
+    - path: src/project/features.py
+      hash: md5
+      md5: 584c19e03b6c671923757615bc8ef3a3
+      size: 27297
+    - path: src/project/gtfs.py
+      hash: md5
+      md5: eddb6c0ab87e20c72fbdb9b835d129a9
+      size: 9426
+    - path: src/project/predict.py
+      hash: md5
+      md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
+      size: 1374
+    params:
+      params.yaml:
+        features.linea_min_dias: 3
+        features.linea_min_viajes: 100
+        features.objetivo: retraso_siguiente_parada_s
+    outs:
+    - path: metrics/horizontes/h10/eval.json
+      hash: md5
+      md5: b6c9502de274b18aacdc8cb5af571adc
+      size: 45971
