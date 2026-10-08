@@ -55,19 +55,31 @@ stages:
       - metrics/prepare.json:
           cache: false
 
-  features:
-    cmd: uv run python -m project.features
+  disponibilidad:
+    # Cuándo se SABE cada paso: posiciones del viaje y llegada de su sondeo, y
+    # la asignación del viaje (ADR-022). No depende del horizonte: se calcula una
+    # vez para todo el barrido (ADR-023).
+    cmd: uv run python -m project.features --disponibilidad
     deps:
       - data/interim/pasos
-      # cuándo se SABE cada paso: posiciones del viaje y llegada de su sondeo
       - data/interim/emt_tracked
       - data/curated
       - src/project/features.py
     params:
-      - features
-      # t_disp repite lo que usa `cruces` y la asignación del viaje (ADR-022)
+      # t_disp repite lo que usa `cruces` y la asignación del viaje
       - prepare.max_hueco_cruce_s
       - prepare.paradas_referencia
+    outs:
+      - data/interim/disponibilidad
+
+  features:
+    cmd: uv run python -m project.features
+    deps:
+      - data/interim/pasos
+      - data/interim/disponibilidad
+      - src/project/features.py
+    params:
+      - features
     outs:
       - data/processed/train.parquet
       - data/processed/test.parquet
@@ -110,3 +122,56 @@ stages:
     metrics:
       - metrics/eval.json:
           cache: false
+
+  # Barrido de horizontes (ADR-023): lo mismo que features, train y evaluate,
+  # para cada horizonte de `features.horizontes_barrido`, en `…/h<h>/`.
+  features_h:
+    foreach: ${features.horizontes_barrido}
+    do:
+      cmd: uv run python -m project.features --horizonte ${item}
+      deps:
+        - data/interim/pasos
+        - data/interim/disponibilidad
+        - src/project/features.py
+      params:
+        - features
+      outs:
+        - data/processed/h${item}
+      metrics:
+        - metrics/horizontes/h${item}/features.json:
+            cache: false
+
+  train_h:
+    foreach: ${features.horizontes_barrido}
+    do:
+      cmd: uv run python -m project.train --horizonte ${item}
+      deps:
+        - data/processed/h${item}
+        - src/project/train.py
+        - src/project/features.py
+        - src/project/predict.py
+        - src/project/evaluate.py
+      params:
+        - train
+      outs:
+        - models/h${item}/model.pkl
+
+  evaluate_h:
+    foreach: ${features.horizontes_barrido}
+    do:
+      cmd: uv run python -m project.evaluate --horizonte ${item}
+      deps:
+        - data/processed/h${item}
+        - models/h${item}/model.pkl
+        - data/raw/gtfs
+        - src/project/evaluate.py
+        - src/project/predict.py
+        - src/project/features.py
+        - src/project/gtfs.py
+      params:
+        - features.objetivo
+        - features.linea_min_viajes
+        - features.linea_min_dias
+      metrics:
+        - metrics/horizontes/h${item}/eval.json:
+            cache: false

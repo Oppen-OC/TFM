@@ -1546,3 +1546,32 @@ buscar = '''    sigue = g["stop_sequence"].shift(-horizonte) == p["stop_sequence
 reemplazar = '''    sigue = g["stop_sequence"].shift(-horizonte).notna()'''
 detector = ["tests/test_features.py::test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_visto"]
 sondas = []
+
+[[mutante]]
+id = "126"
+nombre = "todos los horizontes escriben en las rutas del de params"
+capa = "pipeline"
+# El barrido pisaría la tabla, el modelo y las métricas del horizonte 1, que es
+# lo que cita la bitácora.
+fichero = "src/project/features.py"
+buscar = '''    if horizonte is None:'''
+reemplazar = '''    if True:'''
+detector = ["tests/test_features.py::test_cada_horizonte_escribe_en_su_sitio_y_el_de_params_en_el_de_siempre"]
+sondas = []
+
+[[mutante]]
+id = "127"
+nombre = "la disponibilidad se pega a los pasos por posición de fila"
+capa = "features"
+# Trampa 012: el stage no escribe en el orden de `pasos`.
+fichero = "src/project/features.py"
+buscar = '''    r = clave(pasos).merge(
+        clave(disponibilidad)[[*CLAVE_PASO, "t_disp_utc"]],
+        on=CLAVE_PASO,
+        how="left",
+        validate="many_to_one",
+    )'''
+reemplazar = '''    r = clave(pasos).assign(t_disp_utc=disponibilidad["t_disp_utc"].to_numpy()[: len(pasos)])'''
+detector = ["tests/test_features.py::test_la_disponibilidad_se_une_a_los_pasos_por_clave_y_no_por_posicion"]
+sondas = []
+

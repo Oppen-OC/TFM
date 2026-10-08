@@ -24,6 +24,7 @@ los grupos y las bandas se da también remuestreando días de servicio.
 
 from __future__ import annotations
 
+import argparse
 import json
 from datetime import date
 
@@ -41,8 +42,10 @@ BANDAS = [-np.inf, 8 * 60, 15 * 60, 30 * 60, np.inf]
 NOMBRES = ["<= 8 min", "8-15 min", "15-30 min", "> 30 min"]
 # Horizonte previsto: con lo que se sabe al predecir, cuánto le queda al bus
 # para la parada objetivo (ADR-022). La población es lo que tiene más de 0.
-HORIZONTES = [0, 30, 60, 120, np.inf]
-NOMBRES_HORIZONTE = ["0-30 s", "30-60 s", "60-120 s", "> 120 s"]
+# Valen para todos los horizontes del barrido (ADR-023): con una parada casi todo
+# cae por debajo de 2 min; con diez, por encima.
+HORIZONTES = [0, 30, 60, 120, 300, 600, np.inf]
+NOMBRES_HORIZONTE = ["0-30 s", "30-60 s", "1-2 min", "2-5 min", "5-10 min", "> 10 min"]
 SIN_INTERVALO = "sin_intervalo"
 
 
@@ -170,18 +173,20 @@ def resumen(t: pd.DataFrame, objetivo: str, dias: bool = False) -> dict:
     return r
 
 
-def main() -> None:
+def main(horizonte: int | None = None) -> None:
+    """Sin horizonte, el de `params.yaml`; con él, el del barrido (ADR-023)."""
     cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
     obj = cfg["objetivo"]
-    test = pd.read_parquet(settings.processed_dir / "test.parquet")
+    rutas = features.salidas(horizonte)
+    test = pd.read_parquet(rutas["tabla"] / "test.parquet")
     train = pd.read_parquet(
-        settings.processed_dir / "train.parquet",
+        rutas["tabla"] / "train.parquet",
         columns=["linea", *features.CLAVE_VIAJE],
     )
     soporte = features.soporte_por_linea(
         train, test, cfg["linea_min_viajes"], cfg["linea_min_dias"]
     )
-    art = predict.cargar()
+    art = predict.cargar(rutas["modelo"])
     horarios = [gtfs.cargar_horario(r) for r in gtfs.versiones(settings.gtfs_dir)]
     t = test.assign(
         _prediccion=predict.predecir(art, test),
@@ -203,6 +208,7 @@ def main() -> None:
     pob = features.poblacion(t)
     metricas = {
         "modelo": {k: art[k] for k in ("n_arboles", "mlflow_run_id")},
+        "horizonte_paradas": horizonte or cfg["horizonte_paradas"],
         "remuestreo": {
             "unidad": "viaje y día",
             "replicas": REPLICAS,
@@ -220,7 +226,8 @@ def main() -> None:
         "por_horizonte": por(t[pob], "_horizonte", dias=True),
         "por_linea": por(t[pob & (t["_grupo"] == "propia")], "linea", dias=False),
     }
-    salida = RAIZ / "metrics" / "eval.json"
+    rutas["metricas"].mkdir(parents=True, exist_ok=True)
+    salida = rutas["metricas"] / "eval.json"
     salida.write_text(
         json.dumps(metricas, indent=2, ensure_ascii=False), encoding="utf-8"
     )
@@ -239,4 +246,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    a = argparse.ArgumentParser()
+    a.add_argument("--horizonte", type=int, default=None, help="paradas (ADR-023)")
+    main(a.parse_args().horizonte)

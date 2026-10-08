@@ -92,7 +92,18 @@ def test_las_funciones_citadas_existen(doc: Path):
 def test_los_stages_de_dvc_son_los_documentados():
     dvc = _texto(RAIZ / "dvc.yaml")
     declarados = set(re.findall(r"^  (\w+):$", dvc, re.MULTILINE))
-    documentados = {"curar", "prepare", "features", "train", "evaluate"}
+    documentados = {
+        "curar",
+        "prepare",
+        "disponibilidad",
+        "features",
+        "train",
+        "evaluate",
+        # el barrido de horizontes (ADR-023): `foreach` de las tres últimas
+        "features_h",
+        "train_h",
+        "evaluate_h",
+    }
     assert declarados == documentados, (
         f"dvc.yaml declara {sorted(declarados)}, la documentación describe "
         f"{sorted(documentados)}. Actualiza CLAUDE.md o dvc.yaml."

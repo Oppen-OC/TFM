@@ -566,3 +566,44 @@ def test_el_objetivo_es_la_parada_siguiente_del_horario_no_el_siguiente_paso_vis
     t = _construir(filas, horizonte=1)
     assert set(t["stop_sequence"]) == {1, 4}
     assert _fila(t, "A", 1)[OBJ] == 20.0
+
+
+# --------------------------------------------------------------------------- #
+# Barrido de horizontes (ADR-023)
+# --------------------------------------------------------------------------- #
+def test_cada_horizonte_escribe_en_su_sitio_y_el_de_params_en_el_de_siempre():
+    """Sin horizonte, las rutas que cita la bitácora; con él, una carpeta propia
+    para la tabla, el modelo y las métricas. Ninguno pisa a otro."""
+    from project.config import RAIZ, settings
+
+    base = features.salidas()
+    assert base["tabla"] == settings.processed_dir
+    assert base["modelo"] == RAIZ / settings.model_path
+    assert base["metricas"] == RAIZ / "metrics"
+    rutas = [base, features.salidas(2), features.salidas(10)]
+    assert len({str(r) for d in rutas for r in d.values()}) == 9
+
+
+def test_la_disponibilidad_se_une_a_los_pasos_por_clave_y_no_por_posicion():
+    """Trampa 012: el stage `disponibilidad` no escribe en el orden de `pasos`."""
+    pasos = pd.DataFrame(
+        {
+            "fecha_servicio": DIA,
+            "viaje_id": ["A", "A", "B"],
+            "stop_sequence": [1, 2, 1],
+            "x": [1, 2, 3],
+        }
+    )
+    disp = pd.DataFrame(
+        {
+            "fecha_servicio": DIA,
+            "viaje_id": ["B", "A", "A"],
+            "stop_sequence": [1, 2, 1],
+            "t_disp_utc": [_s(30), _s(20), _s(10)],
+        }
+    )
+    r = features.con_disponibilidad(pasos, disp)
+    assert r["t_disp_utc"].tolist() == [_s(10), _s(20), _s(30)]
+    assert r["x"].tolist() == [1, 2, 3]
+    with pytest.raises(ValueError):
+        features.con_disponibilidad(pasos, disp.iloc[:2])

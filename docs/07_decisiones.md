@@ -766,6 +766,50 @@ llegan a tiempo, o que `cruces` deje de usar la posición k1+1.
 
 ---
 
+## ADR-023 · La antelación se mide barriendo horizontes con la configuración fija · cerrada
+
+**Decisión.**
+1. Se barren los horizontes de 1, 2, 3, 5 y 10 paradas
+   (`features.horizonte_paradas` y `features.horizontes_barrido`). Con 84 s de
+   horario mediano por parada, cubren de unos 1,4 a unos 14 min.
+2. **Un modelo por horizonte**, con la configuración del ADR-021 (residuo con
+   pérdida absoluta) y su propia parada temprana. No se elige brazo por
+   horizonte.
+3. Cada horizonte se evalúa **una vez**, sobre su población (horizonte
+   previsto > 0, ADR-022), frente a sus baselines. La persistencia más el sesgo
+   del tramo usa el par (parada *i*, parada *i* + *h*).
+4. **Stages de DVC:**
+   - `disponibilidad` calcula `t_disp` una vez para todo el barrido.
+   - `features_h`, `train_h` y `evaluate_h` (`foreach`) escriben en
+     `data/processed/h<h>/`, `models/h<h>/` y `metrics/horizontes/h<h>/`.
+   - El horizonte 1 conserva sus rutas, porque la bitácora las cita.
+5. La antelación se lee por horizonte previsto en minutos (0-1, 1-2, 2-5, 5-10
+   y más de 10), dentro de cada horizonte.
+
+**Por qué.** A una parada de horizonte, el retraso se sabe cuando casi no
+queda tiempo: el horizonte previsto mediano es de 4 s y el 45 % de las filas
+llega tarde (bitácora 046). La parte «con cuánta antelación» de la pregunta
+pide horizontes más largos.
+
+**Consecuencias.**
+- Cinco modelos y unas 3-4 h de máquina para reconstruir el barrido.
+- Con *h* grande, la flota del tramo y el sesgo tienen menos soporte, porque
+  hay menos viajes que recorran ese mismo par de paradas: hay más nulos.
+- La columna objetivo se sigue llamando `retraso_siguiente_parada_s`, aunque
+  con *h* > 1 sea la parada *h*.
+
+**Alternativas.**
+- Un solo modelo con *h* como variable: mezcla poblaciones y dificulta leer cada
+  horizonte.
+- Elegir brazo por horizonte: multiplica las comparaciones en la validación.
+- Recalcular `t_disp` en cada `features`: unos 10 min más por horizonte para un
+  resultado que no depende de él.
+
+**Qué la reabriría.** Que la mejora caiga a cero antes de los 10 min, que pediría
+horizontes intermedios, o la capa 192, que añade el pilar del tráfico.
+
+---
+
 ## Pendientes de decidir
 
 - **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018
@@ -779,9 +823,6 @@ llegan a tiempo, o que `cruces` deje de usar la posición k1+1.
 - **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
   estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
   si 5 min bastan. Lo que no se capture no se recupera.
-- **Horizonte de predicción.** `features.horizonte_paradas` vale 1. La segunda
-  mitad de la pregunta del trabajo, con cuánta antelación, pide más (ADR-006,
-  bitácora 030).
 - **Servido en tiempo real.** Broker o proceso en `services/` (ADR-016). Se
   decide con el modelo ya entrenado.
 - **Tope del índice de trampas.** `.claude/tests/test_trampas.py` lo limita a 45

@@ -24,6 +24,7 @@ métricas de la prueba.
 
 from __future__ import annotations
 
+import argparse
 import json
 import pickle
 
@@ -35,7 +36,7 @@ import yaml
 from xgboost import XGBRegressor
 
 from project import evaluate, features, predict
-from project.config import RAIZ, settings
+from project.config import RAIZ
 
 EXPERIMENTO = "retraso_siguiente_parada"
 
@@ -127,10 +128,12 @@ def entrenar(
     return {**art, "modelo": final, "n_arboles": n, "validacion": validacion}
 
 
-def main() -> None:
+def main(horizonte: int | None = None) -> None:
+    """Sin horizonte, el de `params.yaml`; con él, el del barrido (ADR-023)."""
     params = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
     cfg, p = params["features"], params["train"]
-    train = pd.read_parquet(settings.processed_dir / "train.parquet")
+    rutas = features.salidas(horizonte)
+    train = pd.read_parquet(rutas["tabla"] / "train.parquet")
     # Se entrena con las filas en las que el modelo se va a usar (ADR-022).
     train = train[features.poblacion(train)].reset_index(drop=True)
 
@@ -139,7 +142,12 @@ def main() -> None:
         art = entrenar(train, columnas(cfg), cfg["objetivo"], p)
         art["mlflow_run_id"] = run.info.run_id
         mlflow.log_params(
-            {**p, "n_arboles": art["n_arboles"], "test_desde": cfg["test_desde"]}
+            {
+                **p,
+                "n_arboles": art["n_arboles"],
+                "test_desde": cfg["test_desde"],
+                "horizonte_paradas": horizonte or cfg["horizonte_paradas"],
+            }
         )
         mlflow.log_dict(
             {"variables": art["columnas"], "categorias": art["categorias"]},
@@ -156,11 +164,13 @@ def main() -> None:
         mlflow.log_dict(art["validacion"], "validacion.json")
         mlflow.xgboost.log_model(art["modelo"], name="modelo")
 
-    ruta = RAIZ / settings.model_path
+    ruta = rutas["modelo"]
     ruta.parent.mkdir(parents=True, exist_ok=True)
     ruta.write_bytes(pickle.dumps(art))
     print(json.dumps({k: art[k] for k in ("n_arboles", "validacion")}, indent=2))
 
 
 if __name__ == "__main__":
-    main()
+    a = argparse.ArgumentParser()
+    a.add_argument("--horizonte", type=int, default=None, help="paradas (ADR-023)")
+    main(a.parse_args().horizonte)

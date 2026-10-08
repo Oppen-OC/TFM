@@ -31,6 +31,10 @@ prepare:
 features:
   objetivo: retraso_siguiente_parada_s
   horizonte_paradas: 1
+  # Barrido de horizontes (ADR-023): un modelo y una evaluación por cada uno,
+  # con la configuración del ADR-021. Con 84 s de horario mediano por parada,
+  # de ~1,4 a ~14 min. El 1 es el de arriba, en las rutas de siempre.
+  horizontes_barrido: [2, 3, 5, 10]
   lags_min: [1, 5, 15]
   ventana_trafico_min: 10
   # La flota como sensor (bitácora 032): mediana del retraso ganado en el tramo

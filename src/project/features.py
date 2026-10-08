@@ -23,7 +23,9 @@ solo aquí (train/serve skew).
 
 from __future__ import annotations
 
+import argparse
 import json
+from pathlib import Path
 
 import duckdb
 import numpy as np
@@ -33,6 +35,7 @@ import yaml
 from project.config import RAIZ, settings
 
 CLAVE_VIAJE = ["fecha_servicio", "viaje_id"]
+CLAVE_PASO = [*CLAVE_VIAJE, "stop_sequence"]
 # Diagnósticos de la asignación del viaje que trae `pasos`. `desfase_s` es la
 # mediana del desfase en las primeras `paradas_referencia` paradas: en la parada
 # 1 o 2 incluye el retraso de paradas FUTURAS. No entran en la tabla.
@@ -483,19 +486,67 @@ def baselines(test: pd.DataFrame, objetivo: str, soporte: pd.DataFrame) -> dict:
     return fuera
 
 
-def main() -> None:
-    params = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
-    cfg, etiqueta = params["features"], params["prepare"]
-    if cfg["incluir_trafico"] or cfg["incluir_meteo"]:
-        raise NotImplementedError("capa 192 y meteo: después de la fase 2")
-    flota = ventanas_flota(cfg)
-    pasos = pd.concat(
+def con_disponibilidad(
+    pasos: pd.DataFrame, disponibilidad: pd.DataFrame
+) -> pd.DataFrame:
+    """`pasos` con su `t_disp_utc`, unido por (día, viaje, parada), nunca por
+    posición (trampa 012). Un paso sin `t_disp` es un error, no un nulo."""
+
+    def clave(df: pd.DataFrame) -> pd.DataFrame:
+        return df.assign(
+            fecha_servicio=pd.to_datetime(df["fecha_servicio"]).astype("datetime64[ns]")
+        )
+
+    r = clave(pasos).merge(
+        clave(disponibilidad)[[*CLAVE_PASO, "t_disp_utc"]],
+        on=CLAVE_PASO,
+        how="left",
+        validate="many_to_one",
+    )
+    faltan = int(r["t_disp_utc"].isna().sum())
+    if faltan:
+        raise ValueError(f"{faltan} pasos sin t_disp")
+    return r
+
+
+def salidas(horizonte: int | None = None) -> dict[str, Path]:
+    """Dónde escriben `features`, `train` y `evaluate`.
+
+    Sin horizonte, las rutas de siempre: es el de `params.yaml` y la bitácora las
+    cita. Con él, una carpeta por horizonte del barrido (ADR-023).
+    """
+    modelo = RAIZ / settings.model_path
+    if horizonte is None:
+        return {
+            "tabla": settings.processed_dir,
+            "modelo": modelo,
+            "metricas": RAIZ / "metrics",
+        }
+    h = f"h{horizonte}"
+    return {
+        "tabla": settings.processed_dir / h,
+        "modelo": modelo.parent / h / modelo.name,
+        "metricas": RAIZ / "metrics" / "horizontes" / h,
+    }
+
+
+def _pasos() -> pd.DataFrame:
+    return pd.concat(
         (
             pd.read_parquet(f)
             for f in sorted((settings.interim_dir / "pasos").rglob("*.parquet"))
         ),
         ignore_index=True,
     )
+
+
+def main_disponibilidad() -> None:
+    """Stage `disponibilidad`: `t_disp` de cada paso, una vez para todos los
+    horizontes (ADR-022 y ADR-023)."""
+    etiqueta = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))[
+        "prepare"
+    ]
+    pasos = _pasos()
     posiciones = pd.read_parquet(
         settings.interim_dir / "emt_tracked",
         columns=["fecha_servicio", "viaje_id", "ts_utc", "snapshot_id", "fiable"],
@@ -521,26 +572,40 @@ def main() -> None:
     sin_llegada = int(pasos["t_disp_utc"].isna().sum())
     if sin_llegada:
         raise ValueError(f"{sin_llegada} pasos sin posición que los confirme")
+    destino = settings.interim_dir / "disponibilidad"
+    destino.mkdir(parents=True, exist_ok=True)
+    pasos[[*CLAVE_PASO, "t_disp_utc"]].to_parquet(
+        destino / "disponibilidad.parquet", index=False, compression="zstd"
+    )
+
+
+def main(horizonte: int | None = None) -> None:
+    """Stage `features`: la tabla de un horizonte, partida en entrenamiento y
+    prueba, con sus baselines. Sin horizonte, el de `params.yaml`."""
+    cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
+    if cfg["incluir_trafico"] or cfg["incluir_meteo"]:
+        raise NotImplementedError("capa 192 y meteo: después de la fase 2")
+    pasos = con_disponibilidad(
+        _pasos(),
+        pd.read_parquet(settings.interim_dir / "disponibilidad"),
+    )
     tabla = construir(
         pasos,
         objetivo=cfg["objetivo"],
-        horizonte=cfg["horizonte_paradas"],
+        horizonte=horizonte or cfg["horizonte_paradas"],
         lags_min=tuple(cfg["lags_min"]),
         umbral_s=cfg["umbral_retraso_s"],
-        ventanas_flota_min=flota,
+        ventanas_flota_min=ventanas_flota(cfg),
         soporte_min=cfg["soporte_min"],
     )
     train, test = partir(tabla, cfg["test_desde"])
     soporte = soporte_por_linea(
         train, test, cfg["linea_min_viajes"], cfg["linea_min_dias"]
     )
-    settings.processed_dir.mkdir(parents=True, exist_ok=True)
-    train.to_parquet(
-        settings.processed_dir / "train.parquet", index=False, compression="zstd"
-    )
-    test.to_parquet(
-        settings.processed_dir / "test.parquet", index=False, compression="zstd"
-    )
+    rutas = salidas(horizonte)
+    rutas["tabla"].mkdir(parents=True, exist_ok=True)
+    train.to_parquet(rutas["tabla"] / "train.parquet", index=False, compression="zstd")
+    test.to_parquet(rutas["tabla"] / "test.parquet", index=False, compression="zstd")
 
     metricas = {
         "filas": {"train": len(train), "test": len(test)},
@@ -575,7 +640,8 @@ def main() -> None:
         },
         "baselines_test": baselines(test, cfg["objetivo"], soporte),
     }
-    salida = RAIZ / "metrics" / "features.json"
+    rutas["metricas"].mkdir(parents=True, exist_ok=True)
+    salida = rutas["metricas"] / "features.json"
     salida.write_text(
         json.dumps(metricas, indent=2, ensure_ascii=False), encoding="utf-8"
     )
@@ -588,4 +654,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    a = argparse.ArgumentParser()
+    a.add_argument("--disponibilidad", action="store_true", help="solo t_disp")
+    a.add_argument("--horizonte", type=int, default=None, help="paradas (ADR-023)")
+    args = a.parse_args()
+    if args.disponibilidad:
+        main_disponibilidad()
+    else:
+        main(args.horizonte)

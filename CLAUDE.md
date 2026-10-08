@@ -127,7 +127,9 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 ## Pipeline ML
 
 - **DVC gobierna el pipeline**, no scripts sueltos. Cada etapa
-  (curar → prepare → features → train → evaluate) es un stage en `dvc.yaml` con sus
+  (curar → prepare → disponibilidad → features → train → evaluate, y
+  `features_h`/`train_h`/`evaluate_h` para el barrido de horizontes, ADR-023)
+  es un stage en `dvc.yaml` con sus
   `deps`, `params` y `outs` declarados. Un script de entrenamiento sin stage es un
   error.
 - **La ingesta NO es un stage.** Capturar un stream en vivo no es idempotente ni
