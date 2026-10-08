@@ -125,8 +125,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     params:
       params.yaml:
         features:
@@ -156,31 +156,31 @@ stages:
     outs:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 26a90b64819be89bfe3417bd68bf4622
-      size: 88698476
+      md5: 94be408074b32c5b5db4a0f5e761276c
+      size: 88752943
     - path: data/processed/train.parquet
       hash: md5
-      md5: 4b33ac02894454f4c421f9261c4c28c0
-      size: 161878698
+      md5: 51c1af3b50d7c1695007528d10bf7716
+      size: 161977247
     - path: metrics/features.json
       hash: md5
-      md5: 6cf8d4c608d7a5b0e98ed81bbc184ba0
+      md5: de48ca0e5862cba057d763640b8f3076
       size: 19304
   train:
     cmd: uv run python -m project.train
     deps:
     - path: data/processed/train.parquet
       hash: md5
-      md5: 4b33ac02894454f4c421f9261c4c28c0
-      size: 161878698
+      md5: 51c1af3b50d7c1695007528d10bf7716
+      size: 161977247
     - path: src/project/evaluate.py
       hash: md5
       md5: 1dfbeff88114c78eb0feb8bd0a87db5a
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/predict.py
       hash: md5
       md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
@@ -208,19 +208,19 @@ stages:
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: cbc604b916d883dadf0653ca0c0df923
-      size: 5803539
+      md5: 1726cc21f92e40d87e078642182d2ab2
+      size: 11151012
   evaluate:
     cmd: uv run python -m project.evaluate
     deps:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 26a90b64819be89bfe3417bd68bf4622
-      size: 88698476
+      md5: 94be408074b32c5b5db4a0f5e761276c
+      size: 88752943
     - path: data/processed/train.parquet
       hash: md5
-      md5: 4b33ac02894454f4c421f9261c4c28c0
-      size: 161878698
+      md5: 51c1af3b50d7c1695007528d10bf7716
+      size: 161977247
     - path: data/raw/gtfs
       hash: md5
       md5: 58e47750a59418f7aed19ec560781cde.dir
@@ -228,16 +228,16 @@ stages:
       nfiles: 13
     - path: models/model.pkl
       hash: md5
-      md5: cbc604b916d883dadf0653ca0c0df923
-      size: 5803539
+      md5: 1726cc21f92e40d87e078642182d2ab2
+      size: 11151012
     - path: src/project/evaluate.py
       hash: md5
       md5: 1dfbeff88114c78eb0feb8bd0a87db5a
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -254,8 +254,8 @@ stages:
     outs:
     - path: metrics/eval.json
       hash: md5
-      md5: 2c7cae2a113335219f9e7ee1e8d845a7
-      size: 45873
+      md5: c3bf36c77a0744bc92a0fe40799d26bd
+      size: 45892
   disponibilidad:
     cmd: uv run python -m project.features --disponibilidad
     deps:
@@ -276,8 +276,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     params:
       params.yaml:
         prepare.max_hueco_cruce_s: 120
@@ -303,8 +303,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     params:
       params.yaml:
         features:
@@ -334,12 +334,12 @@ stages:
     outs:
     - path: data/processed/h2
       hash: md5
-      md5: 544e65d14e48068f1b765ba08703d0c9.dir
-      size: 236173377
+      md5: 2ba2be1ed5ba5ce4a13186eecf1360db.dir
+      size: 236617582
       nfiles: 2
     - path: metrics/horizontes/h2/features.json
       hash: md5
-      md5: 8e128283b02d7f957ff43a858ca781c5
+      md5: e2e4c468718c978d914731ec47e48bf0
       size: 19305
   features_h@3:
     cmd: uv run python -m project.features --horizonte 3
@@ -356,8 +356,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     params:
       params.yaml:
         features:
@@ -387,13 +387,13 @@ stages:
     outs:
     - path: data/processed/h3
       hash: md5
-      md5: 6a31d65681b3343b70a8cdaa8cb8509b.dir
-      size: 223083309
+      md5: 99359b5e68c2f8be42927fa204042a08.dir
+      size: 224047098
       nfiles: 2
     - path: metrics/horizontes/h3/features.json
       hash: md5
-      md5: 90c72eec066257a008e2fe0fe27edbad
-      size: 19315
+      md5: 7b3387940ce9a750139b54583a2e0646
+      size: 19314
   features_h@5:
     cmd: uv run python -m project.features --horizonte 5
     deps:
@@ -409,8 +409,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     params:
       params.yaml:
         features:
@@ -440,13 +440,13 @@ stages:
     outs:
     - path: data/processed/h5
       hash: md5
-      md5: 2c3e20eb4f811ab4fac369744dfaa62a.dir
-      size: 197361141
+      md5: 612bd8822135b3ed688ce83a9e497023.dir
+      size: 199665756
       nfiles: 2
     - path: metrics/horizontes/h5/features.json
       hash: md5
-      md5: 78b006f7d720e617ac201d50691c1dd1
-      size: 19354
+      md5: 6880bb1fae727e00214db0a9af8ef502
+      size: 19360
   features_h@10:
     cmd: uv run python -m project.features --horizonte 10
     deps:
@@ -462,8 +462,8 @@ stages:
       nfiles: 48
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     params:
       params.yaml:
         features:
@@ -493,20 +493,20 @@ stages:
     outs:
     - path: data/processed/h10
       hash: md5
-      md5: 49828386a9a5c16263046cfc542f7594.dir
-      size: 137238346
+      md5: f8adbdb27c47087f205971d23e7aac34.dir
+      size: 142624395
       nfiles: 2
     - path: metrics/horizontes/h10/features.json
       hash: md5
-      md5: 2a83b42c0d96e056f305e24a2dbc6834
-      size: 19439
+      md5: 6842f725f66ed3f73dbc62bbfb50903a
+      size: 19442
   train_h@2:
     cmd: uv run python -m project.train --horizonte 2
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 544e65d14e48068f1b765ba08703d0c9.dir
-      size: 236173377
+      md5: 2ba2be1ed5ba5ce4a13186eecf1360db.dir
+      size: 236617582
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -514,8 +514,8 @@ stages:
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/predict.py
       hash: md5
       md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
@@ -543,15 +543,15 @@ stages:
     outs:
     - path: models/h2/model.pkl
       hash: md5
-      md5: ec4bf2e797c7cbd735063cf9e8337e5d
-      size: 5133444
+      md5: 974ccf1daabd145577fcae4dc8544573
+      size: 5025233
   train_h@3:
     cmd: uv run python -m project.train --horizonte 3
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: 6a31d65681b3343b70a8cdaa8cb8509b.dir
-      size: 223083309
+      md5: 99359b5e68c2f8be42927fa204042a08.dir
+      size: 224047098
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -559,8 +559,8 @@ stages:
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/predict.py
       hash: md5
       md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
@@ -588,15 +588,15 @@ stages:
     outs:
     - path: models/h3/model.pkl
       hash: md5
-      md5: d52c8c137da30a6b804c4f2f40f86f45
-      size: 5975065
+      md5: 4c0be63320f997c9ea7d0c985460abab
+      size: 6842611
   train_h@5:
     cmd: uv run python -m project.train --horizonte 5
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 2c3e20eb4f811ab4fac369744dfaa62a.dir
-      size: 197361141
+      md5: 612bd8822135b3ed688ce83a9e497023.dir
+      size: 199665756
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -604,8 +604,8 @@ stages:
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/predict.py
       hash: md5
       md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
@@ -633,15 +633,15 @@ stages:
     outs:
     - path: models/h5/model.pkl
       hash: md5
-      md5: aa8f10a4e172a3588f4b953e8d70d592
-      size: 4373724
+      md5: 12e0c4e652a111c63f99a6c9aaad3f89
+      size: 3850040
   train_h@10:
     cmd: uv run python -m project.train --horizonte 10
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 49828386a9a5c16263046cfc542f7594.dir
-      size: 137238346
+      md5: f8adbdb27c47087f205971d23e7aac34.dir
+      size: 142624395
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -649,8 +649,8 @@ stages:
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/predict.py
       hash: md5
       md5: 877a8969c4b2a9bd0e7fd4f507de5ac5
@@ -678,15 +678,15 @@ stages:
     outs:
     - path: models/h10/model.pkl
       hash: md5
-      md5: c9cde6681333466e17c8cb1ed4da000b
-      size: 3699704
+      md5: 97f652f4a9cc497ec97681caf421cbe0
+      size: 3271838
   evaluate_h@2:
     cmd: uv run python -m project.evaluate --horizonte 2
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 544e65d14e48068f1b765ba08703d0c9.dir
-      size: 236173377
+      md5: 2ba2be1ed5ba5ce4a13186eecf1360db.dir
+      size: 236617582
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -695,16 +695,16 @@ stages:
       nfiles: 13
     - path: models/h2/model.pkl
       hash: md5
-      md5: ec4bf2e797c7cbd735063cf9e8337e5d
-      size: 5133444
+      md5: 974ccf1daabd145577fcae4dc8544573
+      size: 5025233
     - path: src/project/evaluate.py
       hash: md5
       md5: 1dfbeff88114c78eb0feb8bd0a87db5a
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -721,15 +721,15 @@ stages:
     outs:
     - path: metrics/horizontes/h2/eval.json
       hash: md5
-      md5: 53eefb8500f7e2a3b5e442e82a951efe
-      size: 45957
+      md5: a9b5ab1041851194d46be40dd3b62158
+      size: 45932
   evaluate_h@3:
     cmd: uv run python -m project.evaluate --horizonte 3
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: 6a31d65681b3343b70a8cdaa8cb8509b.dir
-      size: 223083309
+      md5: 99359b5e68c2f8be42927fa204042a08.dir
+      size: 224047098
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -738,16 +738,16 @@ stages:
       nfiles: 13
     - path: models/h3/model.pkl
       hash: md5
-      md5: d52c8c137da30a6b804c4f2f40f86f45
-      size: 5975065
+      md5: 4c0be63320f997c9ea7d0c985460abab
+      size: 6842611
     - path: src/project/evaluate.py
       hash: md5
       md5: 1dfbeff88114c78eb0feb8bd0a87db5a
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -764,15 +764,15 @@ stages:
     outs:
     - path: metrics/horizontes/h3/eval.json
       hash: md5
-      md5: 11ae59850b278d1263dfe60477c7cbf4
-      size: 47509
+      md5: bba2ba483082d06e465ed4d03fb88b6f
+      size: 47527
   evaluate_h@5:
     cmd: uv run python -m project.evaluate --horizonte 5
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 2c3e20eb4f811ab4fac369744dfaa62a.dir
-      size: 197361141
+      md5: 612bd8822135b3ed688ce83a9e497023.dir
+      size: 199665756
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -781,16 +781,16 @@ stages:
       nfiles: 13
     - path: models/h5/model.pkl
       hash: md5
-      md5: aa8f10a4e172a3588f4b953e8d70d592
-      size: 4373724
+      md5: 12e0c4e652a111c63f99a6c9aaad3f89
+      size: 3850040
     - path: src/project/evaluate.py
       hash: md5
       md5: 1dfbeff88114c78eb0feb8bd0a87db5a
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -807,15 +807,15 @@ stages:
     outs:
     - path: metrics/horizontes/h5/eval.json
       hash: md5
-      md5: d3bf5183e6dda756e970473f9b39b585
-      size: 47558
+      md5: 3530ea84eb44a66e3bd58f80bf5e57ba
+      size: 44467
   evaluate_h@10:
     cmd: uv run python -m project.evaluate --horizonte 10
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 49828386a9a5c16263046cfc542f7594.dir
-      size: 137238346
+      md5: f8adbdb27c47087f205971d23e7aac34.dir
+      size: 142624395
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -824,16 +824,16 @@ stages:
       nfiles: 13
     - path: models/h10/model.pkl
       hash: md5
-      md5: c9cde6681333466e17c8cb1ed4da000b
-      size: 3699704
+      md5: 97f652f4a9cc497ec97681caf421cbe0
+      size: 3271838
     - path: src/project/evaluate.py
       hash: md5
       md5: 1dfbeff88114c78eb0feb8bd0a87db5a
       size: 10406
     - path: src/project/features.py
       hash: md5
-      md5: 584c19e03b6c671923757615bc8ef3a3
-      size: 27297
+      md5: c4205aff1dc3721dd4c659ea57f8fc13
+      size: 28200
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -850,5 +850,5 @@ stages:
     outs:
     - path: metrics/horizontes/h10/eval.json
       hash: md5
-      md5: b6c9502de274b18aacdc8cb5af571adc
-      size: 45971
+      md5: 2b43db4bfcbef1314fc4020098a3eadc
+      size: 41180

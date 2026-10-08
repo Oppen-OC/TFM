@@ -1,226 +1,226 @@
 {
   "filas": {
-    "train": 837782,
-    "test": 461333
+    "train": 873387,
+    "test": 478184
   },
   "dias": {
     "train": 23,
     "test": 14
   },
   "positivos": {
-    "train": 0.0684,
-    "test": 0.0907
+    "train": 0.0688,
+    "test": 0.092
   },
   "disponibilidad_test": {
     "retardo_s_p10_p50_p90": [
-      58.1,
-      82.5,
-      177.3
+      58.0,
+      82.4,
+      177.9
     ],
     "horizonte_util_s_p10_p50_p90": [
-      562.0,
-      793.4,
-      1060.5
+      558.9,
+      793.0,
+      1061.4
     ],
     "horizonte_util_no_positivo": 0.0,
     "horizonte_previsto_s_p10_p50_p90": [
-      603.8,
-      814.5,
+      602.3,
+      813.4,
       1012.9
     ],
-    "fuera_de_la_poblacion": 0.0023
+    "fuera_de_la_poblacion": 0.1715
   },
   "baselines_test": {
     "horario": {
-      "mae_s": 165.41,
-      "rmse_s": 223.54
+      "mae_s": 166.43,
+      "rmse_s": 225.33
     },
     "persistencia": {
-      "mae_s": 115.31,
-      "rmse_s": 159.21
+      "mae_s": 116.08,
+      "rmse_s": 161.03
     },
     "persistencia_tramo": {
-      "mae_s": 93.64,
-      "rmse_s": 134.28
+      "mae_s": 93.99,
+      "rmse_s": 135.91
     },
     "por_linea": {
       "10": {
-        "filas": 1129,
+        "filas": 1207,
         "horario": {
-          "mae_s": 267.6,
-          "rmse_s": 364.54
+          "mae_s": 270.36,
+          "rmse_s": 365.03
         },
         "persistencia": {
-          "mae_s": 192.29,
-          "rmse_s": 249.95
+          "mae_s": 195.4,
+          "rmse_s": 254.47
         },
         "persistencia_tramo": {
-          "mae_s": 134.39,
-          "rmse_s": 176.19
+          "mae_s": 133.85,
+          "rmse_s": 175.55
         },
-        "viajes": 71,
+        "viajes": 72,
         "dias": 4,
         "grupo": "poco_soporte"
       },
       "11": {
-        "filas": 1942,
+        "filas": 2002,
         "horario": {
-          "mae_s": 209.75,
-          "rmse_s": 266.52
+          "mae_s": 207.87,
+          "rmse_s": 264.53
         },
         "persistencia": {
-          "mae_s": 167.11,
-          "rmse_s": 217.05
+          "mae_s": 165.39,
+          "rmse_s": 215.57
         },
         "persistencia_tramo": {
-          "mae_s": 131.24,
-          "rmse_s": 179.57
+          "mae_s": 132.06,
+          "rmse_s": 180.9
         },
         "viajes": 132,
         "dias": 8,
         "grupo": "poco_soporte"
       },
       "12": {
-        "filas": 18414,
+        "filas": 19426,
         "horario": {
-          "mae_s": 183.42,
-          "rmse_s": 240.16
+          "mae_s": 183.91,
+          "rmse_s": 240.86
         },
         "persistencia": {
-          "mae_s": 116.75,
-          "rmse_s": 168.56
+          "mae_s": 117.37,
+          "rmse_s": 168.9
         },
         "persistencia_tramo": {
-          "mae_s": 95.8,
-          "rmse_s": 139.03
+          "mae_s": 96.12,
+          "rmse_s": 139.28
         },
-        "viajes": 1219,
+        "viajes": 1251,
         "dias": 14,
         "grupo": "propia"
       },
       "13": {
-        "filas": 6726,
+        "filas": 6936,
         "horario": {
-          "mae_s": 181.45,
-          "rmse_s": 236.53
+          "mae_s": 182.33,
+          "rmse_s": 237.53
         },
         "persistencia": {
-          "mae_s": 101.39,
-          "rmse_s": 128.67
+          "mae_s": 101.69,
+          "rmse_s": 129.85
         },
         "persistencia_tramo": {
-          "mae_s": 84.02,
-          "rmse_s": 108.91
+          "mae_s": 84.81,
+          "rmse_s": 110.59
         },
-        "viajes": 947,
+        "viajes": 973,
         "dias": 14,
         "grupo": "propia"
       },
       "14": {
-        "filas": 1485,
+        "filas": 1529,
         "horario": {
-          "mae_s": 173.15,
-          "rmse_s": 224.04
+          "mae_s": 172.95,
+          "rmse_s": 224.67
         },
         "persistencia": {
-          "mae_s": 123.47,
-          "rmse_s": 152.2
+          "mae_s": 123.55,
+          "rmse_s": 152.54
         },
         "persistencia_tramo": {
-          "mae_s": 90.05,
-          "rmse_s": 121.23
+          "mae_s": 90.14,
+          "rmse_s": 121.2
         },
         "viajes": 98,
         "dias": 5,
         "grupo": "poco_soporte"
       },
       "16": {
-        "filas": 28733,
+        "filas": 28996,
         "horario": {
-          "mae_s": 152.12,
-          "rmse_s": 208.46
+          "mae_s": 152.58,
+          "rmse_s": 209.3
         },
         "persistencia": {
-          "mae_s": 105.67,
-          "rmse_s": 153.15
+          "mae_s": 105.93,
+          "rmse_s": 154.15
         },
         "persistencia_tramo": {
-          "mae_s": 94.75,
-          "rmse_s": 141.51
+          "mae_s": 95.27,
+          "rmse_s": 142.68
         },
-        "viajes": 2338,
+        "viajes": 2343,
         "dias": 14,
         "grupo": "propia"
       },
       "18": {
-        "filas": 17578,
+        "filas": 18008,
         "horario": {
-          "mae_s": 155.04,
-          "rmse_s": 203.54
+          "mae_s": 155.26,
+          "rmse_s": 203.66
         },
         "persistencia": {
-          "mae_s": 117.39,
-          "rmse_s": 156.92
+          "mae_s": 118.12,
+          "rmse_s": 158.1
         },
         "persistencia_tramo": {
-          "mae_s": 91.87,
-          "rmse_s": 128.1
+          "mae_s": 92.74,
+          "rmse_s": 129.74
         },
-        "viajes": 1549,
+        "viajes": 1566,
         "dias": 14,
         "grupo": "propia"
       },
       "19": {
-        "filas": 31554,
+        "filas": 32005,
         "horario": {
-          "mae_s": 147.25,
-          "rmse_s": 215.03
+          "mae_s": 148.17,
+          "rmse_s": 220.3
         },
         "persistencia": {
-          "mae_s": 103.45,
-          "rmse_s": 142.59
+          "mae_s": 104.66,
+          "rmse_s": 151.85
         },
         "persistencia_tramo": {
-          "mae_s": 81.91,
-          "rmse_s": 119.67
+          "mae_s": 83.14,
+          "rmse_s": 130.41
         },
-        "viajes": 2261,
+        "viajes": 2265,
         "dias": 14,
         "grupo": "propia"
       },
       "23": {
-        "filas": 3144,
+        "filas": 5954,
         "horario": {
-          "mae_s": 172.23,
-          "rmse_s": 258.98
+          "mae_s": 175.97,
+          "rmse_s": 254.36
         },
         "persistencia": {
-          "mae_s": 111.17,
-          "rmse_s": 187.94
+          "mae_s": 95.49,
+          "rmse_s": 153.2
         },
         "persistencia_tramo": {
-          "mae_s": 68.13,
-          "rmse_s": 169.2
+          "mae_s": 67.44,
+          "rmse_s": 136.93
         },
-        "viajes": 428,
+        "viajes": 511,
         "dias": 14,
         "grupo": "propia"
       },
       "24": {
-        "filas": 555,
+        "filas": 572,
         "horario": {
-          "mae_s": 171.16,
-          "rmse_s": 222.11
+          "mae_s": 173.53,
+          "rmse_s": 223.78
         },
         "persistencia": {
-          "mae_s": 83.6,
-          "rmse_s": 110.82
+          "mae_s": 84.0,
+          "rmse_s": 110.68
         },
         "persistencia_tramo": {
-          "mae_s": 81.27,
-          "rmse_s": 106.09
+          "mae_s": 82.11,
+          "rmse_s": 106.52
         },
-        "viajes": 88,
+        "viajes": 91,
         "dias": 6,
         "grupo": "poco_soporte"
       },
@@ -243,180 +243,180 @@
         "grupo": "poco_soporte"
       },
       "26": {
-        "filas": 9611,
+        "filas": 13045,
         "horario": {
-          "mae_s": 179.6,
-          "rmse_s": 231.67
+          "mae_s": 177.73,
+          "rmse_s": 227.56
         },
         "persistencia": {
-          "mae_s": 116.47,
-          "rmse_s": 162.78
+          "mae_s": 124.31,
+          "rmse_s": 164.37
         },
         "persistencia_tramo": {
-          "mae_s": 89.36,
-          "rmse_s": 125.61
+          "mae_s": 83.4,
+          "rmse_s": 117.06
         },
-        "viajes": 949,
+        "viajes": 1006,
         "dias": 14,
         "grupo": "propia"
       },
       "27": {
-        "filas": 15666,
+        "filas": 15715,
         "horario": {
-          "mae_s": 144.74,
-          "rmse_s": 191.38
+          "mae_s": 145.27,
+          "rmse_s": 193.13
         },
         "persistencia": {
-          "mae_s": 115.12,
-          "rmse_s": 156.72
+          "mae_s": 115.63,
+          "rmse_s": 158.49
         },
         "persistencia_tramo": {
-          "mae_s": 108.35,
-          "rmse_s": 151.91
+          "mae_s": 108.89,
+          "rmse_s": 153.71
         },
-        "viajes": 2663,
+        "viajes": 2669,
         "dias": 14,
         "grupo": "propia"
       },
       "28": {
-        "filas": 550,
+        "filas": 553,
         "horario": {
-          "mae_s": 113.75,
-          "rmse_s": 150.53
+          "mae_s": 113.51,
+          "rmse_s": 150.21
         },
         "persistencia": {
-          "mae_s": 100.85,
-          "rmse_s": 130.17
+          "mae_s": 100.58,
+          "rmse_s": 129.89
         },
         "persistencia_tramo": {
-          "mae_s": 93.45,
-          "rmse_s": 127.0
+          "mae_s": 93.31,
+          "rmse_s": 126.79
         },
         "viajes": 79,
         "dias": 5,
         "grupo": "poco_soporte"
       },
       "30": {
-        "filas": 9910,
+        "filas": 9935,
         "horario": {
-          "mae_s": 208.9,
-          "rmse_s": 256.46
+          "mae_s": 209.13,
+          "rmse_s": 256.69
         },
         "persistencia": {
-          "mae_s": 139.81,
-          "rmse_s": 170.54
+          "mae_s": 139.93,
+          "rmse_s": 170.76
         },
         "persistencia_tramo": {
-          "mae_s": 82.08,
-          "rmse_s": 108.31
+          "mae_s": 82.13,
+          "rmse_s": 108.41
         },
         "viajes": 671,
         "dias": 14,
         "grupo": "propia"
       },
       "31": {
-        "filas": 46090,
+        "filas": 46586,
         "horario": {
-          "mae_s": 168.38,
-          "rmse_s": 217.92
+          "mae_s": 169.05,
+          "rmse_s": 219.72
         },
         "persistencia": {
-          "mae_s": 114.83,
-          "rmse_s": 164.78
+          "mae_s": 115.63,
+          "rmse_s": 166.8
         },
         "persistencia_tramo": {
-          "mae_s": 87.18,
-          "rmse_s": 129.44
+          "mae_s": 88.1,
+          "rmse_s": 132.16
         },
-        "viajes": 2093,
+        "viajes": 2094,
         "dias": 14,
         "grupo": "propia"
       },
       "32": {
-        "filas": 1551,
+        "filas": 2016,
         "horario": {
-          "mae_s": 145.51,
-          "rmse_s": 178.94
+          "mae_s": 143.01,
+          "rmse_s": 177.02
         },
         "persistencia": {
-          "mae_s": 119.38,
-          "rmse_s": 151.85
+          "mae_s": 121.68,
+          "rmse_s": 152.75
         },
         "persistencia_tramo": {
-          "mae_s": 98.22,
-          "rmse_s": 128.2
+          "mae_s": 96.18,
+          "rmse_s": 124.85
         },
-        "viajes": 144,
+        "viajes": 148,
         "dias": 4,
         "grupo": "propia"
       },
       "35": {
-        "filas": 8044,
+        "filas": 8525,
         "horario": {
-          "mae_s": 182.04,
-          "rmse_s": 251.2
+          "mae_s": 181.23,
+          "rmse_s": 249.11
         },
         "persistencia": {
-          "mae_s": 133.3,
-          "rmse_s": 179.41
+          "mae_s": 132.76,
+          "rmse_s": 178.5
         },
         "persistencia_tramo": {
-          "mae_s": 111.05,
-          "rmse_s": 155.57
+          "mae_s": 110.14,
+          "rmse_s": 154.22
         },
-        "viajes": 1368,
+        "viajes": 1449,
         "dias": 14,
         "grupo": "propia"
       },
       "4": {
-        "filas": 2837,
+        "filas": 2855,
         "horario": {
           "mae_s": 159.27,
-          "rmse_s": 206.73
+          "rmse_s": 206.61
         },
         "persistencia": {
-          "mae_s": 103.1,
-          "rmse_s": 145.44
+          "mae_s": 103.02,
+          "rmse_s": 145.28
         },
         "persistencia_tramo": {
-          "mae_s": 92.99,
-          "rmse_s": 137.1
+          "mae_s": 93.14,
+          "rmse_s": 137.08
         },
-        "viajes": 242,
+        "viajes": 243,
         "dias": 11,
         "grupo": "propia"
       },
       "40": {
-        "filas": 550,
+        "filas": 557,
         "horario": {
-          "mae_s": 177.4,
-          "rmse_s": 225.13
+          "mae_s": 176.4,
+          "rmse_s": 223.99
         },
         "persistencia": {
-          "mae_s": 147.02,
-          "rmse_s": 189.34
+          "mae_s": 148.19,
+          "rmse_s": 190.47
         },
         "persistencia_tramo": {
-          "mae_s": 112.14,
-          "rmse_s": 141.06
+          "mae_s": 111.87,
+          "rmse_s": 140.71
         },
         "viajes": 79,
         "dias": 5,
         "grupo": "poco_soporte"
       },
       "59": {
-        "filas": 158,
+        "filas": 160,
         "horario": {
-          "mae_s": 349.4,
-          "rmse_s": 387.03
+          "mae_s": 349.5,
+          "rmse_s": 386.68
         },
         "persistencia": {
-          "mae_s": 305.23,
-          "rmse_s": 330.44
+          "mae_s": 304.86,
+          "rmse_s": 330.05
         },
         "persistencia_tramo": {
-          "mae_s": 148.25,
-          "rmse_s": 189.13
+          "mae_s": 147.51,
+          "rmse_s": 188.39
         },
         "viajes": 20,
         "dias": 1,
@@ -433,65 +433,65 @@
           "rmse_s": 145.46
         },
         "persistencia_tramo": {
-          "mae_s": 109.19,
-          "rmse_s": 134.77
+          "mae_s": 109.14,
+          "rmse_s": 135.08
         },
         "viajes": 32,
         "dias": 5,
         "grupo": "poco_soporte"
       },
       "60": {
-        "filas": 652,
+        "filas": 656,
         "horario": {
-          "mae_s": 122.59,
-          "rmse_s": 162.97
+          "mae_s": 122.38,
+          "rmse_s": 162.94
         },
         "persistencia": {
-          "mae_s": 114.92,
-          "rmse_s": 149.48
+          "mae_s": 115.1,
+          "rmse_s": 149.53
         },
         "persistencia_tramo": {
-          "mae_s": 88.61,
-          "rmse_s": 117.41
+          "mae_s": 88.35,
+          "rmse_s": 117.1
         },
         "viajes": 85,
         "dias": 4,
         "grupo": "poco_soporte"
       },
       "62": {
-        "filas": 677,
+        "filas": 1403,
         "horario": {
-          "mae_s": 208.38,
-          "rmse_s": 260.64
+          "mae_s": 194.44,
+          "rmse_s": 265.52
         },
         "persistencia": {
-          "mae_s": 125.59,
-          "rmse_s": 160.22
+          "mae_s": 129.63,
+          "rmse_s": 202.2
         },
         "persistencia_tramo": {
-          "mae_s": 88.21,
-          "rmse_s": 123.03
+          "mae_s": 86.83,
+          "rmse_s": 164.44
         },
-        "viajes": 116,
+        "viajes": 118,
         "dias": 8,
         "grupo": "poco_soporte"
       },
       "63": {
-        "filas": 1,
+        "filas": 2,
         "horario": {
-          "mae_s": 159.0,
-          "rmse_s": 159.0
+          "mae_s": 319.0,
+          "rmse_s": 356.88
         },
         "persistencia": {
-          "mae_s": 209.22,
-          "rmse_s": 209.22
+          "mae_s": 288.11,
+          "rmse_s": 298.72
         },
         "persistencia_tramo": {
-          "mae_s": 209.22,
-          "rmse_s": 209.22
+          "mae_s": 288.11,
+          "rmse_s": 298.72
         },
-        "viajes": 1,
-        "dias": 1,
+        "viajes": 2,
+        "dias": 2,
         "grupo": "sin_entrenamiento"
       },
       "64": {
@@ -513,38 +513,38 @@
         "grupo": "poco_soporte"
       },
       "67": {
-        "filas": 4738,
+        "filas": 7258,
         "horario": {
-          "mae_s": 153.45,
-          "rmse_s": 212.32
+          "mae_s": 173.24,
+          "rmse_s": 231.19
         },
         "persistencia": {
-          "mae_s": 130.64,
-          "rmse_s": 180.9
+          "mae_s": 138.17,
+          "rmse_s": 189.72
         },
         "persistencia_tramo": {
-          "mae_s": 108.12,
-          "rmse_s": 164.93
+          "mae_s": 109.38,
+          "rmse_s": 163.92
         },
-        "viajes": 1149,
+        "viajes": 1305,
         "dias": 14,
         "grupo": "propia"
       },
       "7": {
-        "filas": 1195,
+        "filas": 1203,
         "horario": {
-          "mae_s": 159.86,
-          "rmse_s": 209.31
+          "mae_s": 160.4,
+          "rmse_s": 209.59
         },
         "persistencia": {
-          "mae_s": 121.75,
-          "rmse_s": 158.59
+          "mae_s": 122.35,
+          "rmse_s": 159.24
         },
         "persistencia_tramo": {
-          "mae_s": 99.54,
-          "rmse_s": 136.16
+          "mae_s": 100.05,
+          "rmse_s": 136.37
         },
-        "viajes": 239,
+        "viajes": 240,
         "dias": 6,
         "grupo": "propia"
       },
@@ -559,64 +559,64 @@
           "rmse_s": 141.89
         },
         "persistencia_tramo": {
-          "mae_s": 90.51,
-          "rmse_s": 111.92
+          "mae_s": 90.45,
+          "rmse_s": 111.69
         },
         "viajes": 77,
         "dias": 5,
         "grupo": "poco_soporte"
       },
       "71": {
-        "filas": 488,
+        "filas": 513,
         "horario": {
-          "mae_s": 264.13,
-          "rmse_s": 348.01
+          "mae_s": 265.96,
+          "rmse_s": 348.14
         },
         "persistencia": {
-          "mae_s": 185.1,
-          "rmse_s": 258.98
+          "mae_s": 180.92,
+          "rmse_s": 253.91
         },
         "persistencia_tramo": {
-          "mae_s": 153.3,
-          "rmse_s": 205.31
+          "mae_s": 150.46,
+          "rmse_s": 201.58
         },
-        "viajes": 31,
+        "viajes": 32,
         "dias": 3,
         "grupo": "poco_soporte"
       },
       "72": {
-        "filas": 6441,
+        "filas": 6512,
         "horario": {
-          "mae_s": 132.59,
-          "rmse_s": 173.5
+          "mae_s": 133.22,
+          "rmse_s": 174.76
         },
         "persistencia": {
-          "mae_s": 102.28,
-          "rmse_s": 134.3
+          "mae_s": 102.94,
+          "rmse_s": 135.95
         },
         "persistencia_tramo": {
-          "mae_s": 92.37,
-          "rmse_s": 122.85
+          "mae_s": 93.15,
+          "rmse_s": 124.77
         },
-        "viajes": 1951,
+        "viajes": 1978,
         "dias": 14,
         "grupo": "propia"
       },
       "73": {
-        "filas": 384,
+        "filas": 481,
         "horario": {
-          "mae_s": 159.26,
-          "rmse_s": 203.85
+          "mae_s": 166.56,
+          "rmse_s": 208.44
         },
         "persistencia": {
-          "mae_s": 125.98,
-          "rmse_s": 161.95
+          "mae_s": 125.81,
+          "rmse_s": 160.05
         },
         "persistencia_tramo": {
-          "mae_s": 136.14,
-          "rmse_s": 181.6
+          "mae_s": 135.89,
+          "rmse_s": 179.29
         },
-        "viajes": 42,
+        "viajes": 43,
         "dias": 2,
         "grupo": "poco_soporte"
       },
@@ -639,230 +639,230 @@
         "grupo": "sin_entrenamiento"
       },
       "81": {
-        "filas": 13492,
+        "filas": 13642,
         "horario": {
-          "mae_s": 132.73,
-          "rmse_s": 173.21
+          "mae_s": 133.47,
+          "rmse_s": 175.17
         },
         "persistencia": {
-          "mae_s": 100.01,
-          "rmse_s": 134.76
+          "mae_s": 100.2,
+          "rmse_s": 134.97
         },
         "persistencia_tramo": {
-          "mae_s": 89.92,
-          "rmse_s": 121.52
+          "mae_s": 90.2,
+          "rmse_s": 121.96
         },
-        "viajes": 2153,
+        "viajes": 2169,
         "dias": 14,
         "grupo": "propia"
       },
       "9": {
-        "filas": 1227,
+        "filas": 1236,
         "horario": {
-          "mae_s": 168.58,
-          "rmse_s": 292.89
+          "mae_s": 168.06,
+          "rmse_s": 291.96
         },
         "persistencia": {
-          "mae_s": 113.74,
-          "rmse_s": 229.79
+          "mae_s": 114.14,
+          "rmse_s": 229.44
         },
         "persistencia_tramo": {
-          "mae_s": 104.12,
-          "rmse_s": 219.82
+          "mae_s": 104.59,
+          "rmse_s": 219.61
         },
         "viajes": 96,
         "dias": 7,
         "grupo": "poco_soporte"
       },
       "92": {
-        "filas": 61353,
+        "filas": 61517,
         "horario": {
-          "mae_s": 161.79,
-          "rmse_s": 221.83
+          "mae_s": 161.97,
+          "rmse_s": 222.12
         },
         "persistencia": {
-          "mae_s": 117.56,
-          "rmse_s": 163.73
+          "mae_s": 117.7,
+          "rmse_s": 164.05
         },
         "persistencia_tramo": {
-          "mae_s": 89.22,
-          "rmse_s": 132.01
+          "mae_s": 89.37,
+          "rmse_s": 132.37
         },
         "viajes": 2538,
         "dias": 14,
         "grupo": "propia"
       },
       "93": {
-        "filas": 16583,
+        "filas": 16692,
         "horario": {
-          "mae_s": 166.93,
-          "rmse_s": 229.21
+          "mae_s": 167.68,
+          "rmse_s": 230.22
         },
         "persistencia": {
-          "mae_s": 108.93,
-          "rmse_s": 144.59
+          "mae_s": 109.29,
+          "rmse_s": 145.08
         },
         "persistencia_tramo": {
-          "mae_s": 100.77,
-          "rmse_s": 137.35
+          "mae_s": 101.29,
+          "rmse_s": 138.04
         },
         "viajes": 1075,
         "dias": 12,
         "grupo": "propia"
       },
       "94": {
-        "filas": 11048,
+        "filas": 11707,
         "horario": {
-          "mae_s": 173.21,
-          "rmse_s": 221.59
+          "mae_s": 174.27,
+          "rmse_s": 223.66
         },
         "persistencia": {
-          "mae_s": 124.74,
-          "rmse_s": 158.99
+          "mae_s": 123.89,
+          "rmse_s": 158.09
         },
         "persistencia_tramo": {
-          "mae_s": 92.64,
-          "rmse_s": 123.12
+          "mae_s": 93.61,
+          "rmse_s": 124.34
         },
-        "viajes": 1099,
+        "viajes": 1113,
         "dias": 12,
         "grupo": "propia"
       },
       "95": {
-        "filas": 46227,
+        "filas": 47105,
         "horario": {
-          "mae_s": 186.07,
-          "rmse_s": 242.43
+          "mae_s": 187.45,
+          "rmse_s": 245.38
         },
         "persistencia": {
-          "mae_s": 117.33,
-          "rmse_s": 154.43
+          "mae_s": 118.52,
+          "rmse_s": 157.86
         },
         "persistencia_tramo": {
-          "mae_s": 92.18,
-          "rmse_s": 126.05
+          "mae_s": 93.67,
+          "rmse_s": 130.0
         },
-        "viajes": 2073,
+        "viajes": 2076,
         "dias": 14,
         "grupo": "propia"
       },
       "98": {
-        "filas": 871,
+        "filas": 877,
         "horario": {
-          "mae_s": 179.38,
-          "rmse_s": 224.24
+          "mae_s": 181.37,
+          "rmse_s": 227.33
         },
         "persistencia": {
-          "mae_s": 146.81,
-          "rmse_s": 182.33
+          "mae_s": 147.98,
+          "rmse_s": 183.74
         },
         "persistencia_tramo": {
-          "mae_s": 96.18,
-          "rmse_s": 126.83
+          "mae_s": 97.75,
+          "rmse_s": 130.64
         },
         "viajes": 52,
         "dias": 7,
         "grupo": "poco_soporte"
       },
       "99": {
-        "filas": 60425,
+        "filas": 61059,
         "horario": {
-          "mae_s": 169.11,
-          "rmse_s": 234.89
+          "mae_s": 169.54,
+          "rmse_s": 235.65
         },
         "persistencia": {
-          "mae_s": 106.79,
-          "rmse_s": 148.47
+          "mae_s": 107.15,
+          "rmse_s": 149.14
         },
         "persistencia_tramo": {
-          "mae_s": 94.46,
-          "rmse_s": 133.5
+          "mae_s": 94.82,
+          "rmse_s": 134.11
         },
-        "viajes": 2543,
+        "viajes": 2548,
         "dias": 14,
         "grupo": "propia"
       },
       "C2": {
-        "filas": 7379,
+        "filas": 7614,
         "horario": {
-          "mae_s": 112.11,
-          "rmse_s": 146.14
+          "mae_s": 113.39,
+          "rmse_s": 150.32
         },
         "persistencia": {
-          "mae_s": 130.02,
-          "rmse_s": 183.11
+          "mae_s": 130.82,
+          "rmse_s": 185.68
         },
         "persistencia_tramo": {
-          "mae_s": 88.2,
-          "rmse_s": 118.47
+          "mae_s": 89.47,
+          "rmse_s": 122.88
         },
-        "viajes": 2085,
+        "viajes": 2144,
         "dias": 14,
         "grupo": "propia"
       },
       "C3": {
-        "filas": 19078,
+        "filas": 19278,
         "horario": {
-          "mae_s": 160.31,
-          "rmse_s": 221.69
+          "mae_s": 161.52,
+          "rmse_s": 223.96
         },
         "persistencia": {
-          "mae_s": 137.84,
-          "rmse_s": 189.53
+          "mae_s": 139.02,
+          "rmse_s": 191.75
         },
         "persistencia_tramo": {
-          "mae_s": 123.3,
-          "rmse_s": 173.05
+          "mae_s": 124.32,
+          "rmse_s": 174.9
         },
-        "viajes": 2689,
+        "viajes": 2719,
         "dias": 14,
         "grupo": "propia"
       }
     },
     "por_grupo": {
       "poco_soporte": {
-        "filas": 13399,
+        "filas": 14477,
         "horario": {
-          "mae_s": 191.54,
-          "rmse_s": 260.92
+          "mae_s": 191.68,
+          "rmse_s": 261.78
         },
         "persistencia": {
-          "mae_s": 138.27,
-          "rmse_s": 189.27
+          "mae_s": 138.36,
+          "rmse_s": 192.2
         },
         "persistencia_tramo": {
-          "mae_s": 107.7,
-          "rmse_s": 153.68
+          "mae_s": 107.1,
+          "rmse_s": 156.49
         }
       },
       "propia": {
-        "filas": 447817,
+        "filas": 463589,
         "horario": {
-          "mae_s": 164.63,
-          "rmse_s": 222.34
+          "mae_s": 165.64,
+          "rmse_s": 224.11
         },
         "persistencia": {
-          "mae_s": 114.63,
-          "rmse_s": 158.23
+          "mae_s": 115.39,
+          "rmse_s": 159.97
         },
         "persistencia_tramo": {
-          "mae_s": 93.22,
-          "rmse_s": 133.66
+          "mae_s": 93.58,
+          "rmse_s": 135.22
         }
       },
       "sin_entrenamiento": {
-        "filas": 117,
+        "filas": 118,
         "horario": {
-          "mae_s": 144.45,
-          "rmse_s": 180.83
+          "mae_s": 147.28,
+          "rmse_s": 185.38
         },
         "persistencia": {
-          "mae_s": 102.02,
-          "rmse_s": 124.46
+          "mae_s": 104.27,
+          "rmse_s": 128.46
         },
         "persistencia_tramo": {
-          "mae_s": 102.02,
-          "rmse_s": 124.46
+          "mae_s": 104.27,
+          "rmse_s": 128.46
         }
       }
     }

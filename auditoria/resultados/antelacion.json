@@ -3,641 +3,520 @@
     {
       "h": 1,
       "horizonte_previsto_p50_s": 3.9,
-      "nowcast_%": 45.3,
-      "arboles": 348,
-      "filas": 456823,
-      "horario_mae_s": 148.89,
-      "persistencia_mae_s": 36.99,
-      "modelo_mae_s": 25.26,
-      "pt_mae_s": 26.27,
-      "dif_s": -1.01,
+      "nowcast_%": 45.9,
+      "arboles": 705,
+      "filas": 451671,
+      "horario_mae_s": 149.07,
+      "persistencia_mae_s": 36.59,
+      "modelo_mae_s": 25.16,
+      "pt_mae_s": 26.22,
+      "dif_s": -1.06,
       "ic_viajes": [
-        -1.04,
-        -0.99
+        -1.09,
+        -1.03
       ],
       "ic_dias": [
-        -1.12,
-        -0.91
+        -1.16,
+        -0.96
       ],
-      "relativa_%": -3.8
+      "relativa_%": -4.0
     },
     {
       "h": 2,
-      "horizonte_previsto_p50_s": 92.5,
-      "nowcast_%": 6.6,
-      "arboles": 269,
-      "filas": 739318,
-      "horario_mae_s": 149.28,
-      "persistencia_mae_s": 48.38,
-      "modelo_mae_s": 33.42,
-      "pt_mae_s": 34.65,
-      "dif_s": -1.23,
+      "horizonte_previsto_p50_s": 92.6,
+      "nowcast_%": 12.2,
+      "arboles": 264,
+      "filas": 695604,
+      "horario_mae_s": 151.6,
+      "persistencia_mae_s": 47.87,
+      "modelo_mae_s": 33.59,
+      "pt_mae_s": 34.7,
+      "dif_s": -1.11,
       "ic_viajes": [
-        -1.26,
-        -1.2
+        -1.14,
+        -1.08
       ],
       "ic_dias": [
-        -1.39,
-        -1.09
+        -1.24,
+        -0.99
       ],
-      "relativa_%": -3.5
+      "relativa_%": -3.2
     },
     {
       "h": 3,
       "horizonte_previsto_p50_s": 181.0,
-      "nowcast_%": 3.0,
-      "arboles": 316,
-      "filas": 725304,
-      "horario_mae_s": 149.8,
-      "persistencia_mae_s": 60.49,
-      "modelo_mae_s": 41.82,
+      "nowcast_%": 12.4,
+      "arboles": 370,
+      "filas": 658304,
+      "horario_mae_s": 154.42,
+      "persistencia_mae_s": 60.56,
+      "modelo_mae_s": 42.03,
       "pt_mae_s": 43.74,
-      "dif_s": -1.92,
+      "dif_s": -1.71,
       "ic_viajes": [
-        -1.97,
-        -1.86
+        -1.76,
+        -1.66
       ],
       "ic_dias": [
-        -2.2,
-        -1.67
+        -1.96,
+        -1.48
       ],
-      "relativa_%": -4.4
+      "relativa_%": -3.9
     },
     {
       "h": 5,
       "horizonte_previsto_p50_s": 358.5,
-      "nowcast_%": 0.7,
-      "arboles": 223,
-      "filas": 657961,
-      "horario_mae_s": 154.18,
-      "persistencia_mae_s": 79.88,
-      "modelo_mae_s": 56.86,
-      "pt_mae_s": 59.56,
-      "dif_s": -2.69,
+      "nowcast_%": 13.3,
+      "arboles": 195,
+      "filas": 580863,
+      "horario_mae_s": 159.55,
+      "persistencia_mae_s": 79.38,
+      "modelo_mae_s": 56.77,
+      "pt_mae_s": 59.05,
+      "dif_s": -2.28,
       "ic_viajes": [
-        -2.78,
-        -2.6
+        -2.36,
+        -2.19
       ],
       "ic_dias": [
-        -3.22,
-        -2.26
+        -2.78,
+        -1.86
       ],
-      "relativa_%": -4.5
+      "relativa_%": -3.9
     },
     {
       "h": 10,
-      "horizonte_previsto_p50_s": 814.5,
-      "nowcast_%": 0.2,
-      "arboles": 193,
-      "filas": 460251,
-      "horario_mae_s": 165.39,
-      "persistencia_mae_s": 113.47,
-      "modelo_mae_s": 87.68,
-      "pt_mae_s": 92.32,
-      "dif_s": -4.64,
+      "horizonte_previsto_p50_s": 813.4,
+      "nowcast_%": 17.2,
+      "arboles": 171,
+      "filas": 396176,
+      "horario_mae_s": 171.19,
+      "persistencia_mae_s": 110.91,
+      "modelo_mae_s": 86.79,
+      "pt_mae_s": 90.59,
+      "dif_s": -3.8,
       "ic_viajes": [
-        -4.87,
-        -4.45
+        -4.02,
+        -3.59
       ],
       "ic_dias": [
-        -5.74,
-        -3.76
+        -4.86,
+        -2.94
       ],
-      "relativa_%": -5.0
+      "relativa_%": -4.2
+    }
+  ],
+  "cohorte_comun": [
+    {
+      "h": 1,
+      "origenes": 236930,
+      "horizonte_previsto_p50_s": 27.0,
+      "modelo_mae_s": 25.0,
+      "pt_mae_s": 26.02,
+      "dif_s": -1.03,
+      "ic_viajes": [
+        -1.06,
+        -0.99
+      ],
+      "ic_dias": [
+        -1.12,
+        -0.94
+      ],
+      "relativa_%": -4.0
+    },
+    {
+      "h": 2,
+      "origenes": 236930,
+      "horizonte_previsto_p50_s": 120.9,
+      "modelo_mae_s": 34.98,
+      "pt_mae_s": 36.04,
+      "dif_s": -1.06,
+      "ic_viajes": [
+        -1.1,
+        -1.02
+      ],
+      "ic_dias": [
+        -1.21,
+        -0.93
+      ],
+      "relativa_%": -2.9
+    },
+    {
+      "h": 3,
+      "origenes": 236930,
+      "horizonte_previsto_p50_s": 215.4,
+      "modelo_mae_s": 43.41,
+      "pt_mae_s": 45.02,
+      "dif_s": -1.61,
+      "ic_viajes": [
+        -1.68,
+        -1.54
+      ],
+      "ic_dias": [
+        -1.91,
+        -1.36
+      ],
+      "relativa_%": -3.6
+    },
+    {
+      "h": 5,
+      "origenes": 236930,
+      "horizonte_previsto_p50_s": 402.3,
+      "modelo_mae_s": 58.78,
+      "pt_mae_s": 60.82,
+      "dif_s": -2.04,
+      "ic_viajes": [
+        -2.15,
+        -1.93
+      ],
+      "ic_dias": [
+        -2.71,
+        -1.52
+      ],
+      "relativa_%": -3.4
+    },
+    {
+      "h": 10,
+      "origenes": 236930,
+      "horizonte_previsto_p50_s": 869.9,
+      "modelo_mae_s": 89.14,
+      "pt_mae_s": 93.05,
+      "dif_s": -3.91,
+      "ic_viajes": [
+        -4.15,
+        -3.67
+      ],
+      "ic_dias": [
+        -5.16,
+        -2.88
+      ],
+      "relativa_%": -4.2
     }
   ],
   "por_horizonte_previsto": [
     {
       "h": 1,
       "horizonte_previsto": "0-30 s",
-      "filas": 253160,
-      "horario_mae_s": 147.78,
-      "persistencia_mae_s": 31.28,
-      "modelo_mae_s": 23.26,
-      "pt_mae_s": 24.14,
+      "filas": 248954,
+      "horario_mae_s": 148.05,
+      "persistencia_mae_s": 30.69,
+      "modelo_mae_s": 23.19,
+      "pt_mae_s": 24.06,
       "dif_s": -0.88,
       "ic_viajes": [
         -0.91,
         -0.85
       ],
       "ic_dias": [
-        -0.98,
+        -0.96,
         -0.79
       ],
-      "relativa_%": -3.6
+      "relativa_%": -3.7
     },
     {
       "h": 1,
       "horizonte_previsto": "30-60 s",
-      "filas": 123548,
-      "horario_mae_s": 147.85,
-      "persistencia_mae_s": 37.77,
-      "modelo_mae_s": 26.17,
-      "pt_mae_s": 27.26,
-      "dif_s": -1.08,
+      "filas": 122757,
+      "horario_mae_s": 147.9,
+      "persistencia_mae_s": 37.44,
+      "modelo_mae_s": 26.0,
+      "pt_mae_s": 27.18,
+      "dif_s": -1.18,
       "ic_viajes": [
-        -1.12,
-        -1.04
+        -1.23,
+        -1.13
       ],
       "ic_dias": [
-        -1.2,
-        -0.97
+        -1.3,
+        -1.06
+      ],
+      "relativa_%": -4.3
+    },
+    {
+      "h": 1,
+      "horizonte_previsto": "1-2 min",
+      "filas": 69020,
+      "horario_mae_s": 151.68,
+      "persistencia_mae_s": 49.56,
+      "modelo_mae_s": 29.45,
+      "pt_mae_s": 30.8,
+      "dif_s": -1.35,
+      "ic_viajes": [
+        -1.42,
+        -1.28
+      ],
+      "ic_dias": [
+        -1.46,
+        -1.25
+      ],
+      "relativa_%": -4.4
+    },
+    {
+      "h": 1,
+      "horizonte_previsto": "2-5 min",
+      "filas": 10841,
+      "horario_mae_s": 169.0,
+      "persistencia_mae_s": 79.27,
+      "modelo_mae_s": 33.44,
+      "pt_mae_s": 35.47,
+      "dif_s": -2.03,
+      "ic_viajes": [
+        -2.31,
+        -1.76
+      ],
+      "ic_dias": [
+        -2.61,
+        -1.55
+      ],
+      "relativa_%": -5.7
+    },
+    {
+      "h": 2,
+      "horizonte_previsto": "0-30 s",
+      "filas": 23136,
+      "horario_mae_s": 154.79,
+      "persistencia_mae_s": 39.58,
+      "modelo_mae_s": 27.0,
+      "pt_mae_s": 28.47,
+      "dif_s": -1.47,
+      "ic_viajes": [
+        -1.6,
+        -1.36
+      ],
+      "ic_dias": [
+        -1.6,
+        -1.33
+      ],
+      "relativa_%": -5.2
+    },
+    {
+      "h": 2,
+      "horizonte_previsto": "30-60 s",
+      "filas": 95538,
+      "horario_mae_s": 152.94,
+      "persistencia_mae_s": 38.28,
+      "modelo_mae_s": 28.54,
+      "pt_mae_s": 29.72,
+      "dif_s": -1.19,
+      "ic_viajes": [
+        -1.25,
+        -1.13
+      ],
+      "ic_dias": [
+        -1.31,
+        -1.06
       ],
       "relativa_%": -4.0
     },
     {
-      "h": 1,
-      "horizonte_previsto": "1-2 min",
-      "filas": 69173,
-      "horario_mae_s": 151.7,
-      "persistencia_mae_s": 49.71,
-      "modelo_mae_s": 29.66,
-      "pt_mae_s": 30.86,
-      "dif_s": -1.19,
-      "ic_viajes": [
-        -1.26,
-        -1.13
-      ],
-      "ic_dias": [
-        -1.32,
-        -1.08
-      ],
-      "relativa_%": -3.9
-    },
-    {
-      "h": 1,
-      "horizonte_previsto": "2-5 min",
-      "filas": 10843,
-      "horario_mae_s": 168.99,
-      "persistencia_mae_s": 79.28,
-      "modelo_mae_s": 33.35,
-      "pt_mae_s": 35.47,
-      "dif_s": -2.12,
-      "ic_viajes": [
-        -2.37,
-        -1.89
-      ],
-      "ic_dias": [
-        -2.7,
-        -1.63
-      ],
-      "relativa_%": -6.0
-    },
-    {
-      "h": 1,
-      "horizonte_previsto": "5-10 min",
-      "filas": 99,
-      "horario_mae_s": 138.05,
-      "persistencia_mae_s": 130.47,
-      "modelo_mae_s": 44.7,
-      "pt_mae_s": 45.45,
-      "dif_s": -0.75,
-      "ic_viajes": [
-        -2.42,
-        0.83
-      ],
-      "ic_dias": [
-        -2.43,
-        1.06
-      ],
-      "relativa_%": -1.7
-    },
-    {
-      "h": 2,
-      "horizonte_previsto": "0-30 s",
-      "filas": 36762,
-      "horario_mae_s": 134.96,
-      "persistencia_mae_s": 40.34,
-      "modelo_mae_s": 26.82,
-      "pt_mae_s": 29.01,
-      "dif_s": -2.19,
-      "ic_viajes": [
-        -2.33,
-        -2.05
-      ],
-      "ic_dias": [
-        -2.44,
-        -1.96
-      ],
-      "relativa_%": -7.5
-    },
-    {
-      "h": 2,
-      "horizonte_previsto": "30-60 s",
-      "filas": 108824,
-      "horario_mae_s": 148.06,
-      "persistencia_mae_s": 39.46,
-      "modelo_mae_s": 28.61,
-      "pt_mae_s": 30.02,
-      "dif_s": -1.41,
-      "ic_viajes": [
-        -1.46,
-        -1.34
-      ],
-      "ic_dias": [
-        -1.53,
-        -1.27
-      ],
-      "relativa_%": -4.7
-    },
-    {
       "h": 2,
       "horizonte_previsto": "1-2 min",
-      "filas": 353977,
-      "horario_mae_s": 147.94,
-      "persistencia_mae_s": 43.76,
-      "modelo_mae_s": 32.08,
-      "pt_mae_s": 33.04,
-      "dif_s": -0.96,
+      "filas": 340773,
+      "horario_mae_s": 149.03,
+      "persistencia_mae_s": 42.98,
+      "modelo_mae_s": 32.03,
+      "pt_mae_s": 32.88,
+      "dif_s": -0.85,
       "ic_viajes": [
-        -0.99,
-        -0.93
+        -0.89,
+        -0.82
       ],
       "ic_dias": [
-        -1.1,
-        -0.84
+        -0.97,
+        -0.74
       ],
-      "relativa_%": -2.9
+      "relativa_%": -2.6
     },
     {
       "h": 2,
       "horizonte_previsto": "2-5 min",
-      "filas": 237161,
-      "horario_mae_s": 153.66,
-      "persistencia_mae_s": 59.8,
-      "modelo_mae_s": 38.41,
-      "pt_mae_s": 39.79,
-      "dif_s": -1.38,
+      "filas": 233556,
+      "horario_mae_s": 154.11,
+      "persistencia_mae_s": 58.89,
+      "modelo_mae_s": 38.38,
+      "pt_mae_s": 39.75,
+      "dif_s": -1.37,
       "ic_viajes": [
-        -1.43,
+        -1.42,
         -1.32
       ],
       "ic_dias": [
-        -1.63,
-        -1.15
+        -1.6,
+        -1.18
       ],
-      "relativa_%": -3.5
+      "relativa_%": -3.4
     },
     {
       "h": 2,
       "horizonte_previsto": "5-10 min",
-      "filas": 2594,
-      "horario_mae_s": 186.27,
-      "persistencia_mae_s": 124.7,
-      "modelo_mae_s": 54.02,
-      "pt_mae_s": 58.83,
-      "dif_s": -4.81,
+      "filas": 2601,
+      "horario_mae_s": 185.86,
+      "persistencia_mae_s": 124.52,
+      "modelo_mae_s": 53.32,
+      "pt_mae_s": 58.56,
+      "dif_s": -5.24,
       "ic_viajes": [
-        -5.69,
-        -3.87
+        -6.05,
+        -4.43
       ],
       "ic_dias": [
-        -6.84,
-        -2.83
+        -7.08,
+        -3.57
       ],
-      "relativa_%": -8.2
-    },
-    {
-      "h": 3,
-      "horizonte_previsto": "0-30 s",
-      "filas": 7216,
-      "horario_mae_s": 96.4,
-      "persistencia_mae_s": 40.43,
-      "modelo_mae_s": 39.19,
-      "pt_mae_s": 49.7,
-      "dif_s": -10.51,
-      "ic_viajes": [
-        -11.75,
-        -9.22
-      ],
-      "ic_dias": [
-        -13.04,
-        -8.25
-      ],
-      "relativa_%": -21.1
-    },
-    {
-      "h": 3,
-      "horizonte_previsto": "30-60 s",
-      "filas": 10838,
-      "horario_mae_s": 107.19,
-      "persistencia_mae_s": 45.03,
-      "modelo_mae_s": 35.83,
-      "pt_mae_s": 41.94,
-      "dif_s": -6.11,
-      "ic_viajes": [
-        -6.77,
-        -5.52
-      ],
-      "ic_dias": [
-        -7.04,
-        -5.46
-      ],
-      "relativa_%": -14.6
+      "relativa_%": -8.9
     },
     {
       "h": 3,
       "horizonte_previsto": "1-2 min",
-      "filas": 87316,
-      "horario_mae_s": 140.84,
-      "persistencia_mae_s": 49.85,
-      "modelo_mae_s": 35.28,
-      "pt_mae_s": 37.8,
-      "dif_s": -2.52,
+      "filas": 63266,
+      "horario_mae_s": 154.93,
+      "persistencia_mae_s": 49.24,
+      "modelo_mae_s": 34.71,
+      "pt_mae_s": 36.79,
+      "dif_s": -2.08,
       "ic_viajes": [
-        -2.65,
-        -2.4
+        -2.21,
+        -1.94
       ],
       "ic_dias": [
-        -2.73,
-        -2.33
+        -2.26,
+        -1.88
       ],
-      "relativa_%": -6.7
+      "relativa_%": -5.7
     },
     {
       "h": 3,
       "horizonte_previsto": "2-5 min",
-      "filas": 566441,
-      "horario_mae_s": 151.35,
-      "persistencia_mae_s": 59.17,
-      "modelo_mae_s": 41.72,
-      "pt_mae_s": 43.21,
+      "filas": 539504,
+      "horario_mae_s": 153.37,
+      "persistencia_mae_s": 58.3,
+      "modelo_mae_s": 41.6,
+      "pt_mae_s": 43.09,
       "dif_s": -1.49,
       "ic_viajes": [
         -1.54,
         -1.44
       ],
       "ic_dias": [
-        -1.76,
+        -1.74,
         -1.27
       ],
-      "relativa_%": -3.4
+      "relativa_%": -3.5
     },
     {
       "h": 3,
       "horizonte_previsto": "5-10 min",
-      "filas": 53342,
-      "horario_mae_s": 163.7,
-      "persistencia_mae_s": 97.33,
-      "modelo_mae_s": 55.09,
-      "pt_mae_s": 58.48,
-      "dif_s": -3.39,
+      "filas": 53270,
+      "horario_mae_s": 164.12,
+      "persistencia_mae_s": 96.8,
+      "modelo_mae_s": 55.27,
+      "pt_mae_s": 58.67,
+      "dif_s": -3.4,
       "ic_viajes": [
-        -3.62,
+        -3.63,
         -3.17
       ],
       "ic_dias": [
-        -4.17,
-        -2.71
+        -4.15,
+        -2.72
       ],
       "relativa_%": -5.8
     },
     {
-      "h": 3,
-      "horizonte_previsto": "> 10 min",
-      "filas": 151,
-      "horario_mae_s": 253.67,
-      "persistencia_mae_s": 241.24,
-      "modelo_mae_s": 79.19,
-      "pt_mae_s": 96.81,
-      "dif_s": -17.62,
-      "ic_viajes": [
-        -23.76,
-        -11.47
-      ],
-      "ic_dias": [
-        -23.29,
-        -12.76
-      ],
-      "relativa_%": -18.2
-    },
-    {
-      "h": 5,
-      "horizonte_previsto": "0-30 s",
-      "filas": 759,
-      "horario_mae_s": 167.27,
-      "persistencia_mae_s": 155.17,
-      "modelo_mae_s": 97.36,
-      "pt_mae_s": 93.35,
-      "dif_s": 4.02,
-      "ic_viajes": [
-        -0.11,
-        7.88
-      ],
-      "ic_dias": [
-        0.66,
-        7.34
-      ],
-      "relativa_%": 4.3
-    },
-    {
-      "h": 5,
-      "horizonte_previsto": "30-60 s",
-      "filas": 1426,
-      "horario_mae_s": 149.02,
-      "persistencia_mae_s": 119.38,
-      "modelo_mae_s": 77.22,
-      "pt_mae_s": 82.49,
-      "dif_s": -5.27,
-      "ic_viajes": [
-        -8.3,
-        -2.45
-      ],
-      "ic_dias": [
-        -10.11,
-        -0.94
-      ],
-      "relativa_%": -6.4
-    },
-    {
-      "h": 5,
-      "horizonte_previsto": "1-2 min",
-      "filas": 5638,
-      "horario_mae_s": 129.07,
-      "persistencia_mae_s": 81.67,
-      "modelo_mae_s": 60.31,
-      "pt_mae_s": 69.04,
-      "dif_s": -8.72,
-      "ic_viajes": [
-        -9.88,
-        -7.51
-      ],
-      "ic_dias": [
-        -9.81,
-        -7.66
-      ],
-      "relativa_%": -12.6
-    },
-    {
       "h": 5,
       "horizonte_previsto": "2-5 min",
-      "filas": 160865,
-      "horario_mae_s": 145.64,
-      "persistencia_mae_s": 67.95,
-      "modelo_mae_s": 49.95,
-      "pt_mae_s": 53.5,
-      "dif_s": -3.55,
+      "filas": 117535,
+      "horario_mae_s": 158.09,
+      "persistencia_mae_s": 67.26,
+      "modelo_mae_s": 47.98,
+      "pt_mae_s": 50.69,
+      "dif_s": -2.71,
       "ic_viajes": [
-        -3.72,
-        -3.37
+        -2.88,
+        -2.53
       ],
       "ic_dias": [
-        -3.84,
-        -3.28
+        -2.98,
+        -2.44
       ],
-      "relativa_%": -6.6
+      "relativa_%": -5.3
     },
     {
       "h": 5,
       "horizonte_previsto": "5-10 min",
-      "filas": 476667,
-      "horario_mae_s": 156.36,
-      "persistencia_mae_s": 81.62,
-      "modelo_mae_s": 58.17,
-      "pt_mae_s": 60.34,
-      "dif_s": -2.17,
+      "filas": 450784,
+      "horario_mae_s": 159.01,
+      "persistencia_mae_s": 80.49,
+      "modelo_mae_s": 58.12,
+      "pt_mae_s": 60.14,
+      "dif_s": -2.02,
       "ic_viajes": [
-        -2.26,
-        -2.08
+        -2.11,
+        -1.93
       ],
       "ic_dias": [
-        -2.8,
-        -1.68
+        -2.63,
+        -1.53
       ],
-      "relativa_%": -3.6
+      "relativa_%": -3.4
     },
     {
       "h": 5,
       "horizonte_previsto": "> 10 min",
-      "filas": 12606,
-      "horario_mae_s": 191.86,
-      "persistencia_mae_s": 156.45,
-      "modelo_mae_s": 89.43,
-      "pt_mae_s": 98.41,
-      "dif_s": -8.98,
+      "filas": 12493,
+      "horario_mae_s": 192.54,
+      "persistencia_mae_s": 153.81,
+      "modelo_mae_s": 90.97,
+      "pt_mae_s": 98.51,
+      "dif_s": -7.54,
       "ic_viajes": [
-        -9.9,
-        -8.08
+        -8.48,
+        -6.62
       ],
       "ic_dias": [
-        -11.14,
-        -7.21
+        -9.53,
+        -5.87
       ],
-      "relativa_%": -9.1
-    },
-    {
-      "h": 10,
-      "horizonte_previsto": "0-30 s",
-      "filas": 131,
-      "horario_mae_s": 123.06,
-      "persistencia_mae_s": 558.17,
-      "modelo_mae_s": 151.21,
-      "pt_mae_s": 292.98,
-      "dif_s": -141.77,
-      "ic_viajes": [
-        -168.44,
-        -116.14
-      ],
-      "ic_dias": [
-        -164.54,
-        -124.91
-      ],
-      "relativa_%": -48.4
-    },
-    {
-      "h": 10,
-      "horizonte_previsto": "30-60 s",
-      "filas": 172,
-      "horario_mae_s": 130.77,
-      "persistencia_mae_s": 536.18,
-      "modelo_mae_s": 159.91,
-      "pt_mae_s": 280.73,
-      "dif_s": -120.82,
-      "ic_viajes": [
-        -142.2,
-        -98.32
-      ],
-      "ic_dias": [
-        -141.26,
-        -99.4
-      ],
-      "relativa_%": -43.0
-    },
-    {
-      "h": 10,
-      "horizonte_previsto": "1-2 min",
-      "filas": 360,
-      "horario_mae_s": 122.86,
-      "persistencia_mae_s": 491.87,
-      "modelo_mae_s": 137.58,
-      "pt_mae_s": 236.69,
-      "dif_s": -99.11,
-      "ic_viajes": [
-        -114.46,
-        -84.59
-      ],
-      "ic_dias": [
-        -119.19,
-        -79.35
-      ],
-      "relativa_%": -41.9
-    },
-    {
-      "h": 10,
-      "horizonte_previsto": "2-5 min",
-      "filas": 1479,
-      "horario_mae_s": 145.96,
-      "persistencia_mae_s": 356.74,
-      "modelo_mae_s": 130.16,
-      "pt_mae_s": 187.25,
-      "dif_s": -57.09,
-      "ic_viajes": [
-        -63.38,
-        -51.23
-      ],
-      "ic_dias": [
-        -62.74,
-        -52.13
-      ],
-      "relativa_%": -30.5
+      "relativa_%": -7.7
     },
     {
       "h": 10,
       "horizonte_previsto": "5-10 min",
-      "filas": 41083,
-      "horario_mae_s": 155.29,
-      "persistencia_mae_s": 104.14,
-      "modelo_mae_s": 76.27,
-      "pt_mae_s": 83.85,
-      "dif_s": -7.58,
+      "filas": 23341,
+      "horario_mae_s": 166.71,
+      "persistencia_mae_s": 97.85,
+      "modelo_mae_s": 68.1,
+      "pt_mae_s": 73.64,
+      "dif_s": -5.54,
       "ic_viajes": [
-        -8.24,
-        -6.87
+        -6.44,
+        -4.61
       ],
       "ic_dias": [
-        -8.51,
-        -6.79
+        -6.78,
+        -4.47
       ],
-      "relativa_%": -9.0
+      "relativa_%": -7.5
     },
     {
       "h": 10,
       "horizonte_previsto": "> 10 min",
-      "filas": 417026,
-      "horario_mae_s": 166.51,
-      "persistencia_mae_s": 112.89,
-      "modelo_mae_s": 88.56,
-      "pt_mae_s": 92.55,
-      "dif_s": -4.0,
+      "filas": 372834,
+      "horario_mae_s": 171.47,
+      "persistencia_mae_s": 111.73,
+      "modelo_mae_s": 87.96,
+      "pt_mae_s": 91.65,
+      "dif_s": -3.69,
       "ic_viajes": [
-        -4.22,
-        -3.77
+        -3.89,
+        -3.48
       ],
       "ic_dias": [
-        -5.23,
-        -3.03
+        -4.8,
+        -2.77
       ],
-      "relativa_%": -4.3
+      "relativa_%": -4.0
     }
-  ]
+  ],
+  "soporte_min_filas": 2000
 }
