@@ -880,15 +880,31 @@ el estado de la capa 192 en el tramo de ruta que le queda al bus?
 **Qué la reabriría.** Que la captura del 06 al 19/10 tenga huecos que la dejen
 sin dos semanas útiles, o que la 192 vuelva a congelarse.
 
+**Enmienda del 10/10**, al cerrar la fase 1 y antes de traer la prueba
+(bitácora 048):
+- **Estrato con sensor** (punto 5): las filas con más del 75 % del recorrido
+  *i* → *i* + *h* bajo la 192 (`trafico_cubierto_m / dist_objetivo_m` mayor
+  que 0,75).
+  Es geométrico y se sabe antes de predecir. En la validación con *h* = 5 es el
+  82 % de las filas; las bandas intermedias (11 %) no muestran señal.
+- **Variables congeladas** como en el punto 4, sin refinar. Con una semana de
+  validación y unas 8.500 filas con congestión, refinarlas sería perseguir ruido.
+- **Secundario prerregistrado**, solo descriptivo: las filas en las que la capa
+  veía congestión al predecir (`trafico_congestion_frac > 0`). Es lo que se sabe
+  al predecir, no el resultado, y es donde se concentra la señal en la
+  validación.
+- **Control**, descriptivo: las filas sin ningún sensor en el recorrido. En la
+  validación también mejoran, de 0,04 a 0,11 s, sin sensor ninguno: reciben
+  `trafico_edad_s`, y el modelo con tráfico tiene otros árboles. Lo que la primaria no supere a ese control
+  no se atribuye a la congestión.
+- **Lectura.** Como en el ADR-018, se informa el tamaño del efecto: en segundos
+  y relativo al MAE del modelo sin tráfico. En la validación, la primaria daba
+  −0,07 s sobre 56 s.
+
 ---
 
 ## Pendientes de decidir
 
-- **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018
-  necesita saber qué tramos entre paradas tienen un sensor de la capa 192
-  encima. Hoy la cobertura solo está medida por posición (69,4 % a menos de
-  50 m, `docs/10`). Se mide en la fase 1 del ADR-024 y se fija antes de la
-  prueba nueva.
 - **Variante binaria por banda de intervalo.** `evaluate.py` ya estratifica por
   banda de intervalo programado (≤ 8, 8-15, 15-30, > 30 min y `sin_intervalo`),
   como el estrato de sensores (bitácora 038). Falta decidir si la variante
