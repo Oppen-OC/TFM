@@ -822,12 +822,73 @@ horizontes intermedios, o la capa 192, que añade el pilar del tráfico.
 
 ---
 
+## ADR-024 · La aportación del tráfico se decide en una prueba nueva, con la primaria fijada antes · cerrada
+
+Escrito y commiteado **antes** de construir las variables de tráfico y de
+capturar la prueba.
+
+**Pregunta.** ¿Cuánto mejora la predicción, a varias paradas vista, al añadir
+el estado de la capa 192 en el tramo de ruta que le queda al bus?
+
+**Decisión.**
+1. **Prueba nueva:** del 06 al 19/10, días de servicio completos capturados
+   después del incidente de la Pi (bitácora 044). Nadie la ha visto. El
+   entrenamiento pasa a ser todo lo anterior al 05/10, incluida la prueba
+   actual (21/09-04/10), y la validación su última semana (ADR-021: siete días
+   de lunes a domingo). El 05/10 queda fuera.
+2. **Métrica primaria:** con *h* = 5 paradas (unos 7 min vista) y en el
+   **estrato con sensor**, la diferencia de MAE entre el modelo con tráfico y
+   el mismo modelo sin él, sobre las mismas filas de la población (ADR-022).
+   Hay aportación si **ni el intervalo por viajes ni el intervalo por días**
+   contienen el cero (ADR-018). Todo lo demás (otros horizontes, el conjunto,
+   las filas sin sensor, la confirmación de la v2 frente al listón) se informa
+   como descriptivo.
+3. **Los dos modelos comparten configuración** (ADR-021). Solo cambian las
+   variables.
+4. **Variables de tráfico** (versión inicial; se pueden refinar solo con la
+   validación, y se congelan antes de la prueba):
+   - Un tramo de la 192 cubre un trozo de trazado si está a 25 m o menos
+     durante al menos 50 m. No se distingue el sentido de la calle.
+   - En el último sondeo llegado antes de `t_disp`:
+     - `trafico_cubierto_m`, metros del recorrido *i* → *i* + *h* con sensor;
+     - `trafico_congestion_frac`, fracción de esos metros en estado 1-2;
+     - `trafico_edad_s`, la antigüedad del sondeo.
+   - Los estados 3 (cortado) y 4 (fallo del servicio) cuentan como no
+     observados (bitácoras 005 y 031).
+5. **El estrato con sensor** se define midiendo la cobertura en la validación.
+   La definición se commitea antes de traer la prueba.
+6. Lo que se haga después de mirar la prueba se declara como exploratorio.
+
+**Por qué.**
+- La prueba actual se ha evaluado muchas veces.
+- En agosto la 192 está casi quieta (bitácora 031): con el corte actual, el
+  modelo solo vería una semana lectiva de congestión.
+- Una prueba nueva y una primaria fijada de antemano son lo único que hace
+  defendible la cifra del pilar 2.
+
+**Consecuencias.**
+- La fase 2 espera a tener dos semanas de captura nueva (hacia el 20/10).
+- Hay que decidir qué horario manda en esos días: la `19-09-2026` es vigente
+  hasta el 19/10, y la versión del 05/10 quita la línea 13 (bitácora 042).
+- La prueba nueva confirma también la v2.
+
+**Alternativas.**
+- Evaluar en la prueba actual: contaminada, y con poca congestión para
+  aprender.
+- Varias primarias: sin corrección por multiplicidad, la conclusión se diluye.
+
+**Qué la reabriría.** Que la captura del 06 al 19/10 tenga huecos que la dejen
+sin dos semanas útiles, o que la 192 vuelva a congelarse.
+
+---
+
 ## Pendientes de decidir
 
 - **Cobertura de sensores por tramo.** El estrato de evaluación del ADR-018
   necesita saber qué tramos entre paradas tienen un sensor de la capa 192
   encima. Hoy la cobertura solo está medida por posición (69,4 % a menos de
-  50 m, `docs/10`). Se mide al meter la capa 192 en `features.py`.
+  50 m, `docs/10`). Se mide en la fase 1 del ADR-024 y se fija antes de la
+  prueba nueva.
 - **Variante binaria por banda de intervalo.** `evaluate.py` ya estratifica por
   banda de intervalo programado (≤ 8, 8-15, 15-30, > 30 min y `sin_intervalo`),
   como el estrato de sensores (bitácora 038). Falta decidir si la variante
