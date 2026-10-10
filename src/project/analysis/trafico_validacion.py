@@ -10,9 +10,10 @@ todavía no existe.
 
 Para cada horizonte del barrido, el mismo modelo (configuración del ADR-021)
 con y sin las variables de tráfico, comparado sobre las mismas filas de la
-población, con los intervalos por viajes y por días: en conjunto y según cuánto
-del recorrido tiene sensor. Y la cobertura, para fijar el estrato con sensor
-antes de mirar la prueba. Solo diagnostica: no fija nada del pipeline.
+población, con los intervalos por viajes y por días: en conjunto, según cuánto
+del recorrido tiene sensor y según lo que la capa decía al predecir. Con esto
+se fijó el estrato con sensor antes de mirar la prueba (bitácora 048). Solo
+diagnostica: no fija nada del pipeline.
 """
 
 from __future__ import annotations
@@ -43,8 +44,14 @@ def _tabla(horizonte: int) -> pd.DataFrame:
     )
     t = t[(t["fecha_servicio"] < FIN_DATOS) & features.poblacion(t)]
     cobertura = (t["trafico_cubierto_m"] / t["dist_objetivo_m"]).clip(upper=1)
+    frac = t["trafico_congestion_frac"]
+    # Lo que dice la capa al predecir: se conoce entonces, no es el resultado.
+    estado = np.select(
+        [frac.isna(), frac == 0], ["sin dato", "fluido"], default="con congestión"
+    )
     return t.assign(
-        _cobertura=pd.cut(cobertura, COBERTURA, labels=NOMBRES_COBERTURA)
+        _cobertura=pd.cut(cobertura, COBERTURA, labels=NOMBRES_COBERTURA),
+        _estado=estado,
     ).reset_index(drop=True)
 
 
@@ -100,6 +107,10 @@ def main() -> None:
             "por_cobertura": {
                 str(k): _comparar(errores["con"][g.index], errores["sin"][g.index], g)
                 for k, g in val.groupby("_cobertura", observed=True)
+            },
+            "por_estado_observado": {
+                str(k): _comparar(errores["con"][g.index], errores["sin"][g.index], g)
+                for k, g in val.groupby("_estado")
             },
         }
         print(f"h{h}", json.dumps(resultado[f"h{h}"], ensure_ascii=False), flush=True)

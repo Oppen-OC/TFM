@@ -170,7 +170,7 @@ Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
 explore), `tracking.py`, `gtfs.py`, `mapmatching.py`, `etiquetado.py`,
 `prepare.py`, `features.py` (fase 1, bitácora 030; fase 2, la flota como sensor:
 bitácora 032; sesgo del horario por tramo y `linea` categórica: bitácora 039,
-ADR-019; la capa 192, pendiente), `train.py`, `predict.py`, `evaluate.py` y
+ADR-019; la capa 192 en el recorrido que queda: ADR-024), `train.py`, `predict.py`, `evaluate.py` y
 `analysis/`.
 `dvc repro` corre entero: los pasos por parada con `retraso_s` salen en
 `data/interim/pasos/`, la tabla partida en `data/processed/{train,test}.parquet`
@@ -182,7 +182,10 @@ más el sesgo del tramo (bitácora 041). La v2, residuo con pérdida absoluta
 (ADR-021), con las variables a la hora en que se sabe cada paso (ADR-022,
 trampa 017), la bate sobre las predicciones que llegan a tiempo, sin la capa
 192. A una parada no anticipa; de 2 a 14 min por delante mejora un 3-4 % al
-listón (barrido de horizontes, ADR-023, bitácora 047).
+listón (barrido de horizontes, ADR-023, bitácora 047). La capa 192 aporta
+décimas de segundo en la validación y de 1 a 1,5 s donde ve congestión
+(bitácora 048); decide la prueba del 06-19/10, con la primaria ya fijada
+(ADR-024).
 
 Vacío, 0 líneas: `services/model_service.py`.
 
