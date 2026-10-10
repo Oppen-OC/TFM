@@ -19,7 +19,12 @@ from project import evaluate, features, gtfs, predict, train
 from project.analysis import elegir_brazo
 
 OBJ = "retraso_siguiente_parada_s"
-CFG = {"lags_min": [1, 5], "incluir_flota": True, "ventanas_flota_min": [5]}
+CFG = {
+    "lags_min": [1, 5],
+    "incluir_flota": True,
+    "ventanas_flota_min": [5],
+    "incluir_trafico": False,
+}
 PARAMS = {
     "objective": "reg:squarederror",
     "eval_metric": "mae",
@@ -56,6 +61,9 @@ def test_el_modelo_ve_exactamente_las_variables_de_features():
     assert train.columnas(CFG) == features.variables((1, 5), (5,))
     sin_flota = {**CFG, "incluir_flota": False}
     assert train.columnas(sin_flota) == features.variables((1, 5), ())
+    con_trafico = {**CFG, "incluir_trafico": True}
+    assert train.columnas(con_trafico) == features.variables((1, 5), (5,), trafico=True)
+    assert not set(features.TRAFICO) & set(train.columnas(CFG))
     art = train.entrenar(_tabla(), train.columnas(CFG), OBJ, PARAMS)
     assert art["columnas"] == train.columnas(CFG)
     assert art["modelo"].get_booster().feature_names == art["columnas"]

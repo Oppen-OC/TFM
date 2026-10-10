@@ -33,6 +33,7 @@ import pandas as pd
 import yaml
 
 from project.config import RAIZ, settings
+from project.trafico import en_ruta
 
 CLAVE_VIAJE = ["fecha_servicio", "viaje_id"]
 CLAVE_PASO = [*CLAVE_VIAJE, "stop_sequence"]
@@ -44,8 +45,13 @@ FUERA_DE_LA_TABLA = ["desfase_s", "margen_s", "coste_s"]
 CLAVE_TRAMO = ["feed_version", "linea", "stop_id", "_stop_objetivo"]
 
 
+TRAFICO = ["trafico_cubierto_m", "trafico_congestion_frac", "trafico_edad_s"]
+
+
 def variables(
-    lags_min: tuple[int, ...] = (1, 5, 15), ventanas_flota_min: tuple[int, ...] = ()
+    lags_min: tuple[int, ...] = (1, 5, 15),
+    ventanas_flota_min: tuple[int, ...] = (),
+    trafico: bool = False,
 ) -> list[str]:
     """Las columnas que ve el modelo, en entrenamiento y en inferencia.
 
@@ -81,6 +87,9 @@ def variables(
         "dia_semana",
         "fin_de_semana",
         "linea",
+        # La capa 192 en el recorrido que queda (ADR-024): en la tabla siempre,
+        # en el modelo solo con `incluir_trafico`.
+        *(TRAFICO if trafico else []),
     ]
 
 
@@ -298,8 +307,14 @@ def construir(
     umbral_s: float = 300.0,
     ventanas_flota_min: tuple[int, ...] = (),
     soporte_min: int = 2,
+    trafico: tuple[pd.DataFrame, pd.DataFrame] | None = None,
+    trafico_edad_max_s: float = 900,
 ) -> pd.DataFrame:
-    """La tabla: una fila por paso con objetivo, sus variables y sus claves."""
+    """La tabla: una fila por paso con objetivo, sus variables y sus claves.
+
+    `trafico`: los intervalos de `tramos_ruta` y los sondeos de la capa 192. Sin
+    él, la tabla no lleva las columnas de tráfico.
+    """
     # Las particiones de `pasos` no traen todas el mismo tipo de fecha (issue #2):
     # unas `datetime64`, otras `date`; concatenadas, ni siquiera se pueden ordenar.
     p = pasos.assign(fecha_servicio=pd.to_datetime(pasos["fecha_servicio"]))
@@ -355,6 +370,18 @@ def construir(
     p["horizonte_previsto_s"] = (
         p["t_prog_hasta_objetivo_s"] - (p["_td"] - p["_t"]) / 1e9
     )
+    if trafico is not None:
+        recorrido = pd.DataFrame(
+            {
+                "feed_version": p["feed_version"],
+                "shape_id": p["shape_id"],
+                "s_desde": p["abscisa_parada_m"],
+                "s_hasta": p["abscisa_parada_m"] + p["dist_objetivo_m"],
+                "t_disp_utc": p["t_disp_utc"],
+            },
+            index=p.index,
+        )
+        p[TRAFICO] = en_ruta(recorrido, *trafico, edad_max_s=trafico_edad_max_s)
 
     for n in lags_min:
         p[f"linea_retraso_{n}min"], p[f"linea_pasos_{n}min"] = _ventana_linea(p, n)
@@ -605,8 +632,15 @@ def main(horizonte: int | None = None) -> None:
     """Stage `features`: la tabla de un horizonte, partida en entrenamiento y
     prueba, con sus baselines. Sin horizonte, el de `params.yaml`."""
     cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
-    if cfg["incluir_trafico"] or cfg["incluir_meteo"]:
-        raise NotImplementedError("capa 192 y meteo: después de la fase 2")
+    if cfg["incluir_meteo"]:
+        raise NotImplementedError("meteo: sin fuente capturada")
+    trafico = (
+        pd.read_parquet(settings.interim_dir / "tramos_ruta"),
+        pd.read_parquet(
+            settings.curated_dir / "source=trafico_estado",
+            columns=["ts_ingest_utc", "idtramo", "estado"],
+        ),
+    )
     pasos = con_disponibilidad(
         _pasos(),
         pd.read_parquet(settings.interim_dir / "disponibilidad"),
@@ -619,6 +653,8 @@ def main(horizonte: int | None = None) -> None:
         umbral_s=cfg["umbral_retraso_s"],
         ventanas_flota_min=ventanas_flota(cfg),
         soporte_min=cfg["soporte_min"],
+        trafico=trafico,
+        trafico_edad_max_s=cfg["trafico_edad_max_s"],
     )
     train, test = partir(tabla, cfg["test_desde"])
     soporte = soporte_por_linea(

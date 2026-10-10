@@ -43,6 +43,13 @@ features:
   ventanas_flota_min: [5, 15]
   soporte_min: 2            # por debajo, no estimable (nulo), no cero
   incluir_trafico: false    # la capa 192 va después de la flota
+  # Un tramo de la 192 cubre un trozo de recorrido si va a esta distancia o
+  # menos durante al menos esta longitud de recorrido (ADR-024).
+  trafico_dist_max_m: 25
+  trafico_largo_min_m: 50
+  # Sin sondeo de la 192 más reciente que esto, el tráfico no se observa: la
+  # captura tiene huecos de horas (22-24/09, 18/08, 21/08).
+  trafico_edad_max_s: 900
   incluir_meteo: false     # sin fuente: no hay capa meteorológica capturada
   umbral_retraso_s: 300      # para la variante de clasificación binaria
   # Soporte para informar una línea con cifra propia: viajes y días de servicio

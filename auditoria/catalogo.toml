@@ -1256,8 +1256,10 @@ capa = "modelo"
 # El modelo entrena sin la flota como sensor y nada falla: la tabla las trae,
 # pero no las mira (train/serve skew).
 fichero = "src/project/train.py"
-buscar = '''    return features.variables(tuple(cfg["lags_min"]), features.ventanas_flota(cfg))'''
-reemplazar = '''    return features.variables(tuple(cfg["lags_min"]), ())'''
+buscar = '''        features.ventanas_flota(cfg),
+        trafico=cfg["incluir_trafico"],'''
+reemplazar = '''        (),
+        trafico=cfg["incluir_trafico"],'''
 detector = ["tests/test_modelo.py::test_el_modelo_ve_exactamente_las_variables_de_features"]
 sondas = []
 
@@ -1619,5 +1621,61 @@ fichero = "src/project/features.py"
 buscar = '''        hi = np.searchsorted(tf, t[idx], side="left")'''
 reemplazar = '''        hi = np.searchsorted(tf, t[idx], side="right")'''
 detector = ["tests/test_features.py::test_con_h_2_la_flota_del_tramo_no_ve_el_tramo_del_propio_viaje"]
+sondas = []
+
+[[mutante]]
+id = "132"
+nombre = "el tráfico usa el sondeo que llega justo en el ahora"
+capa = "features"
+# Trampa 017: lo que llega en t_disp todavía no está.
+fichero = "src/project/trafico.py"
+buscar = '''    k = np.searchsorted(tiempos, td, side="left") - 1'''
+reemplazar = '''    k = np.searchsorted(tiempos, td, side="right") - 1'''
+detector = ["tests/test_trafico.py::test_la_congestion_es_la_del_ultimo_sondeo_llegado_antes_del_ahora"]
+sondas = []
+
+[[mutante]]
+id = "133"
+nombre = "cortado y fallo del servicio cuentan como tráfico fluido"
+capa = "features"
+# Siete vías cerradas de forma permanente y un fallo de toda la capa pasarían
+# por «sin congestión» (bitácoras 005 y 031).
+fichero = "src/project/trafico.py"
+buscar = '''        np.where(e["estado"].isin(FLUIDO), 0.0, np.nan),'''
+reemplazar = '''        0.0,'''
+detector = ["tests/test_trafico.py::test_cortado_y_fallo_del_servicio_no_son_observaciones"]
+sondas = []
+
+[[mutante]]
+id = "134"
+nombre = "un sondeo de horas antes sigue valiendo como estado del tráfico"
+capa = "features"
+# La captura de la 192 tiene huecos de hasta 14 h (22-24/09).
+fichero = "src/project/trafico.py"
+buscar = '''    vigente = (k >= 0) & (edad <= edad_max_s)'''
+reemplazar = '''    vigente = k >= 0'''
+detector = ["tests/test_trafico.py::test_sin_sondeo_reciente_o_sin_sensor_no_hay_congestion"]
+sondas = []
+
+[[mutante]]
+id = "135"
+nombre = "un tramo que cruza la ruta cuenta como recorrerla"
+capa = "features"
+fichero = "src/project/trafico.py"
+buscar = '''        if hi - lo >= largo_min:'''
+reemplazar = '''        if True:'''
+detector = ["tests/test_trafico.py::test_un_tramo_corto_o_que_cruza_no_cubre"]
+sondas = []
+
+[[mutante]]
+id = "136"
+nombre = "el modelo ve el tráfico aunque incluir_trafico esté apagado"
+capa = "modelo"
+# La v2 dejaría de ser la v2 sin tráfico, y la comparación del ADR-024 no
+# compararía nada.
+fichero = "src/project/train.py"
+buscar = '''        trafico=cfg["incluir_trafico"],'''
+reemplazar = '''        trafico=True,'''
+detector = ["tests/test_modelo.py::test_el_modelo_ve_exactamente_las_variables_de_features"]
 sondas = []
 

@@ -96,6 +96,7 @@ def test_los_stages_de_dvc_son_los_documentados():
         "curar",
         "prepare",
         "disponibilidad",
+        "tramos_ruta",
         "features",
         "train",
         "evaluate",

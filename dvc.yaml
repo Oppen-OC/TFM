@@ -72,12 +72,32 @@ stages:
     outs:
       - data/interim/disponibilidad
 
+  tramos_ruta:
+    # Qué tramos de la capa 192 cubren cada trozo de cada trazado, en cada
+    # versión del GTFS (ADR-024). Geometría de data/reference (ADR-017).
+    cmd: uv run python -m project.trafico
+    deps:
+      - data/reference/trafico_estado_geometria.parquet
+      - data/raw/gtfs
+      - src/project/trafico.py
+      - src/project/gtfs.py
+      - src/project/mapmatching.py
+    params:
+      - features.trafico_dist_max_m
+      - features.trafico_largo_min_m
+    outs:
+      - data/interim/tramos_ruta
+
   features:
     cmd: uv run python -m project.features
     deps:
       - data/interim/pasos
       - data/interim/disponibilidad
+      # el estado de la 192 en el recorrido que queda (ADR-024)
+      - data/interim/tramos_ruta
+      - data/curated
       - src/project/features.py
+      - src/project/trafico.py
     params:
       - features
     outs:
@@ -132,7 +152,10 @@ stages:
       deps:
         - data/interim/pasos
         - data/interim/disponibilidad
+        - data/interim/tramos_ruta
+        - data/curated
         - src/project/features.py
+        - src/project/trafico.py
       params:
         - features
       outs:

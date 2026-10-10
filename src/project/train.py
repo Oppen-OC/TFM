@@ -43,7 +43,11 @@ EXPERIMENTO = "retraso_siguiente_parada"
 
 def columnas(cfg: dict) -> list[str]:
     """Las variables del modelo según `params.yaml → features`."""
-    return features.variables(tuple(cfg["lags_min"]), features.ventanas_flota(cfg))
+    return features.variables(
+        tuple(cfg["lags_min"]),
+        features.ventanas_flota(cfg),
+        trafico=cfg["incluir_trafico"],
+    )
 
 
 def separar_validacion(

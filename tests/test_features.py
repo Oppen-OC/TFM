@@ -677,3 +677,40 @@ def test_con_h_2_la_flota_del_tramo_no_ve_el_tramo_del_propio_viaje():
     f = _fila(t, "A", 1)
     assert f["tramo_soporte_15min"] == 2
     assert f["tramo_ganado_15min"] == 90.0  # mediana de 60 y 120, sin el 999
+
+
+# --------------------------------------------------------------------------- #
+# La capa 192 en la tabla (ADR-024)
+# --------------------------------------------------------------------------- #
+def test_la_tabla_lleva_el_trafico_del_recorrido_que_queda_y_el_modelo_no_por_defecto():
+    """Recorrido de P01 (0 m) a P02 (400 m): el tramo 7 cubre 100-400 m y está
+    denso en el último sondeo llegado antes del ahora."""
+    filas = [
+        _paso("A", 1, 10, 0, llega=0.5),
+        _paso("A", 2, 12, 0),
+    ]
+    for f in filas:
+        f["shape_id"] = "S1"
+    intervalos = pd.DataFrame(
+        {
+            "feed_version": "F1",
+            "shape_id": "S1",
+            "idtramo": [7],
+            "s_ini": [100.0],
+            "s_fin": [400.0],
+        }
+    )
+    estados = pd.DataFrame(
+        {
+            "ts_ingest_utc": [T0 + pd.Timedelta(minutes=8)],
+            "idtramo": [7],
+            "estado": [1],
+        }
+    )
+    t = _construir(filas, horizonte=1, trafico=(intervalos, estados))
+    f = _fila(t, "A", 1)
+    assert f["trafico_cubierto_m"] == 300
+    assert f["trafico_congestion_frac"] == 1.0
+    assert f["trafico_edad_s"] == pytest.approx(150)  # 10,5 − 8 min
+    assert not set(features.TRAFICO) & set(features.variables())
+    assert set(features.TRAFICO) <= set(features.variables(trafico=True))
