@@ -1,7 +1,7 @@
 {
   "modelo": {
     "n_arboles": 705,
-    "mlflow_run_id": "eb470decce294fed93d257433485bd9d"
+    "mlflow_run_id": "e032e8205d8145d9ac60f2cbd8c357be"
   },
   "horizonte_paradas": 1,
   "remuestreo": {
