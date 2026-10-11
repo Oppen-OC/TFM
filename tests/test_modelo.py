@@ -14,6 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from project import evaluate, features, gtfs, predict, train
 from project.analysis import elegir_brazo
@@ -286,3 +287,76 @@ def test_el_intervalo_por_dias_recoge_lo_que_cambia_de_un_dia_a_otro():
     dias = r["modelo_menos_remuestreando_dias"]["persistencia_tramo"]["mae_ic95"]
     assert dias[1] - dias[0] > 5 * (viajes[1] - viajes[0])
     assert "modelo_menos_remuestreando_dias" not in evaluate.resumen(t, OBJ)
+
+
+def _con_y_sin():
+    """Seis grupos de 4 viajes × 3 filas en dos días. Sin tráfico se yerra 50 s en
+    todas las filas; con tráfico, 50 + `cambio`. Cada grupo pone a prueba una
+    frontera del ADR-024."""
+    grupos = {
+        # grupo: (metros con sensor de 100, congestión, horizonte previsto, cambio)
+        "A": (90.0, 0.0, 60.0, -1.0),  # > 75 %, fluido
+        "B": (90.0, 0.5, 60.0, -5.0),  # > 75 %, con congestión
+        "C": (0.0, np.nan, 60.0, 0.0),  # sin sensor
+        "D": (60.0, 0.0, 60.0, 1.0),  # 50-75 %
+        "F": (75.0, 0.0, 60.0, 3.0),  # 75 % justo: no es «> 75 %»
+        "E": (90.0, 0.0, -10.0, -30.0),  # ya no llega a tiempo: fuera de la población
+    }
+    filas = [
+        {
+            "fecha_servicio": pd.Timestamp("2026-10-07") + pd.Timedelta(days=v % 2),
+            "viaje_id": f"{g}{v}",
+            "trafico_cubierto_m": cubierto,
+            "dist_objetivo_m": 100.0,
+            "trafico_congestion_frac": frac,
+            "horizonte_previsto_s": previsto,
+            "ultimo_conocido": True,
+            OBJ: 0.0,
+            "_cambio": cambio,
+        }
+        for g, (cubierto, frac, previsto, cambio) in grupos.items()
+        for v in range(4)
+        for _ in range(3)
+    ]
+    t = pd.DataFrame(filas)
+    return t, t[OBJ] + 50.0 + t["_cambio"], t[OBJ] + 50.0
+
+
+def test_la_comparacion_del_trafico_separa_los_estratos_del_adr_024():
+    t, con, sin = _con_y_sin()
+    r = evaluate.comparacion_trafico(t, con, sin, OBJ)
+    assert r["con_sensor"]["filas"] == 24
+    assert r["con_sensor"]["con_menos_sin_s"] == -3.0
+    assert r["con_sensor"]["relativa"] == -0.06
+    assert r["con_congestion_observada"]["con_menos_sin_s"] == -5.0
+    assert r["sin_sensor"]["con_menos_sin_s"] == 0.0
+    # Con el 75 % justo dentro, el estrato con sensor bajaría a −1,0.
+    assert r["por_cobertura"]["50-75 %"]["con_menos_sin_s"] == 2.0
+    # Sin la población entraría el grupo E, y el conjunto bajaría a −5,33.
+    assert r["conjunto"]["filas"] == 60
+    assert r["conjunto"]["con_menos_sin_s"] == -0.4
+    # Un estrato vacío no tira la única evaluación de la prueba.
+    sin_b = t["viaje_id"].str[0] != "B"
+    r = evaluate.comparacion_trafico(t[sin_b], con[sin_b], sin[sin_b], OBJ)
+    assert r["con_congestion_observada"] == {"filas": 0}
+
+
+def test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192():
+    """Cruzar los dos modelos invierte el signo de la primaria sin ningún error."""
+    sin = {
+        "columnas": train.columnas(CFG),
+        "categorias": ["A", "B"],
+        "residuo": True,
+        "validacion": {"dias": ["2026-09-28"]},
+    }
+    con = {**sin, "columnas": train.columnas({**CFG, "incluir_trafico": True})}
+    evaluate.comprobar_pareja(con, sin)
+    for mal in (
+        (sin, con),  # cruzados
+        ({**con, "columnas": [*con["columnas"], "otra"]}, sin),  # otra variable
+        ({**con, "categorias": ["A"]}, sin),  # otro entrenamiento
+        ({**con, "residuo": False}, sin),  # otra configuración
+        ({**con, "validacion": {"dias": ["2026-09-27"]}}, sin),  # otra validación
+    ):
+        with pytest.raises(ValueError):
+            evaluate.comprobar_pareja(*mal)

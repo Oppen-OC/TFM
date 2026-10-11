@@ -14,6 +14,8 @@ población, con los intervalos por viajes y por días: en conjunto, según cuán
 del recorrido tiene sensor y según lo que la capa decía al predecir. Con esto
 se fijó el estrato con sensor antes de mirar la prueba (bitácora 048). Solo
 diagnostica: no fija nada del pipeline.
+
+Los estratos y la comparación son los de `evaluate.py`: la fase 2 los usa tal cual.
 """
 
 from __future__ import annotations
@@ -21,7 +23,6 @@ from __future__ import annotations
 import json
 
 import mlflow
-import numpy as np
 import pandas as pd
 import yaml
 
@@ -31,9 +32,6 @@ from project.config import RAIZ
 FIN_AJUSTE = pd.Timestamp("2026-09-28")  # validación: 28/09-04/10
 FIN_DATOS = pd.Timestamp("2026-10-05")
 HORIZONTES = (2, 3, 5, 10)
-# Bandas de la fracción del recorrido con sensor, para elegir el estrato.
-COBERTURA = [-np.inf, 0, 0.25, 0.5, 0.75, np.inf]
-NOMBRES_COBERTURA = ["0", "0-25 %", "25-50 %", "50-75 %", "> 75 %"]
 
 
 def _tabla(horizonte: int) -> pd.DataFrame:
@@ -43,30 +41,7 @@ def _tabla(horizonte: int) -> pd.DataFrame:
         ignore_index=True,
     )
     t = t[(t["fecha_servicio"] < FIN_DATOS) & features.poblacion(t)]
-    cobertura = (t["trafico_cubierto_m"] / t["dist_objetivo_m"]).clip(upper=1)
-    frac = t["trafico_congestion_frac"]
-    # Lo que dice la capa al predecir: se conoce entonces, no es el resultado.
-    estado = np.select(
-        [frac.isna(), frac == 0], ["sin dato", "fluido"], default="con congestión"
-    )
-    return t.assign(
-        _cobertura=pd.cut(cobertura, COBERTURA, labels=NOMBRES_COBERTURA),
-        _estado=estado,
-    ).reset_index(drop=True)
-
-
-def _comparar(e_con: pd.Series, e_sin: pd.Series, val: pd.DataFrame) -> dict:
-    viaje = val.groupby(features.CLAVE_VIAJE, sort=False).ngroup()
-    v = evaluate.diferencia(e_con, e_sin, viaje)
-    d = evaluate.diferencia(e_con, e_sin, val["fecha_servicio"])
-    return {
-        "filas": int(len(val)),
-        "mae_sin_s": round(float(e_sin.abs().mean()), 2),
-        "mae_con_s": round(float(e_con.abs().mean()), 2),
-        "con_menos_sin_s": v["mae_s"],
-        "ic_viajes": v["mae_ic95"],
-        "ic_dias": d["mae_ic95"],
-    }
+    return evaluate.estratos_trafico(t).reset_index(drop=True)
 
 
 def main() -> None:
@@ -103,13 +78,17 @@ def main() -> None:
             .value_counts(normalize=True)
             .round(4)
             .to_dict(),
-            "global": _comparar(errores["con"], errores["sin"], val),
+            "global": evaluate.con_menos_sin(errores["con"], errores["sin"], val),
             "por_cobertura": {
-                str(k): _comparar(errores["con"][g.index], errores["sin"][g.index], g)
+                str(k): evaluate.con_menos_sin(
+                    errores["con"][g.index], errores["sin"][g.index], g
+                )
                 for k, g in val.groupby("_cobertura", observed=True)
             },
             "por_estado_observado": {
-                str(k): _comparar(errores["con"][g.index], errores["sin"][g.index], g)
+                str(k): evaluate.con_menos_sin(
+                    errores["con"][g.index], errores["sin"][g.index], g
+                )
                 for k, g in val.groupby("_estado")
             },
         }

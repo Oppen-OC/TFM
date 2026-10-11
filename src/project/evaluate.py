@@ -47,6 +47,12 @@ NOMBRES = ["<= 8 min", "8-15 min", "15-30 min", "> 30 min"]
 HORIZONTES = [0, 30, 60, 120, 300, 600, np.inf]
 NOMBRES_HORIZONTE = ["0-30 s", "30-60 s", "1-2 min", "2-5 min", "5-10 min", "> 10 min"]
 SIN_INTERVALO = "sin_intervalo"
+# Fracción del recorrido i -> i + h bajo la 192 (ADR-024, enmienda del 10/10).
+# Es geométrica y se sabe antes de predecir. La primaria mide el último estrato.
+COBERTURA = [-np.inf, 0, 0.25, 0.5, 0.75, np.inf]
+NOMBRES_COBERTURA = ["0", "0-25 %", "25-50 %", "50-75 %", "> 75 %"]
+SIN_SENSOR, CON_SENSOR = NOMBRES_COBERTURA[0], NOMBRES_COBERTURA[-1]
+CONGESTION = "con congestión"
 
 
 def intervalos(h: gtfs.Horario, dia: date) -> pd.DataFrame:
@@ -173,6 +179,91 @@ def resumen(t: pd.DataFrame, objetivo: str, dias: bool = False) -> dict:
     return r
 
 
+def estratos_trafico(t: pd.DataFrame) -> pd.DataFrame:
+    """`t` con `_cobertura`, la fracción del recorrido con sensor, y `_estado`, lo
+    que decía la capa al predecir. Las dos se saben antes de predecir:
+    estratificar por ellas no es condicionar por el resultado (ADR-024)."""
+    cobertura = (t["trafico_cubierto_m"] / t["dist_objetivo_m"]).clip(upper=1)
+    frac = t["trafico_congestion_frac"]
+    estado = np.select(
+        [frac.isna(), frac == 0], ["sin dato", "fluido"], default=CONGESTION
+    )
+    return t.assign(
+        _cobertura=pd.cut(cobertura, COBERTURA, labels=NOMBRES_COBERTURA),
+        _estado=estado,
+    )
+
+
+def con_menos_sin(e_con: pd.Series, e_sin: pd.Series, t: pd.DataFrame) -> dict:
+    """MAE con tráfico menos MAE sin él sobre las filas de `t`, con los intervalos
+    por viajes y por días (ADR-018), y el efecto relativo al MAE sin tráfico."""
+    viaje = t.groupby(features.CLAVE_VIAJE, sort=False).ngroup()
+    v = diferencia(e_con, e_sin, viaje)
+    d = diferencia(e_con, e_sin, t["fecha_servicio"])
+    mae_sin, mae_con = float(e_sin.abs().mean()), float(e_con.abs().mean())
+    return {
+        "filas": int(len(t)),
+        "mae_sin_s": round(mae_sin, 2),
+        "mae_con_s": round(mae_con, 2),
+        "con_menos_sin_s": v["mae_s"],
+        "relativa": round((mae_con - mae_sin) / mae_sin, 4),
+        "ic_viajes": v["mae_ic95"],
+        "ic_dias": d["mae_ic95"],
+    }
+
+
+def comprobar_pareja(con: dict, sin: dict) -> None:
+    """El mismo modelo salvo las variables de la 192 (ADR-024, punto 3).
+
+    Cruzarlos, o compararlos tras entrenar uno con otros datos, invierte o
+    falsea la primaria sin ningún error.
+    """
+    trafico = set(features.TRAFICO)
+    if not (
+        set(con["columnas"]) == set(sin["columnas"]) | trafico
+        and not trafico & set(sin["columnas"])
+        and con["categorias"] == sin["categorias"]
+        and con["residuo"] == sin["residuo"]
+        and con["validacion"]["dias"] == sin["validacion"]["dias"]
+    ):
+        raise ValueError(
+            "los modelos con y sin tráfico no son la misma pareja (ADR-024)"
+        )
+
+
+def comparacion_trafico(
+    t: pd.DataFrame, pred_con: pd.Series, pred_sin: pd.Series, objetivo: str
+) -> dict:
+    """El modelo con la capa 192 contra el mismo modelo sin ella, sobre las mismas
+    filas de la población (ADR-022 y ADR-024).
+
+    `con_sensor` es la primaria con h = 5. El resto es descriptivo: el conjunto,
+    las filas en las que la capa veía congestión al predecir (el secundario) y las
+    que no tienen ningún sensor en el recorrido (el control: lo que la primaria no
+    supere a este no se atribuye a la congestión).
+    """
+    e_con, e_sin = pred_con - t[objetivo], pred_sin - t[objetivo]
+    t = estratos_trafico(t[features.poblacion(t)])
+
+    def en(g: pd.DataFrame) -> dict:
+        if g.empty:
+            return {"filas": 0}
+        return con_menos_sin(e_con[g.index], e_sin[g.index], g)
+
+    def por(col: str) -> dict:
+        return {str(k): en(g) for k, g in t.groupby(col, observed=True)}
+
+    return {
+        "dias": int(t["fecha_servicio"].nunique()),
+        "con_sensor": en(t[t["_cobertura"] == CON_SENSOR]),
+        "conjunto": en(t),
+        "con_congestion_observada": en(t[t["_estado"] == CONGESTION]),
+        "sin_sensor": en(t[t["_cobertura"] == SIN_SENSOR]),
+        "por_cobertura": por("_cobertura"),
+        "por_estado_observado": por("_estado"),
+    }
+
+
 def main(horizonte: int | None = None) -> None:
     """Sin horizonte, el de `params.yaml`; con él, el del barrido (ADR-023)."""
     cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
@@ -245,7 +336,69 @@ def main(horizonte: int | None = None) -> None:
     print({k: v["modelo_menos"] for k, v in metricas["por_banda"].items()})
 
 
+def main_trafico(horizonte: int | None = None) -> None:
+    """Stage `evaluate_trafico`: el modelo con tráfico menos el de sin tráfico en
+    la prueba (ADR-024). Sin horizonte, el de `params.yaml`; con él, el del
+    barrido."""
+    cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
+    rutas = features.salidas(horizonte)
+    con = predict.cargar(rutas["modelo_trafico"])
+    sin = predict.cargar(rutas["modelo"])
+    comprobar_pareja(con, sin)
+    test = pd.read_parquet(rutas["tabla"] / "test.parquet")
+    metricas = {
+        "horizonte_paradas": horizonte or cfg["horizonte_paradas"],
+        "prueba": [cfg["test_desde"], cfg["test_hasta"]],
+        "modelos": {
+            nombre: {
+                "n_arboles": a["n_arboles"],
+                "mlflow_run_id": a["mlflow_run_id"],
+                "validacion": a["validacion"]["dias"],
+            }
+            for nombre, a in (("con", con), ("sin", sin))
+        },
+        "remuestreo": {
+            "unidad": "viaje y día",
+            "replicas": REPLICAS,
+            "semilla": SEMILLA,
+        },
+        **comparacion_trafico(
+            test,
+            predict.predecir(con, test),
+            predict.predecir(sin, test),
+            cfg["objetivo"],
+        ),
+    }
+    rutas["metricas"].mkdir(parents=True, exist_ok=True)
+    (rutas["metricas"] / "trafico.json").write_text(
+        json.dumps(metricas, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    plano = pd.json_normalize(
+        {k: metricas[k] for k in ("con_sensor", "conjunto")}, sep="."
+    ).iloc[0]
+    with mlflow.start_run(run_id=con["mlflow_run_id"]):
+        mlflow.log_metrics(
+            {
+                f"trafico.{k}": float(v)
+                for k, v in plano.items()
+                if isinstance(v, (int, float))
+            }
+        )
+        mlflow.log_dict(metricas, "trafico.json")
+    print(
+        json.dumps(
+            {k: metricas[k] for k in ("dias", "con_sensor", "conjunto")},
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
+
+
 if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--horizonte", type=int, default=None, help="paradas (ADR-023)")
-    main(a.parse_args().horizonte)
+    a.add_argument(
+        "--trafico", action="store_true", help="con menos sin tráfico (ADR-024)"
+    )
+    args = a.parse_args()
+    (main_trafico if args.trafico else main)(args.horizonte)
