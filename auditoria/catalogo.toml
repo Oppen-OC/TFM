@@ -1679,3 +1679,67 @@ reemplazar = '''        trafico=True,'''
 detector = ["tests/test_modelo.py::test_el_modelo_ve_exactamente_las_variables_de_features"]
 sondas = []
 
+
+[[mutante]]
+id = "137"
+nombre = "la prueba no tiene tope: entra lo que traiga pull_data.sh después del 19/10"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''    prueba = (dia >= pd.Timestamp(test_desde)) & (dia <= pd.Timestamp(test_hasta))'''
+reemplazar = '''    prueba = dia >= pd.Timestamp(test_desde)'''
+detector = ["tests/test_features.py::test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba"]
+sondas = []
+
+[[mutante]]
+id = "138"
+nombre = "el entrenamiento llega hasta la prueba: el 06/10 parcial mueve la validación"
+capa = "features"
+fichero = "src/project/features.py"
+buscar = '''    train = dia <= pd.Timestamp(train_hasta)'''
+reemplazar = '''    train = dia < pd.Timestamp(test_desde)'''
+detector = ["tests/test_features.py::test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba"]
+sondas = []
+
+[[mutante]]
+id = "139"
+nombre = "el estrato con sensor admite el 75 % justo"
+capa = "modelo"
+# La primaria se fijó con «más del 75 %» antes de ver la prueba (ADR-024).
+fichero = "src/project/evaluate.py"
+buscar = '''COBERTURA = [-np.inf, 0, 0.25, 0.5, 0.75, np.inf]'''
+reemplazar = '''COBERTURA = [-np.inf, 0, 0.25, 0.5, 0.7, np.inf]'''
+detector = ["tests/test_modelo.py::test_la_comparacion_del_trafico_separa_los_estratos_del_adr_024"]
+sondas = []
+
+[[mutante]]
+id = "140"
+nombre = "la comparación del tráfico cuenta filas que ya no llegan a tiempo"
+capa = "modelo"
+fichero = "src/project/evaluate.py"
+buscar = '''    t = estratos_trafico(t[features.poblacion(t)])'''
+reemplazar = '''    t = estratos_trafico(t)'''
+detector = ["tests/test_modelo.py::test_la_comparacion_del_trafico_separa_los_estratos_del_adr_024"]
+sondas = []
+
+[[mutante]]
+id = "141"
+nombre = "la comparación acepta dos modelos cruzados o de entrenamientos distintos"
+capa = "modelo"
+# Cruzados, la primaria cambia de signo sin ningún error.
+fichero = "src/project/evaluate.py"
+buscar = '''        raise ValueError(
+            "los modelos con y sin tráfico no son la misma pareja (ADR-024)"
+        )'''
+reemplazar = '''        pass'''
+detector = ["tests/test_modelo.py::test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192"]
+sondas = []
+
+[[mutante]]
+id = "142"
+nombre = "el modelo con tráfico se guarda encima del de sin tráfico"
+capa = "modelo"
+fichero = "src/project/features.py"
+buscar = '''            "modelo_trafico": modelo.with_name(con_trafico),'''
+reemplazar = '''            "modelo_trafico": modelo,'''
+detector = ["tests/test_modelo.py::test_el_modelo_con_trafico_no_pisa_al_de_sin_trafico"]
+sondas = []
