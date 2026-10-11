@@ -436,10 +436,26 @@ def construir(
     return p.drop(columns=fuera).reset_index(drop=True)
 
 
-def partir(tabla: pd.DataFrame, test_desde: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Split TEMPORAL por día de servicio (ADR-007): ningún viaje a los dos lados."""
-    prueba = tabla["fecha_servicio"] >= pd.Timestamp(test_desde)
-    return tabla[~prueba].reset_index(drop=True), tabla[prueba].reset_index(drop=True)
+def partir(
+    tabla: pd.DataFrame, train_hasta: str, test_desde: str, test_hasta: str
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split TEMPORAL por día de servicio (ADR-007): ningún viaje a los dos lados.
+
+    Los tres cortes son días de servicio, inclusivos. Lo que cae entre
+    `train_hasta` y `test_desde`, o después de `test_hasta`, no entra en ninguna
+    tabla: un día parcial al final del entrenamiento movería la validación, y
+    `pull_data.sh` trae también los días posteriores a la prueba (ADR-024). Sí
+    cuentan como historia: las ventanas y el sesgo del tramo se calculan antes de
+    partir.
+    """
+    if pd.Timestamp(train_hasta) >= pd.Timestamp(test_desde):
+        raise ValueError(
+            f"el entrenamiento ({train_hasta}) pisa la prueba ({test_desde})"
+        )
+    dia = tabla["fecha_servicio"]
+    train = dia <= pd.Timestamp(train_hasta)
+    prueba = (dia >= pd.Timestamp(test_desde)) & (dia <= pd.Timestamp(test_hasta))
+    return tabla[train].reset_index(drop=True), tabla[prueba].reset_index(drop=True)
 
 
 def soporte_por_linea(
@@ -656,7 +672,9 @@ def main(horizonte: int | None = None) -> None:
         trafico=trafico,
         trafico_edad_max_s=cfg["trafico_edad_max_s"],
     )
-    train, test = partir(tabla, cfg["test_desde"])
+    train, test = partir(
+        tabla, cfg["train_hasta"], cfg["test_desde"], cfg["test_hasta"]
+    )
     soporte = soporte_por_linea(
         train, test, cfg["linea_min_viajes"], cfg["linea_min_dias"]
     )

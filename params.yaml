@@ -59,9 +59,18 @@ features:
   linea_min_dias: 3
   # Split TEMPORAL, nunca aleatorio: con series de posiciones, un split
   # aleatorio filtra el futuro en el entrenamiento y te da métricas falsas.
-  # Captura hasta el 04/10: prueba de dos semanas enteras (21/09-04/10, lunes a
-  # domingo); entrenamiento, agosto y la semana lectiva del 14 al 20/09 (ADR-007).
-  test_desde: "2026-09-21"
+  # Tres cortes, días de servicio inclusivos (ADR-024, nota del 11/10). El
+  # entrenamiento es todo hasta el 04/10, y su última semana (28/09-04/10) es
+  # la validación (`train.dias_validacion`). Quedan fuera de toda tabla:
+  #   - el 05/10, sin captura (bitácora 044);
+  #   - el 06/10, parcial: la captura volvió a las 15:22 locales, sin la punta
+  #     de mañana, y en el entrenamiento movería la validación al 30/09-06/10;
+  #   - lo posterior al 19/10, último día del horario 19-09-2026, que
+  #     `pull_data.sh` trae igual.
+  # La prueba, del 07 al 19/10, no la ha visto nadie.
+  train_hasta: "2026-10-04"
+  test_desde: "2026-10-07"
+  test_hasta: "2026-10-19"
 
 train:
   # Brazo elegido por analysis/elegir_brazo.py en la validación (ADR-021).

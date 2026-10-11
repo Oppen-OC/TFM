@@ -142,10 +142,40 @@ def test_el_split_es_por_dia_de_servicio_y_no_parte_viajes():
     # Como llega de `pasos`: fechas `date` en unas particiones y `datetime64` en otras.
     for f in filas[3:]:
         f["fecha_servicio"] = f["fecha_servicio"].date()
-    train, test = features.partir(_construir(filas), "2026-09-14")
+    train, test = features.partir(
+        _construir(filas), "2026-09-13", "2026-09-14", "2026-09-14"
+    )
     assert set(train["viaje_id"]) == {"A"} and set(test["viaje_id"]) == {"B"}
     assert (train["fecha_servicio"] < "2026-09-14").all()
     assert (test["fecha_servicio"] >= "2026-09-14").all()
+
+
+def test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba():
+    """ADR-024: entrenamiento hasta el 04/10 y prueba del 07 al 19/10.
+
+    El 05 y el 06/10 no van a ningún lado: el 06/10 es parcial y, dentro del
+    entrenamiento, movería la validación al 30/09-06/10. El 20/10 lo trae
+    `pull_data.sh` y caería en la prueba.
+    """
+    dias = [
+        "2026-10-04",
+        "2026-10-05",
+        "2026-10-06",
+        "2026-10-07",
+        "2026-10-19",
+        "2026-10-20",
+    ]
+    filas = [
+        _paso(f"V{i}", s, 2 * s, 0, dia=d)
+        for i, d in enumerate(dias)
+        for s in range(1, 4)
+    ]
+    tabla = _construir(filas)
+    train, test = features.partir(tabla, "2026-10-04", "2026-10-07", "2026-10-19")
+    assert set(train["viaje_id"]) == {"V0"}
+    assert set(test["viaje_id"]) == {"V3", "V4"}
+    with pytest.raises(ValueError):
+        features.partir(tabla, "2026-10-07", "2026-10-07", "2026-10-19")
 
 
 def test_la_tabla_no_lleva_diagnosticos_que_miran_el_futuro_y_trae_sus_variables():

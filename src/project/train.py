@@ -149,7 +149,7 @@ def main(horizonte: int | None = None) -> None:
             {
                 **p,
                 "n_arboles": art["n_arboles"],
-                "test_desde": cfg["test_desde"],
+                **{k: cfg[k] for k in ("train_hasta", "test_desde", "test_hasta")},
                 "horizonte_paradas": horizonte or cfg["horizonte_paradas"],
             }
         )
