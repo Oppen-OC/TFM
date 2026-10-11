@@ -1,0 +1,166 @@
+{
+  "rev": "3ad28ec",
+  "segundos": 768,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 87.6
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 86.1
+    },
+    {
+      "id": "137",
+      "nombre": "la prueba no tiene tope: entra lo que traiga pull_data.sh después del 19/10",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 83.8
+    },
+    {
+      "id": "138",
+      "nombre": "el entrenamiento llega hasta la prueba: el 06/10 parcial mueve la validación",
+      "capa": "features",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_features.py::test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 82.6
+    },
+    {
+      "id": "139",
+      "nombre": "el estrato con sensor admite el 75 % justo",
+      "capa": "modelo",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_modelo.py::test_la_comparacion_del_trafico_separa_los_estratos_del_adr_024"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_modelo.py::test_la_comparacion_del_trafico_separa_los_estratos_del_adr_024"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 84.1
+    },
+    {
+      "id": "140",
+      "nombre": "la comparación del tráfico cuenta filas que ya no llegan a tiempo",
+      "capa": "modelo",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_modelo.py::test_la_comparacion_del_trafico_separa_los_estratos_del_adr_024"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_modelo.py::test_la_comparacion_del_trafico_separa_los_estratos_del_adr_024"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 87.8
+    },
+    {
+      "id": "141",
+      "nombre": "la comparación acepta dos modelos cruzados o de entrenamientos distintos",
+      "capa": "modelo",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_modelo.py::test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_modelo.py::test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 84.7
+    },
+    {
+      "id": "142",
+      "nombre": "el modelo con tráfico se guarda encima del de sin tráfico",
+      "capa": "modelo",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_cada_horizonte_escribe_en_su_sitio_y_el_de_params_en_el_de_siempre",
+        "tests/test_modelo.py::test_el_modelo_con_trafico_no_pisa_al_de_sin_trafico"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_modelo.py::test_el_modelo_con_trafico_no_pisa_al_de_sin_trafico"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 85.5
+    }
+  ]
+}
