@@ -132,10 +132,16 @@ def entrenar(
     return {**art, "modelo": final, "n_arboles": n, "validacion": validacion}
 
 
-def main(horizonte: int | None = None) -> None:
-    """Sin horizonte, el de `params.yaml`; con él, el del barrido (ADR-023)."""
+def main(horizonte: int | None = None, trafico: bool = False) -> None:
+    """Sin horizonte, el de `params.yaml`; con él, el del barrido (ADR-023).
+
+    Con `trafico`, el mismo modelo con las variables de la capa 192 (ADR-024):
+    misma configuración y mismas filas; solo cambian las variables.
+    """
     params = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
     cfg, p = params["features"], params["train"]
+    if trafico:
+        cfg = {**cfg, "incluir_trafico": True}
     rutas = features.salidas(horizonte)
     train = pd.read_parquet(rutas["tabla"] / "train.parquet")
     # Se entrena con las filas en las que el modelo se va a usar (ADR-022).
@@ -150,6 +156,7 @@ def main(horizonte: int | None = None) -> None:
                 **p,
                 "n_arboles": art["n_arboles"],
                 **{k: cfg[k] for k in ("train_hasta", "test_desde", "test_hasta")},
+                "trafico": cfg["incluir_trafico"],
                 "horizonte_paradas": horizonte or cfg["horizonte_paradas"],
             }
         )
@@ -168,7 +175,7 @@ def main(horizonte: int | None = None) -> None:
         mlflow.log_dict(art["validacion"], "validacion.json")
         mlflow.xgboost.log_model(art["modelo"], name="modelo")
 
-    ruta = rutas["modelo"]
+    ruta = rutas["modelo_trafico" if trafico else "modelo"]
     ruta.parent.mkdir(parents=True, exist_ok=True)
     ruta.write_bytes(pickle.dumps(art))
     print(json.dumps({k: art[k] for k in ("n_arboles", "validacion")}, indent=2))
@@ -177,4 +184,6 @@ def main(horizonte: int | None = None) -> None:
 if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--horizonte", type=int, default=None, help="paradas (ADR-023)")
-    main(a.parse_args().horizonte)
+    a.add_argument("--trafico", action="store_true", help="con la capa 192 (ADR-024)")
+    args = a.parse_args()
+    main(args.horizonte, args.trafico)

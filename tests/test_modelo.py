@@ -69,6 +69,15 @@ def test_el_modelo_ve_exactamente_las_variables_de_features():
     assert art["modelo"].get_booster().feature_names == art["columnas"]
 
 
+def test_el_modelo_con_trafico_no_pisa_al_de_sin_trafico():
+    """Los dos modelos del ADR-024 van juntos y en ficheros distintos: si
+    compartieran ruta, la comparación enfrentaría un modelo consigo mismo."""
+    for h in (None, 5):
+        r = features.salidas(h)
+        assert r["modelo_trafico"] != r["modelo"]
+        assert r["modelo_trafico"].parent == r["modelo"].parent
+
+
 def test_la_validacion_son_los_ultimos_dias_del_entrenamiento():
     t = _tabla(dias=6)
     ajuste, val = train.separar_validacion(t, 2)

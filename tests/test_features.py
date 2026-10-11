@@ -611,7 +611,7 @@ def test_cada_horizonte_escribe_en_su_sitio_y_el_de_params_en_el_de_siempre():
     assert base["modelo"] == RAIZ / settings.model_path
     assert base["metricas"] == RAIZ / "metrics"
     rutas = [base, features.salidas(2), features.salidas(10)]
-    assert len({str(r) for d in rutas for r in d.values()}) == 9
+    assert len({str(r) for d in rutas for r in d.values()}) == 12
 
 
 def test_la_disponibilidad_se_une_a_los_pasos_por_clave_y_no_por_posicion():

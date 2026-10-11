@@ -578,19 +578,23 @@ def salidas(horizonte: int | None = None) -> dict[str, Path]:
     """Dónde escriben `features`, `train` y `evaluate`.
 
     Sin horizonte, las rutas de siempre: es el de `params.yaml` y la bitácora las
-    cita. Con él, una carpeta por horizonte del barrido (ADR-023).
+    cita. Con él, una carpeta por horizonte del barrido (ADR-023). El modelo con
+    la capa 192 va junto al de sin ella (ADR-024).
     """
     modelo = RAIZ / settings.model_path
+    con_trafico = f"{modelo.stem}_trafico{modelo.suffix}"
     if horizonte is None:
         return {
             "tabla": settings.processed_dir,
             "modelo": modelo,
+            "modelo_trafico": modelo.with_name(con_trafico),
             "metricas": RAIZ / "metrics",
         }
     h = f"h{horizonte}"
     return {
         "tabla": settings.processed_dir / h,
         "modelo": modelo.parent / h / modelo.name,
+        "modelo_trafico": modelo.parent / h / con_trafico,
         "metricas": RAIZ / "metrics" / "horizontes" / h,
     }
 
