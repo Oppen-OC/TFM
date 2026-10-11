@@ -159,6 +159,10 @@ lectiva (bitácora 037). Se descartó el 28/09: dos semanas lectivas en
 entrenamiento, pero una sola de prueba, y el soporte por línea pide días de
 prueba (bitácora 036).
 
+**Corte (11/10).** Tres fechas en vez de una (`features.train_hasta`,
+`test_desde` y `test_hasta`): entrenamiento hasta el 04/10 y prueba del 07 al
+19/10 (ADR-024, nota del 11/10).
+
 **Por qué está aquí.** Es el primer error que busca un tribunal en un trabajo de
 series temporales. La decisión no se rediscute: se defiende.
 
@@ -900,6 +904,36 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
 - **Lectura.** Como en el ADR-018, se informa el tamaño del efecto: en segundos
   y relativo al MAE del modelo sin tráfico. En la validación, la primaria daba
   −0,07 s sobre 56 s.
+
+**Nota del 11/10**, antes de construir la fase 2 y de traer la prueba:
+- **Ventana de prueba: del 07 al 19/10**, 13 días de servicio. El 06/10 queda
+  fuera: la captura volvió a las 13:22 UTC (15:22 locales) y le falta la punta
+  de mañana, y el punto 1 pide días completos. El 05/10 no tiene captura
+  (bitácora 044).
+- **Tres cortes en `features.partir`:** entrenamiento hasta el 04/10 y prueba
+  del 07 al 19/10. Lo que cae en medio o después no entra en ninguna tabla,
+  aunque sí cuenta como historia para las ventanas y el sesgo del tramo. Sin
+  el corte del entrenamiento, el 06/10 movería la validación al 30/09-06/10; sin
+  el de la prueba, `pull_data.sh` metería en ella el 20/10 y lo posterior.
+- **Horario: la `19-09-2026`**, vigente del 12/09 al 19/10, con los festivos
+  del 09 y el 12/10 en su `calendar_dates`. Las versiones que guarda la Pi no
+  entran en `gtfs_dir`: la `05-10-2026` es vigente desde el 28/09 y, por la
+  regla del ADR-014, reetiquetaría la validación con la que se fijó el estrato,
+  además de quitar la 13. Se contrastan con `analysis/comparar_gtfs` después de
+  `prepare` y antes de las comparaciones, y se declaran como límite.
+- **Día útil.** Un día de prueba se descarta solo si la captura de la EMT tiene
+  un hueco de más de 1 h dentro de su día de servicio, porque sin posiciones no
+  hay etiqueta. Los huecos de la 192 no descartan días: dejan filas sin tráfico
+  observado, que se informan, como el 22 y el 23/09 en la validación (bitácora
+  048). Si se descarta alguno, se dice cuál y por qué antes de evaluar.
+- **Composición.** La prueba tiene dos festivos, el 09/10 (viernes) y el 12/10
+  (lunes), y la validación ninguno. La comparación es sobre las mismas filas y
+  eso no la sesga, pero la cifra hereda esos días (ADR-007).
+- **Ejecución.** Stages `train_trafico` y `evaluate_trafico`, y sus versiones
+  `_h`, en todos los horizontes del barrido. El modelo sin tráfico es el de
+  `train`/`train_h`. Antes de las comparaciones se comprueban las etiquetas de
+  la prueba y que la validación de los diez modelos sea el 28/09-04/10. Las
+  comparaciones se ejecutan una vez.
 
 ---
 
