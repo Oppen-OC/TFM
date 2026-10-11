@@ -18,6 +18,7 @@
       "mae_sin_s": 32.61,
       "mae_con_s": 32.53,
       "con_menos_sin_s": -0.08,
+      "relativa": -0.0025,
       "ic_viajes": [
         -0.1,
         -0.07
@@ -33,6 +34,7 @@
         "mae_sin_s": 27.67,
         "mae_con_s": 27.62,
         "con_menos_sin_s": -0.05,
+        "relativa": -0.002,
         "ic_viajes": [
           -0.1,
           -0.01
@@ -47,6 +49,7 @@
         "mae_sin_s": 35.13,
         "mae_con_s": 35.19,
         "con_menos_sin_s": 0.06,
+        "relativa": 0.0016,
         "ic_viajes": [
           -0.12,
           0.22
@@ -61,6 +64,7 @@
         "mae_sin_s": 31.87,
         "mae_con_s": 31.73,
         "con_menos_sin_s": -0.14,
+        "relativa": -0.0044,
         "ic_viajes": [
           -0.22,
           -0.05
@@ -75,6 +79,7 @@
         "mae_sin_s": 32.39,
         "mae_con_s": 32.3,
         "con_menos_sin_s": -0.09,
+        "relativa": -0.0028,
         "ic_viajes": [
           -0.17,
           -0.01
@@ -89,6 +94,7 @@
         "mae_sin_s": 33.43,
         "mae_con_s": 33.35,
         "con_menos_sin_s": -0.09,
+        "relativa": -0.0026,
         "ic_viajes": [
           -0.11,
           -0.07
@@ -105,6 +111,7 @@
         "mae_sin_s": 51.66,
         "mae_con_s": 50.36,
         "con_menos_sin_s": -1.3,
+        "relativa": -0.0252,
         "ic_viajes": [
           -1.76,
           -0.86
@@ -119,6 +126,7 @@
         "mae_sin_s": 32.92,
         "mae_con_s": 32.86,
         "con_menos_sin_s": -0.06,
+        "relativa": -0.0018,
         "ic_viajes": [
           -0.08,
           -0.04
@@ -133,6 +141,7 @@
         "mae_sin_s": 27.95,
         "mae_con_s": 27.91,
         "con_menos_sin_s": -0.04,
+        "relativa": -0.0016,
         "ic_viajes": [
           -0.08,
           -0.0
@@ -163,6 +172,7 @@
       "mae_sin_s": 41.04,
       "mae_con_s": 40.95,
       "con_menos_sin_s": -0.1,
+      "relativa": -0.0023,
       "ic_viajes": [
         -0.12,
         -0.07
@@ -178,6 +188,7 @@
         "mae_sin_s": 35.51,
         "mae_con_s": 35.43,
         "con_menos_sin_s": -0.08,
+        "relativa": -0.0023,
         "ic_viajes": [
           -0.14,
           -0.02
@@ -192,6 +203,7 @@
         "mae_sin_s": 39.57,
         "mae_con_s": 39.38,
         "con_menos_sin_s": -0.19,
+        "relativa": -0.0047,
         "ic_viajes": [
           -0.31,
           -0.06
@@ -206,6 +218,7 @@
         "mae_sin_s": 40.66,
         "mae_con_s": 40.45,
         "con_menos_sin_s": -0.21,
+        "relativa": -0.0052,
         "ic_viajes": [
           -0.35,
           -0.06
@@ -220,6 +233,7 @@
         "mae_sin_s": 43.64,
         "mae_con_s": 43.64,
         "con_menos_sin_s": 0.0,
+        "relativa": 0.0,
         "ic_viajes": [
           -0.09,
           0.09
@@ -234,6 +248,7 @@
         "mae_sin_s": 41.64,
         "mae_con_s": 41.54,
         "con_menos_sin_s": -0.1,
+        "relativa": -0.0024,
         "ic_viajes": [
           -0.12,
           -0.07
@@ -250,6 +265,7 @@
         "mae_sin_s": 61.37,
         "mae_con_s": 59.87,
         "con_menos_sin_s": -1.5,
+        "relativa": -0.0244,
         "ic_viajes": [
           -2.02,
           -0.99
@@ -264,6 +280,7 @@
         "mae_sin_s": 41.14,
         "mae_con_s": 41.08,
         "con_menos_sin_s": -0.06,
+        "relativa": -0.0015,
         "ic_viajes": [
           -0.08,
           -0.04
@@ -278,6 +295,7 @@
         "mae_sin_s": 35.94,
         "mae_con_s": 35.88,
         "con_menos_sin_s": -0.06,
+        "relativa": -0.0017,
         "ic_viajes": [
           -0.12,
           0.0
@@ -308,6 +326,7 @@
       "mae_sin_s": 55.49,
       "mae_con_s": 55.43,
       "con_menos_sin_s": -0.06,
+      "relativa": -0.0012,
       "ic_viajes": [
         -0.11,
         -0.03
@@ -323,6 +342,7 @@
         "mae_sin_s": 47.09,
         "mae_con_s": 47.04,
         "con_menos_sin_s": -0.04,
+        "relativa": -0.0009,
         "ic_viajes": [
           -0.17,
           0.07
@@ -337,6 +357,7 @@
         "mae_sin_s": 53.92,
         "mae_con_s": 53.93,
         "con_menos_sin_s": 0.02,
+        "relativa": 0.0003,
         "ic_viajes": [
           -0.12,
           0.15
@@ -351,6 +372,7 @@
         "mae_sin_s": 51.39,
         "mae_con_s": 51.26,
         "con_menos_sin_s": -0.14,
+        "relativa": -0.0027,
         "ic_viajes": [
           -0.29,
           0.02
@@ -365,6 +387,7 @@
         "mae_sin_s": 62.09,
         "mae_con_s": 62.11,
         "con_menos_sin_s": 0.02,
+        "relativa": 0.0003,
         "ic_viajes": [
           -0.19,
           0.24
@@ -379,6 +402,7 @@
         "mae_sin_s": 55.96,
         "mae_con_s": 55.89,
         "con_menos_sin_s": -0.07,
+        "relativa": -0.0013,
         "ic_viajes": [
           -0.12,
           -0.03
@@ -395,6 +419,7 @@
         "mae_sin_s": 77.81,
         "mae_con_s": 76.82,
         "con_menos_sin_s": -0.99,
+        "relativa": -0.0127,
         "ic_viajes": [
           -1.8,
           -0.25
@@ -409,6 +434,7 @@
         "mae_sin_s": 55.3,
         "mae_con_s": 55.27,
         "con_menos_sin_s": -0.04,
+        "relativa": -0.0007,
         "ic_viajes": [
           -0.07,
           -0.0
@@ -423,6 +449,7 @@
         "mae_sin_s": 48.2,
         "mae_con_s": 48.19,
         "con_menos_sin_s": -0.01,
+        "relativa": -0.0001,
         "ic_viajes": [
           -0.13,
           0.12
@@ -453,6 +480,7 @@
       "mae_sin_s": 86.19,
       "mae_con_s": 85.93,
       "con_menos_sin_s": -0.26,
+      "relativa": -0.003,
       "ic_viajes": [
         -0.36,
         -0.18
@@ -468,6 +496,7 @@
         "mae_sin_s": 66.65,
         "mae_con_s": 66.53,
         "con_menos_sin_s": -0.11,
+        "relativa": -0.0017,
         "ic_viajes": [
           -0.54,
           0.33
@@ -482,6 +511,7 @@
         "mae_sin_s": 82.96,
         "mae_con_s": 83.19,
         "con_menos_sin_s": 0.23,
+        "relativa": 0.0027,
         "ic_viajes": [
           -0.15,
           0.58
@@ -496,6 +526,7 @@
         "mae_sin_s": 82.83,
         "mae_con_s": 83.12,
         "con_menos_sin_s": 0.28,
+        "relativa": 0.0034,
         "ic_viajes": [
           -0.03,
           0.6
@@ -510,6 +541,7 @@
         "mae_sin_s": 81.07,
         "mae_con_s": 81.16,
         "con_menos_sin_s": 0.09,
+        "relativa": 0.0011,
         "ic_viajes": [
           -0.2,
           0.4
@@ -524,6 +556,7 @@
         "mae_sin_s": 87.46,
         "mae_con_s": 87.12,
         "con_menos_sin_s": -0.33,
+        "relativa": -0.0038,
         "ic_viajes": [
           -0.43,
           -0.24
@@ -540,6 +573,7 @@
         "mae_sin_s": 111.67,
         "mae_con_s": 110.39,
         "con_menos_sin_s": -1.28,
+        "relativa": -0.0114,
         "ic_viajes": [
           -2.37,
           -0.15
@@ -554,6 +588,7 @@
         "mae_sin_s": 85.41,
         "mae_con_s": 85.18,
         "con_menos_sin_s": -0.23,
+        "relativa": -0.0027,
         "ic_viajes": [
           -0.31,
           -0.15
@@ -568,6 +603,7 @@
         "mae_sin_s": 72.47,
         "mae_con_s": 72.73,
         "con_menos_sin_s": 0.27,
+        "relativa": 0.0037,
         "ic_viajes": [
           -0.19,
           0.74
