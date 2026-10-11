@@ -1743,3 +1743,14 @@ buscar = '''            "modelo_trafico": modelo.with_name(con_trafico),'''
 reemplazar = '''            "modelo_trafico": modelo,'''
 detector = ["tests/test_modelo.py::test_el_modelo_con_trafico_no_pisa_al_de_sin_trafico"]
 sondas = []
+
+[[mutante]]
+id = "143"
+nombre = "la comparación acepta que el modelo sin tráfico también lleve la capa 192"
+capa = "modelo"
+# Con incluir_trafico a true, los dos modelos son el mismo y la primaria da 0 sin error.
+fichero = "src/project/evaluate.py"
+buscar = '''        and not trafico & set(sin["columnas"])'''
+reemplazar = '''        and True'''
+detector = ["tests/test_modelo.py::test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192"]
+sondas = []

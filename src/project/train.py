@@ -7,9 +7,10 @@ con las categorías de `linea` fijadas aquí y guardadas con el modelo (ADR-019)
 Ninguna lista de columnas se escribe a mano: es el train/serve skew.
 
 La parada temprana se mide en los últimos `dias_validacion` días del
-entrenamiento, nunca en la prueba: la semana del 14-20/09, de lunes a domingo
-como la prueba (ADR-021). Con los árboles que salen, el modelo se reajusta con
-el entrenamiento ENTERO: esos días son los más cercanos a la prueba, que tiene
+entrenamiento, nunca en la prueba: la última semana del entrenamiento
+(28/09-04/10 con el corte del ADR-024), de lunes a domingo como la prueba
+(ADR-021). Con los árboles que salen, el modelo se reajusta con el
+entrenamiento ENTERO: esos días son los más cercanos a la prueba, que tiene
 más retrasos (5,4 % frente a 7,1 % de más de 5 min).
 
 Con `residuo`, el árbol aprende cuánto se aparta el objetivo de la persistencia

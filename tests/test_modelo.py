@@ -295,12 +295,13 @@ def _con_y_sin():
     frontera del ADR-024."""
     grupos = {
         # grupo: (metros con sensor de 100, congestión, horizonte previsto, cambio)
+        # E va primero: tras el filtro de población el índice deja de ser contiguo.
+        "E": (90.0, 0.0, -10.0, -30.0),  # ya no llega a tiempo: fuera de la población
         "A": (90.0, 0.0, 60.0, -1.0),  # > 75 %, fluido
         "B": (90.0, 0.5, 60.0, -5.0),  # > 75 %, con congestión
         "C": (0.0, np.nan, 60.0, 0.0),  # sin sensor
         "D": (60.0, 0.0, 60.0, 1.0),  # 50-75 %
         "F": (75.0, 0.0, 60.0, 3.0),  # 75 % justo: no es «> 75 %»
-        "E": (90.0, 0.0, -10.0, -30.0),  # ya no llega a tiempo: fuera de la población
     }
     filas = [
         {
@@ -357,6 +358,7 @@ def test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192():
         ({**con, "categorias": ["A"]}, sin),  # otro entrenamiento
         ({**con, "residuo": False}, sin),  # otra configuración
         ({**con, "validacion": {"dias": ["2026-09-27"]}}, sin),  # otra validación
+        (con, {**sin, "columnas": con["columnas"]}),  # los dos con la 192
     ):
         with pytest.raises(ValueError):
             evaluate.comprobar_pareja(*mal)

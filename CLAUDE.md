@@ -185,8 +185,8 @@ trampa 017), la bate sobre las predicciones que llegan a tiempo, sin la capa
 192. A una parada no anticipa; de 2 a 14 min por delante mejora un 3-4 % al
 listón (barrido de horizontes, ADR-023, bitácora 047). La capa 192 aporta
 décimas de segundo en la validación y de 1 a 1,5 s donde ve congestión
-(bitácora 048); decide la prueba del 06-19/10, con la primaria ya fijada
-(ADR-024).
+(bitácora 048); decide la prueba del 07-19/10 (nota del 11/10 al ADR-024), con la primaria ya
+fijada (ADR-024).
 
 Vacío, 0 líneas: `services/model_service.py`.
 

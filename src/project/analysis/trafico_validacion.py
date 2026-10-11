@@ -5,7 +5,7 @@
 Usa el mismo corte que tendrá la fase 2: todo lo capturado hasta el 04/10, con
 ajuste hasta el 27/09 y validación del 28/09 al 04/10 (siete días, de lunes a
 domingo, ADR-021). Las tablas de prueba de hoy (21/09-04/10) pasan aquí a ser
-entrenamiento y validación: la prueba que decide es la del 06-19/10, que
+entrenamiento y validación: la prueba que decide es la del 07-19/10, que
 todavía no existe.
 
 Para cada horizonte del barrido, el mismo modelo (configuración del ADR-021)

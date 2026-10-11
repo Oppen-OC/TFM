@@ -946,7 +946,7 @@ EOF
 - [ ] **Step 3: commit**
 
 ```bash
-git add models/.gitignore models/h*/.gitignore docs/07_decisiones.md
+git add models/h*/.gitignore docs/07_decisiones.md
 git commit -m "chore(dvc): fase 2 del ADR-024 lista antes de traer la prueba"
 ```
 
