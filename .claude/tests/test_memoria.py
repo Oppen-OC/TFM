@@ -104,6 +104,11 @@ def test_los_stages_de_dvc_son_los_documentados():
         "features_h",
         "train_h",
         "evaluate_h",
+        # la capa 192 (ADR-024): el mismo modelo con tráfico y la comparación
+        "train_trafico",
+        "evaluate_trafico",
+        "train_trafico_h",
+        "evaluate_trafico_h",
     }
     assert declarados == documentados, (
         f"dvc.yaml declara {sorted(declarados)}, la documentación describe "

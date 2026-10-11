@@ -128,7 +128,8 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 - **DVC gobierna el pipeline**, no scripts sueltos. Cada etapa
   (curar → prepare → disponibilidad → tramos_ruta → features → train → evaluate, y
-  `features_h`/`train_h`/`evaluate_h` para el barrido de horizontes, ADR-023)
+  `features_h`/`train_h`/`evaluate_h` para el barrido de horizontes, ADR-023;
+  `train_trafico`/`evaluate_trafico` y sus `_h`, para la capa 192, ADR-024)
   es un stage en `dvc.yaml` con sus
   `deps`, `params` y `outs` declarados. Un script de entrenamiento sin stage es un
   error.

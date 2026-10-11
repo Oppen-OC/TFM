@@ -8,6 +8,7 @@
 #   project/ingest/collect.py  ──(fuera de DVC, proceso largo)──>  data/raw/
 #                                                            │
 #            curar ──> prepare ──> features ──> train ──> evaluate
+#                                        └──> train_trafico ──> evaluate_trafico   (ADR-024)
 #                         ▲
 #               data/raw/gtfs (todas las versiones del feed)
 #
@@ -143,6 +144,42 @@ stages:
       - metrics/eval.json:
           cache: false
 
+  # El mismo modelo con la capa 192 (ADR-024): misma configuración y mismas
+  # filas, solo cambian las variables. El de sin tráfico es el de `train`.
+  train_trafico:
+    cmd: uv run python -m project.train --trafico
+    deps:
+      - data/processed/train.parquet
+      - src/project/train.py
+      - src/project/features.py
+      - src/project/predict.py
+      - src/project/evaluate.py
+    params:
+      - train
+    outs:
+      - models/model_trafico.pkl
+
+  evaluate_trafico:
+    # Con tráfico menos sin tráfico sobre las mismas filas de la población, con
+    # los intervalos por viajes y por días: en el estrato con sensor (la
+    # primaria con h = 5), en conjunto, donde la capa veía congestión y sin
+    # sensor (ADR-024, enmienda del 10/10). Sobre la prueba se ejecuta UNA vez.
+    cmd: uv run python -m project.evaluate --trafico
+    deps:
+      - data/processed/test.parquet
+      - models/model.pkl
+      - models/model_trafico.pkl
+      - src/project/evaluate.py
+      - src/project/predict.py
+      - src/project/features.py
+    params:
+      - features.objetivo
+      - features.test_desde
+      - features.test_hasta
+    metrics:
+      - metrics/trafico.json:
+          cache: false
+
   # Barrido de horizontes (ADR-023): lo mismo que features, train y evaluate,
   # para cada horizonte de `features.horizontes_barrido`, en `…/h<h>/`.
   features_h:
@@ -197,4 +234,38 @@ stages:
         - features.linea_min_dias
       metrics:
         - metrics/horizontes/h${item}/eval.json:
+            cache: false
+
+  train_trafico_h:
+    foreach: ${features.horizontes_barrido}
+    do:
+      cmd: uv run python -m project.train --horizonte ${item} --trafico
+      deps:
+        - data/processed/h${item}
+        - src/project/train.py
+        - src/project/features.py
+        - src/project/predict.py
+        - src/project/evaluate.py
+      params:
+        - train
+      outs:
+        - models/h${item}/model_trafico.pkl
+
+  evaluate_trafico_h:
+    foreach: ${features.horizontes_barrido}
+    do:
+      cmd: uv run python -m project.evaluate --horizonte ${item} --trafico
+      deps:
+        - data/processed/h${item}
+        - models/h${item}/model.pkl
+        - models/h${item}/model_trafico.pkl
+        - src/project/evaluate.py
+        - src/project/predict.py
+        - src/project/features.py
+      params:
+        - features.objetivo
+        - features.test_desde
+        - features.test_hasta
+      metrics:
+        - metrics/horizontes/h${item}/trafico.json:
             cache: false
