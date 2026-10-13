@@ -942,8 +942,8 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
     16:48 UTC.
   - La captura volvió el 06/10 a las **13:56 UTC** (15:56 locales), no a las
     13:22: la bitácora 044 daba las 13:22 como cota. El 06/10 sigue fuera.
-  - Sitio en la SD hasta el 21/10: sin comprobar desde el PC. El ritmo medido
-    es de unos 36 MB al día.
+  - Sitio en la SD hasta el 21/10: se asume suficiente, sin comprobarlo. El
+    ritmo medido es de unos 36 MB al día (bitácora 050).
 
 ---
 
