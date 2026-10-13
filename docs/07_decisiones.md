@@ -942,8 +942,14 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
     16:48 UTC.
   - La captura volvió el 06/10 a las **13:56 UTC** (15:56 locales), no a las
     13:22: la bitácora 044 daba las 13:22 como cota. El 06/10 sigue fuera.
-  - Sitio en la SD hasta el 21/10: se asume suficiente, sin comprobarlo. El
-    ritmo medido es de unos 36 MB al día (bitácora 050).
+  - Sitio en la SD: 20 GB libres de 29 GB el 13/10 (`df -h` en la Pi). Al
+    ritmo medido, unos 36 MB al día (bitácora 050), sobra.
+  - **La Pi no guarda versiones del GTFS.** Ejecuta un colector anterior a la
+    captura del ADR-020: el despliegue del 06/10 falló (bitácora 044). Para el
+    contraste se usa la `12-10-2026`, bajada a mano el 13/10, que es vigente
+    del 05/10 al 11/11 y cubre la prueba entera, y la vigente el 21/10. El
+    colector no se redespliega hasta cerrar la prueba: un reinicio fallido
+    dejaría un hueco en ella.
 
 ---
 

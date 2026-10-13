@@ -89,15 +89,15 @@ Hecho:
   `dvc repro`.
 - `analysis/medir_completitud.py` sustituye al script de la tarea 9 del plan
   de la fase 2.
+- `pull_data.sh --verificar` del 13/10 da los 35 ficheros del 06-12/10 con el
+  mismo contenido que la Pi; solo cambian los permisos.
+- Sitio en la SD: 20 GB libres de 29 GB el 13/10 (`df -h` en la Pi). A unos
+  36 MB al día, llega de sobra al 21/10.
 
 Abierto:
 - **El 13-19/10**, cuando se traiga el 21/10: el mismo comando con
   `--desde 2026-10-13 --hasta 2026-10-19` antes de `dvc repro` (paso 3 de la
   tarea 11). Esta entrada se cierra con esa cifra.
-- **Sitio en la SD de la Pi hasta el 21/10: supuesto, no comprobado.** Al ritmo
-  medido, unos 36 MB al día de las cinco fuentes, hacen falta unos 300 MB, y se
-  asume que caben. Si no cupieran, el recuento del 13-19/10 lo delataría como
-  hueco.
 - Los 8 sondeos de más del crudo de la EMT frente a los contadores del colector.
 
 ## Para la memoria
