@@ -210,6 +210,23 @@ def test_reprocesar_cuenta_los_payloads_que_no_parsean(crudo_de_dos_dias):
     assert r["errores"] == 1, r
 
 
+def test_reprocesar_deja_sus_cuentas_en_un_fichero(crudo_de_dos_dias):
+    """Lo que `curar` cuenta del crudo queda en `metrics/`, no solo en pantalla.
+
+    Repetidos, sondeos completados y errores son el primer eslabón del ciclo de
+    vida del dato; impresos por pantalla, el repro siguiente los pierde.
+    """
+    metricas = crudo_de_dos_dias / "curar.json"
+    reprocesar.main(
+        crudo_de_dos_dias, ["trafico_estado", "valenbisi"], dry=False, metricas=metricas
+    )
+    m = json.loads(metricas.read_text(encoding="utf-8"))
+
+    assert m["trafico_estado"]["payloads"] == 3, m
+    assert m["trafico_estado"]["errores"] == 1, m
+    assert m["valenbisi"]["estado"] == "sin crudo", m
+
+
 def _sondeo(fuente: str, base: dict, k: int) -> dict:
     """El payload real de `fuente` como k-ésimo refresco: otra clave de sondeo."""
     p = copy.deepcopy(base)

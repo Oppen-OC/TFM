@@ -33,6 +33,9 @@ stages:
       - src/project/ingest/sources.py
     outs:
       - data/curated
+    metrics:
+      - metrics/curar.json:
+          cache: false
 
   prepare:
     # Curated + GTFS (todas sus versiones) -> trayectorias con identidad de

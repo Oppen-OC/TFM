@@ -4,6 +4,9 @@
     uv run python -m project.ingest.reprocesar --sources emt_buses   # una concreta
     uv run python -m project.ingest.reprocesar --dry-run             # sin escribir nada
 
+Las cuentas de cada fuente (payloads, repetidos, completados, errores) quedan en
+`metrics/curar.json`: son el primer eslabón del ciclo de vida del dato.
+
 Cuando descubres que el parser estaba mal (y descubrirás que lo estaba: el
 16/08/2026 resultó que el servicio de la EMT alterna entre dos convenciones
 horarias de un sondeo al siguiente), no hay que recapturar nada. Los payloads
@@ -35,13 +38,14 @@ reutilice claves. En el crudo las repeticiones son siempre consecutivas (las
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
 
-from project.config import settings
+from project.config import RAIZ, settings
 from project.ingest.sources import (
     COLS_GEOMETRIA,
     SOURCES,
@@ -126,16 +130,11 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
     return {**r, "estado": "reescrito"}
 
 
-if __name__ == "__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument("--data", type=Path, default=settings.data_root)
-    p.add_argument("--sources", nargs="*", default=list(SOURCES))
-    p.add_argument("--dry-run", action="store_true")
-    a = p.parse_args()
-
-    print(f"\n  Crudo en {a.data / 'raw'}\n")
-    for s in a.sources:
-        r = reprocesar(a.data, s, a.dry_run)
+def main(data: Path, fuentes: list[str], dry: bool, metricas: Path) -> None:
+    print(f"\n  Crudo en {data / 'raw'}\n")
+    cuentas = {}
+    for s in fuentes:
+        r = cuentas[s] = reprocesar(data, s, dry)
         if r["estado"] == "sin crudo":
             print(f"  {s:22} sin datos crudos")
         else:
@@ -145,8 +144,22 @@ if __name__ == "__main__":
                 f"({r['completados']:,} completados), "
                 f"{r['errores']} errores  [{r['estado']}]"
             )
-    if not a.dry_run:
+    if not dry:
+        metricas.parent.mkdir(parents=True, exist_ok=True)
+        metricas.write_text(
+            json.dumps(cuentas, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
         print(
-            f"\n  El curated anterior está en {a.data / '_curated_previo'} "
+            f"\n  El curated anterior está en {data / '_curated_previo'} "
             f"(bórralo cuando compruebes que todo está bien).\n"
         )
+
+
+if __name__ == "__main__":
+    p = argparse.ArgumentParser()
+    p.add_argument("--data", type=Path, default=settings.data_root)
+    p.add_argument("--sources", nargs="*", default=list(SOURCES))
+    p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--metricas", type=Path, default=RAIZ / "metrics" / "curar.json")
+    a = p.parse_args()
+    main(a.data, a.sources, a.dry_run, a.metricas)

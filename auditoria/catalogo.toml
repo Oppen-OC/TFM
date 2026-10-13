@@ -1754,3 +1754,15 @@ buscar = '''        and not trafico & set(sin["columnas"])'''
 reemplazar = '''        and True'''
 detector = ["tests/test_modelo.py::test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192"]
 sondas = []
+
+[[mutante]]
+id = "144"
+nombre = "curar escribe sus métricas sin las cuentas de ninguna fuente"
+capa = "persistencia"
+# El fichero existe y DVC lo da por bueno: el primer eslabón del ciclo de vida
+# del dato queda vacío sin error.
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''        r = cuentas[s] = reprocesar(data, s, dry)'''
+reemplazar = '''        r = reprocesar(data, s, dry)'''
+detector = ["tests/test_persistencia.py::test_reprocesar_deja_sus_cuentas_en_un_fichero"]
+sondas = []
