@@ -63,7 +63,7 @@ features:
   # entrenamiento es todo hasta el 04/10, y su última semana (28/09-04/10) es
   # la validación (`train.dias_validacion`). Quedan fuera de toda tabla:
   #   - el 05/10, sin captura (bitácora 044);
-  #   - el 06/10, parcial: la captura volvió a las 15:22 locales, sin la punta
+  #   - el 06/10, parcial: la captura volvió a las 15:56 locales, sin la punta
   #     de mañana, y en el entrenamiento movería la validación al 30/09-06/10;
   #   - lo posterior al 19/10, último día del horario 19-09-2026, que
   #     `pull_data.sh` trae igual.

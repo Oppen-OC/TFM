@@ -934,6 +934,16 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
   `train`/`train_h`. Antes de las comparaciones se comprueban las etiquetas de
   la prueba y que la validación de los diez modelos sea el 28/09-04/10. Las
   comparaciones se ejecutan una vez.
+- **Completitud (13/10)**, medida antes de traer la prueba sobre una copia de
+  `/srv/tfm-sd/raw`, contando sondeos sin etiquetar nada:
+  - EMT: de 2.850 a 2.855 sondeos por día UTC del 07 al 12/10, de 2.880
+    posibles a 30 s, y ningún hueco de más de 15 min. No cae ningún día.
+  - 192: de 286 a 288 por día, con un hueco de 15 min el 07/10, de 16:33 a
+    16:48 UTC.
+  - La captura volvió el 06/10 a las **13:56 UTC** (15:56 locales), no a las
+    13:22: la bitácora 044 daba las 13:22 como cota. El 06/10 sigue fuera.
+  - Sitio en la SD hasta el 21/10: sin comprobar desde el PC. El ritmo medido
+    es de unos 36 MB al día.
 
 ---
 
