@@ -623,6 +623,12 @@ Transitland de pago (ADR-014).
 
 **Qué la reabriría.** Que VLCi publique el histórico de versiones.
 
+**Precisión (13/10).** La captura está en la rama `raspberry`, pero no llegó a
+correr en la Pi. El despliegue del 06/10 falló por el disco (bitácora 044), y
+la Pi sigue con un colector sin `capturar_gtfs`. Desde el 06/10 no se guarda
+ninguna versión. Se bajan a mano hasta redesplegar, después de cerrar la prueba
+del ADR-024 (bitácora 051).
+
 ---
 
 ## ADR-021 · Protocolo del modelo v2: un listón, cuatro brazos en validación y la prueba una vez · cerrada
