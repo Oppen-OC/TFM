@@ -185,11 +185,25 @@ PARADAS: list[dict] = [
         "titulo": "La infraestructura también falla",
         "texto": (
             "En {dias} días de captura hay {cortes} cortes de la EMT de más de una "
-            "hora, {horas} h en total. Se encontraron después, contando sondeos: "
-            "el colector no avisa de lo que no recibe."
+            "hora, {horas} h en total, de las que {horas_fuente} son la caída de "
+            "las capas del geoportal de septiembre. Se encontraron después, "
+            "contando sondeos: el colector no avisa de lo que no recibe."
         ),
-        "remite": ["bitacora:035", "bitacora:044", "bitacora:051", "trampa:016"],
-        "cotejo": [],
+        "remite": [
+            "bitacora:035",
+            "bitacora:044",
+            "bitacora:051",
+            "bitacora:054",
+            "trampa:016",
+        ],
+        "cotejo": [
+            {
+                "cifra": "horas_fuente",
+                "esperado": 103.7,
+                "tolerancia": 0.001,
+                "ficha": "bitácora 021",
+            },
+        ],
     },
     {
         "id": "P10",

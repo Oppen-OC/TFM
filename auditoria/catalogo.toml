@@ -1933,3 +1933,23 @@ buscar = '''    corte = min(hasta, str((pd.Timestamp(PRUEBA[0]) - pd.Timedelta(d
 reemplazar = '''    corte = hasta'''
 detector = ["tests/test_dashboard.py::test_la_serie_de_tramos_deja_hueco_en_los_dias_sin_datos_y_acaba_antes_de_la_prueba"]
 sondas = []
+
+[[mutante]]
+id = "161"
+nombre = "sin crudo de la EMT el exportador cae con un IndexError que no dice qué traer"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''    if not dias:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_dashboard.py::test_sin_crudo_de_la_emt_el_exportador_dice_que_traer"]
+sondas = []
+
+[[mutante]]
+id = "162"
+nombre = "las filas desplazadas cuentan la convención mayoritaria y no la minoritaria"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''        "desplazadas": 100 * min(filas.values()) / total if len(filas) == 2 else 0.0,'''
+reemplazar = '''        "desplazadas": 100 * max(filas.values()) / total if len(filas) == 2 else 0.0,'''
+detector = ["tests/test_dashboard.py::test_la_alternancia_se_cuenta_por_sondeo_y_cruza_el_cambio_de_dia"]
+sondas = []

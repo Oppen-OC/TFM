@@ -262,10 +262,17 @@ def p8(vol: pd.DataFrame):
 
 def p9(raw: Path, hasta: str):
     n, hs = extraer.completitud(raw, "emt_buses", INICIO, hasta)
+    horas = [(b - a) / pd.Timedelta(hours=1) for a, b in hs]
     valores = {
         "dias": len(n),
         "cortes": len(hs),
-        "horas": sum((b - a) / pd.Timedelta(hours=1) for a, b in hs),
+        "horas": sum(horas),
+        # El corte de la EMT dentro de la caída del geoportal que cuenta P5.
+        "horas_fuente": sum(
+            h
+            for (a, b), h in zip(hs, horas)
+            if CAPAS_CAIDAS[0] <= f"{a:%Y-%m-%d}" and f"{b:%Y-%m-%d}" <= CAPAS_CAIDAS[1]
+        ),
     }
     sombras = [
         {
