@@ -9,6 +9,7 @@ no lo son (ADR-018). Todos se ven solo con verdad conocida.
 
 from __future__ import annotations
 
+import json
 from datetime import date
 from pathlib import Path
 
@@ -362,3 +363,134 @@ def test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192():
     ):
         with pytest.raises(ValueError):
             evaluate.comprobar_pareja(*mal)
+
+
+BIN = OBJ + "_bin"
+
+
+def _binaria():
+    """Seis grupos de 4 viajes × 3 filas en dos días, con τ = 0,5. Cada grupo pone
+    a prueba una frontera del ADR-025."""
+    grupos = {
+        # grupo: (banda, retraso ahora, sesgo del tramo, llega tarde, P, ŷ, previsto)
+        # E va primero: tras el filtro de población el índice deja de ser contiguo.
+        "E": ("> 30 min", 0.0, 0.0, True, 0.9, 0.0, -10.0),  # fuera de la población
+        "A": ("15-30 min", 300.0, 0.0, True, 0.9, 350.0, 60.0),  # 300 s justos
+        "B": ("> 30 min", 400.0, np.nan, True, 0.9, 350.0, 60.0),  # ya tarde
+        "C": ("> 30 min", 0.0, 0.0, False, 0.1, 0.0, 60.0),  # puntual
+        "D": ("<= 8 min", 0.0, 0.0, True, 0.1, 0.0, 60.0),  # banda corta
+        "F": ("8-15 min", 0.0, 0.0, False, 0.9, 0.0, 60.0),  # banda corta
+    }
+    filas = [
+        {
+            "fecha_servicio": pd.Timestamp("2026-10-07") + pd.Timedelta(days=v % 2),
+            "viaje_id": f"{g}{v}",
+            "_banda": banda,
+            "retraso_s": ahora,
+            "tramo_sesgo_s": sesgo,
+            "horizonte_previsto_s": previsto,
+            "ultimo_conocido": True,
+            OBJ: 400.0 if tarde else 0.0,
+            BIN: int(tarde),
+            "_p": p,
+            "_reg": reg,
+        }
+        for g, (banda, ahora, sesgo, tarde, p, reg, previsto) in grupos.items()
+        for v in range(4)
+        for _ in range(3)
+    ]
+    t = pd.DataFrame(filas)
+    return t, t["_p"], t["_reg"]
+
+
+def test_el_clasificador_se_compara_con_los_listones_en_los_estratos_del_adr_025():
+    t, p, reg = _binaria()
+    r = evaluate.comparacion_clasificador(t, p, reg, OBJ, 300, 0.5)
+    tit = r["titular"]
+    # Sin la población entraría E; con la banda de 8-15 min, F.
+    assert tit["filas"] == 36
+    assert tit["tasa_base"] == 0.6667
+    assert tit["brier_clasificador"] == 0.01
+    m = tit["metricas"]
+    assert m["clasificador"] == {
+        "precision": 1.0,
+        "sensibilidad": 1.0,
+        "f1": 1.0,
+        "pr_auc": 1.0,
+    }
+    # 300 s justos no pasan de 300: la persistencia no avisa al grupo A.
+    assert m["persistencia"]["sensibilidad"] == 0.5
+    assert m["persistencia"]["f1"] == 0.6667
+    # El sesgo nulo de B cuenta como 0: 400 s siguen pasando de 300.
+    assert m["persistencia_tramo"]["f1"] == 0.6667
+    assert m["regresion"]["f1"] == 1.0
+    assert m["horario"] == {"precision": None, "sensibilidad": 0.0, "f1": 0.0}
+    d = tit["clasificador_menos"]["persistencia"]
+    assert d["viajes"]["f1"] == 0.3333 and d["dias"]["f1"] == 0.3333
+    assert tit["clasificador_menos"]["regresion"]["viajes"]["f1"] == 0.0
+    # El conjunto: al clasificador se le escapa D y F es una falsa alarma.
+    assert r["conjunto"]["filas"] == 60
+    assert r["conjunto"]["metricas"]["clasificador"]["f1"] == 0.6667
+    assert r["conjunto"]["metricas"]["persistencia"]["f1"] == 0.5
+    # «Ya tarde» es más de 300 s ahora: solo B.
+    assert r["por_estado_actual"]["ya tarde"]["filas"] == 12
+    assert set(r["por_banda"]) == {"<= 8 min", "8-15 min", "15-30 min", "> 30 min"}
+    json.dumps(r, allow_nan=False)
+    # P igual a τ avisa: es la convención con la que se eligió τ.
+    r = evaluate.comparacion_clasificador(t, p, reg, OBJ, 300, 0.9)
+    assert r["titular"]["metricas"]["clasificador"]["f1"] == 1.0
+    # Un estrato vacío no tira la única evaluación de la prueba.
+    cortas = t["_banda"].isin(["<= 8 min", "8-15 min"])
+    r = evaluate.comparacion_clasificador(
+        t[cortas], p[cortas], reg[cortas], OBJ, 300, 0.5
+    )
+    assert r["titular"] == {"filas": 0}
+    # Sin positivos ni avisos no hay F1: nulo, ni 0 ni NaN.
+    c = t["viaje_id"].str[0] == "C"
+    r = evaluate.comparacion_clasificador(t[c], p[c], reg[c], OBJ, 300, 0.5)
+    assert r["titular"]["metricas"]["clasificador"]["f1"] is None
+    assert r["titular"]["clasificador_menos"]["persistencia"]["viajes"]["f1"] is None
+    json.dumps(r, allow_nan=False)
+
+
+def test_la_diferencia_de_f1_remuestrea_viajes_y_no_filas():
+    """30 viajes de 40 filas, todos tarde. El clasificador avisa a los 15 primeros
+    enteros y el listón a ninguno: F1 = 2·½ / (2·½ + ½) = 2/3.
+
+    Remuestreando filas, el intervalo saldría √40 ≈ 6 veces más estrecho.
+    """
+    n_viajes, filas = 30, 40
+    viaje = pd.Series(np.repeat(np.arange(n_viajes), filas))
+    real = pd.Series(True, index=viaje.index)
+    a = viaje < 15
+    b = pd.Series(False, index=viaje.index)
+    r = evaluate.diferencia_f1(a, b, real, viaje)
+    assert r["f1"] == 0.6667
+    lo, hi = r["f1_ic95"]
+    assert lo < r["f1"] < hi
+    assert 0.15 < hi - lo < 0.6
+
+
+def test_la_pareja_del_clasificador_es_la_regresion_del_mismo_entrenamiento():
+    """El listón de la regresión sale del mismo entrenamiento que el clasificador:
+    si no, la comparación enfrenta modelos de filas o variables distintas."""
+    reg = {
+        "columnas": train.columnas(CFG),
+        "categorias": ["A", "B"],
+        "residuo": True,
+        "validacion": {"dias": ["2026-09-28"]},
+    }
+    clf = {
+        "columnas": train.columnas(CFG),
+        "categorias": ["A", "B"],
+        "umbral": 0.4,
+        "validacion": {"dias": ["2026-09-28"]},
+    }
+    evaluate.comprobar_pareja_clasificador(clf, reg)
+    for mal in (
+        {**clf, "categorias": ["A"]},  # otro entrenamiento
+        {**clf, "validacion": {"dias": ["2026-09-27"]}},  # otra validación
+        {**clf, "columnas": train.columnas({**CFG, "incluir_trafico": True})},
+    ):
+        with pytest.raises(ValueError):
+            evaluate.comprobar_pareja_clasificador(mal, reg)

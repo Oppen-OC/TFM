@@ -32,6 +32,7 @@ import mlflow
 import numpy as np
 import pandas as pd
 import yaml
+from sklearn.metrics import average_precision_score
 
 from project import features, gtfs, predict
 from project.config import RAIZ, settings
@@ -53,6 +54,11 @@ COBERTURA = [-np.inf, 0, 0.25, 0.5, 0.75, np.inf]
 NOMBRES_COBERTURA = ["0", "0-25 %", "25-50 %", "50-75 %", "> 75 %"]
 SIN_SENSOR, CON_SENSOR = NOMBRES_COBERTURA[0], NOMBRES_COBERTURA[-1]
 CONGESTION = "con congestión"
+# Más de 5 min tarde (ADR-025). El titular son las bandas largas: con 15 min o
+# menos, la asignación pliega la mitad de esos retrasos (bitácora 038).
+BANDAS_LARGAS = ["15-30 min", "> 30 min"]
+YA_TARDE, AUN_NO = "ya tarde", "aún no"
+LISTONES_BINARIOS = ("persistencia", "persistencia_tramo", "regresion")
 
 
 def intervalos(h: gtfs.Horario, dia: date) -> pd.DataFrame:
@@ -261,6 +267,173 @@ def comparacion_trafico(
         "sin_sensor": en(t[t["_cobertura"] == SIN_SENSOR]),
         "por_cobertura": por("_cobertura"),
         "por_estado_observado": por("_estado"),
+    }
+
+
+def _r4(v: float) -> float | None:
+    """Redondeo del JSON: nulo, nunca NaN, donde no hay cifra (ADR-025)."""
+    v = float(v)
+    return None if np.isnan(v) else round(v, 4)
+
+
+def _f1(vp, fp, fn):
+    """F1 = 2 VP / (2 VP + FP + FN). NaN sin positivos reales ni predichos."""
+    d = np.asarray(2 * vp + fp + fn, dtype=float)  # con floats de Python, 0/0 lanza
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.where(d > 0, 2 * vp / d, np.nan)
+
+
+def _aciertos(decision: pd.Series, real: pd.Series) -> pd.DataFrame:
+    """VP, FP y FN fila a fila, como números para poder sumarlos."""
+    d, r = decision.astype(bool), real.astype(bool)
+    return pd.DataFrame({"vp": d & r, "fp": d & ~r, "fn": ~d & r}).astype(float)
+
+
+def metricas_binarias(
+    decision: pd.Series, real: pd.Series, puntuacion: pd.Series | None = None
+) -> dict:
+    """Precisión, sensibilidad y F1 en el punto de operación y, con una
+    puntuación continua, su PR-AUC (ADR-025). Nulas donde no hay cifra."""
+    vp, fp, fn = _aciertos(decision, real).sum()
+    m = {
+        "precision": _r4(vp / (vp + fp)) if vp + fp else None,
+        "sensibilidad": _r4(vp / (vp + fn)) if vp + fn else None,
+        "f1": _r4(_f1(vp, fp, fn)),
+    }
+    if puntuacion is not None:
+        r = real.astype(bool)
+        m["pr_auc"] = _r4(average_precision_score(r, puntuacion)) if r.any() else None
+    return m
+
+
+def diferencia_f1(
+    dec_a: pd.Series,
+    dec_b: pd.Series,
+    real: pd.Series,
+    grupo: pd.Series,
+    replicas: int = REPLICAS,
+) -> dict:
+    """F1 de `dec_a` menos el de `dec_b` (positivo: `a` acierta más), con el
+    intervalo del 95 % remuestreando `grupo` —viajes o días—, no filas (ADR-018).
+
+    Como en `diferencia`, se remuestrean sumas por grupo: VP, FP y FN de cada
+    uno. Una réplica sin positivos reales ni predichos no tiene F1: no cuenta.
+    """
+    sumas = (
+        pd.concat(
+            [
+                _aciertos(dec_a, real).add_suffix("_a"),
+                _aciertos(dec_b, real).add_suffix("_b"),
+            ],
+            axis=1,
+        )
+        .groupby(grupo)
+        .sum()
+        .to_numpy()
+    )
+
+    def medida(s: np.ndarray) -> float:
+        return float(_f1(*s[:3]) - _f1(*s[3:]))
+
+    rng = np.random.default_rng(SEMILLA)
+    k = len(sumas)
+    rep = np.array(
+        [medida(sumas[rng.integers(0, k, k)].sum(0)) for _ in range(replicas)]
+    )
+    rep = rep[~np.isnan(rep)]
+    lo, hi = np.percentile(rep, [2.5, 97.5]) if len(rep) else (np.nan, np.nan)
+    return {"f1": _r4(medida(sumas.sum(0))), "f1_ic95": [_r4(lo), _r4(hi)]}
+
+
+def comprobar_pareja_clasificador(clf: dict, reg: dict) -> None:
+    """El clasificador y la regresión del mismo horizonte salen del mismo
+    entrenamiento, con las mismas variables (ADR-025). Si no, el listón de la
+    regresión es de otro modelo y la comparación no dice nada."""
+    if not (
+        clf["columnas"] == reg["columnas"]
+        and clf["categorias"] == reg["categorias"]
+        and clf["validacion"]["dias"] == reg["validacion"]["dias"]
+    ):
+        raise ValueError(
+            "el clasificador y la regresión no son la misma pareja (ADR-025)"
+        )
+
+
+def comparacion_clasificador(
+    t: pd.DataFrame,
+    prob: pd.Series,
+    pred_regresion: pd.Series,
+    objetivo: str,
+    umbral_s: float,
+    umbral_decision: float,
+) -> dict:
+    """Más de `umbral_s` tarde: el clasificador contra los listones sobre las
+    mismas filas de la población (ADR-022 y ADR-025). `t` trae `_banda`.
+
+    Todo es descriptivo. El titular son las bandas largas, donde la etiqueta no
+    pierde positivos por el pliegue (bitácora 038). El estado actual se sabe al
+    predecir: separa los buses que ya van tarde de los que cruzarían el umbral
+    por el camino, que es donde la persistencia no llega.
+    """
+    real = t[f"{objetivo}_bin"].astype(bool)
+    base = features.predicciones_baseline(t)
+    puntos = {
+        "clasificador": prob,
+        "persistencia": base["persistencia"],
+        "persistencia_tramo": base["persistencia_tramo"],
+        "regresion": pred_regresion,
+    }
+    decision = {
+        "clasificador": prob >= umbral_decision,
+        **{k: puntos[k] > umbral_s for k in LISTONES_BINARIOS},
+        "horario": pd.Series(False, index=t.index),
+    }
+    p = t[features.poblacion(t)]
+    p = p.assign(_estado=np.where(p["retraso_s"] > umbral_s, YA_TARDE, AUN_NO))
+
+    def en(g: pd.DataFrame) -> dict:
+        if g.empty:
+            return {"filas": 0}
+        i = g.index
+        viaje = g.groupby(features.CLAVE_VIAJE, sort=False).ngroup()
+        return {
+            "filas": int(len(g)),
+            "viajes": int(viaje.nunique()),
+            "dias": int(g["fecha_servicio"].nunique()),
+            "tasa_base": _r4(real[i].mean()),
+            "brier_clasificador": _r4(((prob[i] - real[i].astype(float)) ** 2).mean()),
+            "metricas": {
+                k: metricas_binarias(
+                    decision[k][i], real[i], puntos[k][i] if k in puntos else None
+                )
+                for k in decision
+            },
+            "clasificador_menos": {
+                k: {
+                    "viajes": diferencia_f1(
+                        decision["clasificador"][i], decision[k][i], real[i], viaje
+                    ),
+                    "dias": diferencia_f1(
+                        decision["clasificador"][i],
+                        decision[k][i],
+                        real[i],
+                        g["fecha_servicio"],
+                    ),
+                }
+                for k in LISTONES_BINARIOS
+            },
+        }
+
+    def por(col: str) -> dict:
+        return {str(k): en(g) for k, g in p.groupby(col, observed=True)}
+
+    return {
+        "dias": int(p["fecha_servicio"].nunique()),
+        "umbral_decision": _r4(umbral_decision),
+        "titular": en(p[p["_banda"].isin(BANDAS_LARGAS)]),
+        "conjunto": en(p),
+        "por_banda": por("_banda"),
+        "por_estado_actual": por("_estado"),
     }
 
 
