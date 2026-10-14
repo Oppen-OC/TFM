@@ -72,8 +72,10 @@ de traerla, la cifra del clasificador también sale limpia.
   `train.dias_validacion`) y reajuste con todo el entrenamiento, como en
   `train.entrenar`.
 - **Umbral de decisión τ:** el que maximiza F1 sobre la población de la
-  validación, con la predicción del modelo de parada temprana. Se guarda en el
-  artefacto y la prueba no lo modifica.
+  validación, con la predicción del modelo de parada temprana. Se avisa si
+  P ≥ τ, la misma convención que `precision_recall_curve`. Se guarda en el
+  artefacto y la prueba no lo modifica. Si la validación no tiene positivos,
+  no hay τ: el entrenamiento se para con un error en vez de inventárselo.
 - **Listones**, sobre las mismas filas:
   - horario: nunca positivo; solo da contexto;
   - persistencia: `retraso_s > 300`;
@@ -109,6 +111,8 @@ de traerla, la cifra del clasificador también sale limpia.
     repite la persistencia.
 
   Un estrato vacío da `{"filas": 0}`, como en `evaluate.comparacion_trafico`.
+  Lo que no se puede calcular sale nulo, nunca NaN: el JSON se escribe con
+  `allow_nan=False`.
 - **Una ejecución sobre la prueba**, en el mismo `dvc repro` que las
   comparaciones del ADR-024. Lo que se haga después de mirar es exploratorio y
   se declara.
@@ -118,7 +122,7 @@ de traerla, la cifra del clasificador también sale limpia.
 | fichero | cambio |
 |---|---|
 | `src/project/features.py` | `salidas` añade la clave `clasificador`: `models/model_clasificador.pkl`, y `models/h<h>/model_clasificador.pkl` en el barrido. |
-| `src/project/train.py` | `_xgb` acepta la clase de XGBoost. Una función devuelve τ a partir de P y la etiqueta de validación. `entrenar_clasificador` hace la parada temprana, calcula τ, reajusta con todo y devuelve `{modelo, columnas, categorias, umbral, n_arboles, validacion, mlflow_run_id}`. En `validacion`: días, tasa base, τ, PR-AUC y F1 del clasificador y de los listones. `main` admite `--clasificador`, excluyente con `--trafico`. Experimento de MLflow `retraso_mas_de_5min`. |
+| `src/project/train.py` | `_xgb` acepta la clase de XGBoost. Una función devuelve τ a partir de P y la etiqueta de validación. `entrenar_clasificador` hace la parada temprana, calcula τ, reajusta con todo y devuelve `{modelo, columnas, categorias, umbral, n_arboles, validacion, mlflow_run_id}`. En `validacion`: días, tasa base, τ, PR-AUC y F1 del clasificador y de las dos persistencias. La regresión umbralizada se compara solo en `evaluate.py`, que carga los dos modelos. `main` admite `--clasificador`, excluyente con `--trafico`. Experimento de MLflow `retraso_mas_de_5min`. |
 | `src/project/predict.py` | `probabilidad(art, tabla)` devuelve P(retraso > 300 s) con el índice de `tabla`, pasando por `features.matriz` con las categorías guardadas. `predecir` no cambia. Es lo que usará `services/`. |
 | `src/project/evaluate.py` | La comprobación de pareja exige al clasificador y a la regresión del mismo horizonte las mismas columnas, las mismas categorías y los mismos días de validación; si no, se niega a evaluar. La diferencia de F1 por grupo, la comparación por estratos y `main` con `--clasificador`, que escribe `clasificador.json` en la carpeta de métricas de su horizonte y lo registra en el run del clasificador. |
 | `dvc.yaml` | `train_clasificador`, `evaluate_clasificador` y sus versiones `_h` en `features.horizontes_barrido`. `evaluate_clasificador` depende del modelo de regresión (el listón), de `data/raw/gtfs` (las bandas) y de `features.umbral_retraso_s`. |
