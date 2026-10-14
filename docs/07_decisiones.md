@@ -959,12 +959,81 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
 
 ---
 
+## ADR-025 · El clasificador de más de 5 min es descriptivo y su protocolo se fija antes de la prueba · cerrada
+
+Escrito y commiteado **antes** de entrenar ningún clasificador y de traer la
+prueba del ADR-024 (07-19/10). Diseño completo en
+`docs/superpowers/specs/2026-10-14-clasificador-design.md`.
+
+**Pregunta.** ¿Cuánto mejor que los listones dice un modelo si un bus llegará
+con más de 5 min de retraso a la parada *i* + *h*?
+
+**Decisión.**
+1. **Descriptivo**, sin primaria propia: se sumaría a la del ADR-024 sin
+   corrección por multiplicidad. Alimenta el endpoint de la API (ADR-006).
+2. **Etiqueta y población.** `retraso_siguiente_parada_s_bin`: el objetivo pasa
+   de `features.umbral_retraso_s`, 300 s, en sentido estricto. Las filas de
+   `features.poblacion` (ADR-022).
+3. **Modelo.** XGBoost con `params.yaml → train`, salvo `objective:
+   binary:logistic` y `eval_metric: logloss`. Sin residuo, sin
+   `scale_pos_weight`, sin la capa 192 y sin ajustar hiperparámetros. Parada
+   temprana en la validación (28/09-04/10) y reajuste con todo el
+   entrenamiento, como la regresión.
+4. **Umbral de decisión τ:** el de mejor F1 en la validación, con el modelo de
+   parada temprana; se avisa si P ≥ τ. Va dentro del modelo y la prueba no lo
+   toca. Sin positivos en la validación no hay τ y el entrenamiento se para.
+5. **Listones**, sobre las mismas filas: horario (nunca avisa; contexto),
+   persistencia (`retraso_s > 300`), persistencia del tramo (`retraso_s +
+   tramo_sesgo_s > 300`) y la regresión del mismo horizonte umbralizada
+   (ŷ > 300). El clasificador y esa regresión tienen que salir del mismo
+   entrenamiento: si no, la evaluación no corre.
+6. **Métricas:** la tasa base al lado de todo; la PR-AUC de cada uno con su
+   puntuación continua; el Brier del clasificador; precisión, sensibilidad y
+   F1 en el punto de operación; y la diferencia de F1, clasificador menos
+   listón, con el IC 95 % remuestreando viajes y remuestreando días (ADR-018).
+   Lo que no se puede calcular sale nulo.
+7. **Estratos.** Titular: las bandas de intervalo `15-30 min` y `> 30 min`.
+   Después, el conjunto, cada banda y el estado actual (`retraso_s > 300` o
+   no), que se sabe al predecir.
+8. **Horizontes:** 1, 2, 3, 5 y 10 paradas (ADR-023). La prueba se evalúa
+   **una vez**, en el mismo `dvc repro` que el ADR-024.
+
+**Por qué.**
+- Con los datos hasta el 04/10, la persistencia ya acierta tres de cada cuatro
+  avisos a *h* = 5. Un clasificador tiene que mostrar dónde aporta, y el
+  estrato del estado actual lo separa.
+- Con intervalos de 15 min o menos, la asignación pliega al viaje siguiente la
+  mitad de los buses con más de 5 min de retraso (bitácora 038). La etiqueta
+  positiva pierde justo lo que se quiere detectar. Se entrena con todo
+  (ADR-018) y el titular va donde la etiqueta es limpia.
+- Fijar el protocolo antes de mirar la prueba es lo que hace defendible la
+  cifra, aunque sea descriptiva.
+
+**Consecuencias.**
+- Cierra el pendiente «variante binaria por banda de intervalo».
+- Stages `train_clasificador` y `evaluate_clasificador`, y sus `_h`. La fase B
+  del plan del ADR-024 los añade a su `dvc repro`.
+- La API usa la probabilidad y el τ del artefacto.
+- Límites que se declaran: τ se elige con el modelo de parada temprana y se
+  aplica al reajustado, como `n_arboles`; la prueba tiene dos festivos y otra
+  tasa base, que se informa siempre al lado (ADR-006).
+
+**Alternativas.**
+- Solo la regresión umbralizada: equivale a avisar con P > 0,5, sin
+  probabilidad ni punto de operación. Queda como listón.
+- Calibrar la regresión con isotónica: el modelo calibrado no sería el
+  reajustado, y la cola del 6 % tiene pocos puntos.
+- Hipótesis primaria propia: otra primaria sin corrección por multiplicidad.
+- Entrenar solo con las bandas largas: choca con el ADR-018 y deja sin
+  respuesta a las líneas de intervalo corto.
+
+**Qué la reabriría.** Que el titular de la prueba no tenga positivos con los
+que medir, o que la prueba del ADR-024 se descarte.
+
+---
+
 ## Pendientes de decidir
 
-- **Variante binaria por banda de intervalo.** `evaluate.py` ya estratifica por
-  banda de intervalo programado (≤ 8, 8-15, 15-30, > 30 min y `sin_intervalo`),
-  como el estrato de sensores (bitácora 038). Falta decidir si la variante
-  binaria se publica solo en las bandas largas: se decide con el clasificador.
 - **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
   estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
   si 5 min bastan. Lo que no se capture no se recupera.
