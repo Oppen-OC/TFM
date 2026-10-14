@@ -1,4 +1,4 @@
-"""Predicción con el modelo entrenado: la usan `evaluate.py` y, después, `services/`.
+"""Predicción con los modelos entrenados: la usan `evaluate.py` y, después, `services/`.
 
 El modelo se guarda con sus columnas y con las categorías de `linea` del
 entrenamiento (`train.py`). La entrada pasa por `features.matriz` con ESAS, no
@@ -32,3 +32,13 @@ def predecir(artefacto: dict, tabla: pd.DataFrame) -> pd.Series:
     x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])
     pred = pd.Series(artefacto["modelo"].predict(x), index=tabla.index)
     return pred + tabla["retraso_s"] if artefacto["residuo"] else pred
+
+
+def probabilidad(artefacto: dict, tabla: pd.DataFrame) -> pd.Series:
+    """P(más de `umbral_retraso_s` tarde) en la parada objetivo, con el índice de
+    `tabla` (ADR-025). Llegará tarde si es `>= artefacto["umbral"]`.
+
+    Pasa por `features.matriz` con las categorías guardadas, como `predecir`.
+    """
+    x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])
+    return pd.Series(artefacto["modelo"].predict_proba(x)[:, 1], index=tabla.index)

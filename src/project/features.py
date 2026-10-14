@@ -580,14 +580,17 @@ def salidas(horizonte: int | None = None) -> dict[str, Path]:
     Sin horizonte, las rutas de siempre: es el de `params.yaml` y la bitácora las
     cita. Con él, una carpeta por horizonte del barrido (ADR-023). El modelo con
     la capa 192 va junto al de sin ella (ADR-024).
+    El clasificador de más de 5 min, también (ADR-025).
     """
     modelo = RAIZ / settings.model_path
     con_trafico = f"{modelo.stem}_trafico{modelo.suffix}"
+    clasificador = f"{modelo.stem}_clasificador{modelo.suffix}"
     if horizonte is None:
         return {
             "tabla": settings.processed_dir,
             "modelo": modelo,
             "modelo_trafico": modelo.with_name(con_trafico),
+            "clasificador": modelo.with_name(clasificador),
             "metricas": RAIZ / "metrics",
         }
     h = f"h{horizonte}"
@@ -595,6 +598,7 @@ def salidas(horizonte: int | None = None) -> dict[str, Path]:
         "tabla": settings.processed_dir / h,
         "modelo": modelo.parent / h / modelo.name,
         "modelo_trafico": modelo.parent / h / con_trafico,
+        "clasificador": modelo.parent / h / clasificador,
         "metricas": RAIZ / "metrics" / "horizontes" / h,
     }
 

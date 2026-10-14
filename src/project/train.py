@@ -34,12 +34,16 @@ import mlflow.xgboost
 import numpy as np
 import pandas as pd
 import yaml
-from xgboost import XGBRegressor
+from sklearn.metrics import precision_recall_curve
+from xgboost import XGBClassifier, XGBRegressor
 
 from project import evaluate, features, predict
 from project.config import RAIZ
 
 EXPERIMENTO = "retraso_siguiente_parada"
+EXPERIMENTO_CLASIFICADOR = "retraso_mas_de_5min"
+# El clasificador cambia la pérdida y nada más (ADR-025).
+CLASIFICADOR = {"objective": "binary:logistic", "eval_metric": "logloss"}
 
 
 def columnas(cfg: dict) -> list[str]:
@@ -49,6 +53,12 @@ def columnas(cfg: dict) -> list[str]:
         features.ventanas_flota(cfg),
         trafico=cfg["incluir_trafico"],
     )
+
+
+def columnas_clasificador(cfg: dict) -> list[str]:
+    """Las de la regresión sin la capa 192, la active o no `params.yaml`: su
+    aportación la decide el ADR-024, no este modelo (ADR-025)."""
+    return columnas({**cfg, "incluir_trafico": False})
 
 
 def separar_validacion(
@@ -65,9 +75,9 @@ FIJOS = {"enable_categorical": True, "tree_method": "hist"}
 PROPIAS = ("dias_validacion", "residuo")
 
 
-def _xgb(params: dict, **cambios) -> XGBRegressor:
+def _xgb(params: dict, clase: type = XGBRegressor, **cambios):
     p = {k: v for k, v in params.items() if k not in PROPIAS}
-    return XGBRegressor(**{**p, **cambios}, **FIJOS)
+    return clase(**{**p, **cambios}, **FIJOS)
 
 
 def _y(t: pd.DataFrame, objetivo: str, residuo: bool) -> pd.Series:
@@ -131,6 +141,87 @@ def entrenar(
         verbose=False,
     )
     return {**art, "modelo": final, "n_arboles": n, "validacion": validacion}
+
+
+def umbral_f1(p: pd.Series, y: pd.Series) -> float:
+    """El umbral de probabilidad con el mejor F1 (ADR-025): se avisa si P ≥ τ.
+
+    `precision_recall_curve` devuelve un punto más que umbrales, el de
+    sensibilidad cero, que no tiene umbral. Sin positivos no hay τ: se para.
+    """
+    if not y.astype(bool).any():
+        raise ValueError("la validación no tiene positivos: no hay umbral (ADR-025)")
+    precision, sensibilidad, umbrales = precision_recall_curve(y, p)
+    f1 = 2 * precision * sensibilidad / np.maximum(precision + sensibilidad, 1e-12)
+    return float(umbrales[np.argmax(f1[:-1])])
+
+
+def validar_clasificador(
+    p: pd.Series, val: pd.DataFrame, objetivo: str, umbral_s: float, umbral: float
+) -> dict:
+    """El clasificador y las dos persistencias en la validación (ADR-025). La
+    regresión umbralizada se compara en `evaluate.py`, que carga los dos modelos."""
+    real = val[f"{objetivo}_bin"].astype(bool)
+    base = features.predicciones_baseline(val)
+    return {
+        "dias": sorted(val["fecha_servicio"].dt.strftime("%Y-%m-%d").unique()),
+        "tasa_base": round(float(real.mean()), 4),
+        "umbral": umbral,
+        "clasificador": evaluate.metricas_binarias(p >= umbral, real, p),
+        **{
+            k: evaluate.metricas_binarias(base[k] > umbral_s, real, base[k])
+            for k in ("persistencia", "persistencia_tramo")
+        },
+    }
+
+
+def entrenar_clasificador(
+    train: pd.DataFrame,
+    variables: list[str],
+    objetivo: str,
+    umbral_s: float,
+    params: dict,
+) -> dict:
+    """Más de `umbral_s` tarde (ADR-025): parada temprana y τ con la validación,
+    y reajuste con todo `train`, como `entrenar`.
+
+    τ se elige con el modelo de parada temprana y se aplica al reajustado: el
+    mismo límite que `n_arboles` (declarado en el ADR-025).
+    """
+    etiqueta = f"{objetivo}_bin"
+    categorias = features.categorias_linea(train)
+    ajuste, val = separar_validacion(train, params["dias_validacion"])
+
+    def x(t: pd.DataFrame) -> pd.DataFrame:
+        return features.matriz(t, variables, categorias)
+
+    m = _xgb(params, XGBClassifier, **CLASIFICADOR)
+    m.fit(
+        x(ajuste),
+        ajuste[etiqueta],
+        eval_set=[(x(val), val[etiqueta])],
+        verbose=False,
+    )
+    n = m.best_iteration + 1
+    p_val = pd.Series(m.predict_proba(x(val))[:, 1], index=val.index)
+    umbral = umbral_f1(p_val, val[etiqueta])
+
+    final = _xgb(
+        params,
+        XGBClassifier,
+        **CLASIFICADOR,
+        n_estimators=n,
+        early_stopping_rounds=None,
+    )
+    final.fit(x(train), train[etiqueta], verbose=False)
+    return {
+        "modelo": final,
+        "columnas": variables,
+        "categorias": categorias,
+        "umbral": umbral,
+        "n_arboles": n,
+        "validacion": validar_clasificador(p_val, val, objetivo, umbral_s, umbral),
+    }
 
 
 def main(horizonte: int | None = None, trafico: bool = False) -> None:

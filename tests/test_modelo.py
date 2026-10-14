@@ -494,3 +494,69 @@ def test_la_pareja_del_clasificador_es_la_regresion_del_mismo_entrenamiento():
     ):
         with pytest.raises(ValueError):
             evaluate.comprobar_pareja_clasificador(mal, reg)
+
+
+def _tabla_bin():
+    """Más de 5 min tarde si `retraso_s` pasa de 1 en los días de ajuste y de 0 en
+    los dos de validación. En la validación lo mejor es avisar a todos (F1 = 2/3);
+    en el ajuste, solo a los que pasan de 1. El τ de cada uno es otro."""
+    t = _tabla()
+    corte = sorted(t["fecha_servicio"].unique())[-PARAMS["dias_validacion"]]
+    val = t["fecha_servicio"] >= corte
+    t[OBJ] = np.where(t["retraso_s"] > np.where(val, 0.0, 1.0), 400.0, 100.0)
+    t[BIN] = (t[OBJ] > 300).astype(int)
+    return t
+
+
+def test_el_clasificador_no_pisa_a_la_regresion():
+    """Con la misma ruta, el listón de la regresión sería el propio clasificador."""
+    for h in (None, 5):
+        r = features.salidas(h)
+        assert r["clasificador"] not in (r["modelo"], r["modelo_trafico"])
+        assert r["clasificador"].parent == r["modelo"].parent
+
+
+def test_el_umbral_de_decision_es_el_de_mejor_f1():
+    """A mano: con τ = 0,7 se avisa a 0,7, 0,8 y 0,9, los tres tarde, y se escapa
+    el de 0,3: F1 = 6/7. Con 0,3, F1 = 8/10; con 0,6, 6/8; con 0,8, 4/6."""
+    p = pd.Series([0.1, 0.2, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9])
+    y = pd.Series([0, 0, 1, 0, 0, 1, 1, 1])
+    assert train.umbral_f1(p, y) == pytest.approx(0.7)
+
+
+def test_sin_positivos_en_la_validacion_no_hay_umbral():
+    """Sin ningún retraso de más de 5 min, cualquier τ es arbitrario:
+    `precision_recall_curve` da sensibilidad nula y argmax elige sin avisar."""
+    with pytest.raises(ValueError, match="positivos"):
+        train.umbral_f1(pd.Series([0.1, 0.5, 0.9]), pd.Series([0, 0, 0]))
+
+
+def test_el_umbral_de_decision_sale_de_la_validacion():
+    """En la validación lo mejor es avisar a todos: τ es la P más baja. Con el
+    ajuste, τ saldría por encima de 0,5."""
+    t = _tabla_bin()
+    art = train.entrenar_clasificador(t, train.columnas(CFG), OBJ, 300, PARAMS)
+    assert art["umbral"] < 0.2
+    assert art["validacion"]["umbral"] == art["umbral"]
+    assert art["validacion"]["dias"] == ["2026-09-05", "2026-09-06"]
+    assert art["modelo"].n_estimators == art["n_arboles"]
+
+
+def test_el_clasificador_ve_las_variables_de_la_regresion_sin_la_192():
+    """La 192 la decide el ADR-024: aunque `params.yaml` la active, el
+    clasificador no la ve (ADR-025)."""
+    con_trafico = {**CFG, "incluir_trafico": True}
+    assert train.columnas_clasificador(con_trafico) == features.variables((1, 5), (5,))
+    t = _tabla_bin()
+    cols = train.columnas_clasificador(CFG)
+    art = train.entrenar_clasificador(t, cols, OBJ, 300, PARAMS)
+    assert art["columnas"] == cols
+    assert art["modelo"].get_booster().feature_names == cols
+    # La probabilidad conserva el índice de la tabla y separa a los que van tarde.
+    al_reves = t.iloc[::-1]
+    p = predict.probabilidad(art, al_reves)
+    assert p.index.equals(al_reves.index)
+    assert p.between(0, 1).all()
+    assert p[t["retraso_s"] > 1.5].mean() > p[t["retraso_s"] < -0.5].mean()
+    # Una línea que el entrenamiento no vio (la 8 en la prueba) no tira nada.
+    assert predict.probabilidad(art, t.tail(5).assign(linea="Z")).notna().all()
