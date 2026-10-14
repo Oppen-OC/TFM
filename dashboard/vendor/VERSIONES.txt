@@ -1,0 +1,6 @@
+Librerías del dashboard, fijadas y servidas desde aquí: la página abre sin red.
+d3 7.9.0    https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js     (ISC)
+gsap 3.12.5 https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js (licencia estándar de GSAP, sin coste)
+
+f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539 *dashboard/vendor/d3.min.js
+28033e449a31ebcc396e5be8b13b63152bf03094288fb5867034321927bce087 *dashboard/vendor/gsap.min.js

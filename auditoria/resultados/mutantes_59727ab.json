@@ -1,0 +1,184 @@
+{
+  "rev": "59727ab",
+  "segundos": 898,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 83.7
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 88.2
+    },
+    {
+      "id": "145",
+      "nombre": "redactar deja vacío el hueco que no tiene cifra",
+      "capa": "dashboard",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_dashboard.py::test_un_hueco_sin_cifra_no_se_publica_vacio"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_dashboard.py::test_un_hueco_sin_cifra_no_se_publica_vacio"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 83.7
+    },
+    {
+      "id": "146",
+      "nombre": "el cotejo da por buena cualquier cifra",
+      "capa": "dashboard",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_dashboard.py::test_el_cotejo_para_si_la_cifra_no_cuadra_con_su_ficha"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_dashboard.py::test_el_cotejo_para_si_la_cifra_no_cuadra_con_su_ficha"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 87.7
+    },
+    {
+      "id": "147",
+      "nombre": "la prueba llega a la página sin las claves que necesita",
+      "capa": "dashboard",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_dashboard.py::test_la_prueba_cumple_el_contrato_de_la_pagina"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_dashboard.py::test_la_prueba_cumple_el_contrato_de_la_pagina"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 91.9
+    },
+    {
+      "id": "148",
+      "nombre": "la alternancia cuenta capturas, no sondeos",
+      "capa": "dashboard",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_dashboard.py::test_la_alternancia_se_cuenta_por_sondeo_y_cruza_el_cambio_de_dia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_dashboard.py::test_la_alternancia_se_cuenta_por_sondeo_y_cruza_el_cambio_de_dia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 96.4
+    },
+    {
+      "id": "149",
+      "nombre": "el gid se compara entre capturas seguidas y no entre sondeos distintos",
+      "capa": "dashboard",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_dashboard.py::test_dos_sondeos_distintos_no_comparten_gid_y_la_repeticion_no_cuenta"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_dashboard.py::test_dos_sondeos_distintos_no_comparten_gid_y_la_repeticion_no_cuenta"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 92.9
+    },
+    {
+      "id": "150",
+      "nombre": "un día sin crudo desaparece de la serie en vez de valer 0",
+      "capa": "dashboard",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_dashboard.py::test_un_dia_sin_crudo_es_un_cero_y_no_desaparece"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_dashboard.py::test_un_dia_sin_crudo_es_un_cero_y_no_desaparece"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 93.1
+    },
+    {
+      "id": "151",
+      "nombre": "una anotación fuera del rango de la serie se acepta",
+      "capa": "dashboard",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_dashboard.py::test_una_anotacion_fuera_de_la_serie_no_se_dibuja_en_el_vacio"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_dashboard.py::test_una_anotacion_fuera_de_la_serie_no_se_dibuja_en_el_vacio"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 94.9
+    }
+  ]
+}

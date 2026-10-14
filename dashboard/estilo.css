@@ -1,0 +1,73 @@
+:root {
+  --fondo: #f7f6f2;
+  --marco: #e9e7e1;
+  --tinta: #1d2329;
+  --suave: #6b7178;
+  --via: #c9ccd1;
+  --acento: #1f5fa8;
+  --aviso: #d9822b;
+  --tarjeta: #ffffff;
+  --si: #2e7d4f;
+  --no: #b3261e;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--marco); color: var(--tinta); }
+#lienzo { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden;
+  background: var(--fondo); transform-origin: 0 0; }
+#linea { position: absolute; left: 0; top: 0; }
+.via { stroke: var(--via); stroke-width: 8; stroke-linecap: round; }
+.via-hecha { stroke: var(--acento); stroke-width: 8; stroke-linecap: round; }
+.estacion circle { fill: var(--fondo); stroke: var(--tinta); stroke-width: 5; }
+.estacion .num { text-anchor: middle; font-size: 20px; font-weight: 700; fill: var(--tinta); }
+.estacion .nombre { text-anchor: middle; font-size: 18px; fill: var(--suave); }
+.parada circle { fill: var(--fondo); stroke: var(--acento); stroke-width: 4; }
+.parada text { text-anchor: middle; font-size: 15px; fill: var(--suave); }
+.marcador circle { fill: var(--aviso); stroke: #fff; stroke-width: 4; }
+.marcador .fecha { text-anchor: middle; font-size: 22px; font-weight: 600; fill: var(--tinta); }
+.panel { position: absolute; left: 120px; top: 250px; width: 1680px; height: 750px; visibility: hidden; }
+.panel .apartado { margin: 0; font-size: 20px; color: var(--suave); text-transform: uppercase; letter-spacing: .08em; }
+.panel h2 { margin: 8px 0 14px; font-size: 46px; }
+.panel .texto { max-width: 1500px; margin: 0 0 26px; font-size: 26px; line-height: 1.45; }
+.panel .remite { position: absolute; left: 0; bottom: 0; max-width: 1680px; margin: 0; font-size: 15px;
+  color: var(--suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cartel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 64px; font-weight: 700; background: rgba(247, 246, 242, .92); visibility: hidden; }
+#pie { position: absolute; right: 24px; bottom: 12px; font-size: 13px; color: var(--suave); }
+.aviso { margin: 300px auto; font-size: 32px; text-align: center; }
+
+.lista { list-style: none; margin: 0; padding: 0; font-size: 28px; }
+.lista li { display: grid; grid-template-columns: 56px 680px 1fr; padding: 10px 0; border-bottom: 1px solid #e3e1db; }
+.lista .marca { font-weight: 700; }
+.v-si .marca { color: var(--si); }
+.v-parcial .marca { color: var(--aviso); }
+.v-no .marca { color: var(--no); }
+.lista .detalle { color: var(--suave); }
+
+.pares { display: flex; gap: 48px; }
+.registro { width: 780px; padding: 22px 28px; border-radius: 12px; background: var(--tarjeta);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .06); }
+.registro h3 { margin: 0 0 12px; font-size: 22px; font-weight: 600; color: var(--suave); }
+.fila { display: flex; justify-content: space-between; padding: 8px 10px; border-radius: 6px; font-size: 24px; }
+.fila .k { color: var(--suave); }
+.fila .v { font-family: Consolas, "Cascadia Mono", monospace; }
+.fila.resaltada { background: rgba(217, 130, 43, .22); font-weight: 600; }
+
+.serie .trazo { fill: none; stroke: var(--acento); stroke-width: 3; }
+.serie .punto { fill: transparent; }
+.serie .punto:hover { fill: var(--acento); }
+.serie .sombra { fill: var(--aviso); opacity: .16; }
+.serie .rotulo { font-size: 17px; fill: var(--tinta); }
+.serie .eje text { font-size: 14px; fill: var(--suave); }
+.serie .anot line { stroke: var(--suave); stroke-dasharray: 4 4; }
+.serie .anot text { font-size: 15px; fill: var(--tinta); }
+
+.cifra .valor { font-size: 160px; font-weight: 700; line-height: 1; color: var(--acento); }
+.cifra .etiqueta { margin: 6px 0 24px; font-size: 30px; color: var(--suave); }
+.cifra .detalle { columns: 2; margin: 0; padding: 0; list-style: none; font-size: 22px; }
+.cifra .detalle li { display: flex; gap: 18px; padding: 4px 0; }
+.cifra .detalle .k { min-width: 220px; color: var(--suave); }
+
+#tip { position: absolute; display: none; z-index: 100; pointer-events: none; padding: 8px 14px;
+  background: var(--tarjeta); border-radius: 8px; box-shadow: 0 2px 12px rgba(0, 0, 0, .25);
+  font-size: 18px; white-space: nowrap; }

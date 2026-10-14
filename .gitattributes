@@ -27,3 +27,4 @@
 *.png       binary
 *.pkl       binary
 *.db        binary
+*.pdf       binary

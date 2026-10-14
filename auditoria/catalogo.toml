@@ -1766,3 +1766,170 @@ buscar = '''        r = cuentas[s] = reprocesar(data, s, dry)'''
 reemplazar = '''        r = reprocesar(data, s, dry)'''
 detector = ["tests/test_persistencia.py::test_reprocesar_deja_sus_cuentas_en_un_fichero"]
 sondas = []
+
+[[mutante]]
+id = "145"
+nombre = "redactar deja vacío el hueco que no tiene cifra"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/paradas.py"
+buscar = '''    return plantilla.format_map(cifras)'''
+reemplazar = '''    return re.sub(r"\{(\w+)\}", lambda m: cifras.get(m.group(1), ""), plantilla)'''
+detector = ["tests/test_dashboard.py::test_un_hueco_sin_cifra_no_se_publica_vacio"]
+sondas = []
+
+[[mutante]]
+id = "146"
+nombre = "el cotejo da por buena cualquier cifra"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/paradas.py"
+buscar = '''    if fallos:
+        raise CotejoError("; ".join(fallos))'''
+reemplazar = '''    if False:
+        raise CotejoError("; ".join(fallos))'''
+detector = ["tests/test_dashboard.py::test_el_cotejo_para_si_la_cifra_no_cuadra_con_su_ficha"]
+sondas = []
+
+[[mutante]]
+id = "147"
+nombre = "la prueba llega a la página sin las claves que necesita"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/paradas.py"
+buscar = '''    falta = CLAVES[prueba["tipo"]] - set(prueba)'''
+reemplazar = '''    falta = set()'''
+detector = ["tests/test_dashboard.py::test_la_prueba_cumple_el_contrato_de_la_pagina"]
+sondas = []
+
+[[mutante]]
+id = "151"
+nombre = "una anotación fuera del rango de la serie se acepta"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/paradas.py"
+buscar = '''                if f is not None and not x0 <= f <= x1:'''
+reemplazar = '''                if False:'''
+detector = ["tests/test_dashboard.py::test_una_anotacion_fuera_de_la_serie_no_se_dibuja_en_el_vacio"]
+sondas = []
+
+[[mutante]]
+id = "148"
+nombre = "la alternancia cuenta capturas, no sondeos"
+capa = "dashboard"
+# La repetición de un sondeo con la convención contraria pasaría por alternancia.
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''            if sid in vistos:
+                continue'''
+reemplazar = '''            if False:
+                continue'''
+detector = ["tests/test_dashboard.py::test_la_alternancia_se_cuenta_por_sondeo_y_cruza_el_cambio_de_dia"]
+sondas = []
+
+[[mutante]]
+id = "149"
+nombre = "el gid se compara entre capturas seguidas y no entre sondeos distintos"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''        if previo is not None and min(actual["gid"]) != min(previo["gid"]):'''
+reemplazar = '''        if previo is not None and actual["gid"] != previo["gid"]:'''
+detector = ["tests/test_dashboard.py::test_dos_sondeos_distintos_no_comparten_gid_y_la_repeticion_no_cuenta"]
+sondas = []
+
+[[mutante]]
+id = "150"
+nombre = "un día sin crudo desaparece de la serie en vez de valer 0"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''    return por_dia.reindex(dias, fill_value=0), huecos(ts, UNA_HORA)'''
+reemplazar = '''    return por_dia, huecos(ts, UNA_HORA)'''
+detector = ["tests/test_dashboard.py::test_un_dia_sin_crudo_es_un_cero_y_no_desaparece"]
+sondas = []
+
+[[mutante]]
+id = "152"
+nombre = "el último día del crudo se dibuja aunque el colector siga escribiéndolo"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''    return str((pd.Timestamp(dias_del_crudo(raw)[-1]) - pd.Timedelta(days=1)).date())'''
+reemplazar = '''    return str(pd.Timestamp(dias_del_crudo(raw)[-1]).date())'''
+detector = ["tests/test_dashboard.py::test_el_ultimo_dia_del_crudo_se_da_por_incompleto"]
+sondas = []
+
+[[mutante]]
+id = "153"
+nombre = "la repetición idéntica de un sondeo pasa por bloque a medias"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''            if previo and len(gids) > n and gids[:n] == previo["gid"]:'''
+reemplazar = '''            if previo and gids[:n] == previo["gid"]:'''
+detector = ["tests/test_dashboard.py::test_el_bloque_a_medias_se_encuentra_y_la_copia_identica_no"]
+sondas = []
+
+[[mutante]]
+id = "154"
+nombre = "el porcentaje de sondeos posibles cuenta sondeos y pasa del cien por cien"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/foto.py"
+buscar = '''    ).drop_duplicates()'''
+reemplazar = '''    )'''
+detector = ["tests/test_dashboard.py::test_el_porcentaje_de_sondeos_posibles_no_pasa_del_cien_por_cien"]
+sondas = []
+
+[[mutante]]
+id = "155"
+nombre = "sin las cuentas de curar el exportador revienta sin decir qué ejecutar"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/foto.py"
+buscar = '''    if not ruta.exists():
+        raise FileNotFoundError(f"falta {ruta}: ejecuta `uv run dvc repro curar`")'''
+reemplazar = '''    if False:
+        raise FileNotFoundError(f"falta {ruta}: ejecuta `uv run dvc repro curar`")'''
+detector = ["tests/test_dashboard.py::test_sin_las_cuentas_de_curar_el_exportador_dice_que_ejecutar"]
+sondas = []
+
+[[mutante]]
+id = "156"
+nombre = "la foto se escribe aunque pase del límite de tamaño"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/paradas.py"
+buscar = '''    if n > LIMITE_BYTES:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_dashboard.py::test_la_foto_es_un_script_y_no_pasa_del_limite"]
+sondas = []
+
+[[mutante]]
+id = "157"
+nombre = "una prueba de pares con un solo registro llega a la página"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/paradas.py"
+buscar = '''    if prueba["tipo"] == "pares" and len(prueba["registros"]) != 2:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_dashboard.py::test_la_prueba_cumple_el_contrato_de_la_pagina"]
+sondas = []
+
+[[mutante]]
+id = "158"
+nombre = "una serie con menos valores que días llega a la página"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/paradas.py"
+buscar = '''            if len(s["valores"]) != len(prueba["x"]):'''
+reemplazar = '''            if False:'''
+detector = ["tests/test_dashboard.py::test_la_prueba_cumple_el_contrato_de_la_pagina"]
+sondas = []
+
+[[mutante]]
+id = "159"
+nombre = "la serie de tramos une con una recta los días sin datos"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/foto.py"
+buscar = '''    est = est.reindex(dias)'''
+reemplazar = '''    est = est'''
+detector = ["tests/test_dashboard.py::test_la_serie_de_tramos_deja_hueco_en_los_dias_sin_datos_y_acaba_antes_de_la_prueba"]
+sondas = []
+
+[[mutante]]
+id = "160"
+nombre = "la serie de tramos llega hasta la prueba del ADR-024"
+capa = "dashboard"
+fichero = "src/project/analysis/dashboard_ingesta/foto.py"
+buscar = '''    corte = min(hasta, str((pd.Timestamp(PRUEBA[0]) - pd.Timedelta(days=1)).date()))'''
+reemplazar = '''    corte = hasta'''
+detector = ["tests/test_dashboard.py::test_la_serie_de_tramos_deja_hueco_en_los_dias_sin_datos_y_acaba_antes_de_la_prueba"]
+sondas = []

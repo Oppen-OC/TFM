@@ -254,6 +254,7 @@ uv run python -m project.ingest.collect --minutes 1440   # captura (fuera de DVC
 uv run python -m project.ingest.collect --status     # estado del colector
 uv run python -m project.ingest.reprocesar           # reconstruye curated/ desde raw/
 uv run python -m project.analysis.diagnose           # GO / NO-GO de la hipótesis
+uv run python -m project.analysis.dashboard_ingesta  # foto y figuras del dashboard de la defensa
 uv run python auditoria/mutar.py                     # ¿detectan los tests? (~40 min)
 ```
 
