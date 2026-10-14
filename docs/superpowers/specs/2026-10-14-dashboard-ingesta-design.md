@@ -66,7 +66,8 @@ figuras de la memoria de las paradas de tipo `serie`, sus tests y mutantes.
 ```
 data/raw  data/curated  metrics/curar.json  docs/bitacora/*.md  .claude/trampas/*.md
         \        |              |                  |                    /
-         src/project/analysis/dashboard_ingesta.py   (exportador, fuera de DVC)
+         src/project/analysis/dashboard_ingesta/   (exportador, fuera de DVC:
+                 |                                  paradas, extraer, figuras, __main__)
                  |                                   |
      dashboard/datos/ingesta.js              dashboard/figuras/*.pdf
                  |
@@ -98,19 +99,25 @@ Cada parada es un registro: `id`, `capitulo`, `apartado`, `fecha`, `titulo`,
 - `fecha` es la más temprana de las fichas a las que remite la parada
   (`fecha:` de la bitácora, `detectada:` de la trampa). P1 y P2 no remiten a
   ninguna ficha y llevan la fecha de `docs/01`-`03`.
-- `cotejo` guarda la cifra que publicó la ficha; si la recalculada no cuadra, el
-  exportador se detiene con un error (el instrumento también miente, trampa 004).
+- `cotejo` guarda la cifra que publicó la ficha y una tolerancia relativa; si la
+  recalculada se sale de ella, el exportador se detiene con un error (el
+  instrumento también miente, trampa 004). La tolerancia es 0 donde el
+  recálculo del 14/10 reprodujo la ficha exacta (P4, P10), una milésima en la
+  duración del hueco (P5) y un 2 % donde la ficha se publicó sobre otra
+  versión del crudo y hoy se desvía en torno a un 1 % (P3: 342 alternancias en
+  1.236 sondeos; P8: 6.342 payloads y 299 MB al día). La página enseña siempre
+  la cifra recalculada, y el exportador imprime la desviación de cada cotejo.
 
 | | cap. | fecha | parada | prueba | origen | cotejo |
 |---|---|---|---|---|---|---|
 | P1 | 1 Introducción | 14/08 | La idea y el barrido de fuentes; Metrovalencia descartado (ADR-008) | `lista`: fuentes candidatas con su veredicto, y la cadencia de las que se capturan | `SOURCES.period_s`, `docs/03` | — |
 | P2 | 3 Análisis del problema | 15/08 | Ninguna fuente guarda el pasado: colector 24/7, crudo antes de parsear | `cifra`: payloads guardados en el crudo y primer sondeo | crudo | — |
-| P3 | 4 Solución · Adquisición | 16/08 | La EMT alterna UTC y hora local (trampa 002) | `pares`: dos sondeos seguidos con convención distinta | `tz_convencion` del curado | 338 alternancias en 1.224 sondeos, 15/08 22:15-16/08 08:55 local |
-| P4 | 4 | 19/08 | El `gid` identifica al refresco, no al vehículo (trampa 001) | `pares`: dos sondeos seguidos con intersección de `gid` vacía | curado | intersección 0 |
+| P3 | 4 Solución · Adquisición | 16/08 | La EMT alterna UTC y hora local (trampa 002) | `pares`: dos sondeos seguidos con convención distinta | crudo, `tz_convencion` de `parse_emt` | 338 alternancias en 1.224 sondeos (±2 %), 15/08 22:15-16/08 08:55 local |
+| P4 | 4 | 19/08 | El `gid` identifica al refresco, no al vehículo (trampa 001) | `pares`: dos sondeos seguidos con intersección de `gid` vacía | crudo | intersección 0 |
 | P5 | 4 | 18/09 | La fuente falla sin avisar: capas caídas (021) y líneas que dejan de publicarse (025) | `serie`: sondeos diarios de las capas, hueco 10-14/09 sombreado; posiciones diarias de la 71 | `medir_completitud`, curado | 4 días y 7,7 h de hueco |
-| P6 | 4 | 18/09 | El bloque a medio reinsertar: por qué se guarda el crudo (020, trampa 011) | `pares`: primera captura a medias frente a la completa, mismo `snapshot_id` | crudo, `metrics/curar.json` | completados de la EMT ≥ 1.200 (el corpus contiene el 15/08-18/09) |
-| P7 | 4 | 25/09 | En periodo lectivo la 192 despierta y la 188 sigue congelada (031) | `serie`: tramos congestionados al día (192) frente a valores distintos (188) | `medir_fuentes.lectivo()` | mediana de 34 tramos densos o congestionados por laborable; la 188, 243 valores distintos |
-| P8 | 4 | 30/09 | 0,07 payloads por segundo: Kafka no hace falta (033) | `cifra`: payloads/s y MB/día por fuente | `medir_volumen.medir()` sobre los días de la 033 | 6.336 payloads/día, 297 MB |
+| P6 | 4 | 18/09 | El bloque a medio reinsertar: por qué se guarda el crudo (020, trampa 011) | `pares`: primera captura a medias frente a la completa, mismo `snapshot_id` | crudo, metrics/curar.json | completados de la EMT ≥ 1.200 (el corpus contiene el 15/08-18/09) |
+| P7 | 4 | 25/09 | En periodo lectivo la 192 despierta y la 188 sigue congelada (031) | `serie`: tramos congestionados al día (192) frente a valores distintos (188) | `medir_fuentes.lectivo()` | mediana de 43 tramos densos o congestionados por laborable (la 031 publicó 34 con el 18/09 a medias; corrección en la 052); la 188, 243 valores distintos |
+| P8 | 4 | 30/09 | 0,07 payloads por segundo: Kafka no hace falta (033) | `cifra`: payloads/s y MB/día por fuente | `medir_volumen.medir()` sobre los días de la 033 | 6.336 payloads/día, 297 MB (±2 %) |
 | P9 | 4 | 30/09 | La infraestructura también falla: corpus solo en el PC (035), disco de la Pi (044), GTFS sin guardar (051) | `serie`: línea temporal de la captura con los incidentes anotados | `medir_completitud`, fechas de las fichas | — |
 | P10 | 5 Implantación · Resultados | 13/10 | La captura de la prueba, completa (050) | `serie`: completitud diaria de EMT y 192 en todo el corpus; cifra de la prueba | `medir_completitud` | 17.119 de 17.280 sondeos de la EMT, 07-12/10 |
 
@@ -147,7 +154,7 @@ sin paradas.
 
 ## Verificación
 
-**Tests** (`tests/test_dashboard.py`, datos sintéticos con verdad conocida):
+**Tests** (tests/test_dashboard.py, datos sintéticos con verdad conocida):
 - Un test por extractor con lógica propia: P3 encuentra el cambio de
   convención; P4, la intersección vacía; P5, el hueco de días quitados a
   propósito; P6, el par a medias/completo en un crudo con el bloque partido.
@@ -165,7 +172,7 @@ reproducción completa con `?auto=1`.
 ## Errores
 
 - El exportador falla con un mensaje claro si falta lo que necesita
-  (`metrics/curar.json`, días del crudo, una ficha citada). Sin respaldo
+  (metrics/curar.json, días del crudo, una ficha citada). Sin respaldo
   silencioso.
 - La página, sin `ingesta.js`, dice qué comando ejecutar en vez de quedarse en
   blanco.
@@ -173,7 +180,7 @@ reproducción completa con `?auto=1`.
 ## Fronteras
 
 - El exportador vive en `src/project/analysis/`: fuera de DVC, nada lo importa.
-- Lee crudo, curado, `metrics/curar.json` y el frontmatter de `docs/bitacora/` y
+- Lee crudo, curado, metrics/curar.json y el frontmatter de `docs/bitacora/` y
   `.claude/trampas/`. No importa `features`, `train`, `predict` ni `evaluate`.
 - **No puede mirar la prueba del ADR-024**: no lee etiquetas, `data/processed/`
   ni métricas del modelo. Del 07-19/10 solo usa conteos de captura, que la
@@ -185,7 +192,7 @@ reproducción completa con `?auto=1`.
 uv run python -m project.analysis.dashboard_ingesta     # foto + figuras
 ```
 
-- `metrics/curar.json` sale de `dvc repro curar` (lanzado el 14/10; solo
+- metrics/curar.json sale de `dvc repro curar` (lanzado el 14/10; solo
   reconstruye el curado, determinista, sin evaluar nada).
 - Se desarrolla sobre el crudo hasta el 12/10. La foto definitiva se genera tras
   traer el 19/10 y el repro posterior a la prueba (~21/10).
