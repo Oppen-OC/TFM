@@ -12,6 +12,8 @@
 
 ## Global Constraints
 
+- **No ejecutar `dvc repro` de ningún stage.** La prueba del ADR-024 sigue abierta hasta el 19/10 y sus comparaciones se ejecutan una sola vez: un repro con el crudo de la prueba a medias la gastaría. `curar` ya se reconstruyó el 14/10.
+- No tocar `src/project/ingest/sources.py`, `features.py`, `train.py`, `predict.py` ni `evaluate.py`: son dependencias de DVC congeladas para la prueba.
 - Ninguna plantilla `texto` de una parada contiene dígitos: toda cifra sale del dato por `redactar`.
 - Cada cifra con ficha se coteja; si se sale de la tolerancia, el exportador se detiene y no escribe nada.
 - La página abre como `file://` sin servidor ni red: datos en `window.DATOS`, `<script>` clásicos (ni `fetch` ni módulos ES), librerías en `dashboard/vendor/`, nada de CDN en tiempo de ejecución.
@@ -260,10 +262,8 @@ PARADAS: list[dict] = [
         ),
         "remite": ["trampa:002"],
         "cotejo": [
-            {"cifra": "alternancias", "esperado": 338, "tolerancia": 0.02,
-             "ficha": "trampa 002"},
-            {"cifra": "sondeos", "esperado": 1224, "tolerancia": 0.02,
-             "ficha": "trampa 002"},
+            {"cifra": "alternancias", "esperado": 342, "ficha": "bitácora 053"},
+            {"cifra": "sondeos", "esperado": 1236, "ficha": "bitácora 053"},
         ],
     },
     {
@@ -1081,23 +1081,16 @@ git commit -m "feat(dashboard): figuras de la memoria desde la misma prueba que 
 
 El cotejo de P7 remite a la 052, la corrección de la mediana lectiva de la 031 (34 medido con el 18/09 a medias; 43 con el día entero). Comprueba que `docs/bitacora/` tiene una entrada 052 que lo diga. Si no la tiene, para y pide al usuario que la fiche con `/bitacora`: no la escribas tú.
 
-- [ ] **Step 1: Comprobar que `curar` terminó y firmarlo**
+- [ ] **Step 1: Comprobar que `curar` está firmado**
 
-`dvc repro curar` se lanzó el 14/10 en segundo plano.
+`dvc repro curar` corrió el 14/10 y su `dvc.lock` y metrics/curar.json están commiteados.
 
 ```bash
-uv run dvc status curar          # Expected: "Data and pipelines are up to date." para curar
+uv run dvc status curar          # Expected: curar sin cambios (los demás stages sí salen: es lo esperado)
 ls metrics/curar.json data/curated
-git status --short               # Expected: dvc.lock y metrics/curar.json modificados/nuevos
 ```
 
-Si `curar` sigue corriendo, para aquí y espera: el exportador necesita `data/curated` entero. Cuando esté:
-
-```bash
-cat metrics/curar.json           # una entrada por fuente, "estado": "reescrito"
-git add dvc.lock metrics/curar.json
-git commit -m "chore(dvc): curar con el crudo hasta el 12/10 y sus cuentas en metrics/curar.json" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-```
+Si `curar` sale con cambios, para y avisa al usuario: no lo reejecutes.
 
 - [ ] **Step 2: Test que falla**
 
@@ -1522,7 +1515,7 @@ Expected: un bloque «Cotejo con las fichas» con todas las líneas en `ok` y, a
 
 | cotejo | esperado |
 |---|---|
-| P3 alternancias / sondeos | 342 / 1.236 (ficha: 338 / 1.224, ±2 %) |
+| P3 alternancias / sondeos | 342 / 1.236 (bitácora 053) |
 | P4 comun | 0 |
 | P5 horas | ≈ 103,74 (ficha: 103,7) |
 | P8 payloads / mb | 6.342 / 299,3 (ficha: 6.336 / 297, ±2 %) |
@@ -2024,8 +2017,6 @@ git commit -m "test(auditoria): mutantes 145-151 detectados" -m "Co-Authored-By:
 - [ ] **Step 4: Ofrecer lo que va a la bitácora**
 
 No lo escribas sin preguntar. Ofrece al usuario fichar con `/bitacora`:
-- la ventana de la primera captura (15/08 22:15 → 16/08 08:55) dura 10 h 40 min, no «12,5 h» como dicen `docs/05` y el docstring de `resolver_convencion`;
-- la trampa 002 da 338 alternancias en 1.224 sondeos y el crudo de hoy da 342 en 1.236;
 - la bitácora 033 da 6.336 payloads y 297 MB al día, y el crudo de hoy da 6.342 y 299 MB;
 - Renfe tiene 244 payloads que no parsean en metrics/curar.json (`errores`), sin explicar;
 - cualquier cotejo que no haya salido como en la tabla del paso 6 de la Task 4.

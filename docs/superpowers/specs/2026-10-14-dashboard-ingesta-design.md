@@ -104,15 +104,16 @@ Cada parada es un registro: `id`, `capitulo`, `apartado`, `fecha`, `titulo`,
   instrumento también miente, trampa 004). La tolerancia es 0 donde el
   recálculo del 14/10 reprodujo la ficha exacta (P4, P10), una milésima en la
   duración del hueco (P5) y un 2 % donde la ficha se publicó sobre otra
-  versión del crudo y hoy se desvía en torno a un 1 % (P3: 342 alternancias en
-  1.236 sondeos; P8: 6.342 payloads y 299 MB al día). La página enseña siempre
+  versión del crudo y hoy se desvía en torno a un 1 % (P8: 6.342 payloads y
+  299 MB al día). P3 y P7 cotejan sin tolerancia contra las bitácoras 053 y 052,
+  que corrigieron las cifras publicadas. La página enseña siempre
   la cifra recalculada, y el exportador imprime la desviación de cada cotejo.
 
 | | cap. | fecha | parada | prueba | origen | cotejo |
 |---|---|---|---|---|---|---|
 | P1 | 1 Introducción | 14/08 | La idea y el barrido de fuentes; Metrovalencia descartado (ADR-008) | `lista`: fuentes candidatas con su veredicto, y la cadencia de las que se capturan | `SOURCES.period_s`, `docs/03` | — |
 | P2 | 3 Análisis del problema | 15/08 | Ninguna fuente guarda el pasado: colector 24/7, crudo antes de parsear | `cifra`: payloads guardados en el crudo y primer sondeo | crudo | — |
-| P3 | 4 Solución · Adquisición | 16/08 | La EMT alterna UTC y hora local (trampa 002) | `pares`: dos sondeos seguidos con convención distinta | crudo, `tz_convencion` de `parse_emt` | 338 alternancias en 1.224 sondeos (±2 %), 15/08 22:15-16/08 08:55 local |
+| P3 | 4 Solución · Adquisición | 16/08 | La EMT alterna UTC y hora local (trampa 002) | `pares`: dos sondeos seguidos con convención distinta | crudo, `tz_convencion` de `parse_emt` | 342 alternancias en 1.236 sondeos, 15/08 22:15-16/08 08:55 local (bitácora 053; se publicó 338 en 1.224) |
 | P4 | 4 | 19/08 | El `gid` identifica al refresco, no al vehículo (trampa 001) | `pares`: dos sondeos seguidos con intersección de `gid` vacía | crudo | intersección 0 |
 | P5 | 4 | 18/09 | La fuente falla sin avisar: capas caídas (021) y líneas que dejan de publicarse (025) | `serie`: sondeos diarios de las capas, hueco 10-14/09 sombreado; posiciones diarias de la 71 | `medir_completitud`, curado | 4 días y 7,7 h de hueco |
 | P6 | 4 | 18/09 | El bloque a medio reinsertar: por qué se guarda el crudo (020, trampa 011) | `pares`: primera captura a medias frente a la completa, mismo `snapshot_id` | crudo, metrics/curar.json | completados de la EMT ≥ 1.200 (el corpus contiene el 15/08-18/09) |
