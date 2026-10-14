@@ -273,9 +273,68 @@ def main(horizonte: int | None = None, trafico: bool = False) -> None:
     print(json.dumps({k: art[k] for k in ("n_arboles", "validacion")}, indent=2))
 
 
+def main_clasificador(horizonte: int | None = None) -> None:
+    """Stage `train_clasificador`: más de `umbral_retraso_s` tarde (ADR-025). Sin
+    horizonte, el de `params.yaml`; con él, el del barrido (ADR-023)."""
+    params = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
+    cfg, p = params["features"], params["train"]
+    rutas = features.salidas(horizonte)
+    train = pd.read_parquet(rutas["tabla"] / "train.parquet")
+    # Se entrena con las filas en las que el modelo se va a usar (ADR-022).
+    train = train[features.poblacion(train)].reset_index(drop=True)
+
+    mlflow.set_experiment(EXPERIMENTO_CLASIFICADOR)
+    with mlflow.start_run() as run:
+        art = entrenar_clasificador(
+            train,
+            columnas_clasificador(cfg),
+            cfg["objetivo"],
+            cfg["umbral_retraso_s"],
+            p,
+        )
+        art["mlflow_run_id"] = run.info.run_id
+        mlflow.log_params(
+            {
+                **p,
+                **CLASIFICADOR,
+                "n_arboles": art["n_arboles"],
+                "umbral_decision": art["umbral"],
+                "umbral_retraso_s": cfg["umbral_retraso_s"],
+                **{k: cfg[k] for k in ("train_hasta", "test_desde", "test_hasta")},
+                "horizonte_paradas": horizonte or cfg["horizonte_paradas"],
+            }
+        )
+        mlflow.log_dict(
+            {"variables": art["columnas"], "categorias": art["categorias"]},
+            "variables.json",
+        )
+        mlflow.log_dict(art["validacion"], "validacion.json")
+        mlflow.xgboost.log_model(art["modelo"], name="modelo")
+
+    ruta = rutas["clasificador"]
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    ruta.write_bytes(pickle.dumps(art))
+    print(
+        json.dumps(
+            {k: art[k] for k in ("n_arboles", "umbral", "validacion")},
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
+
+
 if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--horizonte", type=int, default=None, help="paradas (ADR-023)")
-    a.add_argument("--trafico", action="store_true", help="con la capa 192 (ADR-024)")
+    modo = a.add_mutually_exclusive_group()
+    modo.add_argument(
+        "--trafico", action="store_true", help="con la capa 192 (ADR-024)"
+    )
+    modo.add_argument(
+        "--clasificador", action="store_true", help="más de 5 min tarde (ADR-025)"
+    )
     args = a.parse_args()
-    main(args.horizonte, args.trafico)
+    if args.clasificador:
+        main_clasificador(args.horizonte)
+    else:
+        main(args.horizonte, args.trafico)

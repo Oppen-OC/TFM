@@ -109,6 +109,11 @@ def test_los_stages_de_dvc_son_los_documentados():
         "evaluate_trafico",
         "train_trafico_h",
         "evaluate_trafico_h",
+        # más de 5 min tarde (ADR-025): el clasificador y su comparación
+        "train_clasificador",
+        "evaluate_clasificador",
+        "train_clasificador_h",
+        "evaluate_clasificador_h",
     }
     assert declarados == documentados, (
         f"dvc.yaml declara {sorted(declarados)}, la documentación describe "

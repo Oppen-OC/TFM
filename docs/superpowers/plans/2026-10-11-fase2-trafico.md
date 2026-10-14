@@ -973,10 +973,10 @@ Get-ChildItem data/raw/source=gtfs_emt -Recurse -Filter *.zip | ForEach-Object {
 ```
 
 Anotar, para los días 07-19/10, el porcentaje de pasos contradichos y las líneas que lo concentran. Es el límite declarado.
-- [ ] **Step 4:** lanzar desacoplado `uv run dvc repro features features_h train train_h train_trafico train_trafico_h`.
+- [ ] **Step 4:** lanzar desacoplado `uv run dvc repro features features_h train train_h train_trafico train_trafico_h train_clasificador train_clasificador_h` (los clasificadores, ADR-025).
 - [ ] **Step 5: comprobar la partición y la validación**
   - En `metrics/features.json`, `dias.test` = 13 (o menos, si la tarea 11 descartó alguno).
-  - En los diez modelos, `validacion.dias` = 28/09…04/10:
+  - En los quince modelos (regresión, con tráfico y clasificador, ADR-025), `validacion.dias` = 28/09…04/10:
 
 ```powershell
 uv run python -c "import pickle,glob; [print(p, pickle.load(open(p,'rb'))['validacion']['dias']) for p in sorted(glob.glob('models/**/*.pkl', recursive=True))]"
@@ -986,18 +986,18 @@ Si algo no cuadra, parar **antes** de evaluar.
 
 ### Task 13: la evaluación, una vez
 
-- [ ] **Step 1:** `uv run dvc repro` (evaluate, evaluate_h, evaluate_trafico, evaluate_trafico_h). Una sola ejecución.
-- [ ] **Step 2:** la primaria es `con_sensor` en metrics/horizontes/h5/trafico.json; la confirmación de la v2, `global` en `metrics/horizontes/h5/eval.json`.
+- [ ] **Step 1:** `uv run dvc repro` (evaluate, evaluate_h, evaluate_trafico, evaluate_trafico_h, evaluate_clasificador, evaluate_clasificador_h). Una sola ejecución.
+- [ ] **Step 2:** la primaria es `con_sensor` en metrics/horizontes/h5/trafico.json; la confirmación de la v2, `global` en `metrics/horizontes/h5/eval.json`. El clasificador, descriptivo: `titular` en metrics/horizontes/h5/clasificador.json (ADR-025).
 - [ ] **Step 3: commit**
 
 ```bash
-git add dvc.lock metrics/
+git add dvc.lock metrics/ models/.gitignore models/h*/.gitignore
 git commit -m "chore(dvc): fase 2 del ADR-024, prueba del 07 al 19/10"
 ```
 
 ### Task 14: tribunal
 
-- [ ] Agente `tribunal`, en Opus, con: el ADR-024 completo (enmienda y nota), los cinco `trafico.json`, `eval.json` de h = 5, `metrics/features.json`, `metrics/prepare.json` y el diff de la fase. Pregunta: ¿se ajusta la cifra al protocolo prerregistrado? ¿Hay fuga, filas o días elegidos después o alguna desviación sin declarar? Resolver lo que encuentre antes de dar la cifra por buena.
+- [ ] Agente `tribunal`, en Opus, con: el ADR-024 completo (enmienda y nota), los cinco `trafico.json`, el ADR-025 y los cinco `clasificador.json`, `eval.json` de h = 5, `metrics/features.json`, `metrics/prepare.json` y el diff de la fase. Pregunta: ¿se ajusta la cifra al protocolo prerregistrado? ¿Hay fuga, filas o días elegidos después o alguna desviación sin declarar? Resolver lo que encuentre antes de dar la cifra por buena.
 
 ### Task 15: entrega
 

@@ -567,11 +567,79 @@ def main_trafico(horizonte: int | None = None) -> None:
     )
 
 
+def main_clasificador(horizonte: int | None = None) -> None:
+    """Stage `evaluate_clasificador`: más de 5 min tarde contra los listones, en
+    la prueba (ADR-025). Sin horizonte, el de `params.yaml`; con él, el del
+    barrido."""
+    cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
+    rutas = features.salidas(horizonte)
+    clf = predict.cargar(rutas["clasificador"])
+    reg = predict.cargar(rutas["modelo"])
+    comprobar_pareja_clasificador(clf, reg)
+    test = pd.read_parquet(rutas["tabla"] / "test.parquet")
+    horarios = [gtfs.cargar_horario(r) for r in gtfs.versiones(settings.gtfs_dir)]
+    metricas = {
+        "horizonte_paradas": horizonte or cfg["horizonte_paradas"],
+        "prueba": [cfg["test_desde"], cfg["test_hasta"]],
+        "umbral_retraso_s": cfg["umbral_retraso_s"],
+        "modelos": {
+            nombre: {
+                "n_arboles": a["n_arboles"],
+                "mlflow_run_id": a["mlflow_run_id"],
+                "validacion": a["validacion"]["dias"],
+            }
+            for nombre, a in (("clasificador", clf), ("regresion", reg))
+        },
+        "remuestreo": {
+            "unidad": "viaje y día",
+            "replicas": REPLICAS,
+            "semilla": SEMILLA,
+        },
+        **comparacion_clasificador(
+            test.assign(_banda=banda_intervalo(test, horarios)),
+            predict.probabilidad(clf, test),
+            predict.predecir(reg, test),
+            cfg["objetivo"],
+            cfg["umbral_retraso_s"],
+            clf["umbral"],
+        ),
+    }
+    rutas["metricas"].mkdir(parents=True, exist_ok=True)
+    (rutas["metricas"] / "clasificador.json").write_text(
+        json.dumps(metricas, indent=2, ensure_ascii=False, allow_nan=False),
+        encoding="utf-8",
+    )
+    plano = pd.json_normalize(
+        {k: metricas[k] for k in ("titular", "conjunto")}, sep="."
+    ).iloc[0]
+    with mlflow.start_run(run_id=clf["mlflow_run_id"]):
+        mlflow.log_metrics(
+            {
+                f"test.{k}": float(v)
+                for k, v in plano.items()
+                if isinstance(v, (int, float)) and np.isfinite(v)
+            }
+        )
+        mlflow.log_dict(metricas, "clasificador.json")
+    print(json.dumps(metricas["titular"], indent=2, ensure_ascii=False))
+
+
 if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--horizonte", type=int, default=None, help="paradas (ADR-023)")
-    a.add_argument(
+    modo = a.add_mutually_exclusive_group()
+    modo.add_argument(
         "--trafico", action="store_true", help="con menos sin tráfico (ADR-024)"
     )
+    modo.add_argument(
+        "--clasificador",
+        action="store_true",
+        help="más de 5 min tarde contra los listones (ADR-025)",
+    )
     args = a.parse_args()
-    (main_trafico if args.trafico else main)(args.horizonte)
+    if args.trafico:
+        main_trafico(args.horizonte)
+    elif args.clasificador:
+        main_clasificador(args.horizonte)
+    else:
+        main(args.horizonte)
