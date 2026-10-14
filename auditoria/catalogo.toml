@@ -1953,3 +1953,129 @@ buscar = '''        "desplazadas": 100 * min(filas.values()) / total if len(fila
 reemplazar = '''        "desplazadas": 100 * max(filas.values()) / total if len(filas) == 2 else 0.0,'''
 detector = ["tests/test_dashboard.py::test_la_alternancia_se_cuenta_por_sondeo_y_cruza_el_cambio_de_dia"]
 sondas = []
+
+[[mutante]]
+id = "163"
+nombre = "τ maximiza la sensibilidad y no F1: avisa a todos"
+capa = "modelo"
+fichero = "src/project/train.py"
+buscar = '''    return float(umbrales[np.argmax(f1[:-1])])'''
+reemplazar = '''    return float(umbrales[np.argmax(sensibilidad[:-1])])'''
+detector = ["tests/test_modelo.py::test_el_umbral_de_decision_es_el_de_mejor_f1"]
+sondas = []
+
+[[mutante]]
+id = "164"
+nombre = "τ sale de los días de ajuste y no de la validación"
+capa = "modelo"
+fichero = "src/project/train.py"
+buscar = '''    p_val = pd.Series(m.predict_proba(x(val))[:, 1], index=val.index)'''
+reemplazar = '''    p_val, val = pd.Series(m.predict_proba(x(ajuste))[:, 1], index=ajuste.index), ajuste'''
+detector = ["tests/test_modelo.py::test_el_umbral_de_decision_sale_de_la_validacion"]
+sondas = []
+
+[[mutante]]
+id = "165"
+nombre = "el clasificador ve la capa 192 si params.yaml la activa"
+capa = "modelo"
+# La aportación de la 192 la decide el ADR-024 con su primaria; aquí sería una
+# segunda vía sin prerregistro.
+fichero = "src/project/train.py"
+buscar = '''    return columnas({**cfg, "incluir_trafico": False})'''
+reemplazar = '''    return columnas(cfg)'''
+detector = ["tests/test_modelo.py::test_el_clasificador_ve_las_variables_de_la_regresion_sin_la_192"]
+sondas = []
+
+[[mutante]]
+id = "166"
+nombre = "los listones avisan con 300 s justos"
+capa = "modelo"
+fichero = "src/project/evaluate.py"
+buscar = '''        **{k: puntos[k] > umbral_s for k in LISTONES_BINARIOS},'''
+reemplazar = '''        **{k: puntos[k] >= umbral_s for k in LISTONES_BINARIOS},'''
+detector = ["tests/test_modelo.py::test_el_clasificador_se_compara_con_los_listones_en_los_estratos_del_adr_025"]
+sondas = []
+
+[[mutante]]
+id = "167"
+nombre = "el titular del clasificador incluye la banda de 8-15 min"
+capa = "modelo"
+# Con intervalos de 15 min o menos, la etiqueta pierde positivos (bitácora 038).
+fichero = "src/project/evaluate.py"
+buscar = '''BANDAS_LARGAS = ["15-30 min", "> 30 min"]'''
+reemplazar = '''BANDAS_LARGAS = ["8-15 min", "15-30 min", "> 30 min"]'''
+detector = ["tests/test_modelo.py::test_el_clasificador_se_compara_con_los_listones_en_los_estratos_del_adr_025"]
+sondas = []
+
+[[mutante]]
+id = "168"
+nombre = "la comparación del clasificador cuenta filas que ya no llegan a tiempo"
+capa = "modelo"
+fichero = "src/project/evaluate.py"
+buscar = '''    p = t[features.poblacion(t)]'''
+reemplazar = '''    p = t'''
+detector = ["tests/test_modelo.py::test_el_clasificador_se_compara_con_los_listones_en_los_estratos_del_adr_025"]
+sondas = []
+
+[[mutante]]
+id = "169"
+nombre = "el intervalo de F1 remuestrea filas y no viajes"
+capa = "modelo"
+fichero = "src/project/evaluate.py"
+buscar = '''        .groupby(grupo)'''
+reemplazar = '''        .groupby(grupo.index)'''
+detector = ["tests/test_modelo.py::test_la_diferencia_de_f1_remuestrea_viajes_y_no_filas"]
+sondas = []
+
+[[mutante]]
+id = "170"
+nombre = "la comparación acepta un clasificador y una regresión de entrenamientos distintos"
+capa = "modelo"
+fichero = "src/project/evaluate.py"
+buscar = '''        raise ValueError(
+            "el clasificador y la regresión no son la misma pareja (ADR-025)"
+        )'''
+reemplazar = '''        pass'''
+detector = ["tests/test_modelo.py::test_la_pareja_del_clasificador_es_la_regresion_del_mismo_entrenamiento"]
+sondas = []
+
+[[mutante]]
+id = "171"
+nombre = "el clasificador se guarda encima de la regresión"
+capa = "modelo"
+fichero = "src/project/features.py"
+buscar = '''            "clasificador": modelo.with_name(clasificador),'''
+reemplazar = '''            "clasificador": modelo,'''
+detector = ["tests/test_modelo.py::test_el_clasificador_no_pisa_a_la_regresion"]
+sondas = []
+
+[[mutante]]
+id = "172"
+nombre = "«ya tarde» incluye los 300 s justos"
+capa = "modelo"
+fichero = "src/project/evaluate.py"
+buscar = '''    p = p.assign(_estado=np.where(p["retraso_s"] > umbral_s, YA_TARDE, AUN_NO))'''
+reemplazar = '''    p = p.assign(_estado=np.where(p["retraso_s"] >= umbral_s, YA_TARDE, AUN_NO))'''
+detector = ["tests/test_modelo.py::test_el_clasificador_se_compara_con_los_listones_en_los_estratos_del_adr_025"]
+sondas = []
+
+[[mutante]]
+id = "173"
+nombre = "el clasificador no avisa con P igual a τ"
+capa = "modelo"
+# τ se eligió con `precision_recall_curve`, que avisa con P ≥ τ.
+fichero = "src/project/evaluate.py"
+buscar = '''        "clasificador": prob >= umbral_decision,'''
+reemplazar = '''        "clasificador": prob > umbral_decision,'''
+detector = ["tests/test_modelo.py::test_el_clasificador_se_compara_con_los_listones_en_los_estratos_del_adr_025"]
+sondas = []
+
+[[mutante]]
+id = "174"
+nombre = "sin positivos en la validación sale un τ arbitrario"
+capa = "modelo"
+fichero = "src/project/train.py"
+buscar = '''    if not y.astype(bool).any():'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_modelo.py::test_sin_positivos_en_la_validacion_no_hay_umbral"]
+sondas = []
