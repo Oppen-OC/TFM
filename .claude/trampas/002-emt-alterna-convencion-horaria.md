@@ -16,15 +16,16 @@ de la serie desplazada.
 
 ## Causa
 
-El servicio **no usa una única convención**. Medido el 16/08/2026 sobre 12,5 h de
-captura real, 1.224 snapshots:
+El servicio **no usa una única convención**. En las primeras 10 h 40 min de
+captura real (15/08 22:15 - 16/08 08:55, hora local), 1.236 sondeos; recalculado
+sobre el crudo el 14/10, bitácora 053 (se publicó 338 en 1.224 y «12,5 h»):
 
-| Convención | Snapshots | Filas |
+| Convención | Sondeos | Filas |
 |---|---|---|
-| Hora local de Madrid sellada como si fuera UTC | 979 (79 %) | 51.854 |
-| UTC real | 267 (21 %) | 13.199 |
+| Hora local de Madrid sellada como si fuera UTC | 971 (79 %) | 49.770 |
+| UTC real | 265 (21 %) | 12.598 |
 
-Y no es un cambio puntual: **338 alternancias en 12,5 horas**, con rachas de
+Y no es un cambio puntual: **342 alternancias en 10 h 40 min**, con rachas de
 mediana 2 snapshots. Cambia prácticamente de un sondeo al siguiente. La
 explicación más probable es un balanceador con varios nodos detrás configurados
 con zonas horarias distintas: según a cuál caiga la petición, el sello es uno u

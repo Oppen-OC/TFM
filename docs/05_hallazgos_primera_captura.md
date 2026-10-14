@@ -1,6 +1,12 @@
 # 05 · Hallazgos de la primera captura real
 
-**Ventana:** 15/08/2026 22:15 → 16/08/2026 08:55 hora local (12,5 h).
+**Ventana:** 15/08/2026 22:15 → 16/08/2026 08:55 hora local (10 h 40 min).
+
+> **Corrección del 14/10/2026 (bitácora 053).** Aquí ponía «12,5 h», que es lo que
+> duró la captura (siguió hasta las 10:57), no la ventana analizada. Recalculado
+> sobre el crudo, la alternancia de la sección 1 son 342 cambios en 1.236 sondeos
+> (971 en hora local, 265 en UTC), no 338 en 1.224. La extrapolación de disco de la
+> sección 6 usa la misma duración y no se ha verificado.
 **Volumen:** 1.284 sondeos de EMT, 65.053 posiciones, 76,7 MB en disco.
 
 Todo lo que sigue está medido sobre datos propios. Es material directo para el
