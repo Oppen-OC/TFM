@@ -295,7 +295,8 @@ def main_clasificador(horizonte: int | None = None) -> None:
         art["mlflow_run_id"] = run.info.run_id
         mlflow.log_params(
             {
-                **p,
+                **{k: v for k, v in p.items() if k not in PROPIAS},
+                "dias_validacion": p["dias_validacion"],
                 **CLASIFICADOR,
                 "n_arboles": art["n_arboles"],
                 "umbral_decision": art["umbral"],
@@ -309,6 +310,14 @@ def main_clasificador(horizonte: int | None = None) -> None:
             "variables.json",
         )
         mlflow.log_dict(art["validacion"], "validacion.json")
+        plano = pd.json_normalize(art["validacion"], sep=".").iloc[0]
+        mlflow.log_metrics(
+            {
+                f"val.{k}": float(v)
+                for k, v in plano.items()
+                if isinstance(v, (int, float)) and np.isfinite(v)
+            }
+        )
         mlflow.xgboost.log_model(art["modelo"], name="modelo")
 
     ruta = rutas["clasificador"]
