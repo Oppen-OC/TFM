@@ -95,6 +95,7 @@ Todas las fuentes son abiertas, sin clave y verificadas en vivo (15/08/2026).
 | AEMET | precipitación y temperatura | horaria |
 
 **Volumen proyectado: ~145 millones de filas en tres meses de captura.**
+_(Medido después: 31,7 M en 57 días, ~56 M a tres meses; bitácora 056.)_
 Inviable en CSV sobre un equipo personal; tratable con Parquet particionado y
 DuckDB. La demostración de esa diferencia forma parte del trabajo.
 

@@ -143,8 +143,8 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 - **Stages en `dvc.yaml`, hiperparámetros en `params.yaml`**, bajo las claves
   `prepare`, `features` y `train`. Hasta 08/2026 estaban al revés y `dvc repro` no
   ejecutaba nada; no volver a moverlos.
-- **Parquet, no CSV,** en `data/interim/` y `data/processed/`. ~145 M de filas
-  proyectadas en tres meses.
+- **Parquet, no CSV,** en `data/interim/` y `data/processed/`. ~32 M de filas en
+  57 días, ~56 M a tres meses (bitácora 056).
 - **El split de train/test es TEMPORAL, nunca aleatorio.** Con series de
   posiciones, un split aleatorio filtra el futuro y da métricas falsas. Es el
   error que el tribunal buscará primero.

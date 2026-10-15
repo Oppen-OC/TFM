@@ -63,6 +63,12 @@ Nunca CSV.
 la primera captura: 76,7 MB en 12,5 h, ~147 MB/día, ~13 GB en 90 días. En CSV es
 inmanejable sobre un portátil.
 
+**Nota del 15/10**, con el corpus medido (bitácora 056): 31,7 M de filas en 57
+días, ~56 M a tres meses, 433 MB en Parquet y 2,57 GB de crudo comprimido. La
+proyección suponía sondear la capa de estado cada 60 s; el colector lo hace cada
+5 min. La decisión no cambia: el volumen sigue pidiendo formato columnar, aunque
+no infraestructura distribuida (ADR-016).
+
 **Consecuencias.** Lectura con proyección de columnas y predicate pushdown.
 
 **Particionado (cerrado el 30/09/2026).** Por fecha, en todas las capas, que es

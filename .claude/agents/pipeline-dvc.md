@@ -63,5 +63,5 @@ Un modelo que no bate a persistencia no es un resultado, es un aviso. Dilo así.
 ## Salida
 
 Qué stages se invalidan con el cambio, qué hay que reejecutar y el coste
-aproximado. Si un cambio de params invalida `prepare` sobre 145 M de filas,
+aproximado. Si un cambio de params invalida `prepare` sobre el corpus entero (~32 M de filas, bitácora 056),
 avísalo antes de que se lance.

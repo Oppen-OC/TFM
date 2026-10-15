@@ -215,6 +215,9 @@ EMT será claramente mayor que los 168 buses de un sábado noche:
 | Valenbisi | 5 min | ~79.000 | ~7 M |
 | | | | **~145 M filas** |
 
+> **Medido (15/10/2026):** 31,7 M de filas en 57 días, ~56 M a tres meses. La
+> capa de estado se sondea cada 5 min, no cada 60 s (bitácora 056).
+
 En Parquet con compresión zstd son unos pocos GB, perfectamente manejables con
 DuckDB en un portátil. En CSV, no. Ese contraste, medido y documentado, **es** la
 competencia de Big Data que tu esqueleto actual no acredita.

@@ -36,3 +36,6 @@ mlflow.db
 
 # Ajustes locales de Claude Code (por máquina, no se comparten)
 .claude/settings.local.json
+
+# Grafo de conocimiento de graphify (local, se regenera)
+graphify-out/

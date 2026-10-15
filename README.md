@@ -14,7 +14,7 @@ por FastAPI y consumido por una UI Streamlit.
 Las apps de transporte estiman la llegada del autobús con reglas simples que
 fallan justo cuando importa: hora punta, lluvia, incidencias. La EMT de València
 publica la posición GPS de su flota en tiempo real, y el Ajuntament publica el
-estado de congestión de 446 tramos viarios, pero **nadie ha cruzado las dos
+estado de congestión de 410 tramos viarios, pero **nadie ha cruzado las dos
 fuentes**. La pregunta del trabajo es cuánto del retraso de un autobús se explica
 por la congestión medida aguas abajo de su ruta, y con cuánta antelación se puede
 anticipar.
@@ -43,8 +43,8 @@ Todas abiertas, sin clave y verificadas en vivo el 15/08/2026. Detalle en
 | Fuente | Contenido | Cadencia | Papel |
 |---|---|---|---|
 | EMT · `Seguimiento_EMT/384` | posición GPS de la flota | refresco 29,3 s | fuente principal |
-| Tráfico · capa `192` | estado de congestión, 446 tramos | 60 s | variable explicativa |
-| Tráfico · capa `188` | intensidad medida, veh/h | 5 min | variable explicativa |
+| Tráfico · capa `192` | estado de congestión, 410 tramos | sondeo 5 min | variable explicativa |
+| Tráfico · capa `188` | intensidad medida, veh/h | sondeo 15 min | variable explicativa |
 | Renfe Cercanías · núcleo 40 | posición **+ retraso ya calculado** | 30 s | validación cruzada / plan B |
 | Valenbisi · capa `228` | disponibilidad, 273 estaciones | 10 min | demanda de movilidad |
 | GTFS estático EMT | rutas, paradas, horarios teóricos | semanal | referencia de horario |
@@ -52,8 +52,9 @@ Todas abiertas, sin clave y verificadas en vivo el 15/08/2026. Detalle en
 > **Metrovalencia / FGV no tiene datos en tiempo real públicos.** Solo GTFS
 > estático. Entra en el trabajo como red teórica, nunca como dato observado.
 
-**~145 M de filas en tres meses de captura.** En CSV es inmanejable en un
-portátil; en Parquet particionado + DuckDB, no.
+**~32 M de filas en 57 días de captura, ~56 M a tres meses, 433 MB en Parquet**
+(bitácora 056). Pide formato columnar, no infraestructura distribuida: en
+Parquet particionado + DuckDB se trata en un portátil.
 
 ---
 

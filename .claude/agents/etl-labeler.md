@@ -47,8 +47,8 @@ código**: señala la discrepancia en vez de seguir la versión escrita.
   entre `train.py` y `predict.py`. Duplicar la lógica en cualquiera de los dos es
   el bug clásico de train/serve skew, y es rechazo automático.
 - Nada de `os.getenv` fuera de `config.py`. Rutas y ajustes salen de settings.
-- Parquet, no CSV, en `data/interim/` y `data/processed/`. Proyección: ~145 M de
-  filas en tres meses.
+- Parquet, no CSV, en `data/interim/` y `data/processed/`. El corpus entero son
+  ~32 M de filas (bitácora 056).
 - El split de train/test es **temporal** (`features.test_desde`), nunca
   aleatorio. Con series de posiciones, un split aleatorio filtra el futuro.
 

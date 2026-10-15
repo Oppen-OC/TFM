@@ -43,7 +43,7 @@ ahora y carísimo dentro de tres semanas de captura.
    - **Riesgo y plan B** — qué lo mata, con cuánta antelación lo verías venir, y a
      qué pivotas.
    - **Coste** — horas de trabajo y de cómputo. Un cambio que invalida `prepare`
-     sobre 145 M de filas no es gratis.
+     sobre el corpus entero (~32 M de filas, bitácora 056) no es gratis.
 
 4. **Investiga antes de preguntar.** Lo que puedan responder los ficheros, los
    tests, `docs/`, el historial de git o los runs de MLflow, resuélvelo tú. Pide
@@ -70,7 +70,7 @@ Sé concreto y ve a por lo que suele estar flojo:
   hay histórico recuperable.
 - **Acoplamiento oculto.** Un cambio en el etiquetado invalida todas las etiquetas
   ya generadas. ¿Se ha contado eso?
-- **Complejidad empujada al futuro.** "Ya lo optimizaremos" sobre 145 M de filas
+- **Complejidad empujada al futuro.** "Ya lo optimizaremos" sobre ~32 M de filas
   significa que no se hará.
 
 **No aceptes una respuesta vaga como cerrada.** Repregunta o anótala como supuesto

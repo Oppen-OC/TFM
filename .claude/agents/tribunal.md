@@ -24,10 +24,12 @@ Tres pilares de defensa. Si un cambio los debilita, dilo:
    exige tracking, segmentación, map-matching sobre la traza del GTFS e
    interpolación del paso por parada. Ese ETL es el trabajo.
 2. **La fusión con tráfico no está publicada para València.** Predecir retrasos
-   con GTFS-Realtime genérico está muy hecho; cruzarlo con la congestión de 446
-   tramos del propio Ayuntamiento, en el mismo instante, no.
-3. **El volumen es real:** ~145 M de filas en tres meses. Inmanejable en CSV
-   sobre un portátil; viable en Parquet particionado + DuckDB.
+   con GTFS-Realtime genérico está muy hecho; cruzarlo con la congestión de los
+   410 tramos del propio Ayuntamiento, en el mismo instante, no.
+3. **El volumen pide formato columnar, no infraestructura distribuida:** ~32 M
+   de filas en 57 días, ~56 M a tres meses, 433 MB en Parquet (bitácora 056).
+   Viable en Parquet particionado + DuckDB sobre un portátil; no pide broker
+   (ADR-016). Si un texto cita 145 M, es la proyección previa a capturar: señálalo.
 
 ## Qué buscas, por orden de gravedad
 
