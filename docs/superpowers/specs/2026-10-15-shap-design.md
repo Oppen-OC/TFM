@@ -84,13 +84,19 @@ del resumen sin que algo falle.
   El estrato con sensor es donde la capa 192 tiene algo que decir: medida sobre
   todo el conjunto, se diluye. Como en el resto del pipeline, un estrato vacío
   da `{"filas": 0}` y el JSON se escribe con `allow_nan=False`.
-- figuras/shap/ y figuras/shap/h<h>/, para cada modelo:
+- figuras/shap/h<h>/, también para h = 1: DVC no deja que una salida contenga
+  a otra, y la carpeta de h = 1 contendría las del barrido. Para cada modelo:
   - el resumen (beeswarm);
   - la dependencia de `tramo_sesgo_s`, de `tramo_ganado_15min` y, en el modelo
     con tráfico, de `trafico_congestion_frac`.
 
-  Se dibujan sobre una submuestra fija de 5.000 filas de la población con
-  `evaluate.SEMILLA`. Las medias del JSON van sobre la población entera.
+  El JSON y las figuras salen de la misma muestra fija de 20.000 filas de la
+  población, con `evaluate.SEMILLA`. **Por qué una muestra** (medido el 15/10
+  sobre los modelos del corte antiguo): TreeSHAP con 705-775 árboles de
+  profundidad 8 va a unas 300 filas/s. La población entera de h = 1, 451.671
+  filas, serían 25 min por regresión y más de 4 h los cinco horizontes. El
+  clasificador, con 148 árboles, va a 4.000 filas/s. El JSON guarda el tamaño
+  de la muestra y el de la población.
 
 ## API
 

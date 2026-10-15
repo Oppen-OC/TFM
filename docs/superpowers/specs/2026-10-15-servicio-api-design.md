@@ -82,6 +82,7 @@ dan exactamente la misma predicción que desde la tabla (diferencia máxima 0,0)
 | caso | código | cuerpo |
 |---|---|---|
 | falta o sobra alguna variable | 422 | las que faltan y las que sobran, por nombre |
+| `retraso_s` nulo | 422 | `nulas: ["retraso_s"]`. Sin el retraso de ahora, el modelo de residuo da NaN, y FastAPI lo serializa como `null` con un 200 (comprobado el 15/10) |
 | `linea` no es texto, o un número no es número | 422 | la variable y el tipo esperado |
 | horizonte fuera de 1, 2, 3, 5 y 10 | 422 | los horizontes válidos |
 | horizonte válido sin su modelo cargado | 503 | qué modelo y qué horizonte faltan |
@@ -106,6 +107,7 @@ nada de `api/`.
   - las claves del ejemplo de Swagger son `features.variables`.
 - Mutantes, desde el siguiente id libre de `auditoria/catalogo.toml`:
   - aceptar claves de más;
+  - predecir con `retraso_s` nulo;
   - avisar con `>` en vez de `>=`;
   - quitar la conversión a `float64`;
   - que un modelo ausente tumbe el arranque.
