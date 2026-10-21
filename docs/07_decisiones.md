@@ -962,6 +962,17 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
     del 05/10 al 11/11 y cubre la prueba entera, y la vigente el 21/10. El
     colector no se redespliega hasta cerrar la prueba: un reinicio fallido
     dejaría un hueco en ella.
+- **Completitud (21/10)**, sobre `data/raw` tras `pull_data.sh` desde la SD
+  (`medir_completitud --desde 2026-10-06`), antes de `dvc repro`:
+  - EMT: de 2.840 a 2.856 sondeos por día UTC del 07 al 19/10, de 2.880
+    posibles, y ningún hueco de más de 15 min. **No cae ningún día: la prueba
+    tiene sus 13 días.**
+  - 192: de 273 a 288 por día. Cinco huecos de 15 min (07, 15, 17 y dos el
+    19/10) y uno de **76 min el 16/10, de 08:28 a 09:44 UTC**, en la punta de
+    la mañana. No descarta el día: deja filas sin tráfico observado, que se
+    informan como límite.
+  - El 06-12/10 de la SD coincide en contenido con el de `data/raw`; solo
+    difieren los permisos (`--verificar`).
 
 ---
 
