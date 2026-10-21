@@ -76,7 +76,8 @@ def _vector(t: pd.DataFrame, i: int = 0) -> dict:
 def test_el_ejemplo_de_swagger_son_las_variables_del_modelo():
     """Si `params.yaml` cambia las variables, el ejemplo deja de servir: falla
     aquí y no en la cara de quien prueba la API."""
-    assert list(EJEMPLO) == COLS
+    assert list(EJEMPLO) == train.columnas(CFG)
+    assert list(EJEMPLO) == train.columnas_clasificador(CFG)
 
 
 def test_la_prediccion_es_la_de_predict_sobre_la_misma_fila(arts):
@@ -198,3 +199,14 @@ def test_sin_retraso_actual_no_hay_prediccion(arts):
         with pytest.raises(VariablesInvalidas) as e:
             s.retraso(_vector(t) | {"retraso_s": nulo})
         assert e.value.args[0]["nulas"] == ["retraso_s"]
+
+
+def test_un_infinito_no_se_predice(arts):
+    """`1e400` es JSON válido y llega como `inf`: el modelo devolvería un valor
+    no finito y FastAPI lo serializa como `null` con un 200."""
+    t, reg, _ = arts
+    s = Servicio({("regresion", 1): reg}, [1])
+    for var, inf in (("retraso_s", float("inf")), ("hora", float("-inf"))):
+        with pytest.raises(VariablesInvalidas) as e:
+            s.retraso(_vector(t) | {var: inf})
+        assert e.value.args[0]["no_finitas"] == [var]

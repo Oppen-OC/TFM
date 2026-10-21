@@ -225,8 +225,8 @@ antes de importar.
 - `tests/test_servicio.py` prueba `services/` con modelos sintéticos entrenados
   en el propio test: la predicción es la de `predict` sobre la misma fila, el
   vector trae exactamente las variables, los nulos y la línea no vista
-  predicen, `retraso_s` nulo se rechaza, P = τ avisa y un modelo que falta no
-  tumba el arranque. Mutantes 175-179.
+  predicen, `retraso_s` nulo y los infinitos se rechazan, P = τ avisa y un modelo que
+  falta no tumba el arranque. Mutantes 175-181.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la

@@ -8,6 +8,8 @@ por petición. La API valida el JSON y delega aquí; aquí no se importa nada de
 
 from __future__ import annotations
 
+import math
+
 import pandas as pd
 import yaml
 
@@ -44,7 +46,8 @@ def fila(columnas: list[str], variables: dict) -> pd.DataFrame:
 
     Las claves tienen que ser exactamente `columnas`. Los nulos valen, porque
     hay variables nulas de verdad, como `bus_anterior_retraso_s`; en
-    `retraso_s` (nulo o NaN) no, porque sin el retraso de ahora no hay predicción. Las
+    `retraso_s` (nulo o NaN) no, porque sin el retraso de ahora no hay
+    predicción. Un infinito (`1e400` en JSON) no vale en ninguna numérica. Las
     numéricas van a `float64`: desde JSON, una columna con un nulo queda como
     `object` y XGBoost la rechaza.
     """
@@ -64,6 +67,15 @@ def fila(columnas: list[str], variables: dict) -> pd.DataFrame:
     if mal_tipo:
         raise VariablesInvalidas(
             {"tipo": mal_tipo, "esperado": "linea es texto; el resto, números o nulos"}
+        )
+    no_finitas = [
+        c
+        for c in columnas
+        if c != "linea" and isinstance(variables[c], float) and math.isinf(variables[c])
+    ]
+    if no_finitas:
+        raise VariablesInvalidas(
+            {"no_finitas": no_finitas, "motivo": "un infinito no es una medida"}
         )
     t = pd.DataFrame([variables], columns=columnas)
     numericas = [c for c in columnas if c != "linea"]

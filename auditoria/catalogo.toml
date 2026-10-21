@@ -2136,3 +2136,27 @@ buscar = '''    if pd.isna(variables["retraso_s"]):'''
 reemplazar = '''    if False:'''
 detector = ["tests/test_servicio.py::test_sin_retraso_actual_no_hay_prediccion"]
 sondas = []
+
+[[mutante]]
+id = "180"
+nombre = "el servicio acepta un tipo equivocado"
+capa = "serving"
+# Una línea numérica o un texto en una variable numérica llegarían a XGBoost
+# como `object` o se coaccionarían en silencio.
+fichero = "src/project/services/model_service.py"
+buscar = '''    if mal_tipo:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_servicio.py::test_el_vector_trae_exactamente_las_variables"]
+sondas = []
+
+[[mutante]]
+id = "181"
+nombre = "la API predice con un infinito"
+capa = "serving"
+# `1e400` es JSON válido y llega como `inf`: la respuesta sería un 200 con
+# `null`, que parece válida.
+fichero = "src/project/services/model_service.py"
+buscar = '''    if no_finitas:'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_servicio.py::test_un_infinito_no_se_predice"]
+sondas = []
