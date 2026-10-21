@@ -7,7 +7,7 @@ respuestas._
 ## Problema
 
 La API solo tiene `/health`. `services/model_service.py` está vacío,
-`api/routers/predict.py` también, y `api/schemas.py` guarda los modelos de la
+api/routers/predict.py también, y `api/schemas.py` guarda los modelos de la
 plantilla. El ADR-006 fija qué consume un usuario: el retraso en segundos y
 la variante binaria `> 300 s`. El ADR-025 deja el clasificador listo para
 servirlo con su probabilidad y su τ. Falta la capa que carga los modelos y los
@@ -56,7 +56,7 @@ endpoints que los sirven, probables desde Swagger (`/docs`).
   ejemplo.
 - **api/routers/prediccion.py**: los tres endpoints, incluidos con
   `include_router` en `main.py`. Validan, delegan en `services/` y traducen sus
-  errores a HTTP. Se borran `api/routers/predict.py` (vacío) y los modelos de la
+  errores a HTTP. Se borran api/routers/predict.py (vacío) y los modelos de la
   plantilla.
 - **`services/model_service.py`**: la única capa que carga modelos (CLAUDE.md).
   - Carga todos los artefactos una vez, al arrancar, desde el `lifespan` de

@@ -190,7 +190,11 @@ décimas de segundo en la validación y de 1 a 1,5 s donde ve congestión
 (bitácora 048); decide la prueba del 07-19/10 (nota del 11/10 al ADR-024), con la primaria ya
 fijada (ADR-024).
 
-Vacío, 0 líneas: `services/model_service.py`.
+Servido por API (spec del 15/10): `services/model_service.py` carga al
+arrancar la regresión y el clasificador de cada horizonte, y `api/` los
+expone en `/modelos`, `/prediccion/retraso` y `/prediccion/mas-de-5min`, con
+Swagger en `/docs`. La entrada es el vector de variables ya calculado: el
+servido en tiempo real sigue pendiente (ADR-016).
 
 Las reglas de este fichero son **prescriptivas**, no descriptivas: dicen cómo debe
 escribirse el código que falta. No asumas que ya está implementado — comprueba
@@ -218,6 +222,11 @@ antes de importar.
   del TFM por accidente.
 - `tests/test_api.py` usa `httpx` + `TestClient`; mockea `services/`, no carga el
   modelo real. Endpoint nuevo ⇒ test nuevo.
+- `tests/test_servicio.py` prueba `services/` con modelos sintéticos entrenados
+  en el propio test: la predicción es la de `predict` sobre la misma fila, el
+  vector trae exactamente las variables, los nulos y la línea no vista
+  predicen, `retraso_s` nulo se rechaza, P = τ avisa y un modelo que falta no
+  tumba el arranque. Mutantes 175-179.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la
