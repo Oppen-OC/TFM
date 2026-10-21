@@ -2079,3 +2079,60 @@ buscar = '''    if not y.astype(bool).any():'''
 reemplazar = '''    if False:'''
 detector = ["tests/test_modelo.py::test_sin_positivos_en_la_validacion_no_hay_umbral"]
 sondas = []
+
+[[mutante]]
+id = "175"
+nombre = "el servicio acepta variables de más"
+capa = "serving"
+# Una variable de más (p. ej. una de la 192 en el modelo sin tráfico) se
+# ignoraría en silencio: quien llama cree que el modelo la usa.
+fichero = "src/project/services/model_service.py"
+buscar = '''    sobran = sorted(set(variables) - set(columnas))'''
+reemplazar = '''    sobran = []'''
+detector = ["tests/test_servicio.py::test_el_vector_trae_exactamente_las_variables"]
+sondas = []
+
+[[mutante]]
+id = "176"
+nombre = "la API no avisa con P igual a τ"
+capa = "serving"
+# τ se eligió con `precision_recall_curve`, que avisa con P ≥ τ (ADR-025).
+fichero = "src/project/services/model_service.py"
+buscar = '''            "llega_tarde": p >= a["umbral"],'''
+reemplazar = '''            "llega_tarde": p > a["umbral"],'''
+detector = ["tests/test_servicio.py::test_p_igual_a_tau_llega_tarde"]
+sondas = []
+
+[[mutante]]
+id = "177"
+nombre = "el vector llega a XGBoost con columnas object"
+capa = "serving"
+# Desde JSON, una columna con un nulo queda como `object` y XGBoost la rechaza.
+fichero = "src/project/services/model_service.py"
+buscar = '''    t[numericas] = t[numericas].astype("float64")'''
+reemplazar = '''    t[numericas] = t[numericas]'''
+detector = ["tests/test_servicio.py::test_un_vector_con_nulos_y_una_linea_no_vista_predice"]
+sondas = []
+
+[[mutante]]
+id = "178"
+nombre = "un modelo que falta tumba el arranque de la API"
+capa = "serving"
+# Hasta el 21/10 no hay clasificador: la regresión tiene que servirse igual.
+fichero = "src/project/services/model_service.py"
+buscar = '''                if rutas[clave].exists():'''
+reemplazar = '''                if True:'''
+detector = ["tests/test_servicio.py::test_un_modelo_que_falta_no_tumba_el_arranque"]
+sondas = []
+
+[[mutante]]
+id = "179"
+nombre = "la API predice sin el retraso de ahora"
+capa = "serving"
+# Con `retraso_s` nulo, el modelo de residuo da NaN y FastAPI responde `null`
+# con un 200.
+fichero = "src/project/services/model_service.py"
+buscar = '''    if pd.isna(variables["retraso_s"]):'''
+reemplazar = '''    if False:'''
+detector = ["tests/test_servicio.py::test_sin_retraso_actual_no_hay_prediccion"]
+sondas = []
