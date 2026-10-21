@@ -44,7 +44,7 @@ def fila(columnas: list[str], variables: dict) -> pd.DataFrame:
 
     Las claves tienen que ser exactamente `columnas`. Los nulos valen, porque
     hay variables nulas de verdad, como `bus_anterior_retraso_s`; en
-    `retraso_s` no, porque sin el retraso de ahora no hay predicción. Las
+    `retraso_s` (nulo o NaN) no, porque sin el retraso de ahora no hay predicción. Las
     numéricas van a `float64`: desde JSON, una columna con un nulo queda como
     `object` y XGBoost la rechaza.
     """
@@ -52,7 +52,7 @@ def fila(columnas: list[str], variables: dict) -> pd.DataFrame:
     sobran = sorted(set(variables) - set(columnas))
     if faltan or sobran:
         raise VariablesInvalidas({"faltan": faltan, "sobran": sobran})
-    if variables["retraso_s"] is None:
+    if pd.isna(variables["retraso_s"]):
         raise VariablesInvalidas(
             {"nulas": ["retraso_s"], "motivo": "es el retraso de ahora"}
         )

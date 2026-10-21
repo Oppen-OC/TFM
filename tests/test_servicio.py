@@ -194,6 +194,7 @@ def test_sin_retraso_actual_no_hay_prediccion(arts):
     `null` con un 200: una respuesta que parece válida."""
     t, reg, _ = arts
     s = Servicio({("regresion", 1): reg}, [1])
-    with pytest.raises(VariablesInvalidas) as e:
-        s.retraso(_vector(t) | {"retraso_s": None})
-    assert e.value.args[0]["nulas"] == ["retraso_s"]
+    for nulo in (None, float("nan")):
+        with pytest.raises(VariablesInvalidas) as e:
+            s.retraso(_vector(t) | {"retraso_s": nulo})
+        assert e.value.args[0]["nulas"] == ["retraso_s"]
