@@ -37,107 +37,107 @@
     "replicas": 1000,
     "semilla": 0
   },
-  "dias": 13,
+  "dias": 12,
   "con_sensor": {
-    "filas": 336383,
-    "mae_sin_s": 55.87,
-    "mae_con_s": 55.73,
-    "con_menos_sin_s": -0.14,
-    "relativa": -0.0025,
+    "filas": 312609,
+    "mae_sin_s": 56.03,
+    "mae_con_s": 55.9,
+    "con_menos_sin_s": -0.13,
+    "relativa": -0.0023,
     "ic_viajes": [
-      -0.18,
-      -0.1
+      -0.17,
+      -0.08
     ],
     "ic_dias": [
-      -0.29,
-      -0.0
+      -0.3,
+      0.01
     ]
   },
   "conjunto": {
-    "filas": 413037,
-    "mae_sin_s": 54.93,
-    "mae_con_s": 54.79,
-    "con_menos_sin_s": -0.14,
-    "relativa": -0.0025,
+    "filas": 383836,
+    "mae_sin_s": 55.04,
+    "mae_con_s": 54.91,
+    "con_menos_sin_s": -0.13,
+    "relativa": -0.0023,
     "ic_viajes": [
-      -0.18,
-      -0.1
+      -0.17,
+      -0.09
     ],
     "ic_dias": [
       -0.27,
-      -0.01
+      0.0
     ]
   },
   "con_congestion_observada": {
-    "filas": 13656,
-    "mae_sin_s": 95.87,
-    "mae_con_s": 91.05,
-    "con_menos_sin_s": -4.82,
-    "relativa": -0.0503,
+    "filas": 12426,
+    "mae_sin_s": 98.0,
+    "mae_con_s": 93.15,
+    "con_menos_sin_s": -4.85,
+    "relativa": -0.0495,
     "ic_viajes": [
-      -5.53,
-      -4.1
+      -5.55,
+      -4.15
     ],
     "ic_dias": [
-      -6.91,
-      -3.1
+      -7.32,
+      -2.98
     ]
   },
   "sin_sensor": {
-    "filas": 28660,
-    "mae_sin_s": 46.0,
-    "mae_con_s": 45.88,
+    "filas": 26701,
+    "mae_sin_s": 46.13,
+    "mae_con_s": 46.0,
     "con_menos_sin_s": -0.12,
-    "relativa": -0.0026,
+    "relativa": -0.0027,
     "ic_viajes": [
       -0.23,
-      -0.02
+      -0.01
     ],
     "ic_dias": [
-      -0.24,
-      -0.01
+      -0.25,
+      -0.0
     ]
   },
   "por_cobertura": {
     "0": {
-      "filas": 28660,
-      "mae_sin_s": 46.0,
-      "mae_con_s": 45.88,
+      "filas": 26701,
+      "mae_sin_s": 46.13,
+      "mae_con_s": 46.0,
       "con_menos_sin_s": -0.12,
-      "relativa": -0.0026,
+      "relativa": -0.0027,
       "ic_viajes": [
         -0.23,
-        -0.02
-      ],
-      "ic_dias": [
-        -0.24,
         -0.01
-      ]
-    },
-    "0-25 %": {
-      "filas": 13445,
-      "mae_sin_s": 53.5,
-      "mae_con_s": 53.38,
-      "con_menos_sin_s": -0.12,
-      "relativa": -0.0022,
-      "ic_viajes": [
-        -0.24,
-        0.02
       ],
       "ic_dias": [
         -0.25,
-        0.01
+        -0.0
+      ]
+    },
+    "0-25 %": {
+      "filas": 12493,
+      "mae_sin_s": 53.29,
+      "mae_con_s": 53.21,
+      "con_menos_sin_s": -0.08,
+      "relativa": -0.0015,
+      "ic_viajes": [
+        -0.2,
+        0.04
+      ],
+      "ic_dias": [
+        -0.19,
+        0.04
       ]
     },
     "25-50 %": {
-      "filas": 12703,
-      "mae_sin_s": 48.9,
-      "mae_con_s": 48.81,
+      "filas": 11806,
+      "mae_sin_s": 48.96,
+      "mae_con_s": 48.87,
       "con_menos_sin_s": -0.09,
-      "relativa": -0.0019,
+      "relativa": -0.0018,
       "ic_viajes": [
-        -0.21,
-        0.03
+        -0.23,
+        0.05
       ],
       "ic_dias": [
         -0.25,
@@ -145,80 +145,80 @@
       ]
     },
     "50-75 %": {
-      "filas": 21846,
-      "mae_sin_s": 56.46,
-      "mae_con_s": 56.27,
-      "con_menos_sin_s": -0.19,
-      "relativa": -0.0033,
+      "filas": 20227,
+      "mae_sin_s": 56.05,
+      "mae_con_s": 55.9,
+      "con_menos_sin_s": -0.15,
+      "relativa": -0.0026,
       "ic_viajes": [
-        -0.34,
-        -0.03
+        -0.31,
+        0.0
       ],
       "ic_dias": [
-        -0.35,
-        -0.01
+        -0.31,
+        0.03
       ]
     },
     "> 75 %": {
-      "filas": 336383,
-      "mae_sin_s": 55.87,
-      "mae_con_s": 55.73,
-      "con_menos_sin_s": -0.14,
-      "relativa": -0.0025,
+      "filas": 312609,
+      "mae_sin_s": 56.03,
+      "mae_con_s": 55.9,
+      "con_menos_sin_s": -0.13,
+      "relativa": -0.0023,
       "ic_viajes": [
-        -0.18,
-        -0.1
+        -0.17,
+        -0.08
       ],
       "ic_dias": [
-        -0.29,
-        -0.0
+        -0.3,
+        0.01
       ]
     }
   },
   "por_estado_observado": {
     "con congestión": {
-      "filas": 13656,
-      "mae_sin_s": 95.87,
-      "mae_con_s": 91.05,
-      "con_menos_sin_s": -4.82,
-      "relativa": -0.0503,
+      "filas": 12426,
+      "mae_sin_s": 98.0,
+      "mae_con_s": 93.15,
+      "con_menos_sin_s": -4.85,
+      "relativa": -0.0495,
       "ic_viajes": [
-        -5.53,
-        -4.1
+        -5.55,
+        -4.15
       ],
       "ic_dias": [
-        -6.91,
-        -3.1
+        -7.32,
+        -2.98
       ]
     },
     "fluido": {
-      "filas": 368685,
-      "mae_sin_s": 54.11,
-      "mae_con_s": 54.13,
-      "con_menos_sin_s": 0.03,
-      "relativa": 0.0005,
+      "filas": 342674,
+      "mae_sin_s": 54.18,
+      "mae_con_s": 54.22,
+      "con_menos_sin_s": 0.04,
+      "relativa": 0.0008,
       "ic_viajes": [
-        -0.0,
-        0.06
+        0.01,
+        0.08
       ],
       "ic_dias": [
-        -0.06,
-        0.16
+        -0.05,
+        0.18
       ]
     },
     "sin dato": {
-      "filas": 30696,
-      "mae_sin_s": 46.55,
-      "mae_con_s": 46.47,
+      "filas": 28736,
+      "mae_sin_s": 46.71,
+      "mae_con_s": 46.63,
       "con_menos_sin_s": -0.08,
       "relativa": -0.0018,
       "ic_viajes": [
-        -0.19,
-        0.03
+        -0.2,
+        0.02
       ],
       "ic_dias": [
-        -0.22,
-        0.05
+        -0.23,
+        0.06
       ]
     }
   }

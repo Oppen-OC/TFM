@@ -139,8 +139,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -176,19 +176,21 @@ stages:
           train_hasta: '2026-10-04'
           test_desde: '2026-10-07'
           test_hasta: '2026-10-19'
+          excluir_dias:
+          - '2026-10-13'
     outs:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 263e873855948de593362ff904acb953
-      size: 64487527
+      md5: 2a481141e0a7c198bf4ba36e05ee2811
+      size: 60152165
     - path: data/processed/train.parquet
       hash: md5
       md5: 2966c219fb63af2c655dc8a13aa79a5d
       size: 256216055
     - path: metrics/features.json
       hash: md5
-      md5: e0863acee915782b2a91d9e27d9fe3ea
-      size: 14881
+      md5: 71bd0a21cc5e48e7556a5a79d7a744c8
+      size: 14883
   train:
     cmd: uv run python -m project.train
     deps:
@@ -202,8 +204,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -238,8 +240,8 @@ stages:
     deps:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 263e873855948de593362ff904acb953
-      size: 64487527
+      md5: 2a481141e0a7c198bf4ba36e05ee2811
+      size: 60152165
     - path: data/processed/train.parquet
       hash: md5
       md5: 2966c219fb63af2c655dc8a13aa79a5d
@@ -259,8 +261,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -277,8 +279,8 @@ stages:
     outs:
     - path: metrics/eval.json
       hash: md5
-      md5: 76aece14305bfdba5ef901a43b935391
-      size: 37205
+      md5: d51a7a365e711092330586fc4cc8b7d8
+      size: 37187
   disponibilidad:
     cmd: uv run python -m project.features --disponibilidad
     deps:
@@ -299,8 +301,8 @@ stages:
       nfiles: 63
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     params:
       params.yaml:
         prepare.max_hueco_cruce_s: 120
@@ -336,8 +338,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -373,16 +375,18 @@ stages:
           train_hasta: '2026-10-04'
           test_desde: '2026-10-07'
           test_hasta: '2026-10-19'
+          excluir_dias:
+          - '2026-10-13'
     outs:
     - path: data/processed/h2
       hash: md5
-      md5: 0598c213b18a0aa92c5c4ab31987022a.dir
-      size: 302508110
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
       nfiles: 2
     - path: metrics/horizontes/h2/features.json
       hash: md5
-      md5: 2b0cb8b0947c40a7297f1b6120524c74
-      size: 14883
+      md5: ffe428ca9e2397327dce09361dc153ca
+      size: 14886
   features_h@3:
     cmd: uv run python -m project.features --horizonte 3
     deps:
@@ -408,8 +412,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -445,15 +449,17 @@ stages:
           train_hasta: '2026-10-04'
           test_desde: '2026-10-07'
           test_hasta: '2026-10-19'
+          excluir_dias:
+          - '2026-10-13'
     outs:
     - path: data/processed/h3
       hash: md5
-      md5: de1ad30db7862d52c4f41eeba0750ed3.dir
-      size: 284005153
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
       nfiles: 2
     - path: metrics/horizontes/h3/features.json
       hash: md5
-      md5: c2d569d5f608158f37e8a1ee40a8e254
+      md5: 632c47e18df858257f5ed210c7e098e7
       size: 14896
   features_h@5:
     cmd: uv run python -m project.features --horizonte 5
@@ -480,8 +486,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -517,16 +523,18 @@ stages:
           train_hasta: '2026-10-04'
           test_desde: '2026-10-07'
           test_hasta: '2026-10-19'
+          excluir_dias:
+          - '2026-10-13'
     outs:
     - path: data/processed/h5
       hash: md5
-      md5: 94f393ac2f69554f3264bc2e66b7b0e1.dir
-      size: 253363609
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
       nfiles: 2
     - path: metrics/horizontes/h5/features.json
       hash: md5
-      md5: a8ecec0cbf839e4203736602e18e526a
-      size: 14927
+      md5: dd9ae79ad0bb0d78be38ffd8d04d0d5c
+      size: 14923
   features_h@10:
     cmd: uv run python -m project.features --horizonte 10
     deps:
@@ -552,8 +560,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -589,23 +597,25 @@ stages:
           train_hasta: '2026-10-04'
           test_desde: '2026-10-07'
           test_hasta: '2026-10-19'
+          excluir_dias:
+          - '2026-10-13'
     outs:
     - path: data/processed/h10
       hash: md5
-      md5: 8828403f0f5a2e625f9e847d707703c3.dir
-      size: 185241178
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
       nfiles: 2
     - path: metrics/horizontes/h10/features.json
       hash: md5
-      md5: a5730d94e30f3afd03c7dfb93709df67
-      size: 14981
+      md5: 40ef2f0fd1552f418951c4a8ae6aea62
+      size: 14990
   train_h@2:
     cmd: uv run python -m project.train --horizonte 2
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 0598c213b18a0aa92c5c4ab31987022a.dir
-      size: 302508110
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -613,8 +623,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -649,8 +659,8 @@ stages:
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: de1ad30db7862d52c4f41eeba0750ed3.dir
-      size: 284005153
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -658,8 +668,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -694,8 +704,8 @@ stages:
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 94f393ac2f69554f3264bc2e66b7b0e1.dir
-      size: 253363609
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -703,8 +713,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -739,8 +749,8 @@ stages:
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 8828403f0f5a2e625f9e847d707703c3.dir
-      size: 185241178
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -748,8 +758,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -784,8 +794,8 @@ stages:
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 0598c213b18a0aa92c5c4ab31987022a.dir
-      size: 302508110
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -802,8 +812,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -820,15 +830,15 @@ stages:
     outs:
     - path: metrics/horizontes/h2/eval.json
       hash: md5
-      md5: 0308c6a20d4e300959f804257c42ef64
-      size: 38790
+      md5: 5f4a75b3e23acf10b5e6b057072b9cb0
+      size: 38802
   evaluate_h@3:
     cmd: uv run python -m project.evaluate --horizonte 3
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: de1ad30db7862d52c4f41eeba0750ed3.dir
-      size: 284005153
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -845,8 +855,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -863,15 +873,15 @@ stages:
     outs:
     - path: metrics/horizontes/h3/eval.json
       hash: md5
-      md5: 7795c9fbdac816c9ffc40819e4ea7620
-      size: 40335
+      md5: 1bd9daa3770943b6ef1be6abea1d1c04
+      size: 40340
   evaluate_h@5:
     cmd: uv run python -m project.evaluate --horizonte 5
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 94f393ac2f69554f3264bc2e66b7b0e1.dir
-      size: 253363609
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -888,8 +898,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -906,15 +916,15 @@ stages:
     outs:
     - path: metrics/horizontes/h5/eval.json
       hash: md5
-      md5: d8ac7d97ef6e7600ad2114ef7374547d
-      size: 37338
+      md5: d0b93d5e692f54489be953bf26b4beb3
+      size: 37348
   evaluate_h@10:
     cmd: uv run python -m project.evaluate --horizonte 10
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 8828403f0f5a2e625f9e847d707703c3.dir
-      size: 185241178
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -931,8 +941,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -949,8 +959,8 @@ stages:
     outs:
     - path: metrics/horizontes/h10/eval.json
       hash: md5
-      md5: b8a66078995aed15f0ce34160c5b957c
-      size: 34387
+      md5: e44e13c048708ae17f4958c2ec5d1f0f
+      size: 34388
   tramos_ruta:
     cmd: uv run python -m project.trafico
     deps:
@@ -998,8 +1008,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1034,8 +1044,8 @@ stages:
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 0598c213b18a0aa92c5c4ab31987022a.dir
-      size: 302508110
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1043,8 +1053,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1079,8 +1089,8 @@ stages:
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: de1ad30db7862d52c4f41eeba0750ed3.dir
-      size: 284005153
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1088,8 +1098,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1124,8 +1134,8 @@ stages:
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 94f393ac2f69554f3264bc2e66b7b0e1.dir
-      size: 253363609
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1133,8 +1143,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1169,8 +1179,8 @@ stages:
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 8828403f0f5a2e625f9e847d707703c3.dir
-      size: 185241178
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1178,8 +1188,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1222,8 +1232,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1259,8 +1269,8 @@ stages:
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 0598c213b18a0aa92c5c4ab31987022a.dir
-      size: 302508110
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1268,8 +1278,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1305,8 +1315,8 @@ stages:
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: de1ad30db7862d52c4f41eeba0750ed3.dir
-      size: 284005153
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1314,8 +1324,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1351,8 +1361,8 @@ stages:
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 94f393ac2f69554f3264bc2e66b7b0e1.dir
-      size: 253363609
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1360,8 +1370,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1397,8 +1407,8 @@ stages:
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 8828403f0f5a2e625f9e847d707703c3.dir
-      size: 185241178
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
       nfiles: 2
     - path: src/project/evaluate.py
       hash: md5
@@ -1406,8 +1416,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1443,8 +1453,8 @@ stages:
     deps:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 263e873855948de593362ff904acb953
-      size: 64487527
+      md5: 2a481141e0a7c198bf4ba36e05ee2811
+      size: 60152165
     - path: models/model.pkl
       hash: md5
       md5: 897392640ab146c1ba973f29631cff6e
@@ -1459,8 +1469,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1473,15 +1483,15 @@ stages:
     outs:
     - path: metrics/trafico.json
       hash: md5
-      md5: 8f093a9a1bdbc9f31625fb6ece55eb3b
-      size: 4211
+      md5: 2c252fb92e61cf10cedc4b9c26cace7b
+      size: 4210
   evaluate_trafico_h@2:
     cmd: uv run python -m project.evaluate --horizonte 2 --trafico
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 0598c213b18a0aa92c5c4ab31987022a.dir
-      size: 302508110
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
       nfiles: 2
     - path: models/h2/model.pkl
       hash: md5
@@ -1497,8 +1507,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1511,15 +1521,15 @@ stages:
     outs:
     - path: metrics/horizontes/h2/trafico.json
       hash: md5
-      md5: 1f186f77fa6df5d1a4e40a1d386940a2
-      size: 4213
+      md5: 2b5f6734449bd8f59e0d88aea0cd67d0
+      size: 4209
   evaluate_trafico_h@3:
     cmd: uv run python -m project.evaluate --horizonte 3 --trafico
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: de1ad30db7862d52c4f41eeba0750ed3.dir
-      size: 284005153
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
       nfiles: 2
     - path: models/h3/model.pkl
       hash: md5
@@ -1535,8 +1545,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1549,15 +1559,15 @@ stages:
     outs:
     - path: metrics/horizontes/h3/trafico.json
       hash: md5
-      md5: 1fc6ba7e8511945ab445c3b95baff89d
-      size: 4221
+      md5: a7a5ac18516f619c294024145f5c1041
+      size: 4220
   evaluate_trafico_h@5:
     cmd: uv run python -m project.evaluate --horizonte 5 --trafico
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 94f393ac2f69554f3264bc2e66b7b0e1.dir
-      size: 253363609
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
       nfiles: 2
     - path: models/h5/model.pkl
       hash: md5
@@ -1573,8 +1583,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1587,15 +1597,15 @@ stages:
     outs:
     - path: metrics/horizontes/h5/trafico.json
       hash: md5
-      md5: f9538e25cd761344cfd86e3916b5ea99
-      size: 4210
+      md5: db4c8abe3eac71a83a05ffc2f576295c
+      size: 4203
   evaluate_trafico_h@10:
     cmd: uv run python -m project.evaluate --horizonte 10 --trafico
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 8828403f0f5a2e625f9e847d707703c3.dir
-      size: 185241178
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
       nfiles: 2
     - path: models/h10/model.pkl
       hash: md5
@@ -1611,8 +1621,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/predict.py
       hash: md5
       md5: cfbd433dd3b32deef05ba549cce00255
@@ -1625,15 +1635,15 @@ stages:
     outs:
     - path: metrics/horizontes/h10/trafico.json
       hash: md5
-      md5: 42d2e045195d02bd24965250d68e27bc
-      size: 4205
+      md5: 1566e2ac817bf9f913b1cdf5f42c550e
+      size: 4203
   evaluate_clasificador:
     cmd: uv run python -m project.evaluate --clasificador
     deps:
     - path: data/processed/test.parquet
       hash: md5
-      md5: 263e873855948de593362ff904acb953
-      size: 64487527
+      md5: 2a481141e0a7c198bf4ba36e05ee2811
+      size: 60152165
     - path: data/raw/gtfs
       hash: md5
       md5: 58e47750a59418f7aed19ec560781cde.dir
@@ -1653,8 +1663,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -1672,15 +1682,15 @@ stages:
     outs:
     - path: metrics/clasificador.json
       hash: md5
-      md5: e090ab57873b037f07703f72b6f7028f
-      size: 16547
+      md5: cf0a80708669f13181daed5fff0953ee
+      size: 16550
   evaluate_clasificador_h@2:
     cmd: uv run python -m project.evaluate --horizonte 2 --clasificador
     deps:
     - path: data/processed/h2
       hash: md5
-      md5: 0598c213b18a0aa92c5c4ab31987022a.dir
-      size: 302508110
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -1701,8 +1711,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -1720,15 +1730,15 @@ stages:
     outs:
     - path: metrics/horizontes/h2/clasificador.json
       hash: md5
-      md5: 8281f91607b5ef51785e30a82278955c
-      size: 16537
+      md5: 879dc707843d0dea7f1ce08f80e006cf
+      size: 16530
   evaluate_clasificador_h@3:
     cmd: uv run python -m project.evaluate --horizonte 3 --clasificador
     deps:
     - path: data/processed/h3
       hash: md5
-      md5: de1ad30db7862d52c4f41eeba0750ed3.dir
-      size: 284005153
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -1749,8 +1759,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -1768,15 +1778,15 @@ stages:
     outs:
     - path: metrics/horizontes/h3/clasificador.json
       hash: md5
-      md5: e617469621eeda79b1e9f7b19c203e83
-      size: 16533
+      md5: 078bd6995eb72c22af3f373312fe5b41
+      size: 16529
   evaluate_clasificador_h@5:
     cmd: uv run python -m project.evaluate --horizonte 5 --clasificador
     deps:
     - path: data/processed/h5
       hash: md5
-      md5: 94f393ac2f69554f3264bc2e66b7b0e1.dir
-      size: 253363609
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -1797,8 +1807,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -1816,15 +1826,15 @@ stages:
     outs:
     - path: metrics/horizontes/h5/clasificador.json
       hash: md5
-      md5: e31370a967fdc5a319dd291abe14fd8f
-      size: 16528
+      md5: c1161ef33ec2d221fb34b298a2209daf
+      size: 16525
   evaluate_clasificador_h@10:
     cmd: uv run python -m project.evaluate --horizonte 10 --clasificador
     deps:
     - path: data/processed/h10
       hash: md5
-      md5: 8828403f0f5a2e625f9e847d707703c3.dir
-      size: 185241178
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
       nfiles: 2
     - path: data/raw/gtfs
       hash: md5
@@ -1845,8 +1855,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: 60cd3dba7de67d4929abdff44b5af696
-      size: 30777
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
     - path: src/project/gtfs.py
       hash: md5
       md5: eddb6c0ab87e20c72fbdb9b835d129a9
@@ -1864,5 +1874,5 @@ stages:
     outs:
     - path: metrics/horizontes/h10/clasificador.json
       hash: md5
-      md5: 916ea1ffb603279c8804a47ba15906b9
-      size: 16506
+      md5: b6b445f3157fe92fbf3fc2a2214ce310
+      size: 16504
