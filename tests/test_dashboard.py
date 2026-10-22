@@ -215,27 +215,46 @@ def test_un_dia_sin_crudo_es_un_cero_y_no_desaparece(tmp_path, fix):
     ]
 
 
-def test_el_latido_del_colector_cuenta_toda_respuesta_guardada(tmp_path, fix):
+def test_el_latido_del_colector_cuenta_toda_respuesta_guardada(
+    tmp_path, fix, monkeypatch
+):
     """P5, bitácora 021: Renfe prueba que el colector seguía vivo con las capas
-    caídas. De madrugada no hay trenes de València, y a veces la flota nacional
-    trae un tren sin `porAvanc`: `parse` no saca filas o falla, pero el colector
-    respondió. Contar solo sondeos (trampa 018) pinta 5 h sin colector."""
+    caídas, en la serie y en su hueco más largo. De madrugada no hay trenes de
+    València, y a veces la flota nacional trae un tren sin `porAvanc`: `parse`
+    no saca filas o falla, pero el colector respondió. Contar solo sondeos
+    (trampa 018) pinta 5 h sin colector, o tumba la foto."""
+    monkeypatch.setattr(foto, "CAPAS_CAIDAS", ("2026-09-12", "2026-09-12"))
+    monkeypatch.setattr(
+        foto.medir_fuentes,
+        "sql",
+        lambda *a, **k: pd.DataFrame({"dia": ["2026-09-12"], "n": [5]}),
+    )
+    inicio = pd.Timestamp("2026-09-12T00:00Z")
+    for minutos in (0, 5, 360):  # la capa de estado cae de 00:05 a 06:00
+        sources.append_raw(
+            tmp_path,
+            "trafico_estado",
+            fix["trafico_estado"],
+            inicio + pd.Timedelta(minutes=minutos),
+        )
     dia = copy.deepcopy(fix["renfe_cercanias"])
     noche = {**dia, "trenes": [t for t in dia["trenes"] if t["nucleo"] != "40"]}
     sin_avance = {
         **dia,
         "trenes": [{k: v for k, v in dia["trenes"][0].items() if k != "porAvanc"}],
     }
-    inicio = pd.Timestamp("2026-09-12T01:00Z")
-    ts = [inicio + pd.Timedelta(minutes=8 * i) for i in range(3)]
-    for payload, t in zip([dia, noche, sin_avance], ts):
+    respuestas = 46  # cada 8 min, de 00:00 a 06:00
+    for i in range(respuestas):
+        payload = [dia, noche, sin_avance][i % 3]
+        t = inicio + pd.Timedelta(minutes=8 * i)
         sources.append_raw(tmp_path, "renfe_cercanias", payload, t)
 
-    capturas = extraer.capturas(
-        tmp_path / "raw", "renfe_cercanias", "2026-09-11", "2026-09-12"
-    )
+    valores, prueba = foto.p5(tmp_path / "raw")
 
-    assert capturas == ts
+    assert valores["renfe_min"] == pytest.approx(8)
+    renfe = [s for s in prueba["series"] if s["nombre"].startswith("Renfe")]
+    assert renfe[0]["valores"] == [respuestas]
+    validar_prueba(prueba)
 
 
 def test_un_dia_de_prueba_con_errores_del_geoportal_cae_y_se_dice_cual(

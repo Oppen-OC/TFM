@@ -156,12 +156,13 @@ def p4(raw: Path):
 def p5(raw: Path):
     desde, hasta = CAPAS_CAIDAS
     series, hueco = [], None
-    for fuente, nombre in [
-        ("emt_buses", "EMT · sondeos al día"),
-        ("trafico_estado", "capa de estado · sondeos al día"),
-        ("renfe_cercanias", "Renfe · sondeos al día"),
+    for fuente, nombre, contar in [
+        ("emt_buses", "EMT · sondeos al día", instantes),
+        ("trafico_estado", "capa de estado · sondeos al día", instantes),
+        # Renfe es el latido del colector: toda respuesta guardada, sondeo o no.
+        ("renfe_cercanias", "Renfe · respuestas guardadas al día", extraer.capturas),
     ]:
-        n, hs = extraer.completitud(raw, fuente, desde, hasta)
+        n, hs = extraer.completitud(raw, fuente, desde, hasta, contar)
         series.append((nombre, n.values))
         if fuente == "trafico_estado":
             if not hs:

@@ -2209,3 +2209,15 @@ buscar = '''        "caidos": ", ".join(_dia(d) for d in prueba.index if d in to
 reemplazar = '''        "caidos": ", ".join(_dia(d) for d in prueba.index if d not in tocados),'''
 detector = ["tests/test_dashboard.py::test_un_dia_de_prueba_con_errores_del_geoportal_cae_y_se_dice_cual"]
 sondas = []
+
+[[mutante]]
+id = "186"
+nombre = "la serie de Renfe en P5 cuenta solo sondeos"
+capa = "fuentes"
+# La serie diaria de Renfe es el latido del colector. Con `instantes`, un tren
+# sin `porAvanc` tumba la foto entera con KeyError.
+fichero = "src/project/analysis/dashboard_ingesta/foto.py"
+buscar = '''        ("renfe_cercanias", "Renfe · respuestas guardadas al día", extraer.capturas),'''
+reemplazar = '''        ("renfe_cercanias", "Renfe · respuestas guardadas al día", instantes),'''
+detector = ["tests/test_dashboard.py::test_el_latido_del_colector_cuenta_toda_respuesta_guardada"]
+sondas = []

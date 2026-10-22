@@ -24,14 +24,15 @@ def _crudo_emt(raw: Path, dia: str) -> Path:
 
 
 def completitud(
-    raw: Path, fuente: str, desde: str, hasta: str
+    raw: Path, fuente: str, desde: str, hasta: str, contar=instantes
 ) -> tuple[pd.Series, list[tuple[pd.Timestamp, pd.Timestamp]]]:
     """Sondeos por día UTC de `desde` a `hasta` y huecos de más de una hora.
 
     Un día sin directorio es un día sin captura, no un día que no existe: vale 0.
     Si desapareciera de la serie, el hueco del 10-14/09 no se vería (bitácora 021).
+    `contar` es el instrumento: `instantes` cuenta sondeos; `capturas`, respuestas.
     """
-    ts = instantes(raw, fuente, desde, hasta)
+    ts = contar(raw, fuente, desde, hasta)
     dias = pd.date_range(desde, hasta, freq="D").strftime("%Y-%m-%d")
     por_dia = pd.Series(Counter(f"{t:%Y-%m-%d}" for t in ts), dtype="int64")
     return por_dia.reindex(dias, fill_value=0), huecos(ts, UNA_HORA)
