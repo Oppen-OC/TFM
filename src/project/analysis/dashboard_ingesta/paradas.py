@@ -195,6 +195,7 @@ PARADAS: list[dict] = [
             "bitacora:051",
             "bitacora:054",
             "trampa:016",
+            "trampa:018",
         ],
         "cotejo": [
             {
@@ -209,15 +210,25 @@ PARADAS: list[dict] = [
         "id": "P10",
         "capitulo": 5,
         "apartado": "Resultados",
-        "titulo": "La captura de la prueba, completa",
+        "titulo": "La prueba pierde el día que parecía completo",
         "texto": (
             "Del {desde} al {hasta}, la captura guarda el {pct} % de los sondeos "
             "de la EMT que da su cadencia, y {utiles} de {dias} días de prueba no "
-            "tienen ningún hueco de más de una hora."
+            "tienen ningún hueco de más de una hora. El {caidos}, el geoportal "
+            "respondió con errores durante {horas_caida} h; contando líneas del "
+            "crudo, el día parecía completo. El criterio de día útil lo descarta."
         ),
-        "remite": ["bitacora:050"],
+        "remite": ["bitacora:050", "bitacora:057", "bitacora:059", "trampa:018"],
+        # La 050 contó 17.119 líneas del crudo; sin los payloads sin filas, 17.109.
         "cotejo": [
-            {"cifra": "sondeos_cotejo", "esperado": 17119, "ficha": "bitácora 050"},
+            {"cifra": "sondeos_cotejo", "esperado": 17109, "ficha": "bitácora 059"},
+            {"cifra": "utiles", "esperado": 12, "ficha": "bitácora 057"},
+            {
+                "cifra": "horas_caida",
+                "esperado": 3.75,
+                "tolerancia": 0.01,
+                "ficha": "trampa 018",
+            },
         ],
     },
 ]

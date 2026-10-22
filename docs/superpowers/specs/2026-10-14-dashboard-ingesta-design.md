@@ -115,12 +115,12 @@ Cada parada es un registro: `id`, `capitulo`, `apartado`, `fecha`, `titulo`,
 | P2 | 3 Análisis del problema | 15/08 | Ninguna fuente guarda el pasado: colector 24/7, crudo antes de parsear | `cifra`: payloads guardados en el crudo y primer sondeo | crudo | — |
 | P3 | 4 Solución · Adquisición | 16/08 | La EMT alterna UTC y hora local (trampa 002) | `pares`: dos sondeos seguidos con convención distinta | crudo, `tz_convencion` de `parse_emt` | 342 alternancias en 1.236 sondeos, 15/08 22:15-16/08 08:55 local (bitácora 053; se publicó 338 en 1.224) |
 | P4 | 4 | 19/08 | El `gid` identifica al refresco, no al vehículo (trampa 001) | `pares`: dos sondeos seguidos con intersección de `gid` vacía | crudo | intersección 0 |
-| P5 | 4 | 18/09 | La fuente falla sin avisar: capas caídas (021) y líneas que dejan de publicarse (025) | `serie`: sondeos diarios de las capas, hueco 10-14/09 sombreado; posiciones diarias de la 71 | `medir_completitud`, curado | 4 días y 7,7 h de hueco |
+| P5 | 4 | 18/09 | La fuente falla sin avisar: capas caídas (021) y líneas que dejan de publicarse (025) | `serie`: sondeos diarios de las capas, hueco 10-14/09 sombreado; posiciones diarias de la 71 | `medir_completitud`, curado; Renfe por toda línea del crudo (`extraer.capturas`), no por sondeo | 4 días y 7,7 h de hueco |
 | P6 | 4 | 18/09 | El bloque a medio reinsertar: por qué se guarda el crudo (020, trampa 011) | `pares`: primera captura a medias frente a la completa, mismo `snapshot_id` | crudo, metrics/curar.json | completados de la EMT ≥ 1.200 (el corpus contiene el 15/08-18/09) |
 | P7 | 4 | 25/09 | En periodo lectivo la 192 despierta y la 188 sigue congelada (031) | `serie`: tramos congestionados al día (192) frente a valores distintos (188) | `medir_fuentes.lectivo()` | mediana de 43 tramos densos o congestionados por laborable (la 031 publicó 34 con el 18/09 a medias; corrección en la 052); la 188, 243 valores distintos |
 | P8 | 4 | 30/09 | 0,07 payloads por segundo: Kafka no hace falta (033) | `cifra`: payloads/s y MB/día por fuente | `medir_volumen.medir()` sobre los días de la 033 | 6.336 payloads/día, 297 MB (±2 %) |
 | P9 | 4 | 30/09 | La infraestructura también falla: corpus solo en el PC (035), disco de la Pi (044), GTFS sin guardar (051) | `serie`: línea temporal de la captura con los incidentes anotados | `medir_completitud`, fechas de las fichas | — |
-| P10 | 5 Implantación · Resultados | 13/10 | La captura de la prueba, completa (050) | `serie`: completitud diaria de EMT y 192 en todo el corpus; cifra de la prueba | `medir_completitud` | 17.119 de 17.280 sondeos de la EMT, 07-12/10 |
+| P10 | 5 Implantación · Resultados | 13/10 | La prueba pierde el día que parecía completo (050, 057, 059, trampa 018) | `serie`: completitud diaria de EMT y 192 en todo el corpus; cifra de la prueba | `medir_completitud` | 17.109 de 17.280 sondeos de la EMT, 07-12/10 (bitácora 059; la 050 contó 17.119 líneas); 12 de 13 días útiles (057); 3,75 h de errores el 13/10 (trampa 018) |
 
 Los capítulos 2 (Estado del arte) y 6 (Conclusiones) aparecen como estaciones
 sin paradas.
@@ -184,8 +184,8 @@ reproducción completa con `?auto=1`.
 - Lee crudo, curado, metrics/curar.json y el frontmatter de `docs/bitacora/` y
   `.claude/trampas/`. No importa `features`, `train`, `predict` ni `evaluate`.
 - **No puede mirar la prueba del ADR-024**: no lee etiquetas, `data/processed/`
-  ni métricas del modelo. Del 07-19/10 solo usa conteos de captura, que la
-  bitácora 050 ya publicó.
+  ni métricas del modelo. Del 07-19/10 solo usa conteos de captura, que
+  publicaron las bitácoras 050, 057 y 059.
 
 ## Reproducibilidad y calendario
 

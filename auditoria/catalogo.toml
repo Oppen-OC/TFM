@@ -2185,3 +2185,27 @@ buscar = '''        ts += [t for t, p in read_raw(f) if not parse(fuente, p, t).
 reemplazar = '''        ts += [t for t, p in read_raw(f)]'''
 detector = ["tests/test_completitud.py::test_un_payload_de_error_no_cuenta_como_sondeo"]
 sondas = []
+
+[[mutante]]
+id = "184"
+nombre = "el latido del colector cuenta solo sondeos"
+capa = "fuentes"
+# P5 del dashboard: con `instantes`, Renfe de madrugada no tiene trenes de
+# València y el colector parece parado 5 h; un tren sin `porAvanc` la tumba.
+fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
+buscar = '''    return sorted(t for f in ficheros if f.exists() for t, _ in read_raw(f))'''
+reemplazar = '''    return instantes(raw, fuente, desde, hasta)'''
+detector = ["tests/test_dashboard.py::test_el_latido_del_colector_cuenta_toda_respuesta_guardada"]
+sondas = []
+
+[[mutante]]
+id = "185"
+nombre = "P10 nombra como caídos los días útiles de la prueba"
+capa = "fuentes"
+# Trampa 018 en el dashboard: el texto de P10 diría que el geoportal falló
+# los días que no fallaron, con la cuenta de días útiles intacta.
+fichero = "src/project/analysis/dashboard_ingesta/foto.py"
+buscar = '''        "caidos": ", ".join(_dia(d) for d in prueba.index if d in tocados),'''
+reemplazar = '''        "caidos": ", ".join(_dia(d) for d in prueba.index if d not in tocados),'''
+detector = ["tests/test_dashboard.py::test_un_dia_de_prueba_con_errores_del_geoportal_cae_y_se_dice_cual"]
+sondas = []

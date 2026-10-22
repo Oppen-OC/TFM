@@ -37,6 +37,20 @@ def completitud(
     return por_dia.reindex(dias, fill_value=0), huecos(ts, UNA_HORA)
 
 
+def capturas(raw: Path, fuente: str, desde: str, hasta: str) -> list[pd.Timestamp]:
+    """Cada respuesta que el colector guardó, dé filas o no: su latido.
+
+    No es `instantes`, que cuenta sondeos (trampa 018). Para decir que el
+    colector seguía vivo vale cualquier respuesta, también la de Renfe de
+    madrugada, sin trenes de València, o con un tren sin `porAvanc`.
+    """
+    dias = pd.date_range(desde, hasta, freq="D").strftime("%Y-%m-%d")
+    ficheros = [
+        raw / f"source={fuente}" / f"date={d}" / "payloads.ndjson.gz" for d in dias
+    ]
+    return sorted(t for f in ficheros if f.exists() for t, _ in read_raw(f))
+
+
 def dias_del_crudo(raw: Path) -> list[str]:
     """Los días con directorio de la EMT, en orden. Sin ninguno no hay foto."""
     dias = sorted(

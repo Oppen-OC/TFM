@@ -215,6 +215,59 @@ def test_un_dia_sin_crudo_es_un_cero_y_no_desaparece(tmp_path, fix):
     ]
 
 
+def test_el_latido_del_colector_cuenta_toda_respuesta_guardada(tmp_path, fix):
+    """P5, bitácora 021: Renfe prueba que el colector seguía vivo con las capas
+    caídas. De madrugada no hay trenes de València, y a veces la flota nacional
+    trae un tren sin `porAvanc`: `parse` no saca filas o falla, pero el colector
+    respondió. Contar solo sondeos (trampa 018) pinta 5 h sin colector."""
+    dia = copy.deepcopy(fix["renfe_cercanias"])
+    noche = {**dia, "trenes": [t for t in dia["trenes"] if t["nucleo"] != "40"]}
+    sin_avance = {
+        **dia,
+        "trenes": [{k: v for k, v in dia["trenes"][0].items() if k != "porAvanc"}],
+    }
+    inicio = pd.Timestamp("2026-09-12T01:00Z")
+    ts = [inicio + pd.Timedelta(minutes=8 * i) for i in range(3)]
+    for payload, t in zip([dia, noche, sin_avance], ts):
+        sources.append_raw(tmp_path, "renfe_cercanias", payload, t)
+
+    capturas = extraer.capturas(
+        tmp_path / "raw", "renfe_cercanias", "2026-09-11", "2026-09-12"
+    )
+
+    assert capturas == ts
+
+
+def test_un_dia_de_prueba_con_errores_del_geoportal_cae_y_se_dice_cual(
+    tmp_path, monkeypatch
+):
+    """P10, trampa 018: el 13/10 el geoportal respondió `{"error"}` 3 h 45 min y,
+    contando líneas, el día pasaba por completo. Aquí, tres días de prueba y el
+    segundo con dos horas de errores seguidos."""
+    monkeypatch.setattr(foto, "INICIO", "2026-10-07")
+    monkeypatch.setattr(foto, "PRUEBA", ("2026-10-07", "2026-10-09"))
+    monkeypatch.setattr(foto, "COTEJO_PRUEBA", ("2026-10-07", "2026-10-07"))
+    error = {"error": {"code": 499, "message": "Token Required", "details": []}}
+    inicio = pd.Timestamp("2026-10-07T00:00Z")
+    caida = (pd.Timestamp("2026-10-08T10:00Z"), pd.Timestamp("2026-10-08T12:00Z"))
+    for i in range(3 * 48):  # cada 30 min
+        ts = inicio + pd.Timedelta(minutes=30 * i)
+        payload = (
+            error
+            if caida[0] <= ts <= caida[1]
+            else _emt(range(100 * i, 100 * i + 3), ts, False)
+        )
+        sources.append_raw(tmp_path, "emt_buses", payload, ts)
+
+    valores, prueba = foto.p10(tmp_path / "raw", "2026-10-09")
+
+    assert (valores["utiles"], valores["dias"]) == (2, 3), valores
+    assert valores["caidos"] == "08/10"
+    # Del último sondeo bueno (09:30) al siguiente (12:30).
+    assert valores["horas_caida"] == pytest.approx(3)
+    validar_prueba(prueba)
+
+
 def test_el_ultimo_dia_del_crudo_se_da_por_incompleto(tmp_path):
     """El colector puede estar escribiendo el último día: dibujarlo pinta una
     caída que no existe."""

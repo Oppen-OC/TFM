@@ -178,7 +178,11 @@ def p5(raw: Path):
     series.append(("línea 71 · posiciones al día", l71.reindex(n.index, fill_value=0)))
     ini, fin = hueco
     # Renfe dentro del hueco de las capas: el colector seguía vivo.
-    ts = [t for t in instantes(raw, "renfe_cercanias", desde, hasta) if ini <= t <= fin]
+    ts = [
+        t
+        for t in extraer.capturas(raw, "renfe_cercanias", desde, hasta)
+        if ini <= t <= fin
+    ]
     if len(ts) < 2:
         raise ValueError(
             f"Renfe tiene {len(ts)} sondeos entre {ini:%d/%m %H:%M} y "
@@ -278,7 +282,7 @@ def p9(raw: Path, hasta: str):
         {
             "desde": f"{a:%Y-%m-%d}",
             "hasta": f"{b:%Y-%m-%d}",
-            "etiqueta": f"sin captura de {a:%d/%m %H:%M} a {b:%d/%m %H:%M} UTC",
+            "etiqueta": f"sin sondeos de {a:%d/%m %H:%M} a {b:%d/%m %H:%M} UTC",
         }
         for a, b in hs
     ]
@@ -323,6 +327,12 @@ def p10(raw: Path, hasta: str):
         "pct": float(prueba.mean()),
         "utiles": sum(d not in tocados for d in prueba.index),
         "dias": len(prueba),
+        "caidos": ", ".join(_dia(d) for d in prueba.index if d in tocados),
+        "horas_caida": sum(
+            (b - a) / pd.Timedelta(hours=1)
+            for a, b in hs
+            if PRUEBA[0] <= f"{a:%Y-%m-%d}" <= fin
+        ),
         # El cotejo cuenta su propia ventana, no la serie recortada al último día.
         "sondeos_cotejo": int(
             extraer.completitud(raw, "emt_buses", *COTEJO_PRUEBA)[0].sum()
