@@ -34,8 +34,8 @@ stages:
       size: 6628
     - path: src/project/ingest/sources.py
       hash: md5
-      md5: 245d1d949420b595508e0b8e1eba8d9b
-      size: 19390
+      md5: ea0b0772253c9884d72e7a3da21e6b6f
+      size: 19425
     outs:
     - path: data/curated
       hash: md5

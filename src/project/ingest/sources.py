@@ -8,10 +8,11 @@ fuente, y es imprescindible para no mentirle al modelo.
 Convención horaria (trampa 002): el campo `fecha` de la capa de buses de la
 EMT viene en epoch-ms, pero NO siempre en la misma convención. De un sondeo al
 siguiente alterna entre UTC real y hora local de Madrid leída como si fuera
-UTC (338 cambios en 1.224 sondeos, medido el 16/08/2026). Un desfase fijo deja
-el 20 % de las filas dos horas desplazadas: `resolver_convencion` decide POR
-SONDEO con la latencia contra el instante de captura. `local_naive_epoch_to_utc`
-es la conversión de desfase fijo y el pipeline no la usa.
+UTC (342 cambios en 1.236 sondeos en 10 h 40 min, bitácora 053). Un desfase
+fijo deja el 20 % de las filas dos horas desplazadas: `resolver_convencion`
+decide POR SONDEO con la latencia contra el instante de captura.
+`local_naive_epoch_to_utc` es la conversión de desfase fijo y el pipeline no la
+usa.
 
 `fechaActualizacion` de Renfe sí es siempre un ISO naive en hora local:
 `local_naive_iso_to_utc`.
@@ -79,11 +80,11 @@ def resolver_convencion(
 ) -> tuple[pd.Series, str]:
     """Decide, POR SNAPSHOT, si el timestamp viene en UTC o en local naive.
 
-    Medido el 16/08/2026 sobre 12,5 h de captura real: el servicio de la EMT
-    **alterna entre las dos convenciones de un sondeo al siguiente** (338
-    cambios en 1.224 snapshots, con rachas de mediana 2). La explicación más
-    probable es un balanceador con varios nodos detrás mal configurados: unos
-    sellan en hora de Madrid y otros en UTC.
+    Medido sobre las primeras 10 h 40 min de captura real (bitácora 053): el
+    servicio de la EMT **alterna entre las dos convenciones de un sondeo al
+    siguiente** (342 cambios en 1.236 snapshots, con rachas de mediana 2). La
+    explicación más probable es un balanceador con varios nodos detrás mal
+    configurados: unos sellan en hora de Madrid y otros en UTC.
 
     Fijar la conversión a una de las dos deja el 20 % de los datos desplazados
     dos horas, lo que destruye cualquier etiqueta de retraso. La solución es
@@ -349,8 +350,8 @@ SOURCES: dict[str, Source] = {
         url=f"{TRAFICO}/192/query?{QUERY_ARGS}",
         # 60 s era la cadencia inicial. En agosto, en 2.033 sondeos solo 8
         # tramos cambiaron de estado, y se bajó a 5 min. En periodo lectivo la
-        # capa se anima: congestión en unos 34 tramos por laborable, con picos a
-        # las 8 y a las 18 h (bitácora 031). La cadencia no se ha vuelto a
+        # capa se anima: congestión en unos 43 tramos por laborable, con picos a
+        # las 8 y a las 18 h (bitácoras 031 y 052). La cadencia no se ha vuelto a
         # evaluar con ese dato.
         period_s=300,
         notes="Estado de congestión por tramo (410 útiles). Sin timestamp propio. Casi estático en agosto; con perfil de punta en periodo lectivo.",
