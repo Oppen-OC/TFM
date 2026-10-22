@@ -903,6 +903,12 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
   que 0,75).
   Es geométrico y se sabe antes de predecir. En la validación con *h* = 5 es el
   82 % de las filas; las bandas intermedias (11 %) no muestran señal.
+  *Precisión del 22/10 (tribunal):* `trafico_cubierto_m` suma los solapes de
+  tramos superpuestos, como los dos sentidos o las calles paralelas, y el
+  cociente solo se recorta a 1. El estrato es «metros de tramo por metro de
+  recorrido > 0,75», no la fracción del recorrido cubierta. El 82 % salió de
+  este mismo código, así que el estrato que se prerregistró es este. Lo que
+  estaba mal era el texto.
 - **Variables congeladas** como en el punto 4, sin refinar. Con una semana de
   validación y unas 8.500 filas con congestión, refinarlas sería perseguir ruido.
 - **Secundario prerregistrado**, solo descriptivo: las filas en las que la capa
@@ -992,6 +998,39 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
     descriptiva. Con *h* = 5, su IC por días acababa en −0,0026 s, por debajo
     del error de Monte Carlo del percentil: el día puede mover el veredicto
     en cualquier sentido, y por eso no se elige después de verlo.
+
+**Resultado (22/10).** Con los 12 días que deja el criterio (0e849cb):
+
+- **Primaria, *h* = 5 con sensor: no hay aportación.**
+  - Diferencia: −0,13 s sobre 56,0 s (−0,23 %).
+  - IC por viajes: [−0,17, −0,08].
+  - IC por días: [−0,30, +0,01], que contiene el cero.
+- **Control sin sensor:** −0,12 s. Aunque el intervalo excluyera el cero, la
+  primaria no supera al control y no se atribuiría a la congestión.
+- **Secundario, con congestión observada:** un −5 % en todos los horizontes,
+  de −1,6 s con *h* = 1 a −6,6 s con *h* = 10, con los dos intervalos lejos
+  del cero. Son el 3 % de las filas. En fluido, el modelo con tráfico es algo
+  peor: +0,04 s.
+- **Confirmación de la v2:** −3,37 s frente a `persistencia_tramo` con *h* = 5.
+- **Con 13 días** (18e3927, descriptiva), la regla se cumplía por 0,0026 s.
+
+Límites declarados, que no afectan al protocolo:
+- el contraste del GTFS (bitácora 058);
+- la definición real del estrato (precisión del 22/10 en la enmienda);
+- la varianza del entrenamiento por semilla, de unos 0,05 s, que no entra en
+  el intervalo (bitácora 045);
+- dos festivos;
+- el hueco de la 192 del 16/10.
+
+La v2 que se confirma es la configuración congelada reentrenada hasta el
+04/10, no el artefacto de la bitácora 043.
+
+Las ejecuciones de MLflow del experimento `retraso_mas_de_5min` del 14-15/10,
+borradas, registran `test_desde=2026-10-07`. Se evaluaron sobre las tablas
+antiguas (validación 14-20/09) y no vieron la prueba.
+
+Detalle y párrafo para la memoria en la bitácora 057. Todo análisis posterior
+de la prueba es exploratorio.
 
 ---
 

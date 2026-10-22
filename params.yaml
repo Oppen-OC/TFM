@@ -91,6 +91,6 @@ train:
   n_jobs: -1
   random_state: 42
   # La parada temprana se mide en los últimos días del ENTRENAMIENTO, nunca en
-  # la prueba: la semana del 14-20/09, de lunes a domingo como la prueba
-  # (ADR-021). Con el número de árboles que sale, se reajusta con todo.
+  # la prueba: la semana del 28/09-04/10, de lunes a domingo como la prueba
+  # (ADR-021, ADR-024). Con el número de árboles que sale, se reajusta con todo.
   dias_validacion: 7

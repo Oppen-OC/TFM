@@ -185,10 +185,16 @@ más el sesgo del tramo (bitácora 041). La v2, residuo con pérdida absoluta
 (ADR-021), con las variables a la hora en que se sabe cada paso (ADR-022,
 trampa 017), la bate sobre las predicciones que llegan a tiempo, sin la capa
 192. A una parada no anticipa; de 2 a 14 min por delante mejora un 3-4 % al
-listón (barrido de horizontes, ADR-023, bitácora 047). La capa 192 aporta
-décimas de segundo en la validación y de 1 a 1,5 s donde ve congestión
-(bitácora 048); decide la prueba del 07-19/10 (nota del 11/10 al ADR-024), con la primaria ya
-fijada (ADR-024).
+listón (barrido de horizontes, ADR-023, bitácora 047). **La prueba del
+07-19/10 ya se ha evaluado** (12 días: el 13/10 cae por el criterio de día
+útil, trampa 018).
+- La capa 192 **no aporta** en la primaria prerregistrada: −0,13 s con
+  *h* = 5, IC por días [−0,30, +0,01], y el control sin sensor mejora lo mismo.
+- Donde veía congestión, el error baja un −5 %, pero es el 3 % de las filas.
+- La v2 se confirma: −3,37 s frente al listón.
+
+Resultado en el ADR-024 y en la bitácora 057; límites del GTFS, en la 058.
+Todo análisis posterior sobre la prueba es exploratorio.
 
 Servido por API (spec del 15/10): `services/model_service.py` carga al
 arrancar la regresión y el clasificador de cada horizonte, y `api/` los
