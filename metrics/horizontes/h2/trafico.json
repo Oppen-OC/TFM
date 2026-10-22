@@ -1,0 +1,225 @@
+{
+  "horizonte_paradas": 2,
+  "prueba": [
+    "2026-10-07",
+    "2026-10-19"
+  ],
+  "modelos": {
+    "con": {
+      "n_arboles": 2990,
+      "mlflow_run_id": "15339ebb75ec467e92e60f04297a60a2",
+      "validacion": [
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-01",
+        "2026-10-02",
+        "2026-10-03",
+        "2026-10-04"
+      ]
+    },
+    "sin": {
+      "n_arboles": 2998,
+      "mlflow_run_id": "ea311295ada640fcb84211cde7ea0448",
+      "validacion": [
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-01",
+        "2026-10-02",
+        "2026-10-03",
+        "2026-10-04"
+      ]
+    }
+  },
+  "remuestreo": {
+    "unidad": "viaje y día",
+    "replicas": 1000,
+    "semilla": 0
+  },
+  "dias": 13,
+  "con_sensor": {
+    "filas": 380369,
+    "mae_sin_s": 33.38,
+    "mae_con_s": 33.27,
+    "con_menos_sin_s": -0.11,
+    "relativa": -0.0032,
+    "ic_viajes": [
+      -0.12,
+      -0.09
+    ],
+    "ic_dias": [
+      -0.15,
+      -0.07
+    ]
+  },
+  "conjunto": {
+    "filas": 490837,
+    "mae_sin_s": 32.25,
+    "mae_con_s": 32.16,
+    "con_menos_sin_s": -0.09,
+    "relativa": -0.0027,
+    "ic_viajes": [
+      -0.1,
+      -0.07
+    ],
+    "ic_dias": [
+      -0.13,
+      -0.05
+    ]
+  },
+  "con_congestion_observada": {
+    "filas": 10279,
+    "mae_sin_s": 60.05,
+    "mae_con_s": 56.84,
+    "con_menos_sin_s": -3.22,
+    "relativa": -0.0535,
+    "ic_viajes": [
+      -3.61,
+      -2.83
+    ],
+    "ic_dias": [
+      -4.41,
+      -2.09
+    ]
+  },
+  "sin_sensor": {
+    "filas": 67083,
+    "mae_sin_s": 26.7,
+    "mae_con_s": 26.7,
+    "con_menos_sin_s": -0.0,
+    "relativa": -0.0001,
+    "ic_viajes": [
+      -0.04,
+      0.03
+    ],
+    "ic_dias": [
+      -0.04,
+      0.03
+    ]
+  },
+  "por_cobertura": {
+    "0": {
+      "filas": 67083,
+      "mae_sin_s": 26.7,
+      "mae_con_s": 26.7,
+      "con_menos_sin_s": -0.0,
+      "relativa": -0.0001,
+      "ic_viajes": [
+        -0.04,
+        0.03
+      ],
+      "ic_dias": [
+        -0.04,
+        0.03
+      ]
+    },
+    "0-25 %": {
+      "filas": 6438,
+      "mae_sin_s": 30.9,
+      "mae_con_s": 30.79,
+      "con_menos_sin_s": -0.11,
+      "relativa": -0.0035,
+      "ic_viajes": [
+        -0.19,
+        -0.02
+      ],
+      "ic_dias": [
+        -0.18,
+        -0.02
+      ]
+    },
+    "25-50 %": {
+      "filas": 16982,
+      "mae_sin_s": 29.73,
+      "mae_con_s": 29.69,
+      "con_menos_sin_s": -0.04,
+      "relativa": -0.0013,
+      "ic_viajes": [
+        -0.11,
+        0.03
+      ],
+      "ic_dias": [
+        -0.13,
+        0.04
+      ]
+    },
+    "50-75 %": {
+      "filas": 19965,
+      "mae_sin_s": 31.98,
+      "mae_con_s": 31.94,
+      "con_menos_sin_s": -0.04,
+      "relativa": -0.0012,
+      "ic_viajes": [
+        -0.1,
+        0.02
+      ],
+      "ic_dias": [
+        -0.15,
+        0.06
+      ]
+    },
+    "> 75 %": {
+      "filas": 380369,
+      "mae_sin_s": 33.38,
+      "mae_con_s": 33.27,
+      "con_menos_sin_s": -0.11,
+      "relativa": -0.0032,
+      "ic_viajes": [
+        -0.12,
+        -0.09
+      ],
+      "ic_dias": [
+        -0.15,
+        -0.07
+      ]
+    }
+  },
+  "por_estado_observado": {
+    "con congestión": {
+      "filas": 10279,
+      "mae_sin_s": 60.05,
+      "mae_con_s": 56.84,
+      "con_menos_sin_s": -3.22,
+      "relativa": -0.0535,
+      "ic_viajes": [
+        -3.61,
+        -2.83
+      ],
+      "ic_dias": [
+        -4.41,
+        -2.09
+      ]
+    },
+    "fluido": {
+      "filas": 411190,
+      "mae_sin_s": 32.46,
+      "mae_con_s": 32.43,
+      "con_menos_sin_s": -0.02,
+      "relativa": -0.0007,
+      "ic_viajes": [
+        -0.03,
+        -0.01
+      ],
+      "ic_dias": [
+        -0.04,
+        -0.0
+      ]
+    },
+    "sin dato": {
+      "filas": 69368,
+      "mae_sin_s": 26.89,
+      "mae_con_s": 26.89,
+      "con_menos_sin_s": -0.01,
+      "relativa": -0.0002,
+      "ic_viajes": [
+        -0.04,
+        0.02
+      ],
+      "ic_dias": [
+        -0.04,
+        0.03
+      ]
+    }
+  }
+}

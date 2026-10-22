@@ -1,0 +1,751 @@
+{
+  "horizonte_paradas": 1,
+  "prueba": [
+    "2026-10-07",
+    "2026-10-19"
+  ],
+  "umbral_retraso_s": 300,
+  "modelos": {
+    "clasificador": {
+      "n_arboles": 414,
+      "mlflow_run_id": "2a740f5c4a1d4a80948dbcf63dbe8ff2",
+      "validacion": [
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-01",
+        "2026-10-02",
+        "2026-10-03",
+        "2026-10-04"
+      ]
+    },
+    "regresion": {
+      "n_arboles": 2993,
+      "mlflow_run_id": "6a106e4644784337b6ae7b6b88d3f19c",
+      "validacion": [
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-01",
+        "2026-10-02",
+        "2026-10-03",
+        "2026-10-04"
+      ]
+    }
+  },
+  "remuestreo": {
+    "unidad": "viaje y día",
+    "replicas": 1000,
+    "semilla": 0
+  },
+  "dias": 13,
+  "umbral_decision": 0.4385,
+  "titular": {
+    "filas": 79909,
+    "viajes": 8753,
+    "dias": 13,
+    "tasa_base": 0.082,
+    "brier_clasificador": 0.0103,
+    "metricas": {
+      "clasificador": {
+        "precision": 0.9174,
+        "sensibilidad": 0.9083,
+        "f1": 0.9128,
+        "pr_auc": 0.9749
+      },
+      "persistencia": {
+        "precision": 0.874,
+        "sensibilidad": 0.8931,
+        "f1": 0.8834,
+        "pr_auc": 0.9554
+      },
+      "persistencia_tramo": {
+        "precision": 0.9354,
+        "sensibilidad": 0.8909,
+        "f1": 0.9126,
+        "pr_auc": 0.9734
+      },
+      "regresion": {
+        "precision": 0.9334,
+        "sensibilidad": 0.8963,
+        "f1": 0.9145,
+        "pr_auc": 0.9747
+      },
+      "horario": {
+        "precision": null,
+        "sensibilidad": 0.0,
+        "f1": 0.0
+      }
+    },
+    "clasificador_menos": {
+      "persistencia": {
+        "viajes": {
+          "f1": 0.0294,
+          "f1_ic95": [
+            0.0243,
+            0.0342
+          ]
+        },
+        "dias": {
+          "f1": 0.0294,
+          "f1_ic95": [
+            0.0242,
+            0.0361
+          ]
+        }
+      },
+      "persistencia_tramo": {
+        "viajes": {
+          "f1": 0.0002,
+          "f1_ic95": [
+            -0.0026,
+            0.003
+          ]
+        },
+        "dias": {
+          "f1": 0.0002,
+          "f1_ic95": [
+            -0.0033,
+            0.0031
+          ]
+        }
+      },
+      "regresion": {
+        "viajes": {
+          "f1": -0.0016,
+          "f1_ic95": [
+            -0.0043,
+            0.0009
+          ]
+        },
+        "dias": {
+          "f1": -0.0016,
+          "f1_ic95": [
+            -0.0044,
+            0.0002
+          ]
+        }
+      }
+    }
+  },
+  "conjunto": {
+    "filas": 306682,
+    "viajes": 26913,
+    "dias": 13,
+    "tasa_base": 0.0829,
+    "brier_clasificador": 0.0121,
+    "metricas": {
+      "clasificador": {
+        "precision": 0.9113,
+        "sensibilidad": 0.886,
+        "f1": 0.8984,
+        "pr_auc": 0.9664
+      },
+      "persistencia": {
+        "precision": 0.8748,
+        "sensibilidad": 0.8593,
+        "f1": 0.867,
+        "pr_auc": 0.9422
+      },
+      "persistencia_tramo": {
+        "precision": 0.9315,
+        "sensibilidad": 0.8626,
+        "f1": 0.8957,
+        "pr_auc": 0.9618
+      },
+      "regresion": {
+        "precision": 0.9343,
+        "sensibilidad": 0.8689,
+        "f1": 0.9004,
+        "pr_auc": 0.9647
+      },
+      "horario": {
+        "precision": null,
+        "sensibilidad": 0.0,
+        "f1": 0.0
+      }
+    },
+    "clasificador_menos": {
+      "persistencia": {
+        "viajes": {
+          "f1": 0.0314,
+          "f1_ic95": [
+            0.0288,
+            0.0341
+          ]
+        },
+        "dias": {
+          "f1": 0.0314,
+          "f1_ic95": [
+            0.028,
+            0.0348
+          ]
+        }
+      },
+      "persistencia_tramo": {
+        "viajes": {
+          "f1": 0.0027,
+          "f1_ic95": [
+            0.0012,
+            0.0042
+          ]
+        },
+        "dias": {
+          "f1": 0.0027,
+          "f1_ic95": [
+            0.0006,
+            0.0047
+          ]
+        }
+      },
+      "regresion": {
+        "viajes": {
+          "f1": -0.002,
+          "f1_ic95": [
+            -0.0035,
+            -0.0004
+          ]
+        },
+        "dias": {
+          "f1": -0.002,
+          "f1_ic95": [
+            -0.0036,
+            -0.0003
+          ]
+        }
+      }
+    }
+  },
+  "por_banda": {
+    "15-30 min": {
+      "filas": 60934,
+      "viajes": 6462,
+      "dias": 13,
+      "tasa_base": 0.0798,
+      "brier_clasificador": 0.0111,
+      "metricas": {
+        "clasificador": {
+          "precision": 0.9078,
+          "sensibilidad": 0.8974,
+          "f1": 0.9026,
+          "pr_auc": 0.9709
+        },
+        "persistencia": {
+          "precision": 0.8661,
+          "sensibilidad": 0.8803,
+          "f1": 0.8731,
+          "pr_auc": 0.9488
+        },
+        "persistencia_tramo": {
+          "precision": 0.9278,
+          "sensibilidad": 0.8779,
+          "f1": 0.9022,
+          "pr_auc": 0.9696
+        },
+        "regresion": {
+          "precision": 0.9265,
+          "sensibilidad": 0.8834,
+          "f1": 0.9044,
+          "pr_auc": 0.9712
+        },
+        "horario": {
+          "precision": null,
+          "sensibilidad": 0.0,
+          "f1": 0.0
+        }
+      },
+      "clasificador_menos": {
+        "persistencia": {
+          "viajes": {
+            "f1": 0.0294,
+            "f1_ic95": [
+              0.0233,
+              0.035
+            ]
+          },
+          "dias": {
+            "f1": 0.0294,
+            "f1_ic95": [
+              0.0229,
+              0.0379
+            ]
+          }
+        },
+        "persistencia_tramo": {
+          "viajes": {
+            "f1": 0.0004,
+            "f1_ic95": [
+              -0.0033,
+              0.0037
+            ]
+          },
+          "dias": {
+            "f1": 0.0004,
+            "f1_ic95": [
+              -0.004,
+              0.0036
+            ]
+          }
+        },
+        "regresion": {
+          "viajes": {
+            "f1": -0.0018,
+            "f1_ic95": [
+              -0.0054,
+              0.0011
+            ]
+          },
+          "dias": {
+            "f1": -0.0018,
+            "f1_ic95": [
+              -0.0056,
+              0.0006
+            ]
+          }
+        }
+      }
+    },
+    "8-15 min": {
+      "filas": 164825,
+      "viajes": 13668,
+      "dias": 13,
+      "tasa_base": 0.0841,
+      "brier_clasificador": 0.0128,
+      "metricas": {
+        "clasificador": {
+          "precision": 0.9097,
+          "sensibilidad": 0.8808,
+          "f1": 0.895,
+          "pr_auc": 0.9646
+        },
+        "persistencia": {
+          "precision": 0.8716,
+          "sensibilidad": 0.8518,
+          "f1": 0.8615,
+          "pr_auc": 0.9385
+        },
+        "persistencia_tramo": {
+          "precision": 0.9301,
+          "sensibilidad": 0.8557,
+          "f1": 0.8914,
+          "pr_auc": 0.9597
+        },
+        "regresion": {
+          "precision": 0.9348,
+          "sensibilidad": 0.8616,
+          "f1": 0.8967,
+          "pr_auc": 0.9626
+        },
+        "horario": {
+          "precision": null,
+          "sensibilidad": 0.0,
+          "f1": 0.0
+        }
+      },
+      "clasificador_menos": {
+        "persistencia": {
+          "viajes": {
+            "f1": 0.0335,
+            "f1_ic95": [
+              0.0295,
+              0.0371
+            ]
+          },
+          "dias": {
+            "f1": 0.0335,
+            "f1_ic95": [
+              0.0302,
+              0.0371
+            ]
+          }
+        },
+        "persistencia_tramo": {
+          "viajes": {
+            "f1": 0.0036,
+            "f1_ic95": [
+              0.0015,
+              0.0059
+            ]
+          },
+          "dias": {
+            "f1": 0.0036,
+            "f1_ic95": [
+              0.0015,
+              0.0057
+            ]
+          }
+        },
+        "regresion": {
+          "viajes": {
+            "f1": -0.0017,
+            "f1_ic95": [
+              -0.0038,
+              0.0005
+            ]
+          },
+          "dias": {
+            "f1": -0.0017,
+            "f1_ic95": [
+              -0.0034,
+              -0.0001
+            ]
+          }
+        }
+      }
+    },
+    "<= 8 min": {
+      "filas": 61948,
+      "viajes": 4492,
+      "dias": 9,
+      "tasa_base": 0.0808,
+      "brier_clasificador": 0.0128,
+      "metricas": {
+        "clasificador": {
+          "precision": 0.9072,
+          "sensibilidad": 0.8711,
+          "f1": 0.8888,
+          "pr_auc": 0.9597
+        },
+        "persistencia": {
+          "precision": 0.8853,
+          "sensibilidad": 0.8362,
+          "f1": 0.86,
+          "pr_auc": 0.935
+        },
+        "persistencia_tramo": {
+          "precision": 0.9298,
+          "sensibilidad": 0.8448,
+          "f1": 0.8853,
+          "pr_auc": 0.9521
+        },
+        "regresion": {
+          "precision": 0.934,
+          "sensibilidad": 0.8533,
+          "f1": 0.8918,
+          "pr_auc": 0.9571
+        },
+        "horario": {
+          "precision": null,
+          "sensibilidad": 0.0,
+          "f1": 0.0
+        }
+      },
+      "clasificador_menos": {
+        "persistencia": {
+          "viajes": {
+            "f1": 0.0287,
+            "f1_ic95": [
+              0.0232,
+              0.0345
+            ]
+          },
+          "dias": {
+            "f1": 0.0287,
+            "f1_ic95": [
+              0.0174,
+              0.0371
+            ]
+          }
+        },
+        "persistencia_tramo": {
+          "viajes": {
+            "f1": 0.0035,
+            "f1_ic95": [
+              -0.0,
+              0.0069
+            ]
+          },
+          "dias": {
+            "f1": 0.0035,
+            "f1_ic95": [
+              0.0008,
+              0.0069
+            ]
+          }
+        },
+        "regresion": {
+          "viajes": {
+            "f1": -0.003,
+            "f1_ic95": [
+              -0.0065,
+              0.0005
+            ]
+          },
+          "dias": {
+            "f1": -0.003,
+            "f1_ic95": [
+              -0.0066,
+              0.0016
+            ]
+          }
+        }
+      }
+    },
+    "> 30 min": {
+      "filas": 18975,
+      "viajes": 2291,
+      "dias": 13,
+      "tasa_base": 0.0892,
+      "brier_clasificador": 0.008,
+      "metricas": {
+        "clasificador": {
+          "precision": 0.9447,
+          "sensibilidad": 0.9397,
+          "f1": 0.9422,
+          "pr_auc": 0.9844
+        },
+        "persistencia": {
+          "precision": 0.8963,
+          "sensibilidad": 0.9297,
+          "f1": 0.9127,
+          "pr_auc": 0.9722
+        },
+        "persistencia_tramo": {
+          "precision": 0.9568,
+          "sensibilidad": 0.9285,
+          "f1": 0.9424,
+          "pr_auc": 0.9826
+        },
+        "regresion": {
+          "precision": 0.9529,
+          "sensibilidad": 0.9332,
+          "f1": 0.943,
+          "pr_auc": 0.9834
+        },
+        "horario": {
+          "precision": null,
+          "sensibilidad": 0.0,
+          "f1": 0.0
+        }
+      },
+      "clasificador_menos": {
+        "persistencia": {
+          "viajes": {
+            "f1": 0.0295,
+            "f1_ic95": [
+              0.0208,
+              0.0385
+            ]
+          },
+          "dias": {
+            "f1": 0.0295,
+            "f1_ic95": [
+              0.0226,
+              0.0373
+            ]
+          }
+        },
+        "persistencia_tramo": {
+          "viajes": {
+            "f1": -0.0002,
+            "f1_ic95": [
+              -0.0049,
+              0.0045
+            ]
+          },
+          "dias": {
+            "f1": -0.0002,
+            "f1_ic95": [
+              -0.0057,
+              0.0056
+            ]
+          }
+        },
+        "regresion": {
+          "viajes": {
+            "f1": -0.0007,
+            "f1_ic95": [
+              -0.0057,
+              0.004
+            ]
+          },
+          "dias": {
+            "f1": -0.0007,
+            "f1_ic95": [
+              -0.0053,
+              0.0031
+            ]
+          }
+        }
+      }
+    }
+  },
+  "por_estado_actual": {
+    "aún no": {
+      "filas": 281717,
+      "viajes": 26358,
+      "dias": 13,
+      "tasa_base": 0.0127,
+      "brier_clasificador": 0.0083,
+      "metricas": {
+        "clasificador": {
+          "precision": 0.6329,
+          "sensibilidad": 0.3636,
+          "f1": 0.4619,
+          "pr_auc": 0.5141
+        },
+        "persistencia": {
+          "precision": null,
+          "sensibilidad": 0.0,
+          "f1": 0.0,
+          "pr_auc": 0.2381
+        },
+        "persistencia_tramo": {
+          "precision": 0.6769,
+          "sensibilidad": 0.2655,
+          "f1": 0.3814,
+          "pr_auc": 0.4754
+        },
+        "regresion": {
+          "precision": 0.6974,
+          "sensibilidad": 0.2945,
+          "f1": 0.4142,
+          "pr_auc": 0.5117
+        },
+        "horario": {
+          "precision": null,
+          "sensibilidad": 0.0,
+          "f1": 0.0
+        }
+      },
+      "clasificador_menos": {
+        "persistencia": {
+          "viajes": {
+            "f1": 0.4619,
+            "f1_ic95": [
+              0.4471,
+              0.478
+            ]
+          },
+          "dias": {
+            "f1": 0.4619,
+            "f1_ic95": [
+              0.4406,
+              0.4835
+            ]
+          }
+        },
+        "persistencia_tramo": {
+          "viajes": {
+            "f1": 0.0805,
+            "f1_ic95": [
+              0.0684,
+              0.0914
+            ]
+          },
+          "dias": {
+            "f1": 0.0805,
+            "f1_ic95": [
+              0.0706,
+              0.092
+            ]
+          }
+        },
+        "regresion": {
+          "viajes": {
+            "f1": 0.0477,
+            "f1_ic95": [
+              0.037,
+              0.0584
+            ]
+          },
+          "dias": {
+            "f1": 0.0477,
+            "f1_ic95": [
+              0.0396,
+              0.0561
+            ]
+          }
+        }
+      }
+    },
+    "ya tarde": {
+      "filas": 24965,
+      "viajes": 4639,
+      "dias": 13,
+      "tasa_base": 0.8748,
+      "brier_clasificador": 0.0558,
+      "metricas": {
+        "clasificador": {
+          "precision": 0.9365,
+          "sensibilidad": 0.9715,
+          "f1": 0.9537,
+          "pr_auc": 0.9935
+        },
+        "persistencia": {
+          "precision": 0.8748,
+          "sensibilidad": 1.0,
+          "f1": 0.9332,
+          "pr_auc": 0.9856
+        },
+        "persistencia_tramo": {
+          "precision": 0.9476,
+          "sensibilidad": 0.9604,
+          "f1": 0.954,
+          "pr_auc": 0.9933
+        },
+        "regresion": {
+          "precision": 0.9505,
+          "sensibilidad": 0.9629,
+          "f1": 0.9566,
+          "pr_auc": 0.9939
+        },
+        "horario": {
+          "precision": null,
+          "sensibilidad": 0.0,
+          "f1": 0.0
+        }
+      },
+      "clasificador_menos": {
+        "persistencia": {
+          "viajes": {
+            "f1": 0.0204,
+            "f1_ic95": [
+              0.0184,
+              0.0225
+            ]
+          },
+          "dias": {
+            "f1": 0.0204,
+            "f1_ic95": [
+              0.0181,
+              0.023
+            ]
+          }
+        },
+        "persistencia_tramo": {
+          "viajes": {
+            "f1": -0.0003,
+            "f1_ic95": [
+              -0.0015,
+              0.001
+            ]
+          },
+          "dias": {
+            "f1": -0.0003,
+            "f1_ic95": [
+              -0.0021,
+              0.0014
+            ]
+          }
+        },
+        "regresion": {
+          "viajes": {
+            "f1": -0.003,
+            "f1_ic95": [
+              -0.0042,
+              -0.0017
+            ]
+          },
+          "dias": {
+            "f1": -0.003,
+            "f1_ic95": [
+              -0.0046,
+              -0.0013
+            ]
+          }
+        }
+      }
+    }
+  }
+}
