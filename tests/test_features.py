@@ -178,6 +178,29 @@ def test_el_split_deja_fuera_los_dias_partidos_y_lo_posterior_a_la_prueba():
         features.partir(tabla, "2026-10-07", "2026-10-07", "2026-10-19")
 
 
+def test_un_dia_excluido_no_entra_en_ninguna_tabla():
+    """ADR-024, corrección del 22/10: el 13/10 cae por el criterio de día útil.
+
+    Sale de las dos tablas, como el 05-06/10, y los demás días se quedan.
+    """
+    dias = ["2026-10-04", "2026-10-07", "2026-10-13", "2026-10-19"]
+    filas = [
+        _paso(f"V{i}", s, 2 * s, 0, dia=d)
+        for i, d in enumerate(dias)
+        for s in range(1, 4)
+    ]
+    tabla = _construir(filas)
+    train, test = features.partir(
+        tabla,
+        "2026-10-04",
+        "2026-10-07",
+        "2026-10-19",
+        excluir=["2026-10-04", "2026-10-13"],
+    )
+    assert train.empty
+    assert set(test["viaje_id"]) == {"V1", "V3"}
+
+
 def test_la_tabla_no_lleva_diagnosticos_que_miran_el_futuro_y_trae_sus_variables():
     """`desfase_s` resume las primeras paradas del viaje: en la 1 incluye la 2 y la 3."""
     filas = [_paso("A", s, 2 * s, 10 * s) for s in range(1, 5)]

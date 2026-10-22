@@ -437,7 +437,11 @@ def construir(
 
 
 def partir(
-    tabla: pd.DataFrame, train_hasta: str, test_desde: str, test_hasta: str
+    tabla: pd.DataFrame,
+    train_hasta: str,
+    test_desde: str,
+    test_hasta: str,
+    excluir: list[str] = (),
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split TEMPORAL por día de servicio (ADR-007): ningún viaje a los dos lados.
 
@@ -446,7 +450,8 @@ def partir(
     tabla: un día parcial al final del entrenamiento movería la validación, y
     `pull_data.sh` trae también los días posteriores a la prueba (ADR-024). Sí
     cuentan como historia: las ventanas y el sesgo del tramo se calculan antes de
-    partir.
+    partir. Los días de `excluir` tampoco entran: los que el criterio de día útil
+    descarta (ADR-024, corrección del 22/10).
     """
     if pd.Timestamp(train_hasta) >= pd.Timestamp(test_desde):
         raise ValueError(
@@ -455,7 +460,11 @@ def partir(
     dia = tabla["fecha_servicio"]
     train = dia <= pd.Timestamp(train_hasta)
     prueba = (dia >= pd.Timestamp(test_desde)) & (dia <= pd.Timestamp(test_hasta))
-    return tabla[train].reset_index(drop=True), tabla[prueba].reset_index(drop=True)
+    dentro = ~pd.to_datetime(dia).isin(pd.to_datetime(list(excluir)))
+    return (
+        tabla[train & dentro].reset_index(drop=True),
+        tabla[prueba & dentro].reset_index(drop=True),
+    )
 
 
 def soporte_por_linea(
@@ -681,7 +690,11 @@ def main(horizonte: int | None = None) -> None:
         trafico_edad_max_s=cfg["trafico_edad_max_s"],
     )
     train, test = partir(
-        tabla, cfg["train_hasta"], cfg["test_desde"], cfg["test_hasta"]
+        tabla,
+        cfg["train_hasta"],
+        cfg["test_desde"],
+        cfg["test_hasta"],
+        cfg["excluir_dias"],
     )
     soporte = soporte_por_linea(
         train, test, cfg["linea_min_viajes"], cfg["linea_min_dias"]

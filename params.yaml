@@ -71,6 +71,10 @@ features:
   train_hasta: "2026-10-04"
   test_desde: "2026-10-07"
   test_hasta: "2026-10-19"
+  # Días que el criterio de día útil descarta (ADR-024): un hueco de la EMT de
+  # más de 1 h en su día de servicio. El 13/10, 447 payloads de error seguidos,
+  # de 11:54 a 15:39 UTC (corrección del 22/10).
+  excluir_dias: ["2026-10-13"]
 
 train:
   # Brazo elegido por analysis/elegir_brazo.py en la validación (ADR-021).
