@@ -965,14 +965,33 @@ sin dos semanas útiles, o que la 192 vuelva a congelarse.
 - **Completitud (21/10)**, sobre `data/raw` tras `pull_data.sh` desde la SD
   (`medir_completitud --desde 2026-10-06`), antes de `dvc repro`:
   - EMT: de 2.840 a 2.856 sondeos por día UTC del 07 al 19/10, de 2.880
-    posibles, y ningún hueco de más de 15 min. **No cae ningún día: la prueba
-    tiene sus 13 días.**
+    posibles, y ningún hueco de más de 15 min. ~~No cae ningún día: la prueba
+    tiene sus 13 días.~~ **Falso: ver la corrección del 22/10.**
   - 192: de 273 a 288 por día. Cinco huecos de 15 min (07, 15, 17 y dos el
     19/10) y uno de **76 min el 16/10, de 08:28 a 09:44 UTC**, en la punta de
     la mañana. No descarta el día: deja filas sin tráfico observado, que se
     informan como límite.
   - El 06-12/10 de la SD coincide en contenido con el de `data/raw`; solo
     difieren los permisos (`--verificar`).
+- **Corrección del 22/10: el 13/10 se descarta**, por el criterio de día útil
+  de esta nota, aplicado tarde. Las comparaciones ya se habían ejecutado con
+  13 días (18e3927) cuando el tribunal lo encontró.
+  - El crudo de la EMT del 13/10 tiene **447 payloads `{"error": …}` seguidos,
+    de 11:54 a 15:39 UTC** (13:54 a 17:39 locales): 3 h 45 min sin posiciones
+    dentro del día de servicio. La 192 cae a la vez: 45 errores, de 11:58 a
+    15:38 UTC. Fuera de eso solo hay errores de 2 min (10 y 17/10, 22:03 UTC).
+  - Nadie lo vio porque el instrumento no mide lo que el criterio exige.
+    `medir_completitud` cuenta como sondeo cualquier línea del crudo, también
+    las que traen un error, y `reprocesar` las descarta sin contarlas
+    (`metrics/curar.json`, `errores: 0`). El bajón de viajes del 13/10 en
+    `metrics/prepare.json` (3.480, frente a unos 4.300) era esto.
+  - **La primaria es la de 12 días** (07-19/10 sin el 13), escrito antes de
+    calcularla. El día sale de toda tabla con `features.excluir_dias`, como el
+    05-06/10. El entrenamiento no cambia y las comparaciones se ejecutan una
+    vez más, solo por esta regla. La de 13 días (18e3927) queda como
+    descriptiva. Con *h* = 5, su IC por días acababa en −0,0026 s, por debajo
+    del error de Monte Carlo del percentil: el día puede mover el veredicto
+    en cualquier sentido, y por eso no se elige después de verlo.
 
 ---
 
