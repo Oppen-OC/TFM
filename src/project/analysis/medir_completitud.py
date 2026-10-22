@@ -6,7 +6,10 @@
 Por fuente y día de captura (UTC, la partición `date=` de `append_raw`): sondeos
 guardados frente a los que da la cadencia de `SOURCES`, y los huecos entre dos
 sondeos seguidos por encima del umbral. Cuenta el crudo, no el curated: incluye
-los sondeos repetidos, como los contadores `ok + dup` del colector.
+los sondeos repetidos, como los contadores `ok + dup` del colector. Un sondeo es
+un payload con filas: el `{"error": …}` del geoportal también se guarda en el
+crudo y no trae ninguna posición. Contarlo escondió las 3 h 45 min del 13/10
+(ADR-024, corrección del 22/10).
 
 Es la cifra que decide si un día de la prueba es útil (ADR-024, nota del 11/10).
 Con `--raw` mide una copia fuera del repo sin traerla a `data/raw/`.
@@ -21,7 +24,7 @@ from pathlib import Path
 import pandas as pd
 
 from project.config import settings
-from project.ingest.sources import SOURCES, read_raw
+from project.ingest.sources import SOURCES, parse, read_raw
 
 
 def instantes(
@@ -32,7 +35,7 @@ def instantes(
         dia = f.parent.name.removeprefix("date=")
         if dia < desde or (hasta and dia > hasta):
             continue
-        ts += [t for t, _ in read_raw(f)]
+        ts += [t for t, p in read_raw(f) if not parse(fuente, p, t).empty]
     return sorted(ts)
 
 

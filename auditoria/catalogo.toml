@@ -2172,3 +2172,16 @@ buscar = '''    dentro = ~pd.to_datetime(dia).isin(pd.to_datetime(list(excluir))
 reemplazar = '''    dentro = pd.Series(True, index=dia.index)'''
 detector = ["tests/test_features.py::test_un_dia_excluido_no_entra_en_ninguna_tabla"]
 sondas = []
+
+[[mutante]]
+id = "183"
+nombre = "un payload de error cuenta como sondeo en la completitud"
+capa = "fuentes"
+trampa = "018"
+# El 13/10, 3 h 45 min de `{"error": …}` pasaron por un día completo y el día
+# entró en la prueba (ADR-024, corrección del 22/10).
+fichero = "src/project/analysis/medir_completitud.py"
+buscar = '''        ts += [t for t, p in read_raw(f) if not parse(fuente, p, t).empty]'''
+reemplazar = '''        ts += [t for t, p in read_raw(f)]'''
+detector = ["tests/test_completitud.py::test_un_payload_de_error_no_cuenta_como_sondeo"]
+sondas = []
