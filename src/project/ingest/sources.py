@@ -147,6 +147,10 @@ class Source:
 
     def silencio_tolerado(self, ahora: pd.Timestamp) -> int:
         """Segundos sin un sondeo bueno que son normales en `ahora`."""
+        # ponytail: mira la hora de `ahora`, no las que cubre el silencio. Una
+        # caída de Renfe que empieza de tarde sale VIVO de madrugada, cuando no
+        # hay trenes que perder; si hace falta el aviso continuo, descontar del
+        # silencio la parte de madrugada y comparar con `silencio_max_s`.
         if self.silencio_madrugada_s and ahora.tz_convert(TZ_LOCAL).hour in MADRUGADA:
             return self.silencio_madrugada_s
         return self.silencio_max_s

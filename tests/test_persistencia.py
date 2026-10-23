@@ -481,28 +481,74 @@ def test_status_no_dice_vivo_con_el_latido_al_dia_y_una_fuente_callada(
 
 @pytest.mark.parametrize(
     ("ahora", "esperado"),
-    [(NOCHE, 0), (DIA, 3)],
-    ids=["a-las-3-vivo", "a-las-10-caida"],
+    [
+        (NOCHE, 0),
+        (DIA, 3),
+        (pd.Timestamp("2026-10-20T23:30:00Z"), 0),  # 01:30, las 23 en UTC
+        (pd.Timestamp("2026-10-21T05:30:00Z"), 3),  # 07:30, las 5 en UTC
+    ],
+    ids=[
+        "a-las-3-vivo",
+        "a-las-10-caida",
+        "a-la-1-y-media-vivo",
+        "a-las-7-y-media-caida",
+    ],
 )
 def test_renfe_callada_de_madrugada_no_es_una_caida(
     tmp_path, colector, monkeypatch, ahora, esperado
 ):
-    """Mismo silencio de 3 h, a dos horas del día.
+    """La misma hora de silencio, a cuatro horas del día.
 
-    De 23:44 a 05:48 no circula ningún tren del núcleo 40: `parse_renfe` da
-    vacío y el `ultimo_ok` de Renfe envejece hasta seis horas cada noche. Una
-    tolerancia de N periodos avisaría todas las noches; una de seis horas
-    taparía una caída de día.
+    Sin trenes del núcleo 40 `parse_renfe` da vacío, y cada noche Renfe calla
+    hasta 5 h 59 min: nunca desde antes de las 23:44 ni hasta después de las
+    05:48. Una tolerancia de N periodos avisaría todas las noches; una de ocho
+    horas a todas horas taparía una caída de día. La madrugada es la de
+    València, no la de UTC: los dos últimos casos caen en lados distintos según
+    el reloj (trampa 002).
     """
     codigo = _status(
         colector,
         monkeypatch,
         tmp_path,
         ahora,
-        renfe_cercanias=ahora - pd.Timedelta(hours=3),
+        renfe_cercanias=ahora - pd.Timedelta(hours=1),
     )
 
     assert codigo == esperado
+
+
+@pytest.mark.parametrize(
+    ("fuente", "ahora", "silencio_min"),
+    [
+        ("emt_buses", pd.Timestamp("2026-09-08T03:17:31Z"), 17.2),
+        ("trafico_estado", DIA, 15.3),
+        ("trafico_intensidad", DIA, 45.3),
+        ("valenbisi", DIA, 15.3),
+        ("renfe_cercanias", pd.Timestamp("2026-10-01T21:08:12Z"), 20.3),
+        ("renfe_cercanias", pd.Timestamp("2026-08-27T03:48:46Z"), 358.7),
+    ],
+    ids=[
+        "emt-a-las-5",
+        "192-un-fallo",
+        "188-un-fallo",
+        "valenbisi-un-fallo",
+        "renfe-de-dia",
+        "renfe-de-noche",
+    ],
+)
+def test_el_silencio_legitimo_mas_largo_medido_no_es_una_caida(
+    tmp_path, colector, monkeypatch, fuente, ahora, silencio_min
+):
+    """Los silencios más largos del 15/08 al 20/10 con la fuente contestando,
+    o tras un fallo aislado y su retroceso: lo que una tolerancia de N periodos
+    daría por caída cada día. Cada uno, a la hora local en que se midió.
+    """
+    silencio = pd.Timedelta(minutes=silencio_min)
+
+    assert (
+        _status(colector, monkeypatch, tmp_path, ahora, **{fuente: ahora - silencio})
+        == 0
+    )
 
 
 def test_el_colector_parado_no_se_tapa_con_una_fuente_callada(

@@ -216,7 +216,8 @@ antes de importar.
   verdad conocida no se puede distinguir "60 trayectorias" de "60 trayectorias
   correctas", que es justo lo que escondió la trampa 004.
 - `tests/test_persistencia.py` guarda la capa que no se puede arreglar después:
-  crudo antes de parsear, append, partición, deduplicación, `reprocesar`.
+  crudo antes de parsear, append, partición, deduplicación, `reprocesar`, y que
+  `collect --status` no diga VIVO con una fuente callada de más (issue #1).
 - `tests/test_tracking_realismo.py` prueba el tracker con paradas y giros al
   ritmo real. Es `xfail(strict=True)`: defecto conocido, no corregido.
 - **Un test en verde no demuestra que guarde nada.** `auditoria/mutar.py` rompe a

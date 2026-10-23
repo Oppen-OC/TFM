@@ -2304,3 +2304,29 @@ buscar = '''v["ultimo_ok"] or e["arrancado_utc"]'''
 reemplazar = '''v["ultimo_ok"] or ahora'''
 detector = ["tests/test_persistencia.py::test_la_fuente_que_arranca_devolviendo_errores_sale_caida"]
 sondas = []
+
+[[mutante]]
+id = "193"
+nombre = "la madrugada de Renfe se cuenta en UTC"
+capa = "persistencia"
+# Trampa 002 otra vez: en UTC la ventana va de 02 a 09 h locales. Renfe saldría
+# caída cada noche de 00 a 02 h y una caída de las 7 h quedaría tapada.
+fichero = "src/project/ingest/sources.py"
+buscar = '''        if self.silencio_madrugada_s and ahora.tz_convert(TZ_LOCAL).hour in MADRUGADA:'''
+reemplazar = '''        if self.silencio_madrugada_s and ahora.hour in MADRUGADA:'''
+detector = ["tests/test_persistencia.py::test_renfe_callada_de_madrugada_no_es_una_caida"]
+sondas = []
+
+[[mutante]]
+id = "194"
+nombre = "la EMT tolera N periodos sin sondeo bueno"
+capa = "persistencia"
+# Lo ingenuo del issue: 10 periodos, 5 min. La EMT sirve cada día el mismo
+# sondeo hasta 17 min hacia las 05 h y `--status` avisaría cada madrugada.
+fichero = "src/project/ingest/sources.py"
+buscar = '''        # Cada día, hacia las 05 h locales, sirve el mismo sondeo hasta 17 min.
+        silencio_max_s=30 * 60,'''
+reemplazar = '''        # Cada día, hacia las 05 h locales, sirve el mismo sondeo hasta 17 min.
+        silencio_max_s=10 * 30,'''
+detector = ["tests/test_persistencia.py::test_el_silencio_legitimo_mas_largo_medido_no_es_una_caida"]
+sondas = []

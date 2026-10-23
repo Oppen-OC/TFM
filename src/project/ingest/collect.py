@@ -27,10 +27,10 @@ Diseño deliberado:
    su último sondeo bueno contra su `silencio_max_s`, y sale con
      0  vivo, y todas las fuentes dentro de su tolerancia;
      1  no hay `_status.json`;
-     2  parado: el latido tiene más de 3 min, caiga o no alguna fuente;
+     2  parado: el latido tiene 3 min o más, caiga o no alguna fuente;
      3  late, pero alguna fuente lleva más de su tolerancia sin un sondeo bueno.
-   El GTFS no se juzga: su último ok es la última versión nueva, y la EMT ha
-   pasado hasta 32 días sin publicar.
+   El GTFS no se juzga: su último ok es la última versión nueva, y la EMT, que
+   suele publicar casi a diario, ha pasado hasta 32 días sin hacerlo.
 
 5. El GTFS estático se guarda también, cada versión nueva una vez, porque
    tampoco tiene histórico: la EMT lo republica casi a diario (bitácora 042).
