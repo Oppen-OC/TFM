@@ -283,7 +283,7 @@ def test_un_dia_de_prueba_con_errores_del_geoportal_cae_y_se_dice_cual(
     assert (valores["utiles"], valores["dias"]) == (2, 3), valores
     assert valores["caidos"] == "08/10"
     # Del último sondeo bueno (09:30) al siguiente (12:30).
-    assert valores["horas_caida"] == pytest.approx(3)
+    assert valores["minutos_caida"] == 180
     validar_prueba(prueba)
 
 

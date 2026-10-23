@@ -329,10 +329,12 @@ def p10(raw: Path, hasta: str):
         "utiles": sum(d not in tocados for d in prueba.index),
         "dias": len(prueba),
         "caidos": ", ".join(_dia(d) for d in prueba.index if d in tocados),
-        "horas_caida": sum(
-            (b - a) / pd.Timedelta(hours=1)
-            for a, b in hs
-            if PRUEBA[0] <= f"{a:%Y-%m-%d}" <= fin
+        "minutos_caida": round(
+            sum(
+                (b - a) / pd.Timedelta(minutes=1)
+                for a, b in hs
+                if PRUEBA[0] <= f"{a:%Y-%m-%d}" <= fin
+            )
         ),
         # El cotejo cuenta su propia ventana, no la serie recortada al último día.
         "sondeos_cotejo": int(

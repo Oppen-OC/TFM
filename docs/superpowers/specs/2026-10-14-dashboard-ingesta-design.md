@@ -120,7 +120,7 @@ Cada parada es un registro: `id`, `capitulo`, `apartado`, `fecha`, `titulo`,
 | P7 | 4 | 25/09 | En periodo lectivo la 192 despierta y la 188 sigue congelada (031) | `serie`: tramos congestionados al día (192) frente a valores distintos (188) | `medir_fuentes.lectivo()` | mediana de 43 tramos densos o congestionados por laborable (la 031 publicó 34 con el 18/09 a medias; corrección en la 052); la 188, 243 valores distintos |
 | P8 | 4 | 30/09 | 0,07 payloads por segundo: Kafka no hace falta (033) | `cifra`: payloads/s y MB/día por fuente | `medir_volumen.medir()` sobre los días de la 033 | 6.336 payloads/día, 297 MB (±2 %) |
 | P9 | 4 | 30/09 | La infraestructura también falla: corpus solo en el PC (035), disco de la Pi (044), GTFS sin guardar (051) | `serie`: línea temporal de la captura con los incidentes anotados | `medir_completitud`, fechas de las fichas | — |
-| P10 | 5 Implantación · Resultados | 13/10 | La prueba pierde el día que parecía completo (050, 057, 059, trampa 018) | `serie`: completitud diaria de EMT y 192 en todo el corpus; cifra de la prueba | `medir_completitud` | 17.109 de 17.280 sondeos de la EMT, 07-12/10 (bitácora 059; la 050 contó 17.119 líneas); 12 de 13 días útiles (057); 3,75 h de errores el 13/10 (trampa 018) |
+| P10 | 5 Implantación · Resultados | 13/10 | La prueba pierde el día que parecía completo (050, 057, 059, trampa 018) | `serie`: completitud diaria de EMT y 192 en todo el corpus; cifra de la prueba | `medir_completitud` | 17.109 de 17.280 sondeos de la EMT, 07-12/10 (bitácora 059; la 050 contó 17.119 líneas); 12 de 13 días útiles (057); 225 min (±1 %) de errores el 13/10 (trampa 018) |
 
 Los capítulos 2 (Estado del arte) y 6 (Conclusiones) aparecen como estaciones
 sin paradas.

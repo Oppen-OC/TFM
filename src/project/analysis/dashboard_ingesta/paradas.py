@@ -187,7 +187,9 @@ PARADAS: list[dict] = [
             "En {dias} días de captura hay {cortes} cortes de la EMT de más de una "
             "hora, {horas} h en total, de las que {horas_fuente} son la caída de "
             "las capas del geoportal de septiembre. Se encontraron después, "
-            "contando sondeos: el colector no avisa de lo que no recibe."
+            "contando sondeos: el colector no avisa de lo que no recibe, ni de "
+            "lo que recibe sin datos, como los errores del geoportal que "
+            "tumbaron un día de la prueba."
         ),
         "remite": [
             "bitacora:035",
@@ -215,7 +217,7 @@ PARADAS: list[dict] = [
             "Del {desde} al {hasta}, la captura guarda el {pct} % de los sondeos "
             "de la EMT que da su cadencia, y {utiles} de {dias} días de prueba no "
             "tienen ningún hueco de más de una hora. El {caidos}, el geoportal "
-            "respondió con errores durante {horas_caida} h; contando líneas del "
+            "respondió con errores durante {minutos_caida} min; contando líneas del "
             "crudo, el día parecía completo. El criterio de día útil lo descarta."
         ),
         "remite": ["bitacora:050", "bitacora:057", "bitacora:059", "trampa:018"],
@@ -224,8 +226,8 @@ PARADAS: list[dict] = [
             {"cifra": "sondeos_cotejo", "esperado": 17109, "ficha": "bitácora 059"},
             {"cifra": "utiles", "esperado": 12, "ficha": "bitácora 057"},
             {
-                "cifra": "horas_caida",
-                "esperado": 3.75,
+                "cifra": "minutos_caida",
+                "esperado": 225,
                 "tolerancia": 0.01,
                 "ficha": "trampa 018",
             },
