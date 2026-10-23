@@ -2344,3 +2344,27 @@ buscar = '''    df = df.reindex(columns=CLAVES_RENFE)'''
 reemplazar = '''    pass'''
 detector = ["tests/test_ingest.py::test_renfe_tolera_trenes_de_valencia_sin_una_clave"]
 sondas = []
+
+[[mutante]]
+id = "196"
+nombre = "Renfe sin núcleo en toda la flota da 0 filas sin error"
+capa = "fuentes"
+# Trampa 003: completar `nucleo` a nulo como las demás claves vacía el filtro
+# sin error; el colector no suma `err` y `curar.json` no cuenta nada.
+fichero = "src/project/ingest/sources.py"
+buscar = '''        df = df[df["nucleo"] == nucleo].copy()'''
+reemplazar = '''        df = df[df.reindex(columns=["nucleo"])["nucleo"] == nucleo].copy()'''
+detector = ["tests/test_ingest.py::test_renfe_sin_nucleo_en_toda_la_flota_falla"]
+sondas = []
+
+[[mutante]]
+id = "197"
+nombre = "Renfe sin hora de llegada da TypeError"
+capa = "fuentes"
+# Issue #4: con la clave completada a nulo, `local_naive_iso_to_utc(nan)` lanza
+# TypeError, y un tren de València sin `horaLlegadaSigEst` tira el sondeo.
+fichero = "src/project/ingest/sources.py"
+buscar = '''        local_naive_iso_to_utc, na_action="ignore"'''
+reemplazar = '''        local_naive_iso_to_utc'''
+detector = ["tests/test_ingest.py::test_renfe_tolera_trenes_de_valencia_sin_una_clave"]
+sondas = []

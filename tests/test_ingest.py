@@ -204,6 +204,20 @@ def test_renfe_tolera_trenes_de_valencia_sin_una_clave(fix, clave, columna):
     assert df[columna].isna().all(), df[columna]
 
 
+def test_renfe_sin_nucleo_en_toda_la_flota_falla(fix):
+    """TRAMPA 003: sin `nucleo` no se sabe qué trenes son de València.
+
+    Todo tren tiene núcleo: si falta en toda la flota, cambió el esquema.
+    Completarla a nulo como las demás claves daría 0 filas sin error, y ni el
+    colector sumaría `err` ni `curar.json` contaría nada.
+    """
+    payload = copy.deepcopy(fix["renfe_cercanias"])
+    for tren in payload["trenes"]:
+        del tren["nucleo"]
+    with pytest.raises(KeyError, match="nucleo"):
+        parse("renfe_cercanias", payload, now_utc())
+
+
 @pytest.mark.parametrize("clave", ["trafico_estado", "trafico_intensidad"])
 def test_filas_hueco_de_trafico_se_descartan(fix, clave):
     """TRAMPA 005: 34 de las 446 filas de la capa 192 no son tramos.

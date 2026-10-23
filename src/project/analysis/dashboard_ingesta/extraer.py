@@ -43,7 +43,8 @@ def capturas(raw: Path, fuente: str, desde: str, hasta: str) -> list[pd.Timestam
 
     No es `instantes`, que cuenta sondeos (trampa 018). Para decir que el
     colector seguía vivo vale cualquier respuesta, también la de Renfe de
-    madrugada, sin trenes de València, o con un tren sin `porAvanc`.
+    madrugada, sin trenes de València (hasta el issue #4, también la que traía
+    un tren sin `porAvanc`, que no se podía parsear).
     """
     dias = pd.date_range(desde, hasta, freq="D").strftime("%Y-%m-%d")
     ficheros = [

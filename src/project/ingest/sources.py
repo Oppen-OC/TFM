@@ -333,7 +333,6 @@ CLAVES_RENFE = [
     "via",
     "latitud",
     "longitud",
-    "nucleo",
 ]
 
 
@@ -345,15 +344,16 @@ def parse_renfe(
     df = pd.DataFrame(trenes)
     if df.empty:
         return df
-    # Renfe omite la clave que no tiene valor: si ningún tren de la flota
-    # nacional la trae, la columna no existe (issue #4). Se completa a nulo para
-    # que todos los días tengan las mismas columnas, no con `_solo_existentes`.
-    # ponytail: el tipo no se fija; un día entero sin la clave en València la
-    # escribe como double. Si llega a pasar, esquema Arrow al escribir, como
-    # `prepare.ESQUEMAS`.
-    df = df.reindex(columns=CLAVES_RENFE)
     if nucleo:
         df = df[df["nucleo"] == nucleo].copy()
+    # Renfe omite la clave que no tiene valor, nunca la manda a null: si ningún
+    # tren de la flota la trae, la columna no existe (issue #4). Se completa a
+    # nulo para que todos los días tengan las mismas columnas. `nucleo` no:
+    # completada, el filtro daría 0 filas sin error (trampa 003).
+    # ponytail: el tipo no se fija; un día entero sin la clave en València la
+    # escribe como null o double. Si importa, esquema Arrow al escribir, como
+    # `prepare.ESQUEMAS`.
+    df = df.reindex(columns=CLAVES_RENFE)
     df["ts_utc"] = (
         local_naive_iso_to_utc(payload.get("fechaActualizacion"))
         if isinstance(payload, dict)

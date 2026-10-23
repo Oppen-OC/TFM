@@ -161,13 +161,15 @@ falla en la primera línea.
 `horaLlegadaSigEst`, `codEstOrig`, `codEstDest`, `porAvanc`, `latitud`,
 `longitud`, `nucleo`, `accesible`, `via`, `nextVia`.
 
-Dos matices que no estaban documentados en ningún sitio:
+Tres matices que no estaban documentados en ningún sitio:
 
 - **`tripId` es estable dentro del viaje.** Aquí sí tienes identidad de vehículo
   gratis, al contrario que en la EMT.
-- **`porAvanc` no es un flag binario.** Toma valores `"A"`, `"E"`, `null` y
+- **`porAvanc` no es un flag binario.** Toma valores `"A"`, `"E"` y
   también numéricos como `"67.0"`, `"25.0"`, `"99.0"`: parece el porcentaje de
   avance entre estaciones. Habrá que caracterizarlo con datos de varios días.
+- **Una clave sin valor no llega a `null`: falta.** Renfe la omite del tren.
+  Si ningún tren de la flota la trae, la columna no existe (issue #4).
 
 **Ventaja decisiva:** `retrasoMin` **ya viene calculado**. No tienes que hacer
 map-matching ni reconstruir horarios. Es la etiqueta servida en bandeja.
