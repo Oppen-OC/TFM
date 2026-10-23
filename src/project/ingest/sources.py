@@ -135,7 +135,7 @@ class Source:
     # Edad de `ultimo_ok` a partir de la cual `collect --status` da la fuente
     # por caída. No son N periodos: es el silencio legítimo más largo medido del
     # 15/08 al 20/10 (la fuente contesta, pero sin nada nuevo), con margen para
-    # un fallo aislado y su retroceso.
+    # un fallo aislado y su retroceso. `analysis/medir_silencios`, bitácora 061.
     silencio_max_s: int
     tags: tuple[str, ...] = ()
     # Capas cuya geometría no cambia nunca: se descarga una vez a reference/ y
