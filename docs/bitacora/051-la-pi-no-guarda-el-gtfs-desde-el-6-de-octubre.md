@@ -103,11 +103,23 @@ Abierto:
   fase 2).
 - **Después de cerrar la prueba** (pasado el 20/10 a las 02:00 UTC):
   redesplegar `raspberry` en la Pi y comprobar que aparece
-  `source=gtfs_emt` y una línea `gtfs:` en el journal.
+  `source=gtfs_emt` y una línea `gtfs:` en el journal. *Hecho el 23/10.*
+  - A las 17:48 UTC, `raspberry` 77a3122 guardó `google_transit2026-10-21.zip`
+    (sha1 `e876d1ce85b5`, 4.486.445 bytes, `last_modified` del 22/10 a las
+    19:36) en `/srv/tfm-sd/raw/source=gtfs_emt/`, con su línea en
+    `capturas.ndjson`.
+  - Tras reinstalar con 12875c7 y reiniciar, las líneas `ESTADO` del journal
+    dan `gtfs_emt: 0ok/1dup/0err`: el colector vuelve a bajar esa versión y no
+    la duplica. Las versiones del 06/10 al 23/10 siguen perdidas.
 - **Que el latido cuente las seis fuentes.** `--status` y `ESTADO` solo listan
   las que el colector conoce: uno que no tiene la captura no puede echarla en
   falta. Falta una comprobación de que el código desplegado coincide con la
-  rama.
+  rama. *En parte, el 23/10:*
+  - Desde 12875c7 (`raspberry`) y aae60e8 (`develop`), cada fuente que el
+    colector corre sale en el latido desde el arranque (issue #1).
+  - Que el código desplegado coincide con la rama se comprobó a mano con
+    `git hash-object` sobre `/opt/tfm/demo/`, contra los blobs de la rama.
+  - Sigue sin haber nada que avise de una captura que el colector no tiene.
 
 ## Para la memoria
 
