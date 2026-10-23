@@ -14,6 +14,7 @@ Sin dependencias nuevas: frontmatter `clave: valor` plano, parseado con regex.
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 from _md import frontmatter
@@ -25,9 +26,11 @@ EXAMENES = RAIZ / ".claude" / "examenes"
 README = EXAMENES / "README.md"
 DEBILIDADES = EXAMENES / "debilidades.md"
 COMANDO = RAIZ / ".claude" / "commands" / "examen.md"
+CLAUDE_MD = RAIZ / "CLAUDE.md"
+LOCAL = RAIZ / "CLAUDE.local.md"
 
 CAMPOS = ("id", "tema", "fecha", "fuentes", "estado", "ronda", "nota")
-ESTADOS = {"en-blanco", "contestado", "corregido", "cerrado"}
+ESTADOS = {"en-blanco", "contestado", "corregido", "cerrado", "saltado"}
 VEREDICTOS = {"correcta", "a-medias", "fallada", "—"}
 COLUMNAS_DEBILIDADES = (
     "concepto",
@@ -155,6 +158,39 @@ def test_los_otros_comandos_apuntan_de_vuelta(comando: str) -> None:
     ruta = RAIZ / ".claude" / "commands" / comando
     assert "/examen" in ruta.read_text(encoding="utf-8"), (
         f"{comando} no menciona /examen"
+    )
+
+
+# --- Modo puerta ----------------------------------------------------------
+
+
+def test_la_puerta_tiene_su_seccion_y_claude_md_la_cita() -> None:
+    """Sin la línea en CLAUDE.md la puerta queda fuera del camino, como /examen."""
+    assert "## Modo puerta" in README.read_text(encoding="utf-8"), (
+        "README.md no tiene la sección *Modo puerta*"
+    )
+    assert "Modo puerta" in CLAUDE_MD.read_text(encoding="utf-8"), (
+        "CLAUDE.md no cita la sección *Modo puerta*"
+    )
+
+
+def test_la_frase_de_salto_no_llega_al_repo_publico() -> None:
+    """El repo es público: la frase vive en CLAUDE.local.md y en nada que se suba."""
+    if not LOCAL.is_file():
+        pytest.skip("sin CLAUDE.local.md en esta máquina")
+    m = re.search(r"«(.+?)»", LOCAL.read_text(encoding="utf-8"))
+    assert m, "CLAUDE.local.md no lleva la frase entre «»"
+    # --untracked mira también lo no añadido, salvo lo ignorado: si
+    # CLAUDE.local.md sale de .gitignore, aparece aquí.
+    r = subprocess.run(
+        ["git", "grep", "-l", "--untracked", "-F", "-e", m.group(1)],
+        cwd=RAIZ,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    assert r.returncode == 1, (
+        f"la frase de salto está en: {r.stdout.split() or r.stderr.strip()}"
     )
 
 

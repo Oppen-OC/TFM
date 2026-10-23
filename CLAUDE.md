@@ -285,11 +285,15 @@ lanzar API y UI en terminales separadas.
 1. Entiende el objetivo **y complétalo**: el encargo llega corto y las
    restricciones se callan (ver *Encargos incompletos*).
 2. **Presenta un plan escrito y espera aprobación** antes de una tarea multipaso.
-   También en las tareas que parezcan simples.
+   También en las tareas que parezcan simples. **Antes del plan, la puerta:** una
+   pregunta de comprensión con las reglas de `.claude/examenes/README.md`,
+   *Modo puerta*. Los subagentes no la aplican.
 3. Ejecútalo paso a paso, revisa la salida y refuerza lo débil.
 4. Nunca priorices velocidad sobre calidad.
 5. Si por el camino aparece un hallazgo de los que lista la bitácora, ofrécelo
    antes de cerrar la tarea. Lo que no se ficha el día que pasa, se pierde.
+6. Al cerrar una rama, ofrece `/examen <ruta>` sobre los módulos de `src/` que
+   toca el diff.
 
 ## Encargos incompletos
 

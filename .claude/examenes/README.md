@@ -48,7 +48,7 @@ id: 001                  # correlativo, tres dígitos, coincide con el nombre
 tema: tracking           # tema, ruta o id de ficha que originó la tanda
 fecha: 2026-09-04        # YYYY-MM-DD de generación
 fuentes: src/project/tracking.py, trampas/007, trampas/008
-estado: en-blanco        # en-blanco | contestado | corregido | cerrado
+estado: en-blanco        # en-blanco | contestado | corregido | cerrado | saltado
 ronda: 1                 # 1 o 2; no hay tercera
 nota: —                  # correctas/total tras la última corrección
 ```
@@ -120,6 +120,44 @@ material de trabajo; el registro es lo que dirige la siguiente sesión.
 `dominado` = 2 aciertos limpios en **sesiones distintas** y sobre **preguntas
 distintas** del mismo concepto. Un acierto justo después de leer la corrección no
 cuenta: mide memoria de cuarenta segundos.
+
+## Modo puerta
+
+La puerta lleva el examen al momento de implementar. Existe porque `/examen` a
+demanda pasó cinco semanas sin usarse: lo que queda fuera del camino no se hace.
+
+**Cuándo.** En toda tarea con plan que aprobar (`CLAUDE.md`, *Comportamiento del
+agente*), en la sesión de diseño: después de leer el código y **antes de explicar
+nada**. En brainstorming, tras explorar el contexto y antes de la primera
+pregunta de aclaración. Lo que el agente cuente antes filtra la respuesta.
+
+**Qué.** Una sola pregunta, sobre la restricción que más arriesga ese cambio:
+una trampa, una frontera, un ADR. Pasa los dos filtros de *Qué se pregunta y qué
+no*. Si `debilidades.md` tiene un concepto `flojo` que el cambio toca, va ese,
+con pregunta distinta de la fallada.
+
+**Rondas.** Las del ciclo de vida, y después se sigue: la puerta bloquea la
+ronda, no la tarea. Tras la respuesta completa no se vuelve a preguntar; mediría
+eco.
+
+**Registro.** Pregunta y respuesta van por el chat. El agente archiva la puerta
+como examen de una pregunta, `NNN-puerta-<tema>.md`, con la respuesta transcrita
+y el veredicto. Sin ese fichero `debilidades.md` tendría conceptos huérfanos y la
+revisión no tendría qué contar.
+
+**Salto.** Solo con la frase literal de `CLAUDE.local.md`, que no se versiona
+porque el repo es público. El agente lee ese fichero para comparar; nunca ofrece
+el salto ni recuerda la frase. Se archiva con `estado: saltado` y sin respuesta.
+Sin frase saltan solo las urgencias de captura —colector caído, fuente rota,
+`/incident-response`—, porque el dato que no se captura no vuelve. Los subagentes
+no aplican la puerta.
+
+**Revisión: 2026-11-06**, contando los `*-puerta-*.md`:
+
+1. tres `cerrado` seguidos con `ronda: 1` ⇒ las preguntas son blandas: se
+   endurecen;
+2. más de la mitad `saltado` ⇒ pesa demasiado: se rediseña, no se endurece;
+3. ninguna destapó nada —ni concepto `flojo` ni clave equivocada— ⇒ se retira.
 
 ## Autoridad de la clave
 
