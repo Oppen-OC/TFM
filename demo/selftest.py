@@ -225,7 +225,9 @@ with tempfile.TemporaryDirectory() as d:
         rechazado = True
     check("gtfs: lo que no es un GTFS no se guarda",
           rechazado and len(list(raiz.rglob("*.zip"))) == 2)
-    lineas = [json.loads(x) for f in raiz.rglob("capturas.ndjson")
+    # Ordenado: `rglob` sigue el orden del sistema de ficheros, que en el ext4
+    # de la Pi saca el día 07 antes que el 06.
+    lineas = [json.loads(x) for f in sorted(raiz.rglob("capturas.ndjson"))
               for x in f.read_text(encoding="utf-8").splitlines()]
     check("gtfs: cada versión guardada deja su línea en capturas.ndjson",
           len(lineas) == 2 and lineas[0]["last_modified"] == "2026-10-05T19:36:23",
