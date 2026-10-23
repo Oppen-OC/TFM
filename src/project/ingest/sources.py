@@ -121,17 +121,35 @@ def resolver_convencion(
 # --------------------------------------------------------------------------- #
 # Definición de fuentes
 # --------------------------------------------------------------------------- #
+# Horas locales sin Cercanías en València: del 15/08 al 20/10 el último tren del
+# núcleo 40 se vio como pronto a las 23:44 y el primero como tarde a las 05:48.
+MADRUGADA = range(0, 7)
+
+
 @dataclass(frozen=True)
 class Source:
     url: str
     period_s: int
     notes: str
     parser: Callable[[dict, pd.Timestamp], pd.DataFrame]
+    # Edad de `ultimo_ok` a partir de la cual `collect --status` da la fuente
+    # por caída. No son N periodos: es el silencio legítimo más largo medido del
+    # 15/08 al 20/10 (la fuente contesta, pero sin nada nuevo), con margen para
+    # un fallo aislado y su retroceso.
+    silencio_max_s: int
     tags: tuple[str, ...] = ()
     # Capas cuya geometría no cambia nunca: se descarga una vez a reference/ y
     # a partir de ahí se piden sin geometría. En la capa 192 eso es el 90 % del
     # payload, y era el 74 % del disco de toda la captura.
     geometria_estatica: bool = False
+    # El de `MADRUGADA`, si la fuente calla entonces por diseño.
+    silencio_madrugada_s: int | None = None
+
+    def silencio_tolerado(self, ahora: pd.Timestamp) -> int:
+        """Segundos sin un sondeo bueno que son normales en `ahora`."""
+        if self.silencio_madrugada_s and ahora.tz_convert(TZ_LOCAL).hour in MADRUGADA:
+            return self.silencio_madrugada_s
+        return self.silencio_max_s
 
     @property
     def url_sin_geometria(self) -> str:
@@ -344,6 +362,8 @@ SOURCES: dict[str, Source] = {
         period_s=30,
         notes="Posición GPS de la flota EMT. Refresco medido ~29 s. Sin id de vehículo.",
         parser=parse_emt,
+        # Cada día, hacia las 05 h locales, sirve el mismo sondeo hasta 17 min.
+        silencio_max_s=30 * 60,
         tags=("tiempo_real", "nucleo"),
     ),
     "trafico_estado": Source(
@@ -356,6 +376,8 @@ SOURCES: dict[str, Source] = {
         period_s=300,
         notes="Estado de congestión por tramo (410 útiles). Sin timestamp propio. Casi estático en agosto; con perfil de punta en periodo lectivo.",
         parser=parse_trafico_estado,
+        # Nunca repite sondeo; un fallo aislado, con su retroceso, son 15 min.
+        silencio_max_s=30 * 60,
         geometria_estatica=True,
         tags=("tiempo_real", "nucleo"),
     ),
@@ -365,6 +387,8 @@ SOURCES: dict[str, Source] = {
         period_s=900,
         notes="Intensidad por tramo (354 con lectura). lectura=-1 = sin dato. Prácticamente estática.",
         parser=parse_trafico_intensidad,
+        # Nunca repite sondeo; un fallo aislado, con su retroceso, son 45 min.
+        silencio_max_s=60 * 60,
         geometria_estatica=True,
         tags=("tiempo_real",),
     ),
@@ -373,6 +397,8 @@ SOURCES: dict[str, Source] = {
         period_s=300,
         notes="273 estaciones. La fuente sólo refresca cada ~10 min: no pollear a 30 s.",
         parser=parse_valenbisi,
+        # Repite sondeo hasta 10 min; un fallo aislado, con su retroceso, 15.
+        silencio_max_s=30 * 60,
         tags=("tiempo_real",),
     ),
     "renfe_cercanias": Source(
@@ -380,6 +406,10 @@ SOURCES: dict[str, Source] = {
         period_s=30,
         notes="Flota nacional; filtrar nucleo=='40' para València. Trae retrasoMin YA calculado.",
         parser=parse_renfe,
+        # Sin trenes del núcleo 40, `parse_renfe` da vacío: de día, hasta 20 min;
+        # de madrugada, hasta 5 h 59 min, y la ventana acaba a las 7 h.
+        silencio_max_s=30 * 60,
+        silencio_madrugada_s=8 * 3600,
         tags=("tiempo_real", "etiqueta_gratis"),
     ),
 }

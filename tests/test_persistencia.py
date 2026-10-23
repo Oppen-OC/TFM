@@ -433,3 +433,116 @@ def test_el_colector_guarda_el_gtfs_que_anuncia_vlci(tmp_path, colector):
     (guardado,) = list((tmp_path / "raw").rglob("*.zip"))
     assert guardado.read_bytes() == gtfs_zip
     assert colector.STATS[sources.GTFS_FUENTE]["ok"] == 1
+
+
+# --------------------------------------------------------------------------- #
+# Latido: lo que dice `collect --status` (issue #1)
+# --------------------------------------------------------------------------- #
+DIA = pd.Timestamp("2026-10-21T08:00:00Z")  # 10:00 en València
+NOCHE = pd.Timestamp("2026-10-21T01:00:00Z")  # 03:00
+
+
+def _status(colector, monkeypatch, root, ahora, latido_hace_s=30, **ultimo_ok):
+    """Escribe el latido con el propio colector y da el código de `--status` en `ahora`.
+
+    Cada fuente tuvo su último sondeo bueno hace 10 s, salvo las de `ultimo_ok`.
+    El GTFS, ninguno desde el arranque de hace un día: es lo normal, la EMT ha
+    pasado hasta 32 días sin publicar versión nueva.
+    """
+    monkeypatch.setattr(colector, "INICIO", ahora - pd.Timedelta(days=1))
+    for k in sources.SOURCES:
+        colector.STATS[k].update(ok=1, ultimo_ok=ahora - pd.Timedelta(seconds=10))
+    colector.STATS[sources.GTFS_FUENTE]["dup"] = 4
+    for k, t in ultimo_ok.items():
+        colector.STATS[k]["ultimo_ok"] = t
+    monkeypatch.setattr(
+        colector, "now_utc", lambda: ahora - pd.Timedelta(seconds=latido_hace_s)
+    )
+    colector.escribir_latido(root)
+    monkeypatch.setattr(colector, "now_utc", lambda: ahora)
+    return colector.mostrar_estado(root)
+
+
+def test_status_no_dice_vivo_con_el_latido_al_dia_y_una_fuente_callada(
+    tmp_path, colector, monkeypatch, capsys
+):
+    """Del 10 al 14/09 las cuatro capas del geoportal pasaron 103,7 h sin un
+    sondeo bueno y `--status` decía VIVO: miraba solo el latido (bitácora 021).
+    """
+    codigo = _status(
+        colector, monkeypatch, tmp_path, DIA, emt_buses=DIA - pd.Timedelta(hours=5)
+    )
+
+    salida = capsys.readouterr().out
+    assert codigo == 3
+    assert "VIVO" not in salida
+    assert "emt_buses" in salida.split("\n")[1]  # la línea del diagnóstico
+
+
+@pytest.mark.parametrize(
+    ("ahora", "esperado"),
+    [(NOCHE, 0), (DIA, 3)],
+    ids=["a-las-3-vivo", "a-las-10-caida"],
+)
+def test_renfe_callada_de_madrugada_no_es_una_caida(
+    tmp_path, colector, monkeypatch, ahora, esperado
+):
+    """Mismo silencio de 3 h, a dos horas del día.
+
+    De 23:44 a 05:48 no circula ningún tren del núcleo 40: `parse_renfe` da
+    vacío y el `ultimo_ok` de Renfe envejece hasta seis horas cada noche. Una
+    tolerancia de N periodos avisaría todas las noches; una de seis horas
+    taparía una caída de día.
+    """
+    codigo = _status(
+        colector,
+        monkeypatch,
+        tmp_path,
+        ahora,
+        renfe_cercanias=ahora - pd.Timedelta(hours=3),
+    )
+
+    assert codigo == esperado
+
+
+def test_el_colector_parado_no_se_tapa_con_una_fuente_callada(
+    tmp_path, colector, monkeypatch
+):
+    """Sin latido el diagnóstico es PARADO aunque además calle una fuente: lo
+    primero que hay que saber es que el proceso no corre."""
+    codigo = _status(
+        colector,
+        monkeypatch,
+        tmp_path,
+        DIA,
+        latido_hace_s=600,
+        emt_buses=DIA - pd.Timedelta(hours=5),
+    )
+
+    assert codigo == 2
+
+
+def test_la_fuente_que_arranca_devolviendo_errores_sale_caida(
+    tmp_path, colector, monkeypatch
+):
+    """Un `{"error": …}` del geoportal no mueve ningún contador (trampa 018).
+
+    Si el colector arranca con el geoportal así, la fuente tiene que estar en el
+    latido desde el primer sondeo y contar callada desde el arranque; si no, no
+    hay nada que juzgar y `--status` dice VIVO.
+    """
+    monkeypatch.setattr(colector, "INICIO", collect.now_utc() - pd.Timedelta(hours=1))
+
+    def responder(request: httpx.Request) -> httpx.Response:
+        colector.PARAR.set()  # una sola vuelta del bucle
+        error = {"code": 400, "message": "Failed to execute query."}
+        return httpx.Response(200, json={"error": error})
+
+    async def una_vuelta() -> None:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as c:
+            await colector.sondear(c, "emt_buses", tmp_path)
+
+    asyncio.run(una_vuelta())
+    colector.escribir_latido(tmp_path)
+
+    assert colector.mostrar_estado(tmp_path) == 3

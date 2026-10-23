@@ -2221,3 +2221,86 @@ buscar = '''        ("renfe_cercanias", "Renfe · respuestas guardadas al día",
 reemplazar = '''        ("renfe_cercanias", "Renfe · respuestas guardadas al día", instantes),'''
 detector = ["tests/test_dashboard.py::test_el_latido_del_colector_cuenta_toda_respuesta_guardada"]
 sondas = []
+
+[[mutante]]
+id = "187"
+nombre = "--status decide solo por el latido"
+capa = "persistencia"
+# Issue #1: del 10 al 14/09 cuatro fuentes pasaron 103,7 h sin un sondeo bueno
+# y `--status` decía VIVO (bitácora 021).
+fichero = "src/project/ingest/collect.py"
+buscar = '''    elif caidas:'''
+reemplazar = '''    elif False:'''
+detector = [
+    "tests/test_persistencia.py::test_status_no_dice_vivo_con_el_latido_al_dia_y_una_fuente_callada",
+    "tests/test_persistencia.py::test_renfe_callada_de_madrugada_no_es_una_caida",
+    "tests/test_persistencia.py::test_la_fuente_que_arranca_devolviendo_errores_sale_caida",
+]
+sondas = []
+
+[[mutante]]
+id = "188"
+nombre = "Renfe sin tregua de madrugada"
+capa = "persistencia"
+# Sin trenes del núcleo 40 el `ultimo_ok` de Renfe envejece hasta 6 h cada
+# noche: con la tolerancia de día, `--status` avisaría todas las madrugadas.
+fichero = "src/project/ingest/sources.py"
+buscar = '''        if self.silencio_madrugada_s and ahora.tz_convert(TZ_LOCAL).hour in MADRUGADA:'''
+reemplazar = '''        if False:'''
+detector = ["tests/test_persistencia.py::test_renfe_callada_de_madrugada_no_es_una_caida"]
+sondas = []
+
+[[mutante]]
+id = "189"
+nombre = "la tolerancia de madrugada de Renfe vale todo el día"
+capa = "persistencia"
+# Lo ingenuo para no avisar de noche: 8 h a Renfe a cualquier hora. Tapa el
+# 28/08, seis horas sin crudo de Renfe a media mañana.
+fichero = "src/project/ingest/sources.py"
+buscar = '''        if self.silencio_madrugada_s and ahora.tz_convert(TZ_LOCAL).hour in MADRUGADA:'''
+reemplazar = '''        if self.silencio_madrugada_s:'''
+detector = ["tests/test_persistencia.py::test_renfe_callada_de_madrugada_no_es_una_caida"]
+sondas = []
+
+[[mutante]]
+id = "190"
+nombre = "una fuente caída tapa al colector parado"
+capa = "persistencia"
+# Con el proceso parado, todas las fuentes envejecen: el 3 se impondría al 2 y
+# quien lea el código de salida buscaría una fuente rota en vez de reiniciar.
+fichero = "src/project/ingest/collect.py"
+buscar = '''    if edad >= 180:
+        salud, codigo = f"PARADO (sin latido desde hace {edad / 60:.0f} min)", 2
+    elif caidas:
+        salud, codigo = f"FUENTE CAÍDA: {', '.join(caidas)}", 3'''
+reemplazar = '''    if caidas:
+        salud, codigo = f"FUENTE CAÍDA: {', '.join(caidas)}", 3
+    elif edad >= 180:
+        salud, codigo = f"PARADO (sin latido desde hace {edad / 60:.0f} min)", 2'''
+detector = ["tests/test_persistencia.py::test_el_colector_parado_no_se_tapa_con_una_fuente_callada"]
+sondas = []
+
+[[mutante]]
+id = "191"
+nombre = "la fuente que no ha dado nada no sale en el latido"
+capa = "persistencia"
+# Un `{"error"}` no mueve ningún contador (trampa 018): arrancado con el
+# geoportal así, la fuente no aparece y `--status` no tiene qué juzgar.
+fichero = "src/project/ingest/collect.py"
+buscar = '''    STATS[key]
+    fallos = 0'''
+reemplazar = '''    fallos = 0'''
+detector = ["tests/test_persistencia.py::test_la_fuente_que_arranca_devolviendo_errores_sale_caida"]
+sondas = []
+
+[[mutante]]
+id = "192"
+nombre = "sin ningún sondeo bueno la fuente no cuenta como callada"
+capa = "persistencia"
+# Sin `ultimo_ok` lo natural es no decir nada; pero esa fuente lleva callada
+# desde el arranque, que es justo el caso peor.
+fichero = "src/project/ingest/collect.py"
+buscar = '''v["ultimo_ok"] or e["arrancado_utc"]'''
+reemplazar = '''v["ultimo_ok"] or ahora'''
+detector = ["tests/test_persistencia.py::test_la_fuente_que_arranca_devolviendo_errores_sale_caida"]
+sondas = []

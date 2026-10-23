@@ -21,7 +21,16 @@ Diseño deliberado:
    últimos minutos, nunca el crudo.
 
 4. Latido en `<out>/_status.json` cada minuto. Corriendo desapegado del
-   terminal es la única forma de saber si sigue vivo sin adivinar.
+   terminal es la única forma de saber si sigue vivo sin adivinar. Que lata no
+   basta: del 10 al 14/09 cuatro fuentes pasaron 103,7 h sin un sondeo bueno con
+   el colector vivo (bitácora 021). `--status` juzga cada fuente por la edad de
+   su último sondeo bueno contra su `silencio_max_s`, y sale con
+     0  vivo, y todas las fuentes dentro de su tolerancia;
+     1  no hay `_status.json`;
+     2  parado: el latido tiene más de 3 min, caiga o no alguna fuente;
+     3  late, pero alguna fuente lleva más de su tolerancia sin un sondeo bueno.
+   El GTFS no se juzga: su último ok es la última versión nueva, y la EMT ha
+   pasado hasta 32 días sin publicar.
 
 5. El GTFS estático se guarda también, cada versión nueva una vez, porque
    tampoco tiene histórico: la EMT lo republica casi a diario (bitácora 042).
@@ -171,11 +180,31 @@ def mostrar_estado(root: Path) -> int:
         print(f"No hay {p}. ¿Has lanzado el colector con --out {root}?")
         return 1
     e = json.loads(p.read_text(encoding="utf-8"))
-    vivo = pd.Timestamp(e["vivo_utc"])
-    edad = (pd.Timestamp.now(tz="UTC") - vivo).total_seconds()
-    salud = (
-        "VIVO" if edad < 180 else f"PARADO (sin latido desde hace {edad / 60:.0f} min)"
-    )
+    ahora = now_utc()
+    edad = (ahora - pd.Timestamp(e["vivo_utc"])).total_seconds()
+    filas, caidas = [], []
+    for k, v in e["fuentes"].items():
+        # Sin ningún sondeo bueno, la fuente lleva callada desde el arranque.
+        s = (ahora - pd.Timestamp(v["ultimo_ok"] or e["arrancado_utc"])).total_seconds()
+        if k not in SOURCES:
+            marca = "  (no se juzga)"
+        elif s > SOURCES[k].silencio_tolerado(ahora):
+            marca = "  CAÍDA"
+            caidas.append(k)
+        else:
+            marca = ""
+        hace = f"{s / 60:.0f} min" if s < 5400 else f"{s / 3600:.1f} h"
+        filas.append(
+            f"  {k:22} {v['ok']:>10,} {v['filas']:>12,} {v['dup']:>7} {v['err']:>6}"
+            f"  hace {hace}{marca}"
+        )
+
+    if edad >= 180:
+        salud, codigo = f"PARADO (sin latido desde hace {edad / 60:.0f} min)", 2
+    elif caidas:
+        salud, codigo = f"FUENTE CAÍDA: {', '.join(caidas)}", 3
+    else:
+        salud, codigo = "VIVO", 0
     print(f"\n  Estado      : {salud}")
     print(f"  Último latido: {e['vivo_local'][:19]}")
     print(f"  En marcha   : {e['horas_en_marcha']} h")
@@ -183,13 +212,8 @@ def mostrar_estado(root: Path) -> int:
     print(
         f"  {'fuente':22} {'snapshots':>10} {'filas':>12} {'dup':>7} {'err':>6}  último ok"
     )
-    for k, v in e["fuentes"].items():
-        ult = (v["ultimo_ok"] or "")[11:19]
-        print(
-            f"  {k:22} {v['ok']:>10,} {v['filas']:>12,} {v['dup']:>7} {v['err']:>6}  {ult}"
-        )
-    print()
-    return 0 if edad < 180 else 2
+    print("\n".join(filas) + "\n")
+    return codigo
 
 
 async def asegurar_geometria(client: httpx.AsyncClient, key: str, root: Path) -> None:
@@ -217,6 +241,9 @@ async def asegurar_geometria(client: httpx.AsyncClient, key: str, root: Path) ->
 async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
     src = SOURCES[key]
     ULTIMO_FLUSH.setdefault(key, now_utc())
+    # En el latido desde ya: un `{"error"}` no mueve ningún contador (trampa
+    # 018), y una fuente que no aparece no la puede juzgar `--status`.
+    STATS[key]
     fallos = 0
     while not PARAR.is_set():
         ts = now_utc()
