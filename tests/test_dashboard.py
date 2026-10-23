@@ -221,8 +221,8 @@ def test_el_latido_del_colector_cuenta_toda_respuesta_guardada(
     """P5, bitácora 021: Renfe prueba que el colector seguía vivo con las capas
     caídas, en la serie y en su hueco más largo. De madrugada no hay trenes de
     València, y a veces la flota nacional trae un tren sin `porAvanc`: `parse`
-    no saca filas o falla, pero el colector respondió. Contar solo sondeos
-    (trampa 018) pinta 5 h sin colector, o tumba la foto."""
+    no saca filas (hasta el issue #4, fallaba), pero el colector respondió.
+    Contar solo sondeos (trampa 018) pinta 5 h sin colector."""
     monkeypatch.setattr(foto, "CAPAS_CAIDAS", ("2026-09-12", "2026-09-12"))
     monkeypatch.setattr(
         foto.medir_fuentes,

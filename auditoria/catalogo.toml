@@ -2191,7 +2191,8 @@ id = "184"
 nombre = "el latido del colector cuenta solo sondeos"
 capa = "fuentes"
 # P5 del dashboard: con `instantes`, Renfe de madrugada no tiene trenes de
-# València y el colector parece parado 5 h; un tren sin `porAvanc` la tumba.
+# València y el colector parece parado 5 h. Hasta el issue #4, un tren sin
+# `porAvanc` la tumbaba.
 fichero = "src/project/analysis/dashboard_ingesta/extraer.py"
 buscar = '''    return sorted(t for f in ficheros if f.exists() for t, _ in read_raw(f))'''
 reemplazar = '''    return instantes(raw, fuente, desde, hasta)'''
@@ -2214,8 +2215,9 @@ sondas = []
 id = "186"
 nombre = "la serie de Renfe en P5 cuenta solo sondeos"
 capa = "fuentes"
-# La serie diaria de Renfe es el latido del colector. Con `instantes`, un tren
-# sin `porAvanc` tumba la foto entera con KeyError.
+# La serie diaria de Renfe es el latido del colector. Con `instantes`, cuenta
+# solo las respuestas con trenes de València (hasta el issue #4, un tren sin
+# `porAvanc` tumbaba la foto entera con KeyError).
 fichero = "src/project/analysis/dashboard_ingesta/foto.py"
 buscar = '''        ("renfe_cercanias", "Renfe · respuestas guardadas al día", extraer.capturas),'''
 reemplazar = '''        ("renfe_cercanias", "Renfe · respuestas guardadas al día", instantes),'''
@@ -2329,4 +2331,16 @@ buscar = '''        # Cada día, hacia las 05 h locales, sirve el mismo sondeo h
 reemplazar = '''        # Cada día, hacia las 05 h locales, sirve el mismo sondeo hasta 17 min.
         silencio_max_s=10 * 30,'''
 detector = ["tests/test_persistencia.py::test_el_silencio_legitimo_mas_largo_medido_no_es_una_caida"]
+sondas = []
+
+[[mutante]]
+id = "195"
+nombre = "Renfe sin una clave en toda la flota tumba el sondeo"
+capa = "fuentes"
+# Issue #4: Renfe omite la clave sin valor. Sin completar las columnas, un
+# tren de València sin `porAvanc` da KeyError y `reprocesar` tira el sondeo.
+fichero = "src/project/ingest/sources.py"
+buscar = '''    df = df.reindex(columns=CLAVES_RENFE)'''
+reemplazar = '''    pass'''
+detector = ["tests/test_ingest.py::test_renfe_tolera_trenes_de_valencia_sin_una_clave"]
 sondas = []

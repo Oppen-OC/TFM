@@ -7,6 +7,7 @@ vivía en `demo/selftest.py` con un `check()` casero; al portar `demo/` a
 
 from __future__ import annotations
 
+import copy
 import json
 
 import pandas as pd
@@ -163,6 +164,44 @@ def test_renfe_ts_utc_es_la_fecha_de_actualizacion_y_no_la_captura(fix):
     df = parse("renfe_cercanias", fix["renfe_cercanias"], captura)
     assert (df["ts_utc"] == pd.Timestamp("2026-08-15T19:11:56Z")).all(), df["ts_utc"]
     assert (df["ts_ingest_utc"] == captura).all()
+
+
+@pytest.mark.parametrize(
+    ("clave", "columna"),
+    [
+        ("tripId", "tripId"),
+        ("codTren", "codTren"),
+        ("codLinea", "codLinea"),
+        ("retrasoMin", "retraso_min"),
+        ("codEstAct", "codEstAct"),
+        ("codEstSig", "codEstSig"),
+        ("horaLlegadaSigEst", "eta_sig_est_utc"),
+        ("codEstOrig", "codEstOrig"),
+        ("codEstDest", "codEstDest"),
+        ("porAvanc", "porAvanc"),
+        ("via", "via"),
+        ("latitud", "lat"),
+        ("longitud", "lon"),
+    ],
+)
+def test_renfe_tolera_trenes_de_valencia_sin_una_clave(fix, clave, columna):
+    """Issue #4: Renfe omite la clave que no tiene valor, no la manda a null.
+
+    La columna solo existe si algún tren de la flota nacional la trae; el filtro
+    del núcleo quita filas, no columnas. Los 254 errores de `curar.json` hasta el
+    18/10 fueron `codEstDest`, `porAvanc` y `codEstOrig`, de madrugada y sin
+    trenes de València. Con trenes de València, `reprocesar` cuenta el error y
+    tira el sondeo entero sin que nada dé la cara. Un payload sin trenes del 40
+    pasaría con un parche que devolviera vacío: aquí los hay.
+    """
+    completo = parse("renfe_cercanias", fix["renfe_cercanias"], now_utc())
+    payload = copy.deepcopy(fix["renfe_cercanias"])
+    for tren in payload["trenes"]:
+        del tren[clave]
+    df = parse("renfe_cercanias", payload, now_utc())
+    assert len(df) == 2, f"filas={len(df)}"
+    assert list(df.columns) == list(completo.columns)
+    assert df[columna].isna().all(), df[columna]
 
 
 @pytest.mark.parametrize("clave", ["trafico_estado", "trafico_intensidad"])
