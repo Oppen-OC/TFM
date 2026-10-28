@@ -19,9 +19,9 @@ los contaba en `metrics/curar.json` y seguía; nadie lo vio hasta que
 
 ## Causa
 
-Un tren sin valor en una clave no la trae a `null`: la omite. En 4 días de
-crudo, 0 nulos explícitos en 1.591.665 trenes, y a 10.303 de los 106.551 de
-València les falta `porAvanc` (commit 2dcb177). `pd.DataFrame(trenes)` crea la
+Un tren sin valor en una clave no la trae a `null`: la omite. En todo el
+crudo, 0 nulos explícitos en 34.721.435 trenes, y a 239.474 de los 2.237.180
+de València (10,7 %) les falta `porAvanc` (bitácora 062). `pd.DataFrame(trenes)` crea la
 columna si algún tren de la flota nacional la trae; si no la trae ninguno, no
 existe, y la lista fija de columnas de salida falla. Pasa cuando la flota es de
 uno o dos trenes. El filtro de núcleo quita filas, no columnas.
