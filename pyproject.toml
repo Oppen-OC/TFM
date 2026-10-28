@@ -16,6 +16,7 @@ dependencies = [
     "requests>=2.32.0",
     "scikit-learn>=1.7.2",
     "scipy>=1.15.3",
+    "shap>=0.49.1",
     "streamlit>=1.40.0",
     "uvicorn>=0.51.0",
     "xgboost>=3.2.0",
@@ -39,6 +40,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/project"]
+
+[tool.pytest.ini_options]
+# shap 0.51 llama al importarse a una API de matplotlib que avisa de su retirada.
+filterwarnings = ["ignore::PendingDeprecationWarning:shap"]
 
 [tool.ruff]
 # Los notebooks de `notebooks/EDA/` quedan fuera del linter, no por dejadez:

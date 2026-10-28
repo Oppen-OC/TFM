@@ -13,6 +13,7 @@ import pickle
 from pathlib import Path
 
 import pandas as pd
+import xgboost as xgb
 
 from project import features
 from project.config import RAIZ, settings
@@ -42,3 +43,24 @@ def probabilidad(artefacto: dict, tabla: pd.DataFrame) -> pd.Series:
     """
     x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])
     return pd.Series(artefacto["modelo"].predict_proba(x)[:, 1], index=tabla.index)
+
+
+def contribuciones(artefacto: dict, tabla: pd.DataFrame) -> pd.DataFrame:
+    """SHAP exacto de XGBoost (TreeSHAP), una columna por variable más `sesgo`,
+    con el índice de `tabla`.
+
+    Suman la salida bruta del árbol: el residuo en un modelo de residuo (se le
+    suma `retraso_s` para tener `predecir`), el retraso en uno que no lo es, y
+    el log-odds en el clasificador. Pasa por `features.matriz` como `predecir`.
+    """
+    x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])
+    d = xgb.DMatrix(x, enable_categorical=True)
+    c = artefacto["modelo"].get_booster().predict(d, pred_contribs=True)
+    return pd.DataFrame(c, index=tabla.index, columns=[*artefacto["columnas"], "sesgo"])
+
+
+def unidad(artefacto: dict) -> str:
+    """En qué suman las `contribuciones` del artefacto."""
+    if "umbral" in artefacto:
+        return "log-odds"
+    return "s del residuo" if artefacto["residuo"] else "s"
