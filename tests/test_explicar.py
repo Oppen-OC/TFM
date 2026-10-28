@@ -133,9 +133,13 @@ def test_la_muestra_es_fija_y_de_la_poblacion(modelos, monkeypatch):
 
 def test_las_figuras_salen(modelos, tmp_path):
     t, reg, _ = modelos
-    explicar.figuras(predict.contribuciones(reg, t), t, "regresion_trafico", tmp_path)
-    assert sorted(f.name for f in tmp_path.iterdir()) == [
+    rutas = explicar.figuras(
+        predict.contribuciones(reg, t), t, "regresion_trafico", tmp_path
+    )
+    esperadas = [
         "regresion_trafico_dependencia_trafico_congestion_frac.png",
         "regresion_trafico_dependencia_tramo_sesgo_s.png",
         "regresion_trafico_resumen.png",
     ]
+    assert sorted(f.name for f in tmp_path.iterdir()) == esperadas
+    assert sorted(p.name for p in rutas) == esperadas

@@ -125,9 +125,12 @@ def resumen(contrib: pd.DataFrame, t: pd.DataFrame) -> dict:
     return {"poblacion": en(p), "con_sensor": en(p & con_sensor)}
 
 
-def figuras(contrib: pd.DataFrame, t: pd.DataFrame, nombre: str, destino: Path) -> None:
+def figuras(
+    contrib: pd.DataFrame, t: pd.DataFrame, nombre: str, destino: Path
+) -> list[Path]:
     """El resumen (beeswarm) y la dependencia de las variables de tráfico, de
-    flota y del sesgo del horario, en las filas de la población de `contrib`."""
+    flota y del sesgo del horario, en las filas de la población de `contrib`.
+    Devuelve los ficheros que ha escrito, y solo esos."""
     t = t.loc[contrib.index]
     m = t.index[features.poblacion(t)]
     variables = [c for c in contrib.columns if c != "sesgo"]
@@ -144,15 +147,18 @@ def figuras(contrib: pd.DataFrame, t: pd.DataFrame, nombre: str, destino: Path) 
     shap.plots.beeswarm(e, max_display=15, show=False)
     plt.title(nombre)
     plt.tight_layout()
-    plt.savefig(destino / f"{nombre}_resumen.png", dpi=150)
+    escritas = [destino / f"{nombre}_resumen.png"]
+    plt.savefig(escritas[0], dpi=150)
     plt.close("all")
     for v in DEPENDENCIAS:
         if v in variables:
             shap.plots.scatter(e[:, v], show=False)
             plt.title(f"{nombre}: {v}")
             plt.tight_layout()
-            plt.savefig(destino / f"{nombre}_dependencia_{v}.png", dpi=150)
+            escritas.append(destino / f"{nombre}_dependencia_{v}.png")
+            plt.savefig(escritas[-1], dpi=150)
             plt.close("all")
+    return escritas
 
 
 def main(horizonte: int | None = None) -> None:
@@ -182,10 +188,10 @@ def main(horizonte: int | None = None) -> None:
             "mlflow_run_id": art["mlflow_run_id"],
             **resumen(c, m),
         }
-        figuras(c, m, nombre, destino)
+        escritas = figuras(c, m, nombre, destino)
         with mlflow.start_run(run_id=art["mlflow_run_id"]):
             mlflow.log_dict(salida["modelos"][nombre], "explicacion.json")
-            for f in sorted(destino.glob(f"{nombre}_*.png")):
+            for f in escritas:
                 mlflow.log_artifact(str(f), artifact_path="shap")
     rutas["metricas"].mkdir(parents=True, exist_ok=True)
     (rutas["metricas"] / "explicacion.json").write_text(
