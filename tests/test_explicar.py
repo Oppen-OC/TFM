@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from project import predict, train
+from project import evaluate, explicar, features, predict, train
 
 OBJ = "retraso_siguiente_parada_s"
 CFG = {
@@ -86,3 +86,56 @@ def test_la_unidad_la_dice_el_artefacto(modelos):
     assert predict.unidad(reg) == "s del residuo"
     assert predict.unidad({**reg, "residuo": False}) == "s"
     assert predict.unidad(clf) == "log-odds"
+
+
+def test_toda_variable_cae_en_un_solo_grupo():
+    """Con todas las opciones activas, y las ventanas que pueda fijar
+    `params.yaml`. Una variable sin grupo desaparecería del resumen."""
+    for v in features.variables((1, 5, 15), (5, 15), trafico=True):
+        explicar.grupo(v)
+    assert explicar.grupo("linea") == "identidad_de_la_linea"
+    assert explicar.grupo("linea_retraso_15min") == "linea_en_servicio"
+    with pytest.raises(KeyError):
+        explicar.grupo("inventada")
+
+
+def test_el_resumen_solo_cuenta_la_poblacion(modelos):
+    t, reg, _ = modelos
+    c = predict.contribuciones(reg, t)
+    r = explicar.resumen(c, t)
+    pob = features.poblacion(t)
+    con = evaluate.estratos_trafico(t)["_cobertura"] == evaluate.CON_SENSOR
+    assert 0 < r["poblacion"]["filas"] == pob.sum() < len(t)
+    assert 0 < r["con_sensor"]["filas"] == (pob & con).sum()
+    assert set(r["poblacion"]["media_abs"]) == set(COLS)
+    assert r["poblacion"]["media_abs"]["retraso_s"] == pytest.approx(
+        c.loc[pob, "retraso_s"].abs().mean(), abs=1e-4
+    )
+    # El grupo es la suma de sus variables, y después el valor absoluto.
+    persistencia = c.loc[pob, list(explicar.GRUPOS["persistencia"])].sum(axis=1)
+    assert r["poblacion"]["grupos"]["persistencia"] == pytest.approx(
+        persistencia.abs().mean(), abs=1e-4
+    )
+    fuera = explicar.resumen(c, t.assign(ultimo_conocido=False))
+    assert fuera == {"poblacion": {"filas": 0}, "con_sensor": {"filas": 0}}
+
+
+def test_la_muestra_es_fija_y_de_la_poblacion(modelos, monkeypatch):
+    t, _, _ = modelos
+    monkeypatch.setattr(explicar, "MUESTRA", 100)
+    m = explicar.muestra(t)
+    assert len(m) == 100
+    assert features.poblacion(m).all()
+    assert m.index.equals(explicar.muestra(t).index)
+    monkeypatch.setattr(explicar, "MUESTRA", 10**9)
+    assert len(explicar.muestra(t)) == features.poblacion(t).sum()
+
+
+def test_las_figuras_salen(modelos, tmp_path):
+    t, reg, _ = modelos
+    explicar.figuras(predict.contribuciones(reg, t), t, "regresion_trafico", tmp_path)
+    assert sorted(f.name for f in tmp_path.iterdir()) == [
+        "regresion_trafico_dependencia_trafico_congestion_frac.png",
+        "regresion_trafico_dependencia_tramo_sesgo_s.png",
+        "regresion_trafico_resumen.png",
+    ]
