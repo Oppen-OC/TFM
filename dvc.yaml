@@ -14,7 +14,8 @@
 #     data/raw/gtfs ──────────┘   (todas las versiones del feed; tramos_ruta lee además data/reference, ADR-017)
 #
 # features_h, train*_h y evaluate*_h repiten features y lo que cuelga de él para
-# cada horizonte de `features.horizontes_barrido` (ADR-023).
+# cada horizonte de `features.horizontes_barrido` (ADR-023). explicar y explicar_h
+# cuelgan de los tres evaluate* de su horizonte: SHAP sobre la prueba.
 # Mapa por etapa, con sus funciones y sus guardias: docs/12_flujo_de_datos.html
 #
 # Hasta 08/2026 el bloque `stages:` vivía en params.yaml y `dvc repro`

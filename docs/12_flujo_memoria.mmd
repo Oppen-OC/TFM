@@ -28,7 +28,7 @@ flowchart TD
 
     fuentes --> captura
     captura --> crudo --> curado
-    captura --> gtfs
+    captura -.->|revisado a mano| gtfs
     curado --> buses --> etiquetado
     curado --> trafico
     gtfs --> etiquetado

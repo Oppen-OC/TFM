@@ -121,7 +121,7 @@ flowchart TD
 
     fuentes --&gt; captura
     captura --&gt; crudo --&gt; curado
-    captura --&gt; gtfs
+    captura -.-&gt;|revisado a mano| gtfs
     curado --&gt; buses --&gt; etiquetado
     curado --&gt; trafico
     gtfs --&gt; etiquetado
@@ -185,7 +185,7 @@ flowchart TD
  ├─ asegurar_geometria          geometría de los tramos de tráfico, una vez
  ├─ capturar_gtfs               guarda cada versión nueva del feed
  └─ latir                       _status.json cada minuto; lo lee --status</pre></div></div>
-  <div class="r"><div class="k">sale</div><div><code>data/raw/source=&lt;fuente&gt;/date=&lt;día&gt;/payloads.ndjson.gz</code> · <code>data/raw/gtfs/</code> · <code>data/reference/trafico_estado_geometria.parquet</code> · <code>data/curated/</code> (vista previa) · <code>_status.json</code></div></div>
+  <div class="r"><div class="k">sale</div><div><code>data/raw/source=&lt;fuente&gt;/date=&lt;día&gt;/payloads.ndjson.gz</code> · <code>data/raw/source=gtfs_emt/date=&lt;día&gt;/</code> (cada versión nueva del feed; el pipeline lee <code>data/raw/gtfs/</code>, que se rellena a mano tras revisarla, ADR-014) · <code>data/reference/trafico_estado_geometria.parquet</code> · <code>data/curated/</code> (vista previa) · <code>_status.json</code></div></div>
   <div class="r"><div class="k">trampas</div><div>
     <div class="tr"><div class="id">016</div><div>La Pi no tiene el corpus entero: un <code>rsync</code> de la Pi sobre <code>data/raw/</code> deja días a medias sin error. <b>Mitigada, sin test:</b> traer solo con <code>bash deploy_pi/pull_data.sh --verificar</code>.</div></div>
   </div></div>
@@ -349,8 +349,9 @@ evaluate.main                         contra los baselines
  └─ resumen
      └─ diferencia                    modelo − listón en los mismos viajes, IC 95 %
 evaluate.main_trafico                 con tráfico − sin tráfico (ADR-024)
-evaluate.main_clasificador            contra persistencia y regresión umbralizada</pre></div></div>
-  <div class="r"><div class="k">sale</div><div><code>models/model.pkl</code> · <code>model_trafico.pkl</code> · <code>model_clasificador.pkl</code> (y <code>models/h&lt;h&gt;/</code>) · <code>metrics/eval.json</code>, <code>trafico.json</code>, <code>clasificador.json</code> · un run de MLflow por entrenamiento</div></div>
+evaluate.main_clasificador            contra persistencia y regresión umbralizada
+explicar.main                         SHAP de cada modelo sobre una muestra de la población</pre></div></div>
+  <div class="r"><div class="k">sale</div><div><code>models/model.pkl</code> · <code>model_trafico.pkl</code> · <code>model_clasificador.pkl</code> (y <code>models/h&lt;h&gt;/</code>) · <code>metrics/eval.json</code>, <code>trafico.json</code>, <code>clasificador.json</code>, <code>explicacion.json</code> · <code>figuras/shap/h&lt;h&gt;/</code> · un run de MLflow por entrenamiento</div></div>
   <div class="r"><div class="k">trampas</div><div class="nada">Ninguna registrada. Las protecciones son metodológicas: las reglas de abajo.</div></div>
   <div class="r"><div class="k">reglas</div><div>
     <div class="rg"><span class="chip regla">baselines obligatorios: horario, persistencia y persistencia + sesgo del tramo</span></div>
@@ -380,7 +381,7 @@ api/routers/prediccion
  ├─ POST /prediccion/retraso          Servicio.retraso      → predict.predecir
  └─ POST /prediccion/mas-de-5min      Servicio.mas_de_5min  → predict.probabilidad
 ui/app                                habla con la API por HTTP (requests)</pre></div></div>
-  <div class="r"><div class="k">sale</div><div>JSON con los segundos de retraso, o la probabilidad de llegar más de 5 min tarde y la decisión. Swagger en <code>/docs</code>.</div></div>
+  <div class="r"><div class="k">sale</div><div>JSON con los segundos de retraso, o la probabilidad de llegar más de 5 min tarde y la decisión. Con <code>?explicar=true</code>, también las contribuciones SHAP. Swagger en <code>/docs</code>.</div></div>
   <div class="r"><div class="k">trampas</div><div class="nada">Ninguna registrada.</div></div>
   <div class="r"><div class="k">reglas</div><div>
     <div class="rg"><span class="chip regla">ui no importa services ni carga el modelo: solo HTTP</span></div>
