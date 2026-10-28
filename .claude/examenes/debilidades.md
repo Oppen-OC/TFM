@@ -8,4 +8,4 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 
 | concepto | tema | fallos | aciertos limpios | último | estado |
 |---|---|---|---|---|---|
-| donde-se-arregla-el-parser | puerta · issue #4 | 1 | 0 | 2026-10-23 | flojo |
+| donde-se-arregla-el-parser | puerta · issue #4, puerta 005 | 2 | 0 | 2026-10-28 | flojo |

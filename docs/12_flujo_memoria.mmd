@@ -1,0 +1,43 @@
+%% Flujo de datos del TFM para la memoria. Nombres de tesis, sin rutas ni tests:
+%% el detalle por función y test está en docs/12_flujo_de_datos.html.
+%% En Quarto:
+%%   ```{mermaid}
+%%   %%| file: 12_flujo_memoria.mmd
+%%   %%| fig-cap: "Flujo de datos, de la captura al servicio, con las trampas que protege cada etapa."
+%%   ```
+flowchart TD
+    fuentes[/"Fuentes en vivo<br/>buses EMT · tráfico municipal · Valenbisi · Renfe"/]
+
+    captura["<b>1 · Captura</b><br/>guarda el crudo antes de interpretarlo<br/><i>1 trampa</i>"]:::fuera
+    crudo[("crudo")]:::dato
+    gtfs[("GTFS<br/>horario y trazados")]:::dato
+
+    subgraph dvc["Pipeline reproducible (DVC)"]
+        curado["<b>2 · Curado</b><br/>interpreta y deduplica cada sondeo<br/><i>7 trampas</i>"]
+        buses[("posiciones de bus<br/>sin identidad")]:::dato
+        trafico[("estado del tráfico")]:::dato
+        etiquetado["<b>3 · Identidad y etiquetado</b><br/>reconstruye cada bus, lo sitúa en su ruta<br/>y mide el retraso en cada parada<br/><i>10 trampas</i>"]
+        pasos[("paso por parada<br/>con su retraso")]:::dato
+        disponibilidad["<b>4 · Disponibilidad y cobertura</b><br/>cuándo se supo cada paso<br/>y qué sensores cubren cada ruta<br/><i>1 trampa</i>"]
+        variables["<b>5 · Variables</b><br/>solo lo que ya se sabía<br/>partición temporal por días"]
+        tablas[("entrenamiento · prueba")]:::dato
+        modelos["<b>6 · Entrenamiento y evaluación</b><br/>XGBoost frente a los baselines<br/>IC 95 % por viajes y por días"]
+    end
+
+    servicio["<b>7 · Servicio</b><br/>API REST: retraso y más de 5 min"]:::fuera
+
+    fuentes --> captura
+    captura --> crudo --> curado
+    captura --> gtfs
+    curado --> buses --> etiquetado
+    curado --> trafico
+    gtfs --> etiquetado
+    etiquetado --> pasos --> disponibilidad
+    gtfs --> disponibilidad
+    disponibilidad --> variables
+    trafico --> variables
+    variables --> tablas --> modelos
+    modelos -- modelos --> servicio
+
+    classDef dato fill:#fff8e1,stroke:#b8860b,color:#5a4500
+    classDef fuera stroke-dasharray:5 4

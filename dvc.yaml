@@ -7,10 +7,15 @@
 #
 #   project/ingest/collect.py  ──(fuera de DVC, proceso largo)──>  data/raw/
 #                                                            │
-#            curar ──> prepare ──> features ──> train ──> evaluate
-#                                        └──> train_trafico ──> evaluate_trafico   (ADR-024)
-#                         ▲
-#               data/raw/gtfs (todas las versiones del feed)
+#   curar ──> prepare ──> disponibilidad ─────┐
+#               ▲                             ├──> features ──┬──> train ──────────────> evaluate
+#               │         tramos_ruta ────────┘               ├──> train_trafico ──────> evaluate_trafico       (ADR-024)
+#               │             ▲                               └──> train_clasificador ─> evaluate_clasificador  (ADR-025)
+#     data/raw/gtfs ──────────┘   (todas las versiones del feed; tramos_ruta lee además data/reference, ADR-017)
+#
+# features_h, train*_h y evaluate*_h repiten features y lo que cuelga de él para
+# cada horizonte de `features.horizontes_barrido` (ADR-023).
+# Mapa por etapa, con sus funciones y sus guardias: docs/12_flujo_de_datos.html
 #
 # Hasta 08/2026 el bloque `stages:` vivía en params.yaml y `dvc repro`
 # simplemente no ejecutaba nada.

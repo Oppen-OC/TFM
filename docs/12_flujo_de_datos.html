@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flujo de datos del TFM</title>
+<style>
+  :root {
+    --bg: #fafaf9; --card: #ffffff; --ink: #1c1917; --muted: #78716c; --line: #e7e5e4;
+    --trampa-bg: #fde8e8; --trampa: #9b1c1c;
+    --test: #1e429f;
+    --regla-bg: #def7ec; --regla: #03543f;
+    --dato-bg: #fff8e1; --dato: #5a4500;
+    --acento: #3f51b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1917; --card: #292524; --ink: #f5f5f4; --muted: #a8a29e; --line: #44403c;
+      --trampa-bg: #4c1d1d; --trampa: #fca5a5;
+      --test: #93c5fd;
+      --regla-bg: #14372b; --regla: #86efac;
+      --dato-bg: #3b3220; --dato: #fde68a;
+      --acento: #818cf8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  code, .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 13px; }
+  a { color: var(--acento); }
+
+  .leer { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; font-size: 14px; }
+  .leer p { margin: 6px 0; }
+  .chip { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; }
+  .chip.trampa { background: var(--trampa-bg); color: var(--trampa); }
+  .chip.regla { background: var(--regla-bg); color: var(--regla); }
+  .chip.dato { background: var(--dato-bg); color: var(--dato); }
+  .t { color: var(--test); font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-all; }
+
+  .tira { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 6px; margin: 20px 0 28px; }
+  .tira a { display: block; text-decoration: none; color: var(--ink); background: var(--card);
+            border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 13px; }
+  .tira a:hover { border-color: var(--acento); }
+  .tira b { display: block; }
+  .tira span { color: var(--muted); font-size: 12px; }
+
+  .ficha { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; scroll-margin-top: 12px; }
+  .ficha h2 { margin: 0; font-size: 20px; padding-right: 120px; }
+  .ficha .que { color: var(--muted); margin: 2px 0 10px; }
+  .fuera { font-size: 12px; color: var(--muted); border: 1px dashed var(--muted); border-radius: 4px; padding: 0 6px; margin-left: 6px; vertical-align: middle; }
+  .r { display: grid; grid-template-columns: 96px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; padding-top: 3px; }
+  pre.arbol { margin: 0; font-size: 12.5px; line-height: 1.6; overflow-x: auto; }
+  .tr { display: grid; grid-template-columns: 40px 1fr; gap: 8px; margin: 4px 0; }
+  .tr .id { background: var(--trampa-bg); color: var(--trampa); border-radius: 4px; text-align: center; font-size: 13px; height: 20px; }
+  .rg { margin: 4px 0; }
+  .nada { color: var(--muted); font-size: 14px; }
+  .paso { text-align: center; color: var(--muted); margin: 6px 0; font-size: 13px; }
+  .paso .chip { font-size: 12px; }
+
+  .tira[hidden], figure[hidden] { display: none; }
+  .mapa { margin: 20px 0 28px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .mapa pre.mermaid { margin: 0; text-align: center; overflow-x: auto; }
+  .mapa pre.mermaid:not([data-processed]) { visibility: hidden; height: 200px; }
+  .mapa .clickable { cursor: pointer; }
+  .mapa .clickable:hover rect { stroke: var(--acento); stroke-width: 2px; }
+  .mapa figcaption { color: var(--muted); font-size: 13px; text-align: center; margin-top: 8px; }
+  .ficha { position: relative; }
+  .ficha:target { outline: 3px solid var(--acento); outline-offset: 2px; }
+  .volver { position: absolute; top: 14px; right: 16px; font-size: 12px; text-decoration: none; }
+  h2.aparte { font-size: 20px; margin: 36px 0 10px; }
+  .trans { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px 18px; }
+
+  @media (max-width: 560px) {
+    .r { grid-template-columns: 1fr; gap: 2px; }
+    .ficha h2 { padding-right: 0; }
+    .volver { position: static; display: block; text-align: right; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Flujo de datos del TFM</h1>
+<p class="sub">Desde las APIs del Ajuntament hasta el endpoint de predicción: qué entra y qué sale de cada etapa, qué función lo hace y qué lo protege. Sacado del código el 28/10/2026 (commit <code>9fb9b5f</code>).</p>
+
+<div class="leer">
+  <p><span class="chip trampa">trampa</span> un bug que no da la cara: no lanza excepción y deja un resultado plausible pero falso. Ficha en <code>.claude/trampas/</code>. A su lado, en <span class="t">azul</span>, el test que la vigila.</p>
+  <p><span class="chip regla">regla</span> una decisión de diseño que impide un error, con el test que la sostiene cuando lo hay.</p>
+  <p><span class="chip dato">dato</span> lo que pasa de una etapa a la siguiente. Entre ficha y ficha va la carpeta que las une.</p>
+  <p>Cada trampa está en la ficha donde <b>se arregla</b>, que no siempre es donde nace: se arregla donde vive la información necesaria para verla. La 014 nace en la fuente, pero solo se ve cuando ya hay trayectorias de un mismo bus.</p>
+</div>
+
+<div id="mapa">
+<!-- Copia de docs/12_flujo_memoria.mmd más las líneas `click`. Si cambia la figura, se copia a mano. -->
+<figure class="mapa">
+<pre class="mermaid">
+flowchart TD
+    fuentes[/"Fuentes en vivo&lt;br/&gt;buses EMT · tráfico municipal · Valenbisi · Renfe"/]
+
+    captura["&lt;b&gt;1 · Captura&lt;/b&gt;&lt;br/&gt;guarda el crudo antes de interpretarlo&lt;br/&gt;&lt;i&gt;1 trampa&lt;/i&gt;"]:::fuera
+    crudo[("crudo")]:::dato
+    gtfs[("GTFS&lt;br/&gt;horario y trazados")]:::dato
+
+    subgraph dvc["Pipeline reproducible (DVC)"]
+        curado["&lt;b&gt;2 · Curado&lt;/b&gt;&lt;br/&gt;interpreta y deduplica cada sondeo&lt;br/&gt;&lt;i&gt;7 trampas&lt;/i&gt;"]
+        buses[("posiciones de bus&lt;br/&gt;sin identidad")]:::dato
+        trafico[("estado del tráfico")]:::dato
+        etiquetado["&lt;b&gt;3 · Identidad y etiquetado&lt;/b&gt;&lt;br/&gt;reconstruye cada bus, lo sitúa en su ruta&lt;br/&gt;y mide el retraso en cada parada&lt;br/&gt;&lt;i&gt;10 trampas&lt;/i&gt;"]
+        pasos[("paso por parada&lt;br/&gt;con su retraso")]:::dato
+        disponibilidad["&lt;b&gt;4 · Disponibilidad y cobertura&lt;/b&gt;&lt;br/&gt;cuándo se supo cada paso&lt;br/&gt;y qué sensores cubren cada ruta&lt;br/&gt;&lt;i&gt;1 trampa&lt;/i&gt;"]
+        variables["&lt;b&gt;5 · Variables&lt;/b&gt;&lt;br/&gt;solo lo que ya se sabía&lt;br/&gt;partición temporal por días"]
+        tablas[("entrenamiento · prueba")]:::dato
+        modelos["&lt;b&gt;6 · Entrenamiento y evaluación&lt;/b&gt;&lt;br/&gt;XGBoost frente a los baselines&lt;br/&gt;IC 95 % por viajes y por días"]
+    end
+
+    servicio["&lt;b&gt;7 · Servicio&lt;/b&gt;&lt;br/&gt;API REST: retraso y más de 5 min"]:::fuera
+
+    fuentes --&gt; captura
+    captura --&gt; crudo --&gt; curado
+    captura --&gt; gtfs
+    curado --&gt; buses --&gt; etiquetado
+    curado --&gt; trafico
+    gtfs --&gt; etiquetado
+    etiquetado --&gt; pasos --&gt; disponibilidad
+    gtfs --&gt; disponibilidad
+    disponibilidad --&gt; variables
+    trafico --&gt; variables
+    variables --&gt; tablas --&gt; modelos
+    modelos -- modelos --&gt; servicio
+
+    classDef dato fill:#fff8e1,stroke:#b8860b,color:#5a4500
+    classDef fuera stroke-dasharray:5 4
+
+    click fuentes href "#captura"
+    click captura href "#captura"
+    click curado href "#curar"
+    click etiquetado href "#prepare"
+    click disponibilidad href "#disponibilidad"
+    click variables href "#features"
+    click modelos href "#modelos"
+    click servicio href "#servicio"
+</pre>
+<figcaption>Haz clic en una etapa para ver su ficha. Las cajas discontinuas quedan fuera del pipeline de DVC.</figcaption>
+</figure>
+<nav class="tira" hidden>
+  <a href="#captura"><b>1 · Captura</b><span>1 trampa · fuera de DVC</span></a>
+  <a href="#curar"><b>2 · Curar</b><span>7 trampas</span></a>
+  <a href="#prepare"><b>3 · Prepare</b><span>10 trampas</span></a>
+  <a href="#disponibilidad"><b>4 · Disponibilidad</b><span>1 trampa</span></a>
+  <a href="#features"><b>5 · Features</b><span>reglas</span></a>
+  <a href="#modelos"><b>6 · Train / Evaluate</b><span>reglas</span></a>
+  <a href="#servicio"><b>7 · Servicio</b><span>reglas · fuera de DVC</span></a>
+</nav>
+</div>
+<script type="module">
+  // Sin conexión no hay Mermaid: se enseña la tira de etapas en su lugar.
+  try {
+    const { default: mermaid } = await import("https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs");
+    const oscuro = matchMedia("(prefers-color-scheme: dark)").matches;
+    // `loose` para que los `click` sean enlaces; las etiquetas son nuestras.
+    mermaid.initialize({ startOnLoad: false, securityLevel: "loose", theme: oscuro ? "dark" : "neutral" });
+    await mermaid.run({ querySelector: "#mapa .mermaid" });
+  } catch (e) {
+    console.warn("mapa sin Mermaid:", e);
+    document.querySelector("#mapa figure").hidden = true;
+    document.querySelector("#mapa .tira").hidden = false;
+  }
+</script>
+
+<!-- 1 -->
+<section class="ficha" id="captura">
+  <a class="volver" href="#mapa">volver al mapa ↑</a>
+  <h2>1 · Captura <span class="fuera">fuera de DVC · proceso aparte, en la Raspberry</span></h2>
+  <p class="que">Pregunta a las fuentes cada pocos segundos y guarda lo que responden. Lo que no se capture hoy se pierde: ninguna fuente guarda su pasado.</p>
+  <div class="r"><div class="k">entra</div><div>ArcGIS del geoportal: buses EMT <code>384</code>, tráfico <code>192</code> (estado) y <code>188</code> (intensidad), Valenbisi <code>228</code>; <code>flota.json</code> de Renfe; el GTFS de la EMT.</div></div>
+  <div class="r"><div class="k">hace</div><div><pre class="arbol">ingest/collect.main(minutos, claves, root)   una tarea por fuente, a su cadencia
+ ├─ sondear                     pide el payload a la fuente
+ │   ├─ sources.append_raw      guarda el crudo ANTES de parsear
+ │   ├─ parse / clave_sondeo    vista previa: descarta el sondeo repetido
+ │   └─ recordar / flush        Parquet de vista previa (el pipeline no lo usa)
+ ├─ asegurar_geometria          geometría de los tramos de tráfico, una vez
+ ├─ capturar_gtfs               guarda cada versión nueva del feed
+ └─ latir                       _status.json cada minuto; lo lee --status</pre></div></div>
+  <div class="r"><div class="k">sale</div><div><code>data/raw/source=&lt;fuente&gt;/date=&lt;día&gt;/payloads.ndjson.gz</code> · <code>data/raw/gtfs/</code> · <code>data/reference/trafico_estado_geometria.parquet</code> · <code>data/curated/</code> (vista previa) · <code>_status.json</code></div></div>
+  <div class="r"><div class="k">trampas</div><div>
+    <div class="tr"><div class="id">016</div><div>La Pi no tiene el corpus entero: un <code>rsync</code> de la Pi sobre <code>data/raw/</code> deja días a medias sin error. <b>Mitigada, sin test:</b> traer solo con <code>bash deploy_pi/pull_data.sh --verificar</code>.</div></div>
+  </div></div>
+  <div class="r"><div class="k">reglas</div><div>
+    <div class="rg"><span class="chip regla">el crudo se guarda antes de parsear</span> <span class="t">test_el_crudo_se_guarda_aunque_el_parser_falle</span></div>
+    <div class="rg"><span class="chip regla">--status juzga cada fuente, no solo el latido</span> <span class="t">test_status_no_dice_vivo_con_el_latido_al_dia_y_una_fuente_callada</span></div>
+    <div class="rg"><span class="chip regla">cada versión del GTFS se guarda una vez</span> <span class="t">test_cada_version_del_gtfs_se_guarda_una_vez_y_fuera_del_etiquetado</span></div>
+    <div class="rg"><span class="chip regla">ingest/ no importa nada de aguas abajo</span> así corre en la Pi sin sklearn ni FastAPI</div>
+    <div class="rg"><span class="chip regla">la ingesta no es un stage</span> capturar en vivo no es reejecutable</div>
+  </div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_persistencia.py</code><br><code>uv run python -m project.ingest.collect --status</code></div></div>
+</section>
+
+<div class="paso">▼ <span class="chip dato">data/raw/</span> el crudo, tal como llegó</div>
+
+<!-- 2 -->
+<section class="ficha" id="curar">
+  <a class="volver" href="#mapa">volver al mapa ↑</a>
+  <h2>2 · Curar <span class="fuera">stage <code>curar</code></span></h2>
+  <p class="que">Vuelve a leer todo el crudo, lo convierte en tablas y se queda con una sola captura (la más completa) de cada sondeo. Es determinista: el mismo crudo da siempre el mismo resultado.</p>
+  <div class="r"><div class="k">entra</div><div><code>data/raw/source=*/</code>: todos los payloads crudos de las cinco fuentes.</div></div>
+  <div class="r"><div class="k">hace</div><div><pre class="arbol">ingest/reprocesar.main
+ └─ reprocesar(root, source)          una fuente entera, payload a payload
+     ├─ sources.read_raw              lee el NDJSON gzip
+     ├─ sources.parse                 parse_emt / parse_trafico_* / parse_valenbisi / parse_renfe
+     │   └─ resolver_convencion       (EMT) ¿este sondeo viene en UTC o en hora local?
+     └─ clave_sondeo                  agrupa capturas del mismo sondeo; gana la más completa</pre></div></div>
+  <div class="r"><div class="k">sale</div><div><code>data/curated/source=*/</code> (Parquet por fuente y día) · <code>metrics/curar.json</code> (payloads, errores, duplicados)</div></div>
+  <div class="r"><div class="k">trampas</div><div>
+    <div class="tr"><div class="id">001</div><div>El <code>gid</code> identifica el refresco de la tabla, no el bus: solo sirve para nombrar el sondeo. <span class="t">test_emt_snapshot_id_es_el_gid_minimo_del_bloque</span></div></div>
+    <div class="tr"><div class="id">002</div><div>La EMT alterna UTC y hora local de un sondeo al siguiente; un desfase fijo deja el 20 % de las filas 2 h movidas. <span class="t">test_serie_con_convenciones_alternas_ninguna_fila_desplazada</span></div></div>
+    <div class="tr"><div class="id">003</div><div>La raíz de Renfe es un objeto; sin filtrar <code>nucleo == "40"</code> entra la flota nacional. <span class="t">test_renfe_filtra_solo_nucleo_40</span></div></div>
+    <div class="tr"><div class="id">019</div><div>Renfe omite la clave que no tiene valor; con 1-3 trenes la columna no existe. <span class="t">test_renfe_tolera_trenes_de_valencia_sin_una_clave</span></div></div>
+    <div class="tr"><div class="id">005</div><div>34 filas de la capa 192 llegan sin tramo, sin geometría y sin estado: no son tramos. <span class="t">test_filas_hueco_de_trafico_se_descartan</span></div></div>
+    <div class="tr"><div class="id">011</div><div>La primera captura de un sondeo puede ser el bloque a medio reinsertar; quedarse la primera tira 109.063 posiciones. <span class="t">test_reprocesar_completa_el_sondeo_que_llego_a_medias</span></div></div>
+    <div class="tr"><div class="id">018</div><div>Un <code>{"error": …}</code> no es un sondeo: contar líneas dio por completo un día con 3 h 45 min sin posiciones. Se mide en <code>analysis/medir_completitud.instantes</code> y decide <code>features.excluir_dias</code>. <span class="t">test_un_payload_de_error_no_cuenta_como_sondeo</span></div></div>
+  </div></div>
+  <div class="r"><div class="k">reglas</div><div>
+    <div class="rg"><span class="chip regla">el curated del pipeline es este; el del colector es vista previa</span> <span class="t">test_reprocesar_reconstruye_lo_mismo_que_el_colector</span></div>
+    <div class="rg"><span class="chip regla">un payload que no parsea se cuenta, no se tira en silencio</span> <span class="t">test_reprocesar_cuenta_los_payloads_que_no_parsean</span></div>
+  </div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_ingest.py tests/test_persistencia.py tests/test_completitud.py</code></div></div>
+</section>
+
+<div class="paso">▼ <span class="chip dato">data/curated/</span> posiciones sueltas, sin identidad de bus &nbsp;+&nbsp; <span class="chip dato">data/raw/gtfs/</span> horario y trazados</div>
+
+<!-- 3 -->
+<section class="ficha" id="prepare">
+  <a class="volver" href="#mapa">volver al mapa ↑</a>
+  <h2>3 · Prepare <span class="fuera">stage <code>prepare</code></span></h2>
+  <p class="que">Pasa de posiciones sueltas a «este bus llegó a esta parada con X segundos de retraso». Es la capa más delicada: un error aquí contamina todas las etiquetas sin dar la cara.</p>
+  <div class="r"><div class="k">entra</div><div><code>data/curated/</code> (posiciones EMT) + <code>data/raw/gtfs/</code> (horario y trazados, todas las versiones).</div></div>
+  <div class="r"><div class="k">hace</div><div><pre class="arbol">prepare.procesar_dia(dia)
+ ├─ cargar_dia                       lee un día de data/curated
+ └─ etiquetar_dia
+     ├─ tracking.rastrear            ¿qué posiciones son del mismo bus?
+     │   └─ _coser_alternancias      cose el sentido invertido a mitad de ruta
+     └─ etiquetado.etiquetar
+         ├─ gtfs.elegir_horario      qué versión del GTFS rige ese día
+         ├─ mapmatching.emparejar    sitúa cada posición sobre su trazado
+         ├─ _segmentar               corta el recorrido en viajes
+         └─ _asignar_tramo           casa cada viaje con el programado
+             └─ cruces               instante de paso por cada parada → retraso</pre></div></div>
+  <div class="r"><div class="k">sale</div><div><code>data/interim/emt_tracked</code> (posiciones con <code>vehicle_id</code>) · <code>data/interim/viajes</code> · <code>data/interim/pasos</code> (con <code>retraso_s</code>) · <code>metrics/prepare.json</code></div></div>
+  <div class="r"><div class="k">trampas</div><div>
+    <div class="tr"><div class="id">004</div><div>Ordenar con quicksort mezcla filas del mismo sondeo: dio un 11 % de precisión siendo 99 %. <span class="t">test_rastrear_no_reordena_filas_dentro_del_sondeo</span></div></div>
+    <div class="tr"><div class="id">007</div><div>Dos buses de la misma línea en fila india empatan y se intercambian la identidad. <span class="t">test_convoy_en_fila_india_no_intercambia_identidad</span></div></div>
+    <div class="tr"><div class="id">008</div><div>La puerta de velocidad sobre la posición predicha dejaba colar buses a 110 km/h. <span class="t">test_la_puerta_fisica_se_respeta_tras_sondeos_perdidos</span></div></div>
+    <div class="tr"><div class="id">009</div><div>Tras un sondeo perdido, el predictor extrapola el doble. <span class="t">test_un_sondeo_que_falta_no_rompe_la_identidad</span></div></div>
+    <div class="tr"><div class="id">013</div><div>Una posición atrasada parece ir a 88 km/h y parte la línea 24 en carretera. <span class="t">test_un_bus_cuyas_posiciones_llegan_con_retraso_no_se_parte</span></div></div>
+    <div class="tr"><div class="id">014</div><div>La EMT publica a ratos el sentido contrario de un bus que sigue su marcha. <span class="t">test_la_alternancia_del_trayecto_no_parte_la_trayectoria</span></div></div>
+    <div class="tr"><div class="id">012</div><div><code>rastrear</code> reordena: una columna pegada por posición a su salida se cruza entre filas. <span class="t">test_el_orden_de_las_filas_de_entrada_no_cambia_la_etiqueta</span></div></div>
+    <div class="tr"><div class="id">006</div><div>Filtrar por caja geográfica tira las líneas 24 y 25 bajando a El Perellonet. <span class="t">test_lejos_del_centro_pero_sobre_la_ruta_no_se_descarta</span></div></div>
+    <div class="tr"><div class="id">010</div><div><code>shape_dist_traveled</code> es el horario reescalado, no distancia: con él el retraso sale cero. <span class="t">test_la_abscisa_es_geometria_y_no_shape_dist_traveled</span></div></div>
+    <div class="tr"><div class="id">015</div><div>El horario no cuenta desde la medianoche: el día del cambio de hora casaba con el viaje de una hora después. <span class="t">test_el_dia_del_cambio_de_hora_el_horario_va_con_el_reloj_de_la_calle</span></div></div>
+  </div></div>
+  <div class="r"><div class="k">reglas</div><div>
+    <div class="rg"><span class="chip regla">toda columna se une por índice o clave, nunca por posición</span></div>
+    <div class="rg"><span class="chip regla">el GTFS se elige por fecha de servicio</span> ADR-014</div>
+    <div class="rg"><span class="chip regla">map-matching por distancia al trazado, nunca por caja</span></div>
+    <div class="rg"><span class="chip regla">tracking no importa el GTFS; rastrea en una pasada</span> ADR-012, ADR-013</div>
+    <div class="rg"><span class="chip regla">flota sintética con retraso conocido, ±5 s en cada parada</span> <code>tests/test_etiquetado.py</code></div>
+  </div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_tracking.py tests/test_tracking_identidad.py tests/test_tracking_fragmentacion.py tests/test_mapmatching.py tests/test_etiquetado.py</code></div></div>
+</section>
+
+<div class="paso">▼ <span class="chip dato">data/interim/pasos</span> un paso por parada, con su retraso</div>
+
+<!-- 4 -->
+<section class="ficha" id="disponibilidad">
+  <a class="volver" href="#mapa">volver al mapa ↑</a>
+  <h2>4 · Disponibilidad y tramos de ruta <span class="fuera">stages <code>disponibilidad</code> y <code>tramos_ruta</code></span></h2>
+  <p class="que">Dos cálculos que no dependen del horizonte y se hacen una vez: cuándo se <b>supo</b> cada paso (no cuándo ocurrió) y qué tramos de la capa de tráfico recorre cada ruta.</p>
+  <div class="r"><div class="k">entra</div><div><code>data/interim/pasos</code>, <code>data/interim/emt_tracked</code> y la llegada de cada sondeo en <code>data/curated/</code> · <code>data/reference/trafico_estado_geometria.parquet</code> + <code>data/raw/gtfs/</code></div></div>
+  <div class="r"><div class="k">hace</div><div><pre class="arbol">features.main_disponibilidad          stage disponibilidad
+ └─ instante_disponible               t_disp: cuándo se SUPO el retraso de cada paso
+
+trafico.main                          stage tramos_ruta
+ └─ tramos_ruta                       por versión del GTFS, trazado y tramo de la 192
+     ├─ puntos                        el tramo en metros del plano local
+     └─ cubrir                        qué trozos del trazado recorre (no basta cruzarlo)
+         └─ mapmatching.proyectar</pre></div></div>
+  <div class="r"><div class="k">sale</div><div><code>data/interim/disponibilidad</code> (<code>t_disp_utc</code> por paso) · <code>data/interim/tramos_ruta</code></div></div>
+  <div class="r"><div class="k">trampas</div><div>
+    <div class="tr"><div class="id">017</div><div>Las variables calculadas en <code>t_obs</code> ven pasos que aún no han llegado: el retraso de un paso se sabe 80,7 s después (p50). <span class="t">test_t_disp_no_es_anterior_a_ninguna_posicion_que_usa_cruces_de_verdad</span></div></div>
+  </div></div>
+  <div class="r"><div class="k">reglas</div><div>
+    <div class="rg"><span class="chip regla">el «ahora» de una fila es t_disp, no t_obs</span> ADR-022</div>
+    <div class="rg"><span class="chip regla">cruzar la ruta no es recorrerla</span> <span class="t">test_un_tramo_corto_o_que_cruza_no_cubre</span></div>
+    <div class="rg"><span class="chip regla">la geometría de tráfico es una sola, la de data/reference</span> ADR-017</div>
+  </div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_features.py tests/test_trafico.py</code></div></div>
+</section>
+
+<div class="paso">▼ <span class="chip dato">pasos + disponibilidad + tramos_ruta</span> &nbsp;+&nbsp; <span class="chip dato">data/curated/source=trafico_estado</span></div>
+
+<!-- 5 -->
+<section class="ficha" id="features">
+  <a class="volver" href="#mapa">volver al mapa ↑</a>
+  <h2>5 · Features <span class="fuera">stage <code>features</code>, y <code>features_h</code> por horizonte</span></h2>
+  <p class="que">Construye la tabla del modelo: una fila por paso, con el retraso <i>h</i> paradas más allá como objetivo y solo variables que ya se sabían en <code>t_disp</code>. Y la parte en entrenamiento y prueba por fechas.</p>
+  <div class="r"><div class="k">entra</div><div><code>data/interim/pasos</code>, <code>disponibilidad</code>, <code>tramos_ruta</code> y el estado de la capa 192 en <code>data/curated/</code>.</div></div>
+  <div class="r"><div class="k">hace</div><div><pre class="arbol">features.main(horizonte)
+ ├─ con_disponibilidad                une t_disp a cada paso por clave
+ ├─ construir                         objetivo a h paradas + variables
+ │   ├─ _ventana_linea / _tramo_flota  lo que ya se sabía de la línea y del tramo
+ │   ├─ _sesgo_tramo                  cuánto se equivoca el horario en ese tramo
+ │   └─ trafico.en_ruta               estado de la 192 en el recorrido que queda
+ ├─ partir                            split TEMPORAL por día de servicio
+ ├─ soporte_por_linea                 qué líneas tienen cifra propia
+ └─ baselines                         los listones sin modelo</pre></div></div>
+  <div class="r"><div class="k">sale</div><div><code>data/processed/train.parquet</code> · <code>data/processed/test.parquet</code> (y <code>data/processed/h&lt;h&gt;/</code>) · <code>metrics/features.json</code> con los baselines</div></div>
+  <div class="r"><div class="k">trampas</div><div class="nada">Ninguna propia. Aquí se <b>usa</b> el arreglo de la 017: todo se mide contra <code>t_disp</code>.</div></div>
+  <div class="r"><div class="k">reglas</div><div>
+    <div class="rg"><span class="chip regla">split temporal, nunca aleatorio, sin partir viajes</span> <span class="t">test_el_split_es_por_dia_de_servicio_y_no_parte_viajes</span></div>
+    <div class="rg"><span class="chip regla">ninguna variable ve lo que aún no había llegado</span> <span class="t">test_la_ventana_de_la_linea_solo_cuenta_lo_que_ya_habia_llegado</span></div>
+    <div class="rg"><span class="chip regla">t_disp se une por clave, no por posición</span> <span class="t">test_la_disponibilidad_se_une_a_los_pasos_por_clave_y_no_por_posicion</span></div>
+    <div class="rg"><span class="chip regla">la tabla no lleva diagnósticos que miran el futuro</span> <span class="t">test_la_tabla_no_lleva_diagnosticos_que_miran_el_futuro_y_trae_sus_variables</span></div>
+    <div class="rg"><span class="chip regla">features.py se comparte entre entrenamiento e inferencia</span> la lista de variables sale de <code>features.variables()</code> y solo de ahí</div>
+  </div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_features.py</code></div></div>
+</section>
+
+<div class="paso">▼ <span class="chip dato">data/processed/{train,test}.parquet</span></div>
+
+<!-- 6 -->
+<section class="ficha" id="modelos">
+  <a class="volver" href="#mapa">volver al mapa ↑</a>
+  <h2>6 · Train y evaluate <span class="fuera">stages <code>train*</code> y <code>evaluate*</code>, y sus <code>_h</code></span></h2>
+  <p class="que">Entrena tres modelos XGBoost (sin tráfico, con la capa 192 y el clasificador de más de 5 min) para cada horizonte, y los compara con los listones sobre los mismos viajes.</p>
+  <div class="r"><div class="k">entra</div><div><code>train.parquet</code> para entrenar; <code>test.parquet</code>, los modelos y el GTFS para evaluar.</div></div>
+  <div class="r"><div class="k">hace</div><div><pre class="arbol">train.main                            train y train_trafico (--trafico)
+ └─ entrenar
+     ├─ separar_validacion            los últimos días del train, nunca la prueba
+     ├─ ajustar / validar             XGBoost con parada temprana
+     └─ features.matriz               las mismas columnas que en inferencia
+train.main_clasificador               misma tabla y variables, otra pérdida (ADR-025)
+
+evaluate.main                         contra los baselines
+ ├─ predict.cargar / predict.predecir
+ └─ resumen
+     └─ diferencia                    modelo − listón en los mismos viajes, IC 95 %
+evaluate.main_trafico                 con tráfico − sin tráfico (ADR-024)
+evaluate.main_clasificador            contra persistencia y regresión umbralizada</pre></div></div>
+  <div class="r"><div class="k">sale</div><div><code>models/model.pkl</code> · <code>model_trafico.pkl</code> · <code>model_clasificador.pkl</code> (y <code>models/h&lt;h&gt;/</code>) · <code>metrics/eval.json</code>, <code>trafico.json</code>, <code>clasificador.json</code> · un run de MLflow por entrenamiento</div></div>
+  <div class="r"><div class="k">trampas</div><div class="nada">Ninguna registrada. Las protecciones son metodológicas: las reglas de abajo.</div></div>
+  <div class="r"><div class="k">reglas</div><div>
+    <div class="rg"><span class="chip regla">baselines obligatorios: horario, persistencia y persistencia + sesgo del tramo</span></div>
+    <div class="rg"><span class="chip regla">la validación son los últimos días del entrenamiento</span> <span class="t">test_la_validacion_son_los_ultimos_dias_del_entrenamiento</span></div>
+    <div class="rg"><span class="chip regla">el modelo ve exactamente las variables de features</span> <span class="t">test_el_modelo_ve_exactamente_las_variables_de_features</span></div>
+    <div class="rg"><span class="chip regla">el intervalo remuestrea viajes, no filas</span> <span class="t">test_el_intervalo_remuestrea_viajes_y_no_filas</span></div>
+    <div class="rg"><span class="chip regla">y también días de servicio</span> <span class="t">test_el_intervalo_por_dias_recoge_lo_que_cambia_de_un_dia_a_otro</span></div>
+    <div class="rg"><span class="chip regla">con y sin tráfico: el mismo modelo salvo la capa 192</span> <span class="t">test_la_pareja_del_trafico_es_el_mismo_modelo_salvo_la_capa_192</span></div>
+    <div class="rg"><span class="chip regla">el umbral del clasificador sale de la validación</span> <span class="t">test_el_umbral_de_decision_sale_de_la_validacion</span></div>
+    <div class="rg"><span class="chip regla">la prueba se evalúa una sola vez</span> ADR-024</div>
+  </div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_modelo.py</code></div></div>
+</section>
+
+<div class="paso">▼ <span class="chip dato">models/**/*.pkl</span></div>
+
+<!-- 7 -->
+<section class="ficha" id="servicio">
+  <a class="volver" href="#mapa">volver al mapa ↑</a>
+  <h2>7 · Servicio <span class="fuera">fuera de DVC · services, api y ui</span></h2>
+  <p class="que">Carga los modelos una vez al arrancar y los expone por HTTP. La entrada es el vector de variables ya calculado: el servido en tiempo real está pendiente (ADR-016).</p>
+  <div class="r"><div class="k">entra</div><div><code>models/</code> al arrancar · una petición HTTP con el vector de variables.</div></div>
+  <div class="r"><div class="k">hace</div><div><pre class="arbol">api/main.lifespan
+ └─ Servicio.desde_disco              carga los modelos UNA vez, no por petición
+api/routers/prediccion
+ ├─ GET  /modelos                     Servicio.modelos
+ ├─ POST /prediccion/retraso          Servicio.retraso      → predict.predecir
+ └─ POST /prediccion/mas-de-5min      Servicio.mas_de_5min  → predict.probabilidad
+ui/app                                habla con la API por HTTP (requests)</pre></div></div>
+  <div class="r"><div class="k">sale</div><div>JSON con los segundos de retraso, o la probabilidad de llegar más de 5 min tarde y la decisión. Swagger en <code>/docs</code>.</div></div>
+  <div class="r"><div class="k">trampas</div><div class="nada">Ninguna registrada.</div></div>
+  <div class="r"><div class="k">reglas</div><div>
+    <div class="rg"><span class="chip regla">ui no importa services ni carga el modelo: solo HTTP</span></div>
+    <div class="rg"><span class="chip regla">api valida (Pydantic) y delega; sin lógica de negocio</span> <span class="t">test_un_cuerpo_mal_formado_no_llega_al_servicio</span></div>
+    <div class="rg"><span class="chip regla">la predicción es la de predict sobre la misma fila</span> <span class="t">test_la_prediccion_es_la_de_predict_sobre_la_misma_fila</span></div>
+    <div class="rg"><span class="chip regla">el vector trae exactamente las variables del modelo</span> <span class="t">test_el_vector_trae_exactamente_las_variables</span></div>
+    <div class="rg"><span class="chip regla">una línea no vista predice como dato faltante</span> <span class="t">test_un_vector_con_nulos_y_una_linea_no_vista_predice</span></div>
+    <div class="rg"><span class="chip regla">un modelo que falta no tumba el arranque</span> <span class="t">test_un_modelo_que_falta_no_tumba_el_arranque</span></div>
+  </div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_api.py tests/test_servicio.py</code></div></div>
+</section>
+
+<h2 class="aparte">Guardias que cubren todo el flujo</h2>
+<div class="trans">
+  <div class="r"><div class="k">mutantes</div><div><code>auditoria/mutar.py</code> rompe a propósito cada invariante y exige que algún test caiga (ADR-011). Un test en verde no demuestra que guarde nada; un mutante en rojo, sí. <code>uv run python auditoria/mutar.py</code> (~40 min).</div></div>
+  <div class="r"><div class="k">DVC</div><div>Cada stage declara sus <code>deps</code>, <code>params</code> y <code>outs</code> en <code>dvc.yaml</code>: si cambia un fichero o un parámetro, <code>uv run dvc repro</code> rehace esa etapa y las de debajo, y nada más.</div></div>
+  <div class="r"><div class="k">fronteras</div><div>La dirección de dependencias de <code>CLAUDE.md</code>: ingest no mira aguas abajo, ui solo habla HTTP, services es lo único que carga modelos. Se audita con <code>/check-fronteras</code>.</div></div>
+  <div class="r"><div class="k">trampas</div><div><code>uv run pytest .claude/tests</code> comprueba que cada trampa cerrada cita un test que existe.</div></div>
+</div>
+
+</main>
+</body>
+</html>
