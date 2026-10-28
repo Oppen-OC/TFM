@@ -34,8 +34,8 @@ stages:
       size: 6628
     - path: src/project/ingest/sources.py
       hash: md5
-      md5: ea0b0772253c9884d72e7a3da21e6b6f
-      size: 19425
+      md5: 0d0f56f917e58fd04ee80adba08eaabf
+      size: 22163
     outs:
     - path: data/curated
       hash: md5
@@ -44,8 +44,8 @@ stages:
       nfiles: 318
     - path: metrics/curar.json
       hash: md5
-      md5: adab2b296c0230ff066532902b55cb75
-      size: 1092
+      md5: 1ea1688e5965d5438f5f854190bdb127
+      size: 1090
   prepare:
     cmd: uv run python -m project.prepare
     deps:

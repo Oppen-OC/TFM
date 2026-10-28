@@ -44,7 +44,7 @@
     "payloads": 176642,
     "dias": 66,
     "filas": 2227606,
-    "errores": 254,
+    "errores": 0,
     "duplicados": 2361,
     "completados": 0,
     "estado": "reescrito"
