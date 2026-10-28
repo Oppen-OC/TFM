@@ -2368,3 +2368,45 @@ buscar = '''        local_naive_iso_to_utc, na_action="ignore"'''
 reemplazar = '''        local_naive_iso_to_utc'''
 detector = ["tests/test_ingest.py::test_renfe_tolera_trenes_de_valencia_sin_una_clave"]
 sondas = []
+
+[[mutante]]
+id = "198"
+nombre = "la explicación olvida que el modelo es de residuo"
+capa = "serving"
+# Sin `retraso_s` en la base, la cuenta no cierra con la predicción (ADR-021).
+fichero = "src/project/services/model_service.py"
+buscar = '''            base = float(x["retraso_s"].iloc[0]) if a["residuo"] else 0.0'''
+reemplazar = '''            base = 0.0'''
+detector = ["tests/test_servicio.py::test_explicar_cierra_la_cuenta"]
+sondas = []
+
+[[mutante]]
+id = "199"
+nombre = "las contribuciones SHAP se pegan por posición y no por índice"
+capa = "modelo"
+# Trampa 012: una tabla desordenada daría a cada fila las de otra.
+fichero = "src/project/predict.py"
+buscar = '''    return pd.DataFrame(c, index=tabla.index, columns=[*artefacto["columnas"], "sesgo"])'''
+reemplazar = '''    return pd.DataFrame(c, columns=[*artefacto["columnas"], "sesgo"])'''
+detector = ["tests/test_explicar.py::test_las_contribuciones_suman_la_salida_del_modelo"]
+sondas = []
+
+[[mutante]]
+id = "200"
+nombre = "el resumen SHAP cuenta filas fuera de la población"
+capa = "modelo"
+fichero = "src/project/explicar.py"
+buscar = '''    p = features.poblacion(t)'''
+reemplazar = '''    p = pd.Series(True, index=t.index)'''
+detector = ["tests/test_explicar.py::test_el_resumen_solo_cuenta_la_poblacion"]
+sondas = []
+
+[[mutante]]
+id = "201"
+nombre = "una variable se queda sin grupo en el resumen SHAP"
+capa = "modelo"
+fichero = "src/project/explicar.py"
+buscar = '''    "sesgo_del_horario": ("tramo_sesgo_s",),'''
+reemplazar = '''    "sesgo_del_horario": (),'''
+detector = ["tests/test_explicar.py::test_toda_variable_cae_en_un_solo_grupo"]
+sondas = []
