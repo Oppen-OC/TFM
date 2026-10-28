@@ -1876,3 +1876,312 @@ stages:
       hash: md5
       md5: b6b445f3157fe92fbf3fc2a2214ce310
       size: 16504
+  explicar:
+    cmd: uv run python -m project.explicar
+    deps:
+    - path: data/processed/test.parquet
+      hash: md5
+      md5: 2a481141e0a7c198bf4ba36e05ee2811
+      size: 60152165
+    - path: metrics/clasificador.json
+      hash: md5
+      md5: cf0a80708669f13181daed5fff0953ee
+      size: 16550
+    - path: metrics/eval.json
+      hash: md5
+      md5: d51a7a365e711092330586fc4cc8b7d8
+      size: 37187
+    - path: metrics/trafico.json
+      hash: md5
+      md5: 2c252fb92e61cf10cedc4b9c26cace7b
+      size: 4210
+    - path: models/model.pkl
+      hash: md5
+      md5: 897392640ab146c1ba973f29631cff6e
+      size: 41518019
+    - path: models/model_clasificador.pkl
+      hash: md5
+      md5: 4093ec170f8d798264f9652dfdfdca45
+      size: 3227133
+    - path: models/model_trafico.pkl
+      hash: md5
+      md5: fb1ae1ba9487854b83286f397e2da396
+      size: 36054675
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 30ea3afcc9a1f2ee66c6051de49f4932
+      size: 25429
+    - path: src/project/explicar.py
+      hash: md5
+      md5: 89542a983ee79f36fd8bee75383816b8
+      size: 7959
+    - path: src/project/features.py
+      hash: md5
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
+    - path: src/project/predict.py
+      hash: md5
+      md5: ad63995353da2bbaeef83a980558a140
+      size: 2814
+    params:
+      params.yaml:
+        features.test_desde: '2026-10-07'
+        features.test_hasta: '2026-10-19'
+    outs:
+    - path: figuras/shap/h1
+      hash: md5
+      md5: 048bbec08bf726a02a07e1b7e9405b55.dir
+      size: 762487
+      nfiles: 10
+    - path: metrics/explicacion.json
+      hash: md5
+      md5: a6e45cc646508f6496970e9bf0703075
+      size: 9100
+  explicar_h@2:
+    cmd: uv run python -m project.explicar --horizonte 2
+    deps:
+    - path: data/processed/h2
+      hash: md5
+      md5: 17445a41ea42792612efa3023e7b6f9a.dir
+      size: 298439610
+      nfiles: 2
+    - path: metrics/horizontes/h2/clasificador.json
+      hash: md5
+      md5: 879dc707843d0dea7f1ce08f80e006cf
+      size: 16530
+    - path: metrics/horizontes/h2/eval.json
+      hash: md5
+      md5: 5f4a75b3e23acf10b5e6b057072b9cb0
+      size: 38802
+    - path: metrics/horizontes/h2/trafico.json
+      hash: md5
+      md5: 2b5f6734449bd8f59e0d88aea0cd67d0
+      size: 4209
+    - path: models/h2/model.pkl
+      hash: md5
+      md5: 898cfff1f4b39e17d1e72c74d12196a5
+      size: 45735676
+    - path: models/h2/model_clasificador.pkl
+      hash: md5
+      md5: a7f2e48fc82e40fc921ea87a5ef27794
+      size: 4608259
+    - path: models/h2/model_trafico.pkl
+      hash: md5
+      md5: c0c02655be2697abf3785268071ea7e1
+      size: 45756133
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 30ea3afcc9a1f2ee66c6051de49f4932
+      size: 25429
+    - path: src/project/explicar.py
+      hash: md5
+      md5: 89542a983ee79f36fd8bee75383816b8
+      size: 7959
+    - path: src/project/features.py
+      hash: md5
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
+    - path: src/project/predict.py
+      hash: md5
+      md5: ad63995353da2bbaeef83a980558a140
+      size: 2814
+    params:
+      params.yaml:
+        features.test_desde: '2026-10-07'
+        features.test_hasta: '2026-10-19'
+    outs:
+    - path: figuras/shap/h2
+      hash: md5
+      md5: ef47f8d7b180567a3302d111a8dc2ad7.dir
+      size: 767225
+      nfiles: 10
+    - path: metrics/horizontes/h2/explicacion.json
+      hash: md5
+      md5: b83217e7bbdc2807966d8485f32b2494
+      size: 9081
+  explicar_h@3:
+    cmd: uv run python -m project.explicar --horizonte 3
+    deps:
+    - path: data/processed/h3
+      hash: md5
+      md5: 9c5c4ddd320cc17187d6a48e8ef4e9c5.dir
+      size: 280092825
+      nfiles: 2
+    - path: metrics/horizontes/h3/clasificador.json
+      hash: md5
+      md5: 078bd6995eb72c22af3f373312fe5b41
+      size: 16529
+    - path: metrics/horizontes/h3/eval.json
+      hash: md5
+      md5: 1bd9daa3770943b6ef1be6abea1d1c04
+      size: 40340
+    - path: metrics/horizontes/h3/trafico.json
+      hash: md5
+      md5: a7a5ac18516f619c294024145f5c1041
+      size: 4220
+    - path: models/h3/model.pkl
+      hash: md5
+      md5: c85a3ce4fe7397707a6a358ae0c0cd1d
+      size: 30010833
+    - path: models/h3/model_clasificador.pkl
+      hash: md5
+      md5: 1383a37b7da11e44d0795addf3d4d5bd
+      size: 3641681
+    - path: models/h3/model_trafico.pkl
+      hash: md5
+      md5: 05362834de5d56ccda80ad6ecac4940b
+      size: 35177368
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 30ea3afcc9a1f2ee66c6051de49f4932
+      size: 25429
+    - path: src/project/explicar.py
+      hash: md5
+      md5: 89542a983ee79f36fd8bee75383816b8
+      size: 7959
+    - path: src/project/features.py
+      hash: md5
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
+    - path: src/project/predict.py
+      hash: md5
+      md5: ad63995353da2bbaeef83a980558a140
+      size: 2814
+    params:
+      params.yaml:
+        features.test_desde: '2026-10-07'
+        features.test_hasta: '2026-10-19'
+    outs:
+    - path: figuras/shap/h3
+      hash: md5
+      md5: 0ad3739ebf382138a26473332f1acfa2.dir
+      size: 790586
+      nfiles: 10
+    - path: metrics/horizontes/h3/explicacion.json
+      hash: md5
+      md5: 23734fe1686834fbd24dbaebfd2e4632
+      size: 9084
+  explicar_h@5:
+    cmd: uv run python -m project.explicar --horizonte 5
+    deps:
+    - path: data/processed/h5
+      hash: md5
+      md5: cf7b1513d4bf8e9a59603c39c897657b.dir
+      size: 249896402
+      nfiles: 2
+    - path: metrics/horizontes/h5/clasificador.json
+      hash: md5
+      md5: c1161ef33ec2d221fb34b298a2209daf
+      size: 16525
+    - path: metrics/horizontes/h5/eval.json
+      hash: md5
+      md5: d0b93d5e692f54489be953bf26b4beb3
+      size: 37348
+    - path: metrics/horizontes/h5/trafico.json
+      hash: md5
+      md5: db4c8abe3eac71a83a05ffc2f576295c
+      size: 4203
+    - path: models/h5/model.pkl
+      hash: md5
+      md5: 2884bea8321d673a60706ef0b9a88764
+      size: 21829446
+    - path: models/h5/model_clasificador.pkl
+      hash: md5
+      md5: eace2fac4e0b10f2f36b94084a13fb2b
+      size: 4872245
+    - path: models/h5/model_trafico.pkl
+      hash: md5
+      md5: 918cc057a6f79631212559adc4cfefa1
+      size: 23103363
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 30ea3afcc9a1f2ee66c6051de49f4932
+      size: 25429
+    - path: src/project/explicar.py
+      hash: md5
+      md5: 89542a983ee79f36fd8bee75383816b8
+      size: 7959
+    - path: src/project/features.py
+      hash: md5
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
+    - path: src/project/predict.py
+      hash: md5
+      md5: ad63995353da2bbaeef83a980558a140
+      size: 2814
+    params:
+      params.yaml:
+        features.test_desde: '2026-10-07'
+        features.test_hasta: '2026-10-19'
+    outs:
+    - path: figuras/shap/h5
+      hash: md5
+      md5: bff04076bd259ff2de7ee130f1894b9d.dir
+      size: 782823
+      nfiles: 10
+    - path: metrics/horizontes/h5/explicacion.json
+      hash: md5
+      md5: 697a7a3d84d95dfc1b789ec8c133561e
+      size: 9109
+  explicar_h@10:
+    cmd: uv run python -m project.explicar --horizonte 10
+    deps:
+    - path: data/processed/h10
+      hash: md5
+      md5: 8459a259dbff7faaef458d92f2199471.dir
+      size: 182692591
+      nfiles: 2
+    - path: metrics/horizontes/h10/clasificador.json
+      hash: md5
+      md5: b6b445f3157fe92fbf3fc2a2214ce310
+      size: 16504
+    - path: metrics/horizontes/h10/eval.json
+      hash: md5
+      md5: e44e13c048708ae17f4958c2ec5d1f0f
+      size: 34388
+    - path: metrics/horizontes/h10/trafico.json
+      hash: md5
+      md5: 1566e2ac817bf9f913b1cdf5f42c550e
+      size: 4203
+    - path: models/h10/model.pkl
+      hash: md5
+      md5: 624c556c0989df882aae10d378ac27e3
+      size: 13731199
+    - path: models/h10/model_clasificador.pkl
+      hash: md5
+      md5: b522b3ff4f6109de59925559c83b2a71
+      size: 3900724
+    - path: models/h10/model_trafico.pkl
+      hash: md5
+      md5: 6ab154dfdcd625ea7d7ef900f7dc7016
+      size: 15342337
+    - path: src/project/evaluate.py
+      hash: md5
+      md5: 30ea3afcc9a1f2ee66c6051de49f4932
+      size: 25429
+    - path: src/project/explicar.py
+      hash: md5
+      md5: 89542a983ee79f36fd8bee75383816b8
+      size: 7959
+    - path: src/project/features.py
+      hash: md5
+      md5: be0e60cf933bc9dff7c995f13b22e4e8
+      size: 31106
+    - path: src/project/predict.py
+      hash: md5
+      md5: ad63995353da2bbaeef83a980558a140
+      size: 2814
+    params:
+      params.yaml:
+        features.test_desde: '2026-10-07'
+        features.test_hasta: '2026-10-19'
+    outs:
+    - path: figuras/shap/h10
+      hash: md5
+      md5: f18240926ee975f0c0fc75ab84e8d2a1.dir
+      size: 841301
+      nfiles: 10
+    - path: metrics/horizontes/h10/explicacion.json
+      hash: md5
+      md5: b06812a58d853aa6b8b23bcd897bd1df
+      size: 9125
