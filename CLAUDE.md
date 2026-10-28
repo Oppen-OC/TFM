@@ -174,8 +174,8 @@ Implementado y con tests: `config.py`, `ingest/` (sources, collect, reprocesar,
 explore), `tracking.py`, `gtfs.py`, `mapmatching.py`, `etiquetado.py`,
 `prepare.py`, `features.py` (fase 1, bitácora 030; fase 2, la flota como sensor:
 bitácora 032; sesgo del horario por tramo y `linea` categórica: bitácora 039,
-ADR-019; la capa 192 en el recorrido que queda: ADR-024), `train.py`, `predict.py`, `evaluate.py` y
-`analysis/`.
+ADR-019; la capa 192 en el recorrido que queda: ADR-024), `train.py`, `predict.py`, `evaluate.py`,
+`explicar.py` (SHAP sobre la prueba, spec del 15/10) y `analysis/`.
 `dvc repro` corre entero: los pasos por parada con `retraso_s` salen en
 `data/interim/pasos/`, la tabla partida en `data/processed/{train,test}.parquet`
 con los baselines en `metrics/features.json`, el modelo en `models/model.pkl` y
@@ -200,7 +200,8 @@ Todo análisis posterior sobre la prueba es exploratorio.
 Servido por API (spec del 15/10): `services/model_service.py` carga al
 arrancar la regresión y el clasificador de cada horizonte, y `api/` los
 expone en `/modelos`, `/prediccion/retraso` y `/prediccion/mas-de-5min`, con
-Swagger en `/docs`. La entrada es el vector de variables ya calculado: el
+Swagger en `/docs`; ambos POST aceptan `?explicar=true`, que devuelve las
+contribuciones SHAP. La entrada es el vector de variables ya calculado: el
 servido en tiempo real sigue pendiente (ADR-016).
 
 Las reglas de este fichero son **prescriptivas**, no descriptivas: dicen cómo debe
@@ -238,7 +239,7 @@ antes de importar.
 - `tests/test_explicar.py` guarda la explicación SHAP: las contribuciones suman
   la salida bruta (el residuo en la v2, el log-odds en el clasificador) y
   conservan el índice, toda variable cae en un solo grupo y el resumen solo
-  cuenta la población. Mutantes 198-201.
+  cuenta la población y las figuras son deterministas. Mutantes 198-202.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la

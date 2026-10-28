@@ -110,6 +110,30 @@ def test_explicar_llega_al_servicio(falso):
     assert falso.retraso.call_args.kwargs == {"explicar": True}
 
 
+def test_explicar_llega_al_servicio_en_mas_de_5min(falso):
+    c = {
+        "unidad": "log-odds",
+        "base": 0.0,
+        "sesgo": -1.2,
+        "principales": [{"variable": "retraso_s", "valor": 0.8}],
+        "resto": 0.1,
+    }
+    falso.mas_de_5min.return_value = {
+        "horizonte_paradas": 1,
+        "probabilidad": 0.4,
+        "umbral": 0.3,
+        "llega_tarde": True,
+        "tasa_base_validacion": 0.2,
+        "contribuciones": c,
+    }
+    r = client.post(
+        "/prediccion/mas-de-5min?explicar=true", json={"variables": EJEMPLO}
+    )
+    assert r.status_code == 200
+    assert r.json()["contribuciones"] == c
+    assert falso.mas_de_5min.call_args.kwargs == {"explicar": True}
+
+
 def test_sin_explicar_no_hay_contribuciones(falso):
     falso.retraso.return_value = {"horizonte_paradas": 1, "retraso_s": 0.0}
     r = client.post("/prediccion/retraso", json={"variables": EJEMPLO})

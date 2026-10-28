@@ -2410,3 +2410,15 @@ buscar = '''    "sesgo_del_horario": ("tramo_sesgo_s",),'''
 reemplazar = '''    "sesgo_del_horario": (),'''
 detector = ["tests/test_explicar.py::test_toda_variable_cae_en_un_solo_grupo"]
 sondas = []
+
+[[mutante]]
+id = "202"
+nombre = "las figuras SHAP dejan de ser deterministas"
+capa = "modelo"
+# Sin semilla, shap baraja con el `np.random` global: cada `dvc repro explicar`
+# reescribe los PNG y su hash en dvc.lock (dvc.lock reescrito en cada repro).
+fichero = "src/project/explicar.py"
+buscar = '''    np.random.seed(evaluate.SEMILLA)'''
+reemplazar = '''    pass'''
+detector = ["tests/test_explicar.py::test_las_figuras_son_deterministas"]
+sondas = []

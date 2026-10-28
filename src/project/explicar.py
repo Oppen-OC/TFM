@@ -21,6 +21,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import mlflow  # noqa: E402
+import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import shap  # noqa: E402
 import yaml  # noqa: E402
@@ -126,17 +127,22 @@ def resumen(contrib: pd.DataFrame, t: pd.DataFrame) -> dict:
 
 
 def figuras(
-    contrib: pd.DataFrame, t: pd.DataFrame, nombre: str, destino: Path
+    contrib: pd.DataFrame, t: pd.DataFrame, nombre: str, destino: Path, unidad: str
 ) -> list[Path]:
     """El resumen (beeswarm) y la dependencia de las variables de tráfico, de
-    flota y del sesgo del horario, en las filas de la población de `contrib`.
-    Devuelve los ficheros que ha escrito, y solo esos."""
+    flota y del sesgo del horario, en las filas de la población de `contrib`,
+    con `unidad` en el eje del SHAP. Devuelve los ficheros que ha escrito, y
+    solo esos."""
+    # shap baraja los puntos con el `np.random` global: sin semilla, cada repro
+    # reescribiría los PNG.
+    np.random.seed(evaluate.SEMILLA)
     t = t.loc[contrib.index]
     m = t.index[features.poblacion(t)]
     variables = [c for c in contrib.columns if c != "sesgo"]
     x = t.loc[m, variables].copy()
-    # El color del beeswarm necesita números: la línea va por su código.
-    x["linea"] = x["linea"].astype("category").cat.codes
+    # El color del beeswarm necesita números; la línea es categórica, sin orden:
+    # NaN, que shap pinta en gris.
+    x["linea"] = np.nan
     e = shap.Explanation(
         values=contrib.loc[m, variables].to_numpy(),
         base_values=contrib.loc[m, "sesgo"].to_numpy(),
@@ -146,6 +152,7 @@ def figuras(
     destino.mkdir(parents=True, exist_ok=True)
     shap.plots.beeswarm(e, max_display=15, show=False)
     plt.title(nombre)
+    plt.xlabel(f"SHAP ({unidad})")
     plt.tight_layout()
     escritas = [destino / f"{nombre}_resumen.png"]
     plt.savefig(escritas[0], dpi=150)
@@ -154,6 +161,7 @@ def figuras(
         if v in variables:
             shap.plots.scatter(e[:, v], show=False)
             plt.title(f"{nombre}: {v}")
+            plt.ylabel(f"SHAP de {v} ({unidad})")
             plt.tight_layout()
             escritas.append(destino / f"{nombre}_dependencia_{v}.png")
             plt.savefig(escritas[-1], dpi=150)
@@ -188,7 +196,7 @@ def main(horizonte: int | None = None) -> None:
             "mlflow_run_id": art["mlflow_run_id"],
             **resumen(c, m),
         }
-        escritas = figuras(c, m, nombre, destino)
+        escritas = figuras(c, m, nombre, destino, predict.unidad(art))
         with mlflow.start_run(run_id=art["mlflow_run_id"]):
             mlflow.log_dict(salida["modelos"][nombre], "explicacion.json")
             for f in escritas:

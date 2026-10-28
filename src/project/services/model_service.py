@@ -91,7 +91,7 @@ def explicacion(artefacto: dict, x: pd.DataFrame, base: float) -> dict:
     salida del modelo, el retraso o el log-odds."""
     c = predict.contribuciones(artefacto, x).iloc[0]
     sesgo = float(c.pop("sesgo"))
-    orden = c.abs().sort_values(ascending=False).index
+    orden = c.abs().sort_values(ascending=False, kind="stable").index
     return {
         "unidad": predict.unidad(artefacto),
         "base": base,

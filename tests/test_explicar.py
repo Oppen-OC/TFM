@@ -134,7 +134,11 @@ def test_la_muestra_es_fija_y_de_la_poblacion(modelos, monkeypatch):
 def test_las_figuras_salen(modelos, tmp_path):
     t, reg, _ = modelos
     rutas = explicar.figuras(
-        predict.contribuciones(reg, t), t, "regresion_trafico", tmp_path
+        predict.contribuciones(reg, t),
+        t,
+        "regresion_trafico",
+        tmp_path,
+        "s del residuo",
     )
     esperadas = [
         "regresion_trafico_dependencia_trafico_congestion_frac.png",
@@ -143,3 +147,17 @@ def test_las_figuras_salen(modelos, tmp_path):
     ]
     assert sorted(f.name for f in tmp_path.iterdir()) == esperadas
     assert sorted(p.name for p in rutas) == esperadas
+
+
+def test_las_figuras_son_deterministas(modelos, tmp_path):
+    """shap baraja con el `np.random` global: sin semilla, cada repro cambiaría
+    los PNG y su hash en dvc.lock."""
+    t, reg, _ = modelos
+    c = predict.contribuciones(reg, t)
+    np.random.seed(1)
+    a = explicar.figuras(c, t, "r", tmp_path / "a", "s del residuo")
+    np.random.seed(2)
+    b = explicar.figuras(c, t, "r", tmp_path / "b", "s del residuo")
+    assert [p.name for p in a] == [p.name for p in b]
+    for p, q in zip(a, b):
+        assert p.read_bytes() == q.read_bytes(), p.name
