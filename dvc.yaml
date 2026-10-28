@@ -355,3 +355,56 @@ stages:
       metrics:
         - metrics/horizontes/h${item}/clasificador.json:
             cache: false
+
+  # Qué usa cada modelo (spec del 15/10): SHAP sobre una muestra fija de la
+  # población de la prueba. Depende de las métricas de la evaluación para
+  # correr DETRÁS de ella; es descriptivo y no cambia ninguna cifra.
+  explicar:
+    cmd: uv run python -m project.explicar
+    deps:
+      - data/processed/test.parquet
+      - models/model.pkl
+      - models/model_trafico.pkl
+      - models/model_clasificador.pkl
+      - metrics/eval.json
+      - metrics/trafico.json
+      - metrics/clasificador.json
+      - src/project/explicar.py
+      - src/project/predict.py
+      - src/project/features.py
+      - src/project/evaluate.py
+    params:
+      - features.test_desde
+      - features.test_hasta
+    metrics:
+      - metrics/explicacion.json:
+          cache: false
+    outs:
+      - figuras/shap/h1:
+          cache: false
+
+  explicar_h:
+    foreach: ${features.horizontes_barrido}
+    do:
+      cmd: uv run python -m project.explicar --horizonte ${item}
+      deps:
+        - data/processed/h${item}
+        - models/h${item}/model.pkl
+        - models/h${item}/model_trafico.pkl
+        - models/h${item}/model_clasificador.pkl
+        - metrics/horizontes/h${item}/eval.json
+        - metrics/horizontes/h${item}/trafico.json
+        - metrics/horizontes/h${item}/clasificador.json
+        - src/project/explicar.py
+        - src/project/predict.py
+        - src/project/features.py
+        - src/project/evaluate.py
+      params:
+        - features.test_desde
+        - features.test_hasta
+      metrics:
+        - metrics/horizontes/h${item}/explicacion.json:
+            cache: false
+      outs:
+        - figuras/shap/h${item}:
+            cache: false

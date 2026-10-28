@@ -131,7 +131,8 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
   `features_h`/`train_h`/`evaluate_h` para el barrido de horizontes, ADR-023;
   `train_trafico`/`evaluate_trafico` y sus `_h`, para la capa 192, ADR-024;
   `train_clasificador`/`evaluate_clasificador` y sus `_h`, para más de 5 min
-  tarde, ADR-025)
+  tarde, ADR-025; `explicar` y `explicar_h`, SHAP sobre la prueba detrás de su
+  evaluación)
   es un stage en `dvc.yaml` con sus
   `deps`, `params` y `outs` declarados. Un script de entrenamiento sin stage es un
   error.
@@ -234,6 +235,10 @@ antes de importar.
   vector trae exactamente las variables, los nulos y la línea no vista
   predicen, `retraso_s` nulo y los infinitos se rechazan, P = τ avisa y un modelo que
   falta no tumba el arranque. Mutantes 175-181.
+- `tests/test_explicar.py` guarda la explicación SHAP: las contribuciones suman
+  la salida bruta (el residuo en la v2, el log-odds en el clasificador) y
+  conservan el índice, toda variable cae en un solo grupo y el resumen solo
+  cuenta la población. Mutantes 198-201.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la
@@ -275,8 +280,6 @@ uv run python -m project.analysis.diagnose           # GO / NO-GO de la hipótes
 uv run python -m project.analysis.dashboard_ingesta  # foto y figuras del dashboard de la defensa
 uv run python auditoria/mutar.py                     # ¿detectan los tests? (~40 min)
 ```
-
-Dependencias todavía por añadir: `shap`.
 
 **Entorno: Windows + PowerShell.** `run.sh` es bash y no funciona aquí tal cual:
 lanzar API y UI en terminales separadas.

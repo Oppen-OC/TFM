@@ -114,6 +114,9 @@ def test_los_stages_de_dvc_son_los_documentados():
         "evaluate_clasificador",
         "train_clasificador_h",
         "evaluate_clasificador_h",
+        # qué usa cada modelo (spec del 15/10): SHAP sobre la prueba
+        "explicar",
+        "explicar_h",
     }
     assert declarados == documentados, (
         f"dvc.yaml declara {sorted(declarados)}, la documentación describe "
