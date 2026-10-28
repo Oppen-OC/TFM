@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import warnings
 from pathlib import Path
 
 import matplotlib
@@ -150,7 +151,11 @@ def figuras(
         feature_names=variables,
     )
     destino.mkdir(parents=True, exist_ok=True)
-    shap.plots.beeswarm(e, max_display=15, show=False)
+    with warnings.catch_warnings():
+        # La línea va entera a NaN para pintarse en gris; numpy avisa al
+        # buscar su rango.
+        warnings.filterwarnings("ignore", "All-NaN slice encountered", RuntimeWarning)
+        shap.plots.beeswarm(e, max_display=15, show=False)
     plt.title(nombre)
     plt.xlabel(f"SHAP ({unidad})")
     plt.tight_layout()
