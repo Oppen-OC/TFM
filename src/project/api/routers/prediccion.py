@@ -21,9 +21,9 @@ def servicio(request: Request) -> Servicio:
     return request.app.state.servicio
 
 
-def _llamar(f: Callable[..., dict], *args) -> dict:
+def _llamar(f: Callable[..., dict], *args, **kwargs) -> dict:
     try:
-        return f(*args)
+        return f(*args, **kwargs)
     except (VariablesInvalidas, HorizonteInvalido) as e:
         raise HTTPException(status_code=422, detail=e.args[0]) from e
     except ModeloNoDisponible as e:
@@ -36,19 +36,32 @@ def modelos(s: Servicio = Depends(servicio)) -> list[dict]:
     return s.modelos()
 
 
-@router.post("/prediccion/retraso", response_model=Retraso)
+@router.post(
+    "/prediccion/retraso", response_model=Retraso, response_model_exclude_none=True
+)
 def retraso(
-    cuerpo: Vector, horizonte: int | None = None, s: Servicio = Depends(servicio)
+    cuerpo: Vector,
+    horizonte: int | None = None,
+    explicar: bool = False,
+    s: Servicio = Depends(servicio),
 ) -> dict:
     """Segundos de retraso en la parada `stop_sequence + horizonte` (ADR-006).
-    Sin horizonte, el de `params.yaml`."""
-    return _llamar(s.retraso, cuerpo.variables, horizonte)
+    Sin horizonte, el de `params.yaml`. Con `explicar`, su SHAP."""
+    return _llamar(s.retraso, cuerpo.variables, horizonte, explicar=explicar)
 
 
-@router.post("/prediccion/mas-de-5min", response_model=MasDe5Min)
+@router.post(
+    "/prediccion/mas-de-5min",
+    response_model=MasDe5Min,
+    response_model_exclude_none=True,
+)
 def mas_de_5min(
-    cuerpo: Vector, horizonte: int | None = None, s: Servicio = Depends(servicio)
+    cuerpo: Vector,
+    horizonte: int | None = None,
+    explicar: bool = False,
+    s: Servicio = Depends(servicio),
 ) -> dict:
     """Probabilidad de llegar con más de 5 min de retraso y decisión con el τ
-    del modelo (ADR-025). Sin horizonte, el de `params.yaml`."""
-    return _llamar(s.mas_de_5min, cuerpo.variables, horizonte)
+    del modelo (ADR-025). Sin horizonte, el de `params.yaml`. Con `explicar`,
+    su SHAP en log-odds."""
+    return _llamar(s.mas_de_5min, cuerpo.variables, horizonte, explicar=explicar)

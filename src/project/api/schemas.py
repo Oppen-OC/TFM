@@ -50,11 +50,30 @@ class Vector(BaseModel):
     )
 
 
+class Contribucion(BaseModel):
+    variable: str
+    valor: float
+
+
+class Contribuciones(BaseModel):
+    """SHAP de esta predicción: base + sesgo + Σ principales + resto es la
+    salida del modelo, en `unidad`."""
+
+    unidad: str = Field(..., description="«s del residuo», «s» o «log-odds»")
+    base: float = Field(
+        ..., description="retraso_s si el modelo es de residuo (ADR-021); si no, 0"
+    )
+    sesgo: float
+    principales: list[Contribucion]
+    resto: float = Field(..., description="La suma de las demás variables")
+
+
 class Retraso(BaseModel):
     horizonte_paradas: int
     retraso_s: float = Field(
         ..., description="Segundos de retraso en la parada stop_sequence + h"
     )
+    contribuciones: Contribuciones | None = None
 
 
 class MasDe5Min(BaseModel):
@@ -65,6 +84,7 @@ class MasDe5Min(BaseModel):
     tasa_base_validacion: float = Field(
         ..., description="Fracción de más de 5 min en la validación (ADR-006)"
     )
+    contribuciones: Contribuciones | None = None
 
 
 class Modelo(BaseModel):

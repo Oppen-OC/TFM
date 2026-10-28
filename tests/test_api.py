@@ -91,6 +91,32 @@ def test_un_cuerpo_mal_formado_no_llega_al_servicio(falso):
     falso.retraso.assert_not_called()
 
 
+def test_explicar_llega_al_servicio(falso):
+    c = {
+        "unidad": "s del residuo",
+        "base": 228.42,
+        "sesgo": 1.0,
+        "principales": [{"variable": "tramo_sesgo_s", "valor": -3.0}],
+        "resto": 0.5,
+    }
+    falso.retraso.return_value = {
+        "horizonte_paradas": 1,
+        "retraso_s": 226.92,
+        "contribuciones": c,
+    }
+    r = client.post("/prediccion/retraso?explicar=true", json={"variables": EJEMPLO})
+    assert r.status_code == 200
+    assert r.json()["contribuciones"] == c
+    assert falso.retraso.call_args.kwargs == {"explicar": True}
+
+
+def test_sin_explicar_no_hay_contribuciones(falso):
+    falso.retraso.return_value = {"horizonte_paradas": 1, "retraso_s": 0.0}
+    r = client.post("/prediccion/retraso", json={"variables": EJEMPLO})
+    assert "contribuciones" not in r.json()
+    assert falso.retraso.call_args.kwargs == {"explicar": False}
+
+
 def test_modelos(falso):
     falso.modelos.return_value = [
         {

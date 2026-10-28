@@ -20,6 +20,8 @@ REGRESION, CLASIFICADOR = "regresion", "clasificador"
 # La clave de `features.salidas` de cada modelo servido. Los de la capa 192 no
 # se sirven: su aportación la decide el ADR-024.
 SALIDA = {REGRESION: "modelo", CLASIFICADOR: "clasificador"}
+# Contribuciones que se devuelven con `explicar`; las demás van sumadas en `resto`.
+PRINCIPALES = 5
 
 
 class VariablesInvalidas(ValueError):
@@ -83,6 +85,24 @@ def fila(columnas: list[str], variables: dict) -> pd.DataFrame:
     return t
 
 
+def explicacion(artefacto: dict, x: pd.DataFrame, base: float) -> dict:
+    """Las `PRINCIPALES` contribuciones de mayor valor absoluto y las demás
+    sumadas, para que la cuenta cierre: base + sesgo + principales + resto es la
+    salida del modelo, el retraso o el log-odds."""
+    c = predict.contribuciones(artefacto, x).iloc[0]
+    sesgo = float(c.pop("sesgo"))
+    orden = c.abs().sort_values(ascending=False).index
+    return {
+        "unidad": predict.unidad(artefacto),
+        "base": base,
+        "sesgo": sesgo,
+        "principales": [
+            {"variable": v, "valor": float(c[v])} for v in orden[:PRINCIPALES]
+        ],
+        "resto": float(c[orden[PRINCIPALES:]].sum()),
+    }
+
+
 class Servicio:
     """Los artefactos cargados, por (modelo, horizonte)."""
 
@@ -129,21 +149,34 @@ class Servicio:
             salida.append(m)
         return salida
 
-    def retraso(self, variables: dict, horizonte: int | None = None) -> dict:
+    def retraso(
+        self, variables: dict, horizonte: int | None = None, explicar: bool = False
+    ) -> dict:
         """Segundos de retraso en la parada `stop_sequence + h` (ADR-006)."""
         h, a = self._artefacto(REGRESION, horizonte)
-        y = predict.predecir(a, fila(a["columnas"], variables)).iloc[0]
-        return {"horizonte_paradas": h, "retraso_s": float(y)}
+        x = fila(a["columnas"], variables)
+        r = {"horizonte_paradas": h, "retraso_s": float(predict.predecir(a, x).iloc[0])}
+        if explicar:
+            # Un modelo de residuo explica cuánto se aparta de la persistencia.
+            base = float(x["retraso_s"].iloc[0]) if a["residuo"] else 0.0
+            r["contribuciones"] = explicacion(a, x, base)
+        return r
 
-    def mas_de_5min(self, variables: dict, horizonte: int | None = None) -> dict:
+    def mas_de_5min(
+        self, variables: dict, horizonte: int | None = None, explicar: bool = False
+    ) -> dict:
         """P(más de 5 min tarde) y la decisión con el τ del artefacto (ADR-025):
         se avisa si P ≥ τ, la convención con la que se eligió."""
         h, a = self._artefacto(CLASIFICADOR, horizonte)
-        p = float(predict.probabilidad(a, fila(a["columnas"], variables)).iloc[0])
-        return {
+        x = fila(a["columnas"], variables)
+        p = float(predict.probabilidad(a, x).iloc[0])
+        r = {
             "horizonte_paradas": h,
             "probabilidad": p,
             "umbral": float(a["umbral"]),
             "llega_tarde": p >= a["umbral"],
             "tasa_base_validacion": float(a["validacion"]["tasa_base"]),
         }
+        if explicar:
+            r["contribuciones"] = explicacion(a, x, 0.0)
+        return r

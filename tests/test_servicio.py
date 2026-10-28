@@ -210,3 +210,34 @@ def test_un_infinito_no_se_predice(arts):
         with pytest.raises(VariablesInvalidas) as e:
             s.retraso(_vector(t) | {var: inf})
         assert e.value.args[0]["no_finitas"] == [var]
+
+
+def test_explicar_cierra_la_cuenta(arts):
+    """base + sesgo + principales + resto es lo que devuelve el modelo: en la
+    regresión de residuo, la base es `retraso_s` (ADR-021); en el clasificador,
+    0, y la suma es el log-odds."""
+    t, reg, clf = arts
+    s = Servicio({("regresion", 1): reg, ("clasificador", 1): clf}, [1])
+    # Con nulos y una línea que el modelo no vio: la cuenta cierra igual.
+    v = _vector(t, 3) | {"linea": "8", "bus_anterior_retraso_s": None}
+    r = s.retraso(v, explicar=True)
+    c = r["contribuciones"]
+    assert c["unidad"] == "s del residuo"
+    assert c["base"] == v["retraso_s"]
+    assert len(c["principales"]) == 5
+    valores = [abs(x["valor"]) for x in c["principales"]]
+    assert valores == sorted(valores, reverse=True)
+    total = c["base"] + c["sesgo"] + sum(x["valor"] for x in c["principales"])
+    assert total + c["resto"] == pytest.approx(r["retraso_s"], abs=1e-3)
+    m = s.mas_de_5min(v, explicar=True)
+    c = m["contribuciones"]
+    assert c["unidad"] == "log-odds" and c["base"] == 0.0
+    logit = c["sesgo"] + sum(x["valor"] for x in c["principales"]) + c["resto"]
+    assert 1 / (1 + np.exp(-logit)) == pytest.approx(m["probabilidad"], abs=1e-5)
+
+
+def test_sin_explicar_la_respuesta_no_cambia(arts):
+    t, reg, clf = arts
+    s = Servicio({("regresion", 1): reg, ("clasificador", 1): clf}, [1])
+    assert set(s.retraso(_vector(t))) == {"horizonte_paradas", "retraso_s"}
+    assert "contribuciones" not in s.mas_de_5min(_vector(t))
