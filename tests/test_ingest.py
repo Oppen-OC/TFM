@@ -189,8 +189,9 @@ def test_renfe_tolera_trenes_de_valencia_sin_una_clave(fix, clave, columna):
 
     La columna solo existe si algún tren de la flota nacional la trae; el filtro
     del núcleo quita filas, no columnas. Los 254 errores de `curar.json` hasta el
-    18/10 fueron `codEstDest`, `porAvanc` y `codEstOrig`, de madrugada y sin
-    trenes de València. Con trenes de València, `reprocesar` cuenta el error y
+    18/10 fueron `codEstDest`, `porAvanc` y `codEstOrig`, con la flota en uno o
+    dos trenes (de madrugada, o de día con la fuente degradada) y ninguno de
+    València (trampa 019). Con trenes de València, `reprocesar` cuenta el error y
     tira el sondeo entero sin que nada dé la cara. Un payload sin trenes del 40
     pasaría con un parche que devolviera vacío: aquí los hay.
     """

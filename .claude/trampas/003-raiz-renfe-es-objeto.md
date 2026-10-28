@@ -38,6 +38,10 @@ mal filtrado contamina justo la vía de escape.
 `fechaActualizacion` llega como ISO naive y sufre el mismo problema de zona
 horaria que [002](002-emt-alterna-convencion-horaria.md).
 
+Renfe omite las claves sin valor ([019](019-renfe-omite-la-clave-sin-valor.md)).
+Completar a nulo también `nucleo` vacía el filtro sin error: esta misma trampa
+por otro camino.
+
 ## Guardia
 
 `parse_renfe()` en `src/project/ingest/sources.py:335`, con `nucleo="40"` por defecto.

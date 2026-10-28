@@ -24,6 +24,7 @@ completa antes de tocar la capa correspondiente.**
 | [016](016-la-pi-no-tiene-el-corpus-entero.md) | mitigada | fuentes | La Pi **no tiene el corpus entero**: el 15-18/08 lo capturó el portátil. Un `rsync -av` de la Pi sobre `data/raw/` deja el 18/08 de la EMT en 115 sondeos en vez de 1.109, sin error. Traer solo con `deploy_pi/pull_data.sh` | — (`pull_data.sh --verificar`) |
 | [017](017-las-variables-en-t-obs-ven-pasos-que-aun-no-han-llegado.md) | cerrada | pipeline | Las variables calculadas en `t_obs` ven pasos que **aún no han llegado**: el retraso de un paso se sabe 80,7 s después (p50), tras la posición k1+1 que usa `cruces` y tras asignar el viaje. Con una parada de horizonte, el 45 % llega tarde | `test_t_disp_no_es_anterior_a_ninguna_posicion_…` |
 | [018](018-un-payload-de-error-no-es-un-sondeo.md) | cerrada | fuentes | El `{"error": …}` del geoportal se guarda en el crudo como un payload más, a su hora. Contar líneas dio el 13/10 por completo con **3 h 45 min sin posiciones**, y el día entró en la prueba contra el criterio de día útil. Un sondeo es un payload con filas | `test_un_payload_de_error_no_cuenta_como_sondeo` |
+| [019](019-renfe-omite-la-clave-sin-valor.md) | cerrada | fuentes | Renfe **omite** la clave sin valor, nunca la manda a null: con la flota en 1-2 trenes la columna no existe y la lista fija de columnas daba `KeyError` en 254 payloads, contados en `curar.json` y tirados sin ruido. Completar a nulo también `nucleo` da 0 filas sin error (003) | `test_renfe_tolera_trenes_de_valencia_sin_una_clave` |
 
 ## Cómo se usa
 
