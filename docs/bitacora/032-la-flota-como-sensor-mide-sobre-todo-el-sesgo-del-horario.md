@@ -13,7 +13,8 @@ trampa: —
 
 ## Qué se observó
 
-Fase 2, opción 1 (`docs/10_respuestas_tutor.md`, enfoque 2). Para la fila
+Fase 2, opción 1 (respuestas del tutor, privadas y fuera del repositorio,
+enfoque 2). Para la fila
 (viaje, parada *i*, instante *t*), `tramo_ganado_{W}min` es la **mediana** del
 retraso que ganaron **otros** viajes, de cualquier línea, al recorrer el mismo
 tramo: el par (parada *i*, parada objetivo). Solo cuentan los que acabaron el

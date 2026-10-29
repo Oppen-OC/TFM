@@ -15,8 +15,8 @@ trampa: —
 
 El veredicto de `docs/06_veredicto_capas_trafico.md` («las dos capas de tráfico
 son estáticas») salía de 42 horas de agosto. El tutor condicionó la formulación
-del TFM a una comprobación en periodo lectivo (`docs/10_respuestas_tutor.md`,
-§2). Con la captura hasta el 18/09:
+del TFM a una comprobación en periodo lectivo (respuestas del tutor, privadas
+y fuera del repositorio, §2). Con la captura hasta el 18/09:
 
 **Capa 192 (estado), por día laborable, estados 1-2:**
 
