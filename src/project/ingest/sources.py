@@ -76,7 +76,10 @@ LAT_MIN_S, LAT_MAX_S = -180.0, 900.0
 
 
 def resolver_convencion(
-    epoch_ms: pd.Series, ts_ingest: pd.Timestamp, lat_max: float = LAT_MAX_S
+    epoch_ms: pd.Series,
+    ts_ingest: pd.Timestamp,
+    lat_max: float = LAT_MAX_S,
+    agg: str = "median",
 ) -> tuple[pd.Series, str]:
     """Decide, POR SNAPSHOT, si el timestamp viene en UTC o en local naive.
 
@@ -90,6 +93,9 @@ def resolver_convencion(
     dos horas, lo que destruye cualquier etiqueta de retraso. La solución es
     no asumir: probar las dos interpretaciones y quedarse con la que produce
     una latencia plausible. Se autocalibra además en el cambio de hora.
+
+    La capa 157 decide con `agg="min"` porque mezcla estaciones que llegan con
+    más de una hora de retraso.
     """
     crudo = pd.to_datetime(epoch_ms, unit="ms", utc=True)  # leído tal cual
     # Reinterpretar esa hora de pared en Europe/Madrid y volver a UTC.
@@ -98,8 +104,8 @@ def resolver_convencion(
         TZ_LOCAL, ambiguous=True, nonexistent="shift_forward"
     ).dt.tz_convert("UTC")
 
-    med_utc = float((ts_ingest - crudo).dt.total_seconds().median())
-    med_loc = float((ts_ingest - local).dt.total_seconds().median())
+    med_utc = float(getattr((ts_ingest - crudo).dt.total_seconds(), agg)())
+    med_loc = float(getattr((ts_ingest - local).dt.total_seconds(), agg)())
 
     ok_utc = LAT_MIN_S <= med_utc <= lat_max
     ok_loc = LAT_MIN_S <= med_loc <= lat_max
@@ -319,6 +325,37 @@ def parse_valenbisi(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
     ]
 
 
+def parse_meteo(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
+    df = pd.DataFrame(_arcgis_rows(payload))
+    if df.empty:
+        return df
+    df["ts_utc"], convencion = resolver_convencion(
+        df["fecha_carg"], ts_ingest, lat_max=2400, agg="min"
+    )
+    df["tz_convencion"] = convencion
+    df["ts_ingest_utc"] = ts_ingest
+    df["latencia_s"] = (df["ts_ingest_utc"] - df["ts_utc"]).dt.total_seconds()
+    return df[
+        [
+            "fiwareid",
+            "nombre",
+            "lat",
+            "lon",
+            "fecha_carg",
+            "temperatur",
+            "humedad_re",
+            "presion_ba",
+            "viento_vel",
+            "viento_dir",
+            "precipitac",
+            "ts_utc",
+            "ts_ingest_utc",
+            "latencia_s",
+            "tz_convencion",
+        ]
+    ]
+
+
 CLAVES_RENFE = [
     "tripId",
     "codTren",
@@ -442,6 +479,16 @@ SOURCES: dict[str, Source] = {
         silencio_max_s=30 * 60,
         silencio_madrugada_s=8 * 3600,
         tags=("tiempo_real", "etiqueta_gratis"),
+    ),
+    "meteo_estaciones": Source(
+        url=f"{ARCGIS}/OPENDATA/MedioAmbiente/MapServer/157/query?{QUERY_ARGS}",
+        period_s=300,
+        notes="5 estaciones (W01-W04, W06). W01/W02 cada 10 min; W03/W04/W06 (AEMET) una vez por hora, 51-91 min tarde. Sin histórico.",
+        parser=parse_meteo,
+        # Provisional: sin medir de noche. Recalibrar con
+        # `analysis/medir_silencios` (S4 del spec).
+        silencio_max_s=30 * 60,
+        tags=("tiempo_real",),
     ),
 }
 

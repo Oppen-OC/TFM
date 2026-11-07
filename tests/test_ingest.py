@@ -26,6 +26,7 @@ FUENTES = [
     "trafico_intensidad",
     "valenbisi",
     "renfe_cercanias",
+    "meteo_estaciones",
 ]
 
 
@@ -249,6 +250,61 @@ def test_trafico_intensidad_lectura_menos_uno_es_nulo(fix):
 def test_emt_snapshot_id_es_el_gid_minimo_del_bloque(fix):
     df = parse("emt_buses", fix["emt_buses"], now_utc())
     assert int(df["snapshot_id"].iloc[0]) == 1659987635
+
+
+# --------------------------------------------------------------------------- #
+# 2b. Capa 157  ·  TRAMPA 002
+# --------------------------------------------------------------------------- #
+TS_METEO = pd.Timestamp("2026-11-06T17:39:20.584987Z")
+
+
+def _meteo(fix: dict, desplazar_ms: int = 0) -> dict:
+    p = copy.deepcopy(fix["meteo_estaciones"])
+    for f in p["features"]:
+        f["attributes"]["fecha_carg"] += desplazar_ms
+    return p
+
+
+def test_meteo_decide_la_convencion_con_la_fila_mas_fresca(fix):
+    """Las de AEMET llegan con 51-91 min de retraso: con la mediana, ninguna
+    lectura cuadra y sale DUDOSA siempre. La más fresca (W01, 17:30Z) sí."""
+    d = parse("meteo_estaciones", _meteo(fix), TS_METEO)
+    assert len(d) == 5
+    assert (d["tz_convencion"] == "YA_EN_UTC").all()
+    esperado = pd.to_datetime(d["fecha_carg"], unit="ms", utc=True)
+    assert (d["ts_utc"] == esperado).all()
+    assert d["latencia_s"].min() == pytest.approx(560.584987)
+
+
+def test_meteo_servida_en_hora_local_da_los_mismos_ts_utc(fix):
+    """Mismo dato sellado en hora de pared de invierno (CET, +1 h)."""
+    utc = parse("meteo_estaciones", _meteo(fix), TS_METEO)
+    loc = parse("meteo_estaciones", _meteo(fix, 3_600_000), TS_METEO)
+    assert (loc["tz_convencion"] == "LOCAL_NAIVE").all()
+    assert (loc["ts_utc"] == utc["ts_utc"]).all()
+
+
+def test_meteo_sin_las_municipales_sale_dudosa(fix):
+    p = _meteo(fix)
+    p["features"] = [
+        f
+        for f in p["features"]
+        if not f["attributes"]["fiwareid"].startswith(("W01", "W02"))
+    ]
+    d = parse("meteo_estaciones", p, TS_METEO)
+    assert len(d) == 3 and (d["tz_convencion"] == "DUDOSA").all()
+
+
+def test_meteo_sin_features_devuelve_vacio(fix):
+    assert parse("meteo_estaciones", {"features": []}, TS_METEO).empty
+
+
+def test_meteo_una_estacion_sin_fecha_no_rompe_las_demas(fix):
+    p = _meteo(fix)
+    p["features"][0]["attributes"]["fecha_carg"] = None
+    d = parse("meteo_estaciones", p, TS_METEO)
+    assert d["ts_utc"].isna().sum() == 1
+    assert (d["tz_convencion"] == "YA_EN_UTC").all()
 
 
 # --------------------------------------------------------------------------- #

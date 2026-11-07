@@ -239,6 +239,9 @@ def _sondeo(fuente: str, base: dict, k: int) -> dict:
     elif fuente == "valenbisi":
         for f in p["features"]:
             f["attributes"]["update_jcd"] += 60_000 * k
+    elif fuente == "meteo_estaciones":
+        for f in p["features"]:
+            f["attributes"]["fecha_carg"] += 60_000 * k
     # Tráfico no publica marca de tiempo: su clave es el instante de captura y
     # el mismo payload vale como sondeo distinto.
     return p
@@ -526,6 +529,9 @@ def test_renfe_callada_de_madrugada_no_es_una_caida(
         ("valenbisi", DIA, 15.3),
         ("renfe_cercanias", pd.Timestamp("2026-10-01T21:08:12Z"), 20.3),
         ("renfe_cercanias", pd.Timestamp("2026-08-27T03:48:46Z"), 358.7),
+        # 10 min medidos con sondeo cada 2 min el 06-07/11; con sondeo cada 5 min
+        # son hasta 15. Provisional (S4).
+        ("meteo_estaciones", DIA, 15.0),
     ],
     ids=[
         "emt-a-las-5",
@@ -534,6 +540,7 @@ def test_renfe_callada_de_madrugada_no_es_una_caida(
         "valenbisi-un-fallo",
         "renfe-de-dia",
         "renfe-de-noche",
+        "meteo-entre-lecturas",
     ],
 )
 def test_el_silencio_legitimo_mas_largo_medido_no_es_una_caida(
@@ -568,8 +575,9 @@ def test_el_colector_parado_no_se_tapa_con_una_fuente_callada(
     assert codigo == 2
 
 
+@pytest.mark.parametrize("fuente", ["emt_buses", "meteo_estaciones"])
 def test_la_fuente_que_arranca_devolviendo_errores_sale_caida(
-    tmp_path, colector, monkeypatch
+    tmp_path, colector, monkeypatch, fuente
 ):
     """Un `{"error": …}` del geoportal no mueve ningún contador (trampa 018).
 
@@ -586,7 +594,7 @@ def test_la_fuente_que_arranca_devolviendo_errores_sale_caida(
 
     async def una_vuelta() -> None:
         async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as c:
-            await colector.sondear(c, "emt_buses", tmp_path)
+            await colector.sondear(c, fuente, tmp_path)
 
     asyncio.run(una_vuelta())
     colector.escribir_latido(tmp_path)

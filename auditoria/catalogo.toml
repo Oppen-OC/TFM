@@ -2422,3 +2422,25 @@ buscar = '''    np.random.seed(evaluate.SEMILLA)'''
 reemplazar = '''    pass'''
 detector = ["tests/test_explicar.py::test_las_figuras_son_deterministas"]
 sondas = []
+
+[[mutante]]
+id = "204"
+nombre = "la capa 157 se convierte con desfase fijo"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    df["ts_utc"], convencion = resolver_convencion(
+        df["fecha_carg"], ts_ingest, lat_max=2400, agg="min"
+    )'''
+reemplazar = '''    df["ts_utc"], convencion = pd.to_datetime(df["fecha_carg"], unit="ms", utc=True), "YA_EN_UTC"'''
+detector = ["tests/test_ingest.py::test_meteo_servida_en_hora_local_da_los_mismos_ts_utc"]
+sondas = []
+
+[[mutante]]
+id = "205"
+nombre = "la capa 157 decide la convención por la mediana"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''agg="min"'''
+reemplazar = '''agg="median"'''
+detector = ["tests/test_ingest.py::test_meteo_decide_la_convencion_con_la_fila_mas_fresca"]
+sondas = []
