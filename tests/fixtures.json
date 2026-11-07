@@ -51,6 +51,25 @@
       {"tripId": "4025S24363C6", "codTren": "24363", "codLinea": "C6", "retrasoMin": "7", "codEstAct": "62103", "codEstSig": "62104", "horaLlegadaSigEst": "2026-08-15T21:22:00", "codEstDest": "62200", "codEstOrig": "65000", "porAvanc": "67.0", "latitud": 39.954987, "longitud": -0.07685744, "nucleo": "40", "accesible": false, "via": "", "nextVia": "1"}
     ]
   },
+  "meteo_estaciones": {
+    "displayFieldName": "nombre",
+    "fieldAliases": {"objectid": "objectid", "nombre": "Nom / Nombre", "fecha_carg": "Data càrrega / Fecha Carga", "direccion": "Adreça / Dirección", "viento_dir": "Direcció Vent / Dirección Viento", "viento_vel": "Velocitat Vent / Velocidat Viento", "temperatur": "Temperatura", "humedad_re": "Humitat Relativa / Humedad Relativa", "presion_ba": "Pressió Bar / Presión Bar", "precipitac": "Precipitacions / Precipitaciones", "fiwareid": "fiwareid"},
+    "geometryType": "esriGeometryPoint",
+    "spatialReference": {"wkid": 4326, "latestWkid": 4326},
+    "fields": [{"name": "objectid", "type": "esriFieldTypeOID", "alias": "objectid"}, {"name": "nombre", "type": "esriFieldTypeString", "alias": "Nom / Nombre", "length": 254}, {"name": "fecha_carg", "type": "esriFieldTypeDate", "alias": "Data càrrega / Fecha Carga", "length": 8}, {"name": "direccion", "type": "esriFieldTypeString", "alias": "Adreça / Dirección", "length": 254}, {"name": "viento_dir", "type": "esriFieldTypeDouble", "alias": "Direcció Vent / Dirección Viento"}, {"name": "viento_vel", "type": "esriFieldTypeDouble", "alias": "Velocitat Vent / Velocidat Viento"}, {"name": "temperatur", "type": "esriFieldTypeDouble", "alias": "Temperatura"}, {"name": "humedad_re", "type": "esriFieldTypeDouble", "alias": "Humitat Relativa / Humedad Relativa"}, {"name": "presion_ba", "type": "esriFieldTypeDouble", "alias": "Pressió Bar / Presión Bar"}, {"name": "precipitac", "type": "esriFieldTypeDouble", "alias": "Precipitacions / Precipitaciones"}, {"name": "fiwareid", "type": "esriFieldTypeString", "alias": "fiwareid", "length": 50}],
+    "features": [
+      {"attributes": {"objectid": 13, "nombre": "ESTACIÓN AEROPUERTO", "fecha_carg": 1793979000000, "direccion": null, "viento_dir": 90.0, "viento_vel": 3.6, "temperatur": 20.5, "humedad_re": 47.0, "presion_ba": 1012.9, "precipitac": 0.0, "fiwareid": "W03_VALENCIAAEROPUERTO_10m"},
+       "geometry": {"x": -0.4699999998718748, "y": 39.489999999779805}},
+      {"attributes": {"objectid": 14, "nombre": "ESTACIÓN JARDINES DE VIVEROS", "fecha_carg": 1793980200000, "direccion": null, "viento_dir": 83.0, "viento_vel": 1.3, "temperatur": 19.4, "humedad_re": 60.0, "presion_ba": 1019.0, "precipitac": 0.0, "fiwareid": "W04_VALENCIADT_10m"},
+       "geometry": {"x": -0.36999999999057726, "y": 39.479999999578624}},
+      {"attributes": {"objectid": 16, "nombre": "ESTACIÓN ALBUFERA", "fecha_carg": 1793980200000, "direccion": null, "viento_dir": 88.0, "viento_vel": 3.4, "temperatur": 18.9, "humedad_re": 68.0, "presion_ba": 1020.2, "precipitac": 0.0, "fiwareid": "W06_VALENCIA_ALBUFERA_10m"},
+       "geometry": {"x": -0.3559376302717656, "y": 39.31187930404019}},
+      {"attributes": {"objectid": 11, "nombre": "ESTACIÓN AVD. FRANCIA", "fecha_carg": 1793986200000, "direccion": "Avda. de Francia, 60", "viento_dir": 85.0, "viento_vel": 0.1, "temperatur": 16.8, "humedad_re": 71.0, "presion_ba": 1020.0, "precipitac": 0.0, "fiwareid": "W01_AVFRANCIA_10m"},
+       "geometry": {"x": -0.34266599991045765, "y": 39.457525999921394}},
+      {"attributes": {"objectid": 12, "nombre": "ESTACIÓN NAZARET", "fecha_carg": 1793986200000, "direccion": "Nazaret", "viento_dir": 70.0, "viento_vel": 0.4, "temperatur": 19.3, "humedad_re": 73.0, "presion_ba": 1016.0, "precipitac": 0.0, "fiwareid": "W02_NAZARET_10m"},
+       "geometry": {"x": -0.3332980005434063, "y": 39.4485309997218}}
+    ]
+  },
   "bloques_gid": {
     "_nota": "Rangos gid observados en dos sondeos separados 35 s. Disjuntos y contiguos.",
     "t0": [1659987635, 1659987700, 1659987800],

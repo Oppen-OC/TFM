@@ -21,7 +21,7 @@ AQUI = Path(__file__).resolve().parent
 
 @pytest.fixture(scope="session")
 def fix() -> dict:
-    """Payloads reales de las cinco fuentes, más los bloques de gid."""
+    """Payloads reales de las seis fuentes, más los bloques de gid."""
     return json.loads((AQUI / "fixtures.json").read_text(encoding="utf-8"))
 
 
