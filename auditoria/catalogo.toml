@@ -2424,6 +2424,18 @@ detector = ["tests/test_explicar.py::test_las_figuras_son_deterministas"]
 sondas = []
 
 [[mutante]]
+id = "203"
+nombre = "la estación que llega tarde se deduplica por el máximo"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''    if "fecha_carg" in df.columns:
+        return str(sorted(zip(df["fiwareid"], df["ts_utc"])))
+'''
+reemplazar = ""
+detector = ["tests/test_ingest.py::test_la_estacion_que_llega_tarde_es_un_sondeo_nuevo"]
+sondas = []
+
+[[mutante]]
 id = "204"
 nombre = "la capa 157 se convierte con desfase fijo"
 capa = "fuentes"
@@ -2443,4 +2455,14 @@ fichero = "src/project/ingest/sources.py"
 buscar = '''lat_max=2400, agg="min"'''
 reemplazar = '''lat_max=2400, agg="median"'''
 detector = ["tests/test_ingest.py::test_meteo_decide_la_convencion_con_la_fila_mas_fresca"]
+sondas = []
+
+[[mutante]]
+id = "206"
+nombre = "la clave por estación salta también con el tráfico"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''if "fecha_carg" in df.columns:'''
+reemplazar = '''if "fiwareid" in df.columns:'''
+detector = ["tests/test_ingest.py::test_la_clave_del_trafico_sigue_siendo_el_instante_de_captura"]
 sondas = []

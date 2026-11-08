@@ -506,13 +506,18 @@ def clave_sondeo(df: pd.DataFrame, ts_ingest: pd.Timestamp) -> int | str:
     EMT: el `snapshot_id` (gid mínimo del bloque, trampa 001). Renfe y Valenbisi:
     su propia marca de tiempo, `fechaActualizacion` y el `update_jcd` más
     reciente. Tráfico no publica marca: su `ts_utc` es el instante de captura y
-    la clave no se repite nunca.
+    la clave no se repite nunca. Capa 157: el conjunto (estación, marca), porque
+    las de AEMET publican con una marca anterior al máximo y la clave por el
+    máximo las tiraría como duplicado.
 
     La comparten el colector y `reprocesar`. Con dos copias, el curated
     reconstruido deja de ser el del colector (bitácora 019).
     """
     if "snapshot_id" in df.columns:
         return int(df["snapshot_id"].iloc[0])
+    # `fecha_carg` y no `fiwareid`: el tráfico también trae `fiwareid` (~410 filas).
+    if "fecha_carg" in df.columns:
+        return str(sorted(zip(df["fiwareid"], df["ts_utc"])))
     if "ts_utc" in df.columns and df["ts_utc"].notna().any():
         return str(df["ts_utc"].max())
     return str(ts_ingest)

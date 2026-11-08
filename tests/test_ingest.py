@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 
 from project.ingest.sources import (
+    clave_sondeo,
     local_naive_epoch_to_utc,
     local_naive_iso_to_utc,
     now_utc,
@@ -305,6 +306,30 @@ def test_meteo_una_estacion_sin_fecha_no_rompe_las_demas(fix):
     d = parse("meteo_estaciones", p, TS_METEO)
     assert d["ts_utc"].isna().sum() == 1
     assert (d["tz_convencion"] == "YA_EN_UTC").all()
+
+
+def test_la_estacion_que_llega_tarde_es_un_sondeo_nuevo(fix):
+    """06/11, 17:39 -> 17:41 UTC: W03 publica su lectura de las 16:10 con el
+    máximo aún en las 17:30 (W01). Con la clave por el máximo, en 4 h se
+    perdieron 3 lecturas de W02 y 12 entraron 4-6 min tarde."""
+    antes = _meteo(fix)
+    despues = copy.deepcopy(antes)
+    w03 = next(
+        f for f in despues["features"] if f["attributes"]["fiwareid"].startswith("W03")
+    )
+    w03["attributes"]["fecha_carg"] = 1793981400000
+    a = parse("meteo_estaciones", antes, TS_METEO)
+    d = parse("meteo_estaciones", despues, TS_METEO)
+    assert a["ts_utc"].max() == d["ts_utc"].max()
+    assert clave_sondeo(a, TS_METEO) != clave_sondeo(d, TS_METEO)
+
+
+@pytest.mark.parametrize("clave", ["trafico_estado", "trafico_intensidad"])
+def test_la_clave_del_trafico_sigue_siendo_el_instante_de_captura(fix, clave):
+    """El tráfico también trae `fiwareid`, en ~410 filas: una clave por pares
+    serían ~20-25 KB por sondeo y cientos de MB en la memoria del colector."""
+    ts = pd.Timestamp("2026-11-06T17:39:20Z")
+    assert clave_sondeo(parse(clave, fix[clave], ts), ts) == str(ts)
 
 
 # --------------------------------------------------------------------------- #
