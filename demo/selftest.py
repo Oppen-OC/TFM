@@ -15,7 +15,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from sources import local_naive_epoch_to_utc, local_naive_iso_to_utc, now_utc, parse
+from sources import (clave_sondeo, local_naive_epoch_to_utc,
+                     local_naive_iso_to_utc, now_utc, parse)
 from track import rastrear, resumen
 
 AQUI = Path(__file__).resolve().parent
@@ -101,7 +102,8 @@ check("serie con convenciones alternas: ninguna fila desplazada >1 h",
 print("\n2. Parsers sobre payloads con la forma real")
 print("-" * 70)
 ts = now_utc()
-for clave in ["emt_buses", "trafico_estado", "trafico_intensidad", "valenbisi", "renfe_cercanias"]:
+for clave in ["emt_buses", "trafico_estado", "trafico_intensidad", "valenbisi", "renfe_cercanias",
+              "meteo_estaciones"]:
     df = parse(clave, FIX[clave], ts)
     check(f"{clave}: parsea y devuelve filas", len(df) > 0, f"filas={len(df)}")
     check(f"{clave}: tiene ts_utc y ts_ingest_utc",
@@ -119,6 +121,38 @@ check("trafico_intensidad: lectura=-1 se convierte en nulo",
 df_emt = parse("emt_buses", FIX["emt_buses"], ts)
 check("emt: snapshot_id = gid mínimo del bloque",
       int(df_emt["snapshot_id"].iloc[0]) == 1659987635)
+
+# Capa 157: las de AEMET llegan con 51-91 min de retraso, así que la convención
+# se decide con la fila más fresca y no con la mediana (trampa 002).
+TS_METEO = pd.Timestamp("2026-11-06T17:39:20.584987Z")
+
+
+def meteo(desplazar_ms: int = 0) -> dict:
+    p = json.loads(json.dumps(FIX["meteo_estaciones"]))
+    for f in p["features"]:
+        f["attributes"]["fecha_carg"] += desplazar_ms
+    return p
+
+
+m_utc = parse("meteo_estaciones", meteo(), TS_METEO)
+check("meteo: decide la convención con la fila más fresca",
+      len(m_utc) == 5 and (m_utc["tz_convencion"] == "YA_EN_UTC").all(),
+      f"convenciones={m_utc['tz_convencion'].unique().tolist()}")
+m_loc = parse("meteo_estaciones", meteo(3_600_000), TS_METEO)
+check("meteo: servida en hora local da LOCAL_NAIVE y los mismos ts_utc",
+      (m_loc["tz_convencion"] == "LOCAL_NAIVE").all()
+      and (m_loc["ts_utc"] == m_utc["ts_utc"]).all())
+tarde = meteo()
+w03 = next(f for f in tarde["features"]
+           if f["attributes"]["fiwareid"].startswith("W03"))
+w03["attributes"]["fecha_carg"] = 1793981400000   # lectura de las 16:10, sin pasar del máximo
+m_tarde = parse("meteo_estaciones", tarde, TS_METEO)
+check("meteo: la estación que llega tarde es un sondeo nuevo",
+      m_utc["ts_utc"].max() == m_tarde["ts_utc"].max()
+      and clave_sondeo(m_utc, TS_METEO) != clave_sondeo(m_tarde, TS_METEO))
+check("tráfico: la clave sigue siendo el instante de captura",
+      all(clave_sondeo(parse(c, FIX[c], TS_METEO), TS_METEO) == str(TS_METEO)
+          for c in ["trafico_estado", "trafico_intensidad"]))
 
 print("\n3. Tracker sobre flota simulada con verdad-terreno")
 print("-" * 70)

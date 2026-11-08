@@ -91,7 +91,8 @@ echo "==> instalando el servicio systemd"
 sed "s|^User=%i|User=$USUARIO|; s|--out /srv/tfm-data|--out $DATOS|; s|ReadWritePaths=/srv/tfm-data|ReadWritePaths=$DATOS|" \
     "$DESTINO/deploy_pi/tfm-colector.service" > /etc/systemd/system/tfm-colector.service
 systemctl daemon-reload
-systemctl enable --now tfm-colector.service
+systemctl enable tfm-colector.service
+systemctl restart tfm-colector.service   # enable --now no reinicia uno ya en marcha
 
 sleep 6
 echo

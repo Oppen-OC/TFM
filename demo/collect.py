@@ -53,7 +53,8 @@ import httpx
 import pandas as pd
 
 from sources import (GTFS_FUENTE, GTFS_PAQUETE, GTFS_PERIODO_S, SOURCES,
-                     append_raw, guardar_gtfs, gtfs_url, now_utc, parse)
+                     append_raw, clave_sondeo, guardar_gtfs, gtfs_url, now_utc,
+                     parse)
 
 log = logging.getLogger("collect")
 HEADERS = {"User-Agent": "TFM-UPV-BigData/0.1 (investigacion academica)"}
@@ -221,13 +222,7 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
 
             df = parse(key, payload, ts)
             if not df.empty:
-                if "snapshot_id" in df.columns:
-                    sid = int(df["snapshot_id"].iloc[0])
-                elif "ts_utc" in df.columns and df["ts_utc"].notna().any():
-                    sid = str(df["ts_utc"].max())
-                else:
-                    sid = str(ts)
-                if not recordar(key, sid):
+                if not recordar(key, clave_sondeo(df, ts)):
                     STATS[key]["dup"] += 1
                 else:
                     BUFFER[key].append(df)
@@ -358,6 +353,7 @@ if __name__ == "__main__":
     p.add_argument("--sources", nargs="*", default=["emt_buses", "trafico_estado",
                                                     "trafico_intensidad",
                                                     "renfe_cercanias", "valenbisi",
+                                                    "meteo_estaciones",
                                                     GTFS_FUENTE])
     p.add_argument("--out", type=Path, default=Path("data"))
     p.add_argument("--status", action="store_true",
