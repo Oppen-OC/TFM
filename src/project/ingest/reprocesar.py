@@ -158,7 +158,13 @@ def main(data: Path, fuentes: list[str], dry: bool, metricas: Path) -> None:
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--data", type=Path, default=settings.data_root)
-    p.add_argument("--sources", nargs="*", default=list(SOURCES))
+    # ponytail: el clima no entra en `curar` (issue #8, primer plan); si el
+    # segundo plan lo mete, se añade su crudo a las deps del stage y sale de aquí.
+    p.add_argument(
+        "--sources",
+        nargs="*",
+        default=[k for k in SOURCES if k != "meteo_estaciones"],
+    )
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--metricas", type=Path, default=RAIZ / "metrics" / "curar.json")
     a = p.parse_args()

@@ -30,12 +30,12 @@ stages:
       nfiles: 63
     - path: src/project/ingest/reprocesar.py
       hash: md5
-      md5: 550a265cb9a3d85e085aeb3ddd68f977
-      size: 6628
+      md5: e7966e49f082056747bfef3654104b2d
+      size: 6854
     - path: src/project/ingest/sources.py
       hash: md5
-      md5: 0d0f56f917e58fd04ee80adba08eaabf
-      size: 22163
+      md5: e8d4fa5c6cfc993fd98f5a6a819f6a83
+      size: 24633
     outs:
     - path: data/curated
       hash: md5
