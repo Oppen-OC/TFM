@@ -2440,7 +2440,7 @@ id = "205"
 nombre = "la capa 157 decide la convención por la mediana"
 capa = "fuentes"
 fichero = "src/project/ingest/sources.py"
-buscar = '''agg="min"'''
-reemplazar = '''agg="median"'''
+buscar = '''lat_max=2400, agg="min"'''
+reemplazar = '''lat_max=2400, agg="median"'''
 detector = ["tests/test_ingest.py::test_meteo_decide_la_convencion_con_la_fila_mas_fresca"]
 sondas = []
