@@ -150,6 +150,15 @@ m_tarde = parse("meteo_estaciones", tarde, TS_METEO)
 check("meteo: la estación que llega tarde es un sondeo nuevo",
       m_utc["ts_utc"].max() == m_tarde["ts_utc"].max()
       and clave_sondeo(m_utc, TS_METEO) != clave_sondeo(m_tarde, TS_METEO))
+aemet = meteo(3_600_000)
+aemet["features"] = [f for f in aemet["features"]
+                     if not f["attributes"]["fiwareid"].startswith(("W01", "W02"))]
+fresca = max(f["attributes"]["fecha_carg"] for f in aemet["features"]) - 3_600_000
+m_aemet = parse("meteo_estaciones", aemet,
+                pd.Timestamp(fresca, unit="ms", tz="UTC") + pd.Timedelta(minutes=61))
+check("meteo: solo AEMET servida en hora local sale DUDOSA",
+      len(m_aemet) == 3 and (m_aemet["tz_convencion"] == "DUDOSA").all(),
+      f"convenciones={m_aemet['tz_convencion'].unique().tolist()}")
 check("tráfico: la clave sigue siendo el instante de captura",
       all(clave_sondeo(parse(c, FIX[c], TS_METEO), TS_METEO) == str(TS_METEO)
           for c in ["trafico_estado", "trafico_intensidad"]))

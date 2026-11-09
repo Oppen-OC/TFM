@@ -71,7 +71,8 @@ LAT_MIN_S, LAT_MAX_S = -180.0, 900.0
 
 def resolver_convencion(epoch_ms: pd.Series, ts_ingest: pd.Timestamp,
                         lat_max: float = LAT_MAX_S,
-                        agg: str = "median") -> tuple[pd.Series, str]:
+                        agg: str = "median",
+                        decidir: pd.Series | None = None) -> tuple[pd.Series, str]:
     """Decide, POR SNAPSHOT, si el timestamp viene en UTC o en local naive.
 
     Medido el 16/08/2026 sobre 12,5 h de captura real: el servicio de la EMT
@@ -86,7 +87,8 @@ def resolver_convencion(epoch_ms: pd.Series, ts_ingest: pd.Timestamp,
     una latencia plausible. Se autocalibra además en el cambio de hora.
 
     La capa 157 decide con `agg="min"` porque mezcla estaciones que llegan con
-    más de una hora de retraso.
+    más de una hora de retraso. `decidir` (máscara de filas) restringe a ellas la
+    latencia agregada; la conversión se aplica a todas. Máscara vacía: DUDOSA.
     """
     crudo = pd.to_datetime(epoch_ms, unit="ms", utc=True)          # leído tal cual
     # Reinterpretar esa hora de pared en Europe/Madrid y volver a UTC.
@@ -94,8 +96,12 @@ def resolver_convencion(epoch_ms: pd.Series, ts_ingest: pd.Timestamp,
     local = naive.dt.tz_localize(TZ_LOCAL, ambiguous=True,
                                  nonexistent="shift_forward").dt.tz_convert("UTC")
 
-    med_utc = float(getattr((ts_ingest - crudo).dt.total_seconds(), agg)())
-    med_loc = float(getattr((ts_ingest - local).dt.total_seconds(), agg)())
+    lat_utc = (ts_ingest - crudo).dt.total_seconds()
+    lat_loc = (ts_ingest - local).dt.total_seconds()
+    if decidir is not None:
+        lat_utc, lat_loc = lat_utc[decidir], lat_loc[decidir]
+    med_utc = float(getattr(lat_utc, agg)())
+    med_loc = float(getattr(lat_loc, agg)())
 
     ok_utc = LAT_MIN_S <= med_utc <= lat_max
     ok_loc = LAT_MIN_S <= med_loc <= lat_max
@@ -329,12 +335,18 @@ def parse_valenbisi(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
                "total", "lat", "lon", "ts_utc", "ts_ingest_utc"]]
 
 
+# Las de AEMET llegan 51-91 min tarde: con hora local, su lectura como UTC cae
+# dentro de la horquilla y desplazaría el sondeo +1 h. Solo estas deciden.
+ESTACIONES_MUNICIPALES = ("W01", "W02")
+
+
 def parse_meteo(payload: dict, ts_ingest: pd.Timestamp) -> pd.DataFrame:
     df = pd.DataFrame(_arcgis_rows(payload))
     if df.empty:
         return df
     df["ts_utc"], convencion = resolver_convencion(
-        df["fecha_carg"], ts_ingest, lat_max=2400, agg="min")
+        df["fecha_carg"], ts_ingest, lat_max=2400, agg="min",
+        decidir=df["fiwareid"].str.startswith(ESTACIONES_MUNICIPALES, na=False))
     df["tz_convencion"] = convencion
     df["ts_ingest_utc"] = ts_ingest
     df["latencia_s"] = (df["ts_ingest_utc"] - df["ts_utc"]).dt.total_seconds()
