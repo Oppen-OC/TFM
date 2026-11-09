@@ -219,7 +219,8 @@ antes de importar.
   correctas", que es justo lo que escondió la trampa 004.
 - `tests/test_persistencia.py` guarda la capa que no se puede arreglar después:
   crudo antes de parsear, append, partición, deduplicación, `reprocesar`, y que
-  `collect --status` no diga VIVO con una fuente callada de más (issue #1).
+  `collect --status` no diga VIVO con una fuente callada de más (issue #1), ni
+  con la captura del GTFS sin comprobar en 12 h (issue #6).
 - `tests/test_tracking_realismo.py` prueba el tracker con paradas y giros al
   ritmo real. Es `xfail(strict=True)`: defecto conocido, no corregido.
 - **Un test en verde no demuestra que guarde nada.** `auditoria/mutar.py` rompe a

@@ -28,7 +28,7 @@ se clasifica con el crudo que cae dentro:
 | `trafico_intensidad` | 15 min | — | — | 45,3 min | 60 min | 0 | 8 |
 | `valenbisi` | 5 min | 140,2 min, una vez (29/09 00:53) | 10,0 min | 15,3 min | 30 min | 1 | 12 |
 | `renfe_cercanias` | 30 s | 358,7 min (26/08 23:50 → 05:48) | cada noche sin trenes del núcleo 40 | 1,8 min | 30 min de día, 8 h de 0 a 7 h | 0 | 9 |
-| `gtfs_emt` | 6 h | 32 días (01/08 → 02/09) | casi una versión al día | — | no se juzga | — | — |
+| `gtfs_emt` | 6 h | 32 días (01/08 → 02/09) | casi una versión al día | — | última comprobación, 12 h (#6) | — | — |
 
 ¹ Mediana de los huecos con error: un sondeo fallido más su retroceso, 3 periodos
 en el tráfico y en Valenbisi.
@@ -115,9 +115,10 @@ Hecho:
   de su tolerancia.
 - Guardias en `tests/test_persistencia.py`, mutantes 187-194 (issue #1).
 - Queda resuelto el punto abierto de la 021, salud por fuente en `--status`.
+- `--status` juzga el GTFS por la última comprobación terminada, con tolerancia
+  de dos periodos (12 h); mutantes 208-212 (issue #6).
 
 Abierto:
-- Señal de vida del GTFS (#6).
 - El retroceso trata un fallo del parser como una fuente caída (#5).
 - La tolerancia mira la hora de ahora y no las que cubre el silencio: una
   caída de Renfe que empieza de tarde sale VIVO de madrugada. Anotado como
