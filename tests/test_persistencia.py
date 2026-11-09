@@ -496,17 +496,31 @@ DIA = pd.Timestamp("2026-10-21T08:00:00Z")  # 10:00 en València
 NOCHE = pd.Timestamp("2026-10-21T01:00:00Z")  # 03:00
 
 
-def _status(colector, monkeypatch, root, ahora, latido_hace_s=30, **ultimo_ok):
+def _status(
+    colector,
+    monkeypatch,
+    root,
+    ahora,
+    latido_hace_s=30,
+    gtfs_comprobado_hace=pd.Timedelta(seconds=10),
+    **ultimo_ok,
+):
     """Escribe el latido con el propio colector y da el código de `--status` en `ahora`.
 
     Cada fuente tuvo su último sondeo bueno hace 10 s, salvo las de `ultimo_ok`.
-    El GTFS, ninguno desde el arranque de hace un día: es lo normal, la EMT ha
-    pasado hasta 32 días sin publicar versión nueva.
+    El GTFS no ha sacado versión nueva desde el arranque de hace un día, que es
+    lo normal (la EMT ha pasado hasta 32 días sin publicar), pero se comprobó
+    hace 10 s. Con `gtfs_comprobado_hace=None` no se escribe la clave, como en
+    un latido viejo.
     """
     monkeypatch.setattr(colector, "INICIO", ahora - pd.Timedelta(days=1))
     for k in sources.SOURCES:
         colector.STATS[k].update(ok=1, ultimo_ok=ahora - pd.Timedelta(seconds=10))
     colector.STATS[sources.GTFS_FUENTE]["dup"] = 4
+    if gtfs_comprobado_hace is not None:
+        colector.STATS[sources.GTFS_FUENTE]["ultima_comprobacion"] = (
+            ahora - gtfs_comprobado_hace
+        )
     for k, t in ultimo_ok.items():
         colector.STATS[k]["ultimo_ok"] = t
     monkeypatch.setattr(
@@ -651,3 +665,59 @@ def test_la_fuente_que_arranca_devolviendo_errores_sale_caida(
     colector.escribir_latido(tmp_path)
 
     assert colector.mostrar_estado(tmp_path) == 3
+
+
+@pytest.mark.parametrize(
+    ("comprobado_hace", "esperado"),
+    [
+        (pd.Timedelta(minutes=10), 0),
+        (pd.Timedelta(hours=7), 0),
+        (pd.Timedelta(hours=13), 3),
+        (None, 3),
+    ],
+    ids=[
+        "comprobado-hace-10-min",
+        "un-fallo-y-su-reintento",
+        "dos-periodos-sin-comprobar",
+        "nunca-desde-el-arranque",
+    ],
+)
+def test_gtfs_se_juzga_por_su_ultima_comprobacion(
+    tmp_path, colector, monkeypatch, capsys, comprobado_hace, esperado
+):
+    """Sin versión nueva en 32 días (01/08 → 02/09) la captura puede estar
+    sana. Lo que no puede es pasar dos periodos sin terminar una comprobación:
+    un fallo y su reintento a la media hora ya pasan de uno."""
+    codigo = _status(
+        colector,
+        monkeypatch,
+        tmp_path,
+        DIA,
+        gtfs_comprobado_hace=comprobado_hace,
+        **{sources.GTFS_FUENTE: DIA - pd.Timedelta(days=32)},
+    )
+    assert codigo == esperado
+    if esperado:
+        assert sources.GTFS_FUENTE in capsys.readouterr().out.split("\n")[1]
+
+
+def test_la_columna_del_ultimo_ok_no_hace_pasar_el_arranque_por_un_ok(
+    tmp_path, colector, monkeypatch, capsys
+):
+    """09/11 en la Pi: `gtfs_emt` con 0 versiones y 1 comprobación, y la
+    columna «último ok» decía «hace 11 min», que era la edad del arranque."""
+    codigo = _status(
+        colector,
+        monkeypatch,
+        tmp_path,
+        DIA,
+        gtfs_comprobado_hace=pd.Timedelta(minutes=11),
+        **{sources.GTFS_FUENTE: None},
+    )
+    (linea,) = [
+        x
+        for x in capsys.readouterr().out.splitlines()
+        if x.strip().startswith(sources.GTFS_FUENTE)
+    ]
+    assert codigo == 0
+    assert "ninguno · comprobado hace 11 min" in linea

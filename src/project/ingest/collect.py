@@ -29,8 +29,9 @@ Diseño deliberado:
      1  no hay `_status.json`;
      2  parado: el latido tiene 3 min o más, caiga o no alguna fuente;
      3  late, pero alguna fuente lleva más de su tolerancia sin un sondeo bueno.
-   El GTFS no se juzga: su último ok es la última versión nueva, y la EMT, que
-   suele publicar casi a diario, ha pasado hasta 32 días sin hacerlo.
+   El GTFS se juzga por su última comprobación terminada, con versión nueva o
+   sin ella, contra `GTFS_TOLERANCIA_S`: su último ok es la última versión
+   nueva, y la EMT ha pasado hasta 32 días sin publicar (issue #6).
 
 5. El GTFS estático se guarda también, cada versión nueva una vez, porque
    tampoco tiene histórico: la EMT lo republica casi a diario (bitácora 042).
@@ -79,6 +80,10 @@ HEADERS = {"User-Agent": "TFM-UPV-BigData/0.1 (investigacion academica)"}
 FLUSH_FILAS = 50_000
 FLUSH_SEG = 1800  # media hora
 LATIDO_SEG = 60
+# Un fallo y su reintento a la media hora ya pasan de un periodo (6 h 30 min);
+# dos aguantan unas 6 h de VLCi caído con reintentos cada 30 min. Más, y una
+# versión que viva un día podría perderse antes del aviso (bitácora 042).
+GTFS_TOLERANCIA_S = 2 * GTFS_PERIODO_S
 MAX_VISTOS = 20_000  # cota del deduplicador, para no crecer sin fin en meses
 
 BUFFER: dict[str, list[pd.DataFrame]] = defaultdict(list)
@@ -174,6 +179,10 @@ def escribir_latido(root: Path) -> None:
     tmp.replace(root / "_status.json")
 
 
+def _hace(s: float) -> str:
+    return f"hace {s / 60:.0f} min" if s < 5400 else f"hace {s / 3600:.1f} h"
+
+
 def mostrar_estado(root: Path) -> int:
     p = root / "_status.json"
     if not p.exists():
@@ -186,17 +195,26 @@ def mostrar_estado(root: Path) -> int:
     for k, v in e["fuentes"].items():
         # Sin ningún sondeo bueno, la fuente lleva callada desde el arranque.
         s = (ahora - pd.Timestamp(v["ultimo_ok"] or e["arrancado_utc"])).total_seconds()
-        if k not in SOURCES:
+        ok = _hace(s) if v["ultimo_ok"] else "ninguno"
+        if k == GTFS_FUENTE:
+            # Su último ok es la última versión nueva, y la EMT ha pasado 32 días
+            # sin publicar: se juzga la última comprobación terminada (issue #6).
+            c = v.get("ultima_comprobacion")
+            s = (ahora - pd.Timestamp(c or e["arrancado_utc"])).total_seconds()
+            ok += f" · comprobado {_hace(s)}" if c else " · sin comprobar"
+            tolerado = GTFS_TOLERANCIA_S
+        else:
+            tolerado = SOURCES[k].silencio_tolerado(ahora) if k in SOURCES else None
+        if tolerado is None:
             marca = "  (no se juzga)"
-        elif s > SOURCES[k].silencio_tolerado(ahora):
+        elif s > tolerado:
             marca = "  CAÍDA"
             caidas.append(k)
         else:
             marca = ""
-        hace = f"{s / 60:.0f} min" if s < 5400 else f"{s / 3600:.1f} h"
         filas.append(
             f"  {k:22} {v['ok']:>10,} {v['filas']:>12,} {v['dup']:>7} {v['err']:>6}"
-            f"  hace {hace}{marca}"
+            f"  {ok}{marca}"
         )
 
     if edad >= 180:
