@@ -25,13 +25,12 @@ completa antes de tocar la capa correspondiente.**
 | [017](017-las-variables-en-t-obs-ven-pasos-que-aun-no-han-llegado.md) | cerrada | pipeline | Las variables calculadas en `t_obs` ven pasos que **aún no han llegado**: el retraso de un paso se sabe 80,7 s después (p50), tras la posición k1+1 que usa `cruces` y tras asignar el viaje. Con una parada de horizonte, el 45 % llega tarde | `test_t_disp_no_es_anterior_a_ninguna_posicion_…` |
 | [018](018-un-payload-de-error-no-es-un-sondeo.md) | cerrada | fuentes | El `{"error": …}` del geoportal se guarda en el crudo como un payload más, a su hora. Contar líneas dio el 13/10 por completo con **3 h 45 min sin posiciones**, y el día entró en la prueba contra el criterio de día útil. Un sondeo es un payload con filas | `test_un_payload_de_error_no_cuenta_como_sondeo` |
 | [019](019-renfe-omite-la-clave-sin-valor.md) | cerrada | fuentes | Renfe **omite** la clave sin valor, nunca la manda a null: con la flota en 1-2 trenes la columna no existe y la lista fija de columnas daba `KeyError` en 254 payloads, contados en `curar.json` y tirados sin ruido. Completar a nulo también `nucleo` da 0 filas sin error (003) | `test_renfe_tolera_trenes_de_valencia_sin_una_clave` |
+| [020](020-la-clave-por-la-marca-maxima-tira-la-estacion-que-publica-tarde.md) | cerrada | fuentes | Capa 157: con la clave de sondeo por la **marca máxima**, la estación que publica con una marca anterior cuenta como `dup`. En 4 h del 06/11, **3 de 64** lecturas perdidas y 12 tarde, sin error. Clave (estación, marca), elegida por `fecha_carg`: el tráfico también trae `fiwareid` | `test_la_estacion_que_llega_tarde_es_un_sondeo_nuevo` |
+| [021](021-la-convencion-decidida-con-una-estacion-que-llega-una-hora-tarde.md) | cerrada | fuentes | AEMET llega a la capa 157 con **51-91 min** de retraso, lo que el desfase de invierno: en hora local y leída como UTC su latencia es plausible y el sondeo queda **+1 h** con `YA_EN_UTC`. Deciden solo W01/W02; sin ellas, `DUDOSA` | `test_meteo_de_aemet_en_hora_local_no_se_lee_como_utc` |
 
 ## Cómo se usa
 
-**Criterio de admisión.** Entra solo si *un ingeniero competente, leyendo el
-código y la documentación de la fuente, lo volvería a hacer*. Typo, off-by-one,
-import olvidado, cualquier cosa visible en el stack trace: **no entra** — eso va a
-GitHub Issues (`gh issue create`).
+**Criterio de admisión.** Entra solo si *un ingeniero competente, leyendo el código y la documentación de la fuente, lo volvería a hacer*. Typo, off-by-one, import olvidado, cualquier cosa visible en el stack trace: **no entra** — eso va a GitHub Issues (`gh issue create`).
 
 **Nada se mueve de sitio.** Fichero numerado, inmutable: al resolverse cambia `estado`, no la ruta. **Estados:** `vigente` muerde hoy · `mitigada` hay workaround, sin test · `cerrada` hay test que la guarda. **Sin guardia no se cierra.**
 

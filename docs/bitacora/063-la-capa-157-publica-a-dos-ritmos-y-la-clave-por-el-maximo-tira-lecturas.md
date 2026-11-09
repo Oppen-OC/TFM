@@ -8,7 +8,7 @@ capitulo: calidad-dato
 impacto: medio
 estado: aceptado
 evidencia: bloque de «Cómo se midió», sobre data/raw/source=meteo_estaciones/date=2026-11-06 (120 sondeos); commits 9f9e066 (clave por estación) y 155c617 (curar re-firmado)
-trampa: —
+trampa: 020
 ---
 
 ## Qué se observó
