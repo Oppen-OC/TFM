@@ -503,17 +503,19 @@ def _status(
     ahora,
     latido_hace_s=30,
     gtfs_comprobado_hace=pd.Timedelta(seconds=10),
+    arrancado_hace=pd.Timedelta(days=1),
     **ultimo_ok,
 ):
     """Escribe el latido con el propio colector y da el código de `--status` en `ahora`.
 
     Cada fuente tuvo su último sondeo bueno hace 10 s, salvo las de `ultimo_ok`.
-    El GTFS no ha sacado versión nueva desde el arranque de hace un día, que es
+    El GTFS no ha sacado versión nueva desde el arranque (hace `arrancado_hace`,
+    un día por defecto), que es
     lo normal (la EMT ha pasado hasta 32 días sin publicar), pero se comprobó
     hace 10 s. Con `gtfs_comprobado_hace=None` no se escribe la clave, como en
     un latido viejo.
     """
-    monkeypatch.setattr(colector, "INICIO", ahora - pd.Timedelta(days=1))
+    monkeypatch.setattr(colector, "INICIO", ahora - arrancado_hace)
     for k in sources.SOURCES:
         colector.STATS[k].update(ok=1, ultimo_ok=ahora - pd.Timedelta(seconds=10))
     colector.STATS[sources.GTFS_FUENTE]["dup"] = 4
@@ -668,32 +670,37 @@ def test_la_fuente_que_arranca_devolviendo_errores_sale_caida(
 
 
 @pytest.mark.parametrize(
-    ("comprobado_hace", "esperado"),
+    ("comprobado_hace", "arrancado_hace", "esperado"),
     [
-        (pd.Timedelta(minutes=10), 0),
-        (pd.Timedelta(hours=7), 0),
-        (pd.Timedelta(hours=13), 3),
-        (None, 3),
+        (pd.Timedelta(minutes=10), pd.Timedelta(days=1), 0),
+        (pd.Timedelta(hours=7), pd.Timedelta(days=1), 0),
+        (pd.Timedelta(hours=13), pd.Timedelta(days=1), 3),
+        (None, pd.Timedelta(days=1), 3),
+        (None, pd.Timedelta(hours=1), 0),
     ],
     ids=[
         "comprobado-hace-10-min",
         "un-fallo-y-su-reintento",
         "dos-periodos-sin-comprobar",
         "nunca-desde-el-arranque",
+        "recien-arrancado-sin-comprobar",
     ],
 )
 def test_gtfs_se_juzga_por_su_ultima_comprobacion(
-    tmp_path, colector, monkeypatch, capsys, comprobado_hace, esperado
+    tmp_path, colector, monkeypatch, capsys, comprobado_hace, arrancado_hace, esperado
 ):
     """Sin versión nueva en 32 días (01/08 → 02/09) la captura puede estar
     sana. Lo que no puede es pasar dos periodos sin terminar una comprobación:
-    un fallo y su reintento a la media hora ya pasan de uno."""
+    un fallo y su reintento a la media hora ya pasan de uno. Tras cada reinicio
+    la primera comprobación tarda: con una hora de arranque, sin comprobar,
+    sigue vivo."""
     codigo = _status(
         colector,
         monkeypatch,
         tmp_path,
         DIA,
         gtfs_comprobado_hace=comprobado_hace,
+        arrancado_hace=arrancado_hace,
         **{sources.GTFS_FUENTE: DIA - pd.Timedelta(days=32)},
     )
     assert codigo == esperado

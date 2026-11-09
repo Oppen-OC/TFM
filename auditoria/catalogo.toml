@@ -2550,3 +2550,15 @@ buscar = '''        ok = _hace(s) if v["ultimo_ok"] else "ninguno"'''
 reemplazar = '''        ok = _hace(s)'''
 detector = ["tests/test_persistencia.py::test_la_columna_del_ultimo_ok_no_hace_pasar_el_arranque_por_un_ok"]
 sondas = []
+
+[[mutante]]
+id = "213"
+nombre = "recién arrancado y sin comprobar sale caído"
+capa = "persistencia"
+# Tras cada reinicio la primera comprobación del GTFS tarda; con esto cada
+# despliegue diría FUENTE CAÍDA hasta el primer latido con comprobación.
+fichero = "src/project/ingest/collect.py"
+buscar = '''        elif s > tolerado:'''
+reemplazar = '''        elif s > tolerado or (k == GTFS_FUENTE and not v.get("ultima_comprobacion")):'''
+detector = ["tests/test_persistencia.py::test_gtfs_se_juzga_por_su_ultima_comprobacion"]
+sondas = []
