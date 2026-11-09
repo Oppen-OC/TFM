@@ -31,6 +31,11 @@ cinco filas cada uno, ningún payload sin filas):
 
   Las de AEMET aparecen hacia el minuto :41 (y una vez al :59); los valores
   intermedios no se publican nunca.
+- **La convención se decide solo con W01 y W02.** Las de AEMET llegan 51-91 min
+  tarde y, con la capa servida en hora local, su lectura como UTC cae dentro de
+  la horquilla de latencia plausible: desplazaría el sondeo entero +1 h sin
+  aviso. Sin ninguna municipal en el sondeo la convención sale `DUDOSA`
+  (`ESTACIONES_MUNICIPALES`, commit c4bbcd0, mutante 207).
 - **La convención horaria es UTC ese día.** La presión de W04 coincide con el
   SYNOP 08285 leyendo `fecha_carg` como UTC y se aparta leyéndola como hora
   local (tabla en *Cómo se midió*). El grupo comparado es el **3PPPP, presión
@@ -138,6 +143,9 @@ mediana = pd.Series([df['latencia_s'].median() for _, df in S])
 print('latencia fila mas fresca s', round(fresca.min()), round(fresca.median()), round(fresca.max()))
 print('latencia mediana de las cinco s', round(mediana.min()), round(mediana.max()))
 print('convenciones', pd.Series([df['tz_convencion'].iloc[0] for _, df in S]).value_counts().to_dict())
+lat = pd.DataFrame([(e[:3], (t0 - m).total_seconds() / 60) for (e, m), t0 in vp.items()],
+                   columns=['estacion', 'min'])
+print(lat.groupby('estacion')['min'].agg(['count', 'min', 'median', 'max']).round(1))
 "
 ```
 
@@ -152,7 +160,17 @@ tarde con el maximo 12 | s min/max 240 360
 latencia fila mas fresca s 332 683 933
 latencia mediana de las cinco s 3081 6575
 convenciones {'YA_EN_UTC': 120}
+          count   min  median   max
+estacion                           
+W01          25   5.5     7.4   9.3
+W02          24   5.6     7.4   9.3
+W03           5  51.5    61.6  91.3
+W04           5  51.3    61.5  71.4
+W06           5  51.3    51.5  69.3
 ```
+
+La tabla por estación son las últimas líneas: lecturas distintas y minutos entre
+la marca y la primera vez que se ve.
 
 Los huecos de la captura puente salen de la primera y la última hora de
 `ts_ingest_utc` de cada `date=` de `source=meteo_estaciones` (`read_raw`):
@@ -215,16 +233,20 @@ décimas, así que no sustituye a observar la fuente más días.
 
 - **Captura**: capa 157 como fuente `meteo_estaciones` en el colector de develop
   (commits c219f24, c1c0b8b, 52cfcc7, 9f9e066, 2b34619, 155c617) y en el porte a
-  mano de la rama `raspberry` (be1dd5e). Sondeo cada 2 min. Los huecos de arriba
+  mano de la rama `raspberry` (be1dd5e). Sondeo cada 5 min (`period_s=300`); los
+  2 min eran del sondeo puente del portátil. Los huecos de arriba
   quedan **aceptados**: no se pueden rehacer.
-- **Día del solape, D = 2026-11-09.** Ese día hay un fichero del portátil
-  (10:25-10:37 UTC) y otro de la Pi (desde las 10:30:22 UTC) en
-  `source=meteo_estaciones/date=2026-11-09/payloads.ndjson.gz`. `pull_data.sh`
-  usa `--ignore-existing` y **no traería el de la Pi**. Al traer el crudo de la
-  Pi en el segundo plan, se unen a mano **concatenando los gzip, primero el del
-  portátil** (un gzip admite miembros concatenados); luego `reprocesar`. Los
-  sondeos de los minutos en que coinciden entran dos veces y los absorbe la
-  clave por estación. Sin esta unión el 09/11 saldría solo con lo del portátil.
+- **Día del solape, D = 2026-11-09.** Ese día hay una captura del portátil
+  (10:25-10:37 UTC, 7 sondeos) y otra de la Pi (desde las 10:30:22 UTC). El
+  fichero del portátil se ha renombrado a
+  `source=meteo_estaciones/date=2026-11-09/payloads-portatil.ndjson.gz`. Así
+  `deploy_pi/pull_data.sh` (`rsync --ignore-existing`) no lo ve como existente y
+  trae el `payloads.ndjson.gz` de la Pi **al lado**, y `reprocesar`
+  (`sorted(dir_raw.rglob("*.ndjson.gz"))`) lee los dos, el del portátil primero
+  (`-` < `.`). Los sondeos de los minutos en que coinciden entran dos veces y los
+  absorbe la clave por estación. Límite: los `analysis/medir_*` que abren
+  `payloads.ndjson.gz` por nombre exacto no ven los ~5 min del portátil
+  (10:25-10:30Z, antes de que arrancara la Pi).
 - **Abierto**: la unidad y la ventana de `precipitac` (S1: comparar con el SYNOP
   08285 la primera vez que llueva) y las unidades del viento (S7).
 - **Abierto**: el segundo plan necesita histórico para la variable y la capa no
