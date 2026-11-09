@@ -85,7 +85,7 @@ de la sesión. Desde el 07/11 sigue capturando el mismo sondeo exploratorio (ver
 - No se corrige el `ORIGEN` por defecto de `pull_data.sh` (sigue apuntando a
   `/srv/tfm-data`).
 - No se vuelven a generar las fotos del dashboard de la defensa.
-  `dashboard_ingesta/foto.py` cuenta `len(SOURCES)`: si se regenerara, diría 6
+  `analysis/dashboard_ingesta/foto.py` cuenta `len(SOURCES)`: si se regenerara, diría 6
   fuentes capturadas. La foto definitiva ya está en develop y no se rehace.
 
 ## Anti-objetivos (fracaso aunque los tests pasen)

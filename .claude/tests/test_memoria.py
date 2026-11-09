@@ -64,6 +64,10 @@ def test_las_rutas_citadas_existen(doc: Path):
             # data/ y models/ los produce el pipeline y los versiona DVC: que no
             # estén en el árbol es lo normal, no deriva.
             continue
+        if ruta.startswith("demo/"):
+            # demo/ salió de develop en 47c3547 y vive en la rama raspberry: no
+            # se puede comprobar desde aquí.
+            continue
         # Tres raíces legítimas: el repo, el directorio del documento
         # (`../CLAUDE.md` desde docs/) y el paquete — la sección de arquitectura
         # nombra los módulos relativos a `src/project/`, igual que el diagrama.
