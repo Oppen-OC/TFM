@@ -116,7 +116,7 @@ Hecho:
 - Guardias en `tests/test_persistencia.py`, mutantes 187-194 (issue #1).
 - Queda resuelto el punto abierto de la 021, salud por fuente en `--status`.
 - `--status` juzga el GTFS por la última comprobación terminada, con tolerancia
-  de dos periodos (12 h); mutantes 208-212 (issue #6).
+  de dos periodos (12 h); mutantes 208-213 (issue #6).
 
 Abierto:
 - El retroceso trata un fallo del parser como una fuente caída (#5).
