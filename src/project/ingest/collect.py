@@ -162,8 +162,8 @@ def escribir_latido(root: Path) -> None:
         "disco_mb": round(tamano_mb(root), 1),
         "fuentes": {
             k: {
-                **v,
-                "ultimo_ok": v["ultimo_ok"].isoformat() if v["ultimo_ok"] else None,
+                c: x.isoformat() if isinstance(x, pd.Timestamp) else x
+                for c, x in v.items()
             }
             for k, v in STATS.items()
         },
@@ -291,8 +291,11 @@ async def capturar_gtfs(client: httpx.AsyncClient, root: Path) -> None:
 
     `ok` cuenta versiones nuevas y `dup` comprobaciones sin cambio. Tras un
     error se reintenta en media hora: la EMT publica una vez al día.
+    `ultima_comprobacion` fecha la última vuelta que terminó bien, con versión
+    nueva o sin ella, y es lo que juzga `--status` (issue #6).
     """
     st = STATS[GTFS_FUENTE]
+    st.setdefault("ultima_comprobacion", None)
     while not PARAR.is_set():
         ts = now_utc()
         espera = GTFS_PERIODO_S
@@ -303,6 +306,7 @@ async def capturar_gtfs(client: httpx.AsyncClient, root: Path) -> None:
             z = await client.get(url, timeout=120)
             z.raise_for_status()
             ruta = guardar_gtfs(root, z.content, url, ts, modificado)
+            st["ultima_comprobacion"] = ts
             if ruta is None:
                 st["dup"] += 1
             else:

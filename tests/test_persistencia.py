@@ -410,32 +410,83 @@ def test_lo_que_no_es_un_gtfs_no_se_guarda(tmp_path, contenido):
     assert not list(tmp_path.rglob("*.zip"))
 
 
+PAQUETE_VLCI = {
+    "result": {
+        "resources": [{"format": "ZIP", "url": URL_GTFS, "last_modified": "2026-10-05"}]
+    }
+}
+
+
+def _una_vuelta_gtfs(colector, root, responder) -> None:
+    """Una sola vuelta de `capturar_gtfs` contra un servidor simulado."""
+
+    async def vuelta() -> None:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as c:
+            await colector.capturar_gtfs(c, root)
+
+    asyncio.run(vuelta())
+
+
 def test_el_colector_guarda_el_gtfs_que_anuncia_vlci(tmp_path, colector):
     """`package_show` da la URL del zip del día; el colector lo baja y lo guarda."""
     gtfs_zip = _zip(**{"stop_times.txt": "trip_id\nA\n"})
-    paquete = {
-        "result": {
-            "resources": [
-                {"format": "ZIP", "url": URL_GTFS, "last_modified": "2026-10-05"}
-            ]
-        }
-    }
 
     def responder(request: httpx.Request) -> httpx.Response:
         if "package_show" in str(request.url):
-            return httpx.Response(200, json=paquete)
+            return httpx.Response(200, json=PAQUETE_VLCI)
         colector.PARAR.set()  # una sola vuelta del bucle
         return httpx.Response(200, content=gtfs_zip)
 
-    async def una_vuelta() -> None:
-        async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as c:
-            await colector.capturar_gtfs(c, tmp_path)
-
-    asyncio.run(una_vuelta())
+    _una_vuelta_gtfs(colector, tmp_path, responder)
 
     (guardado,) = list((tmp_path / "raw").rglob("*.zip"))
     assert guardado.read_bytes() == gtfs_zip
     assert colector.STATS[sources.GTFS_FUENTE]["ok"] == 1
+
+
+def test_una_comprobacion_sin_version_nueva_fecha_la_vida_del_gtfs(
+    tmp_path, colector, monkeypatch
+):
+    """La EMT ha pasado 32 días sin publicar (issue #6). Un `dup` ha bajado el
+    zip entero y lo ha comparado por sha1: si hubiera versión nueva, estaría
+    guardada. Es la prueba de que la captura sigue viva."""
+    gtfs_zip = _zip(**{"stop_times.txt": "trip_id\nA\n"})
+    sources.guardar_gtfs(tmp_path, gtfs_zip, URL_GTFS, T0)
+    ahora = T0 + pd.Timedelta(hours=6)
+    monkeypatch.setattr(colector, "now_utc", lambda: ahora)
+
+    def responder(request: httpx.Request) -> httpx.Response:
+        if "package_show" in str(request.url):
+            return httpx.Response(200, json=PAQUETE_VLCI)
+        colector.PARAR.set()
+        return httpx.Response(200, content=gtfs_zip)
+
+    _una_vuelta_gtfs(colector, tmp_path, responder)
+
+    st = colector.STATS[sources.GTFS_FUENTE]
+    assert (st["ok"], st["dup"], st["ultimo_ok"]) == (0, 1, None)
+    assert st["ultima_comprobacion"] == ahora
+    colector.escribir_latido(tmp_path)
+    latido = json.loads((tmp_path / "_status.json").read_text(encoding="utf-8"))
+    assert (
+        latido["fuentes"][sources.GTFS_FUENTE]["ultima_comprobacion"]
+        == ahora.isoformat()
+    )
+
+
+def test_una_comprobacion_que_falla_no_fecha_la_vida_del_gtfs(tmp_path, colector):
+    """Una tarea que falla en cada intento sube `err` y nada más: si el intento
+    fallido fechara la comprobación, `--status` la daría por viva."""
+
+    def responder(request: httpx.Request) -> httpx.Response:
+        colector.PARAR.set()
+        return httpx.Response(503)
+
+    _una_vuelta_gtfs(colector, tmp_path, responder)
+
+    st = colector.STATS[sources.GTFS_FUENTE]
+    assert st["err"] == 1
+    assert st["ultima_comprobacion"] is None
 
 
 # --------------------------------------------------------------------------- #
