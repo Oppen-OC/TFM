@@ -476,5 +476,7 @@ git -C C:/Users/oppen/Code/TFM-raspberry commit -m "fix(demo): --status juzga la
    sudo env DATOS=/srv/tfm-sd bash deploy_pi/instalar.sh   # reinicia el servicio
    /opt/tfm/.venv/bin/python /opt/tfm/demo/collect.py --status --out /srv/tfm-sd
    ```
-   Lo esperado: código 0, y en la línea de `gtfs_emt`, «ninguno · comprobado
-   hace N min».
+   Lo esperado nada más desplegar (`instalar.sh` espera solo 6 s): código 0, y en
+   la línea de `gtfs_emt`, «ninguno · sin comprobar». Tras ~2 minutos (primer
+   `package_show`, descarga completa del zip y siguiente latido), «ninguno ·
+   comprobado hace N min».

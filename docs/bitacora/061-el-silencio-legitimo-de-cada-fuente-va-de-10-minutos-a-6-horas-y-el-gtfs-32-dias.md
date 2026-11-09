@@ -139,7 +139,9 @@ Abierto:
 > a hacerlo como tarde a las 05:48. Las capas de tráfico no
 > repiten refresco, y un fallo aislado con su reintento las deja 15 y 45
 > minutos sin dato. El horario programado llegó a pasar 32 días sin una
-> versión nueva. Un umbral proporcional a la cadencia de sondeo habría dado
+> versión nueva, por lo que el horario se juzga por su última comprobación
+> terminada, con o sin versión nueva, con un margen de 12 horas, dos periodos de
+> comprobación. Un umbral proporcional a la cadencia de sondeo habría dado
 > falsas alarmas cada noche. Con tolerancias de 30 minutos, 60 para la capa de
 > intensidad y 8 horas de madrugada para Cercanías, el diagnóstico habría
 > señalado 46 interrupciones reales, contadas por fuente, y solo dos falsas
