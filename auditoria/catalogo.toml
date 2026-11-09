@@ -2441,7 +2441,11 @@ nombre = "la capa 157 se convierte con desfase fijo"
 capa = "fuentes"
 fichero = "src/project/ingest/sources.py"
 buscar = '''    df["ts_utc"], convencion = resolver_convencion(
-        df["fecha_carg"], ts_ingest, lat_max=2400, agg="min"
+        df["fecha_carg"],
+        ts_ingest,
+        lat_max=2400,
+        agg="min",
+        decidir=df["fiwareid"].str.startswith(ESTACIONES_MUNICIPALES, na=False),
     )'''
 reemplazar = '''    df["ts_utc"], convencion = pd.to_datetime(df["fecha_carg"], unit="ms", utc=True), "YA_EN_UTC"'''
 detector = ["tests/test_ingest.py::test_meteo_servida_en_hora_local_da_los_mismos_ts_utc"]
@@ -2452,8 +2456,8 @@ id = "205"
 nombre = "la capa 157 decide la convención por la mediana"
 capa = "fuentes"
 fichero = "src/project/ingest/sources.py"
-buscar = '''lat_max=2400, agg="min"'''
-reemplazar = '''lat_max=2400, agg="median"'''
+buscar = '''        agg="min",'''
+reemplazar = '''        agg="median",'''
 detector = ["tests/test_ingest.py::test_meteo_decide_la_convencion_con_la_fila_mas_fresca"]
 sondas = []
 
@@ -2465,4 +2469,15 @@ fichero = "src/project/ingest/sources.py"
 buscar = '''if "fecha_carg" in df.columns:'''
 reemplazar = '''if "fiwareid" in df.columns:'''
 detector = ["tests/test_ingest.py::test_la_clave_del_trafico_sigue_siendo_el_instante_de_captura"]
+sondas = []
+
+[[mutante]]
+id = "207"
+nombre = "la capa 157 decide la convención con todas las estaciones"
+capa = "fuentes"
+fichero = "src/project/ingest/sources.py"
+buscar = '''        decidir=df["fiwareid"].str.startswith(ESTACIONES_MUNICIPALES, na=False),
+'''
+reemplazar = ""
+detector = ["tests/test_ingest.py::test_meteo_de_aemet_en_hora_local_no_se_lee_como_utc"]
 sondas = []

@@ -296,6 +296,22 @@ def test_meteo_sin_las_municipales_sale_dudosa(fix):
     assert len(d) == 3 and (d["tz_convencion"] == "DUDOSA").all()
 
 
+def test_meteo_de_aemet_en_hora_local_no_se_lee_como_utc(fix):
+    """En invierno, con la capa en hora local y sin W01/W02, una lectura de AEMET
+    con 61 min de retraso real se lee como UTC con 1 min de latencia y el
+    sondeo entero queda +1 h: sin las municipales la convención es DUDOSA."""
+    p = _meteo(fix, 3_600_000)
+    p["features"] = [
+        f
+        for f in p["features"]
+        if not f["attributes"]["fiwareid"].startswith(("W01", "W02"))
+    ]
+    fresca = max(f["attributes"]["fecha_carg"] for f in p["features"]) - 3_600_000
+    ts = pd.Timestamp(fresca, unit="ms", tz="UTC") + pd.Timedelta(minutes=61)
+    d = parse("meteo_estaciones", p, ts)
+    assert len(d) == 3 and (d["tz_convencion"] == "DUDOSA").all()
+
+
 def test_meteo_sin_features_devuelve_vacio(fix):
     assert parse("meteo_estaciones", {"features": []}, TS_METEO).empty
 
