@@ -16,3 +16,4 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 | convencion-la-pone-quien-sirve | ingest · examen 004, puerta 007 | 2 | 0 | 2026-11-06 | flojo |
 | geometria-estatica-referencia-unica | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | shap-de-un-modelo-de-residuo | puerta · plan de SHAP, puerta 006 | 2 | 0 | 2026-10-28 | flojo |
+| dup-del-gtfs-prueba-la-captura | puerta · issue #6, puerta 008 | 2 | 0 | 2026-11-09 | flojo |
