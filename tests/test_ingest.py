@@ -267,14 +267,28 @@ def _meteo(fix: dict, desplazar_ms: int = 0) -> dict:
 
 
 def test_meteo_decide_la_convencion_con_la_fila_mas_fresca(fix):
-    """Las de AEMET llegan con 51-91 min de retraso: con la mediana, ninguna
-    lectura cuadra y sale DUDOSA siempre. La más fresca (W01, 17:30Z) sí."""
+    """Las de AEMET llegan con 51-91 min de retraso y no votan: decide la más
+    fresca de las municipales (W01 y W02, las dos a las 17:30Z)."""
     d = parse("meteo_estaciones", _meteo(fix), TS_METEO)
     assert len(d) == 5
     assert (d["tz_convencion"] == "YA_EN_UTC").all()
     esperado = pd.to_datetime(d["fecha_carg"], unit="ms", utc=True)
     assert (d["ts_utc"] == esperado).all()
     assert d["latencia_s"].min() == pytest.approx(560.584987)
+
+
+def test_meteo_con_w02_parada_decide_la_municipal_mas_fresca(fix):
+    """W02 se para y su última lectura queda 100 min atrás; W01 sigue al día
+    (560 s). La mediana de las dos (3.560 s) no cuadra con ninguna convención
+    y daría DUDOSA a un sondeo que se puede decidir."""
+    p = _meteo(fix)
+    for f in p["features"]:
+        if f["attributes"]["fiwareid"].startswith("W02"):
+            f["attributes"]["fecha_carg"] -= 6_000_000
+    d = parse("meteo_estaciones", p, TS_METEO)
+    assert (d["tz_convencion"] == "YA_EN_UTC").all()
+    esperado = pd.to_datetime(d["fecha_carg"], unit="ms", utc=True)
+    assert (d["ts_utc"] == esperado).all()
 
 
 def test_meteo_servida_en_hora_local_da_los_mismos_ts_utc(fix):

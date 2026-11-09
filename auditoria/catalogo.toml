@@ -2458,7 +2458,7 @@ capa = "fuentes"
 fichero = "src/project/ingest/sources.py"
 buscar = '''        agg="min",'''
 reemplazar = '''        agg="median",'''
-detector = ["tests/test_ingest.py::test_meteo_decide_la_convencion_con_la_fila_mas_fresca"]
+detector = ["tests/test_ingest.py::test_meteo_con_w02_parada_decide_la_municipal_mas_fresca"]
 sondas = []
 
 [[mutante]]
