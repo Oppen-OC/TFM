@@ -27,8 +27,8 @@ posiciones GPS de la flota de la EMT con el estado del tráfico municipal.
   binaria `retraso > 5 min` para el endpoint de la API.
 - **Fuentes:** ArcGIS REST del geoportal del Ajuntament (buses
   `EMT/Seguimiento_EMT/384`, tráfico `OPENDATA/Trafico/192` y `188`, Valenbisi
-  `228`), `flota.json` de Renfe Cercanías filtrado por `nucleo == "40"`, y GTFS
-  estático de la EMT.
+  `228`, clima `OPENDATA/MedioAmbiente/157`), `flota.json` de Renfe Cercanías
+  filtrado por `nucleo == "40"`, y GTFS estático de la EMT.
 - **No hay histórico recuperable.** Ninguna fuente guarda pasado: lo que no capture
   el colector se pierde para siempre. El colector guarda **siempre** el payload
   crudo antes de parsear.

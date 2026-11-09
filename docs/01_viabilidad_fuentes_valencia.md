@@ -15,6 +15,8 @@ un sábado por la noche: en hora punta de un día laborable serán bastante mayo
 | Tráfico · intensidad medida | ✅ viva | sin timestamp propio | 394 | Sí, complementaria |
 | Renfe Cercanías · núcleo 40 | ✅ viva | actualiza ~cada 12 s | 17 | Sí, con etiqueta gratis |
 | Valenbisi | ✅ viva | ~10 min | 273 | Marginal |
+| Clima · estaciones atmosféricas (capa 157) | ✅ viva | 10 min (2 estaciones), ~1 h con 51-91 min de retraso (3) | 5 | **Sí, en captura desde el 09/11** |
+| Clima · CSV horario de la GVA «últimos 2000» | ❌ descartada | 1 vez al día | — | No |
 | Metrovalencia / FGV | ❌ no existe | — | — | No |
 
 **Las dos ideas son viables.** La de EMT + tráfico tiene más recorrido como TFM;
@@ -200,6 +202,48 @@ operador con una sola fuente, GTFS estático.
 
 Si quieres metro en el trabajo, entra como red teórica para análisis de
 transbordo, nunca como dato observado.
+
+---
+
+## 5 bis. Clima · capa 157 de estaciones atmosféricas
+
+*Añadido el 09/11/2026, medido el 06/11 sobre 120 sondeos (16:59-20:57 UTC).
+Cifras reproducibles en la bitácora 063.*
+
+La única fuente en vivo con lluvia, viento y temperatura dentro de València es
+la capa `OPENDATA/MedioAmbiente/MapServer/157` (*Estaciones Atmosféricas*). Como
+las demás, **no guarda histórico**: sirve el último valor de cada estación y lo
+pisa.
+
+**Veredicto: capa 157, SÍ, en captura desde el 09/11.** Cinco estaciones (W01
+Av. Francia, W02 Nazaret, W03, W04 y W06; no hay W05), cinco filas por sondeo:
+
+- **W01 y W02** (municipales): un valor cada 10 min, visible unos 7 min después
+  de su marca.
+- **W03, W04 y W06** son estaciones de AEMET (W03 = 8414A Valencia Aeropuerto,
+  SYNOP 08284; W04 = 8416Y València Viveros, SYNOP 08285): un valor cada 40-90
+  min, que aparece con **51-91 min de retraso**. Los valores intermedios no se
+  publican nunca.
+- **`fecha_carg` llegó en UTC** el 06/11: la presión de W04 coincide con el
+  SYNOP 08285 (19:50 → 1020,9 hPa, el valor de las 20 UTC). Unas horas no fijan
+  la convención (trampa 002): el parser la decide en cada respuesta, con la fila
+  más fresca.
+- **Latencia por sondeo**: la fila más fresca, 332-933 s; la mediana de las
+  cinco, 3.081-6.575 s.
+- **`precipitac` = 0,0** en todas ese día: se copia cruda, sin saber si acumula
+  10 min, 1 h o el día. Las unidades del viento están sin interpretar.
+- La clave de sondeo es el conjunto (estación, marca) y no la marca máxima: esta
+  tira 3 de 64 lecturas y retrasa 12 de 4 a 6 min.
+
+**Veredicto: CSV horario «últimos 2000» de la GVA, NO.** Se actualiza una vez al
+día (`Last-Modified` 11:02 UTC): a las 17:00 del 06/11 su último dato era del
+05/11 a las 23:00, y solo cubre unas 4 h de todas las estaciones. No sirve para
+rellenar el pasado ni para el presente.
+
+**Límite del alcance.** El histórico empieza el 06/11 y la captura puente del
+portátil dejó tres huecos irrecuperables antes de que la Pi tomara el relevo
+(51 h 54 min en total). Ogimet sirve los SYNOP de 08284 y 08285 y es el
+candidato a histórico para la variable.
 
 ---
 
