@@ -13,7 +13,7 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 | clave-sondeo-compartida-colector-reprocesar | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | ts-trafico-es-captura-desfase-suelo | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | gtfs-nuevo-no-entra-solo | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
-| convencion-la-pone-quien-sirve | ingest · examen 004, puerta 007 | 2 | 0 | 2026-11-06 | flojo |
+| convencion-la-pone-quien-sirve | ingest · examen 004, puertas 007 y 009 | 3 | 0 | 2026-11-09 | flojo |
 | geometria-estatica-referencia-unica | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | shap-de-un-modelo-de-residuo | puerta · plan de SHAP, puerta 006 | 2 | 0 | 2026-10-28 | flojo |
 | dup-del-gtfs-prueba-la-captura | puerta · issue #6, puerta 008 | 2 | 0 | 2026-11-09 | flojo |
