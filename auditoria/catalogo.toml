@@ -2481,3 +2481,72 @@ buscar = '''        decidir=df["fiwareid"].str.startswith(ESTACIONES_MUNICIPALES
 reemplazar = ""
 detector = ["tests/test_ingest.py::test_meteo_de_aemet_en_hora_local_no_se_lee_como_utc"]
 sondas = []
+
+[[mutante]]
+id = "208"
+nombre = "el GTFS se juzga por su última versión nueva"
+capa = "persistencia"
+# La EMT ha pasado 32 días sin publicar: juzgar el último ok daría CAÍDA con la
+# captura sana. Hay que juzgar la última comprobación terminada.
+fichero = "src/project/ingest/collect.py"
+buscar = '''            s = (ahora - pd.Timestamp(c or e["arrancado_utc"])).total_seconds()'''
+reemplazar = '''            s = (ahora - pd.Timestamp(v["ultimo_ok"] or e["arrancado_utc"])).total_seconds()'''
+detector = ["tests/test_persistencia.py::test_gtfs_se_juzga_por_su_ultima_comprobacion"]
+sondas = []
+
+[[mutante]]
+id = "209"
+nombre = "solo una versión nueva fecha la comprobación"
+capa = "persistencia"
+# Un dup ha bajado el zip y comparado su sha1: es señal de vida igual que una
+# versión nueva. Fecharla solo con versión nueva vuelve a dar la falsa alarma.
+fichero = "src/project/ingest/collect.py"
+buscar = '''            st["ultima_comprobacion"] = ts
+            if ruta is None:
+                st["dup"] += 1
+            else:
+'''
+reemplazar = '''            if ruta is None:
+                st["dup"] += 1
+            else:
+                st["ultima_comprobacion"] = ts
+'''
+detector = ["tests/test_persistencia.py::test_una_comprobacion_sin_version_nueva_fecha_la_vida_del_gtfs"]
+sondas = []
+
+[[mutante]]
+id = "210"
+nombre = "un intento fallido cuenta como comprobación"
+capa = "persistencia"
+# Con VLCi caído el intento falla: fecharlo antes de terminar esconde la caída
+# del GTFS tras un colector que sigue intentándolo.
+fichero = "src/project/ingest/collect.py"
+buscar = '''            r = await client.get(GTFS_PAQUETE)'''
+reemplazar = '''            st["ultima_comprobacion"] = ts
+            r = await client.get(GTFS_PAQUETE)'''
+detector = ["tests/test_persistencia.py::test_una_comprobacion_que_falla_no_fecha_la_vida_del_gtfs"]
+sondas = []
+
+[[mutante]]
+id = "211"
+nombre = "la tolerancia del GTFS es un solo periodo"
+capa = "persistencia"
+# Con un periodo, un solo error (reintento a la media hora) da falsa alarma a
+# las 6 h 30 min; dos periodos aguantan ~6 h de VLCi caído.
+fichero = "src/project/ingest/collect.py"
+buscar = '''GTFS_TOLERANCIA_S = 2 * GTFS_PERIODO_S'''
+reemplazar = '''GTFS_TOLERANCIA_S = GTFS_PERIODO_S'''
+detector = ["tests/test_persistencia.py::test_gtfs_se_juzga_por_su_ultima_comprobacion"]
+sondas = []
+
+[[mutante]]
+id = "212"
+nombre = "la columna enseña el arranque como un ok"
+capa = "persistencia"
+# Una fuente sin ningún ok ponía «hace N min» contando desde el arranque, y
+# parecía que había dado ok. Sin ok, la columna dice «ninguno».
+fichero = "src/project/ingest/collect.py"
+buscar = '''        ok = _hace(s) if v["ultimo_ok"] else "ninguno"'''
+reemplazar = '''        ok = _hace(s)'''
+detector = ["tests/test_persistencia.py::test_la_columna_del_ultimo_ok_no_hace_pasar_el_arranque_por_un_ok"]
+sondas = []
