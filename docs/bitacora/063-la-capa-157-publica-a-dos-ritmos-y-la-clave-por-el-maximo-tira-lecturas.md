@@ -62,7 +62,7 @@ cinco filas cada uno, ningún payload sin filas):
 - **La captura puente tiene tres huecos irrecuperables.** Hasta que la Pi tomó el
   relevo (servicio arrancado el 09/11 a las 10:30:22 UTC; su primer `--status`
   dio `meteo_estaciones` con 1 sondeo, 5 filas, 0 errores y VIVO), la capa la
-  capturó el portátil, y el sondeo murió con la sesión que lo lanzaba cada vez:
+  capturó el portátil con un sondeo lanzado a mano desde una sesión de trabajo:
 
   | día | de (UTC) | a (UTC) | sondeos |
   |---|---|---|---|
@@ -79,7 +79,19 @@ cinco filas cada uno, ningún payload sin filas):
   | **total** | **51 h 54 min** |
 
   Son 416 sondeos del portátil, sin ningún payload con error. Antes del 06/11
-  16:59 no hay nada: esa fue la primera vez que se miró la capa.
+  16:59 no hay nada: esa fue la primera vez que se miró la capa. Causa de cada
+  hueco, solo donde está verificada:
+  - **Primero (06/11 → 07/11)**: la captura del 06/11 fue una tanda exploratoria
+    acotada (120 sondeos cada 2 min, unas 4 h) y el sondeo puente no se lanzó
+    hasta el 07/11 a las 14:22 UTC.
+  - **Segundo (07/11 → 08/11)**: el sondeo paró a las 22:29 UTC. Causa **no
+    verificada**: pudo ser el fin de su tiempo de ejecución configurado o el fin
+    de la sesión.
+  - **Tercero (08/11 → 09/11)**: verificado. El sondeo, relanzado para 48 h,
+    murió al terminar la sesión que lo había lanzado.
+
+  La lección es que una captura que depende de la sesión de un portátil no es una
+  captura.
 
 ## Cómo se midió
 
@@ -169,9 +181,11 @@ marca como hora de Madrid, UTC+1 el 6/11:
 
 La de las 19:50 vale **1020,9 hPa, el valor exacto del SYNOP de las 20 UTC**. La
 diferencia media absoluta es de 0,04 hPa con lectura UTC y de 0,35 con lectura
-local (0,75 con UTC+2). Con W03 contra el SYNOP 08284: 0,11 frente a 0,37
+local (0,75 con UTC+2, sobre las cuatro lecturas que caen dentro del SYNOP
+descargado). Con W03 contra el SYNOP 08284: 0,11 frente a 0,37
 (0,82). El diseño anotó 0,5-0,8 hPa de diferencia local; sobre las cinco
-lecturas sale 0,2-0,6 (UTC+1). La conclusión no cambia, pero el contraste es
+lecturas sale 0,04-0,57 (media 0,35) con UTC+1, y 0,26-1,20 (media 0,75) con
+UTC+2. La conclusión no cambia, pero el contraste es
 modesto: la presión sube despacio y una hora de desplazamiento mueve solo unas
 décimas, así que no sustituye a observar la fuente más días.
 
