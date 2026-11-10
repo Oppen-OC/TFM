@@ -840,3 +840,36 @@ def test_un_dia_excluido_se_escribe_con_el_mismo_esquema(horario_a, tmp_path):
         # Sin union_by_name: es como falló medir_rutas.
         glob = (tmp_path / nombre / "*" / "*.parquet").as_posix()
         duckdb.sql(f"select * from read_parquet('{glob}')").fetchall()
+
+
+# --------------------------------------------------------------------------- #
+# Las paradas programadas de un viaje (la demo en vivo, ADR-022)
+# --------------------------------------------------------------------------- #
+def test_paradas_del_viaje_coinciden_con_los_pasos_observados(horario_a):
+    bus = Bus("1", "Oeste - Este", IDA, 7 * 3600 + 600 + 90, 4.0)  # viaje 1_01
+    r = etiquetar(flota(bus), [horario_a])
+    viaje = r.pasos["viaje_id"].iloc[0]
+    v = r.pasos[r.pasos["viaje_id"] == viaje]
+    prog = etiquetado.paradas_del_viaje(
+        horario_a, v["shape_id"].iloc[0], v["trip_id"].iloc[0]
+    )
+    m = v.merge(prog, on="stop_sequence", suffixes=("", "_prog"), validate="one_to_one")
+    assert len(m) == len(v)
+    assert (m["stop_id"] == m["stop_id_prog"]).all()
+    assert np.array_equal(m["abscisa_parada_m"], m["abscisa_parada_m_prog"])
+    assert np.array_equal(m["t_prog_s"], m["t_prog_s_prog"])
+    assert len(prog) >= len(v)
+    assert prog["stop_sequence"].is_monotonic_increasing
+    # Dos viajes del mismo trazado no comparten horario: no se toma el del primero.
+    otro = etiquetado.paradas_del_viaje(horario_a, v["shape_id"].iloc[0], "1_03")
+    assert not np.array_equal(prog["t_prog_s"], otro["t_prog_s"])
+
+
+def test_paradas_del_viaje_de_un_viaje_ajeno_al_trazado_falla(horario_a):
+    with pytest.raises(KeyError):
+        etiquetado.paradas_del_viaje(horario_a, "no_existe", "1_01")
+
+
+def test_el_horario_trae_el_nombre_de_la_parada(horario_a):
+    assert "nombre" in horario_a.paradas.columns
+    assert (horario_a.paradas["nombre"] != "").all()

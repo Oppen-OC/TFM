@@ -2588,3 +2588,15 @@ buscar = '''            if ultimo_error is not None and ultimo_error[0] <= ultim
 reemplazar = '''            pass'''
 detector = ["tests/test_persistencia.py::test_un_ok_despues_del_error_lo_borra"]
 sondas = []
+
+[[mutante]]
+id = "216"
+nombre = "paradas_del_viaje devuelve el horario del primer viaje del patrón"
+capa = "etiquetado"
+# La demo buscaría la parada objetivo con el `t_prog_s` de otro viaje: la
+# distancia en tiempo a la parada saldría plausible y desplazada, sin error.
+fichero = "src/project/etiquetado.py"
+buscar = '''"t_prog_s": pat.prog[fila[0]],'''
+reemplazar = '''"t_prog_s": pat.prog[0],'''
+detector = ["tests/test_etiquetado.py::test_paradas_del_viaje_coinciden_con_los_pasos_observados"]
+sondas = []
