@@ -2614,3 +2614,28 @@ reemplazar = '''    if True:
         p = p[p[objetivo].notna()].copy()'''
 detector = ["tests/test_features.py::test_sin_objetivo_la_fila_solo_se_queda_si_se_pide"]
 sondas = []
+
+[[mutante]]
+id = "218"
+nombre = "separar da por sabido todo paso con t_disp_utc, sin compararlo con ahora"
+capa = "serving"
+# El ciclo en vivo vería el retraso de pasos que aún no habían llegado: la fila
+# sale plausible y mejor de lo que el servicio podría dar (trampa 017).
+fichero = "src/project/services/vivo.py"
+buscar = '''    sabido = pasos["t_disp_utc"].notna() & (pasos["t_disp_utc"] <= ahora)'''
+reemplazar = '''    sabido = pasos["t_disp_utc"].notna()'''
+detector = ["tests/test_vivo.py::test_un_paso_que_aun_no_se_sabe_queda_pendiente"]
+sondas = []
+
+[[mutante]]
+id = "219"
+nombre = "h cuenta los pasos observados en vez de las posiciones del horario"
+capa = "serving"
+# La parada del tutor se contaría desde el número de pasos vistos, no desde la
+# última posición del horario: con una parada sin observar, h sale uno de menos
+# y se aplica el modelo de otro horizonte, sin error.
+fichero = "src/project/services/vivo.py"
+buscar = '''            seq_ultimo=("stop_sequence", "max"),'''
+reemplazar = '''            seq_ultimo=("stop_sequence", "count"),'''
+detector = ["tests/test_vivo.py::test_el_horizonte_se_cuenta_en_el_horario"]
+sondas = []
