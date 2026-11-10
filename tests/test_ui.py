@@ -2,6 +2,7 @@
 
 import pandas as pd
 
+from project.ui import app
 from project.ui.app import _gris, fila_tabla
 
 CONGELADA = {
@@ -81,3 +82,25 @@ def test_la_regla_es_la_de_la_congelada_que_puntua_el_marcador():
     # Sin retraso ahora, la congelada sigue siendo la que puntúa.
     f = _fila(regla_llega_tarde=None, congelada=CONGELADA)
     assert fila_tabla(f)["Regla simple"] == "a tiempo"
+
+
+def _error_al_pedir(monkeypatch, excepcion) -> str:
+    def get(*a, **k):
+        raise excepcion
+
+    mensajes = []
+    monkeypatch.setattr(app.requests, "get", get)
+    monkeypatch.setattr(app.st, "error", mensajes.append)
+    assert app.pedir("/vivo/parada/1", 1) is None
+    (mensaje,) = mensajes
+    return mensaje
+
+
+def test_un_timeout_dice_que_la_api_esta_ocupada(monkeypatch):
+    mensaje = _error_al_pedir(monkeypatch, app.requests.Timeout())
+    assert "ocupada" in mensaje and "no disponible" not in mensaje
+
+
+def test_sin_conexion_dice_que_la_api_no_esta_disponible(monkeypatch):
+    mensaje = _error_al_pedir(monkeypatch, app.requests.ConnectionError())
+    assert "no disponible" in mensaje

@@ -128,6 +128,9 @@ def pedir(ruta: str, timeout: float) -> dict | list | None:
     """GET a la API; pinta el error y devuelve None si no hay datos."""
     try:
         r = requests.get(f"{API_URL}{ruta}", timeout=timeout)
+    except requests.Timeout:
+        st.error("La API está ocupada calculando; vuelve a intentarlo en unos segundos")
+        return None
     except requests.RequestException:
         st.error(f"API no disponible en {API_URL}")
         return None

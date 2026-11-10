@@ -8,6 +8,7 @@ la parada del tutor se busca en el horario, no entre los pasos observados.
 from __future__ import annotations
 
 import copy
+import threading
 from datetime import date
 from pathlib import Path
 
@@ -468,6 +469,24 @@ def test_de_madrugada_se_leen_dos_fechas(tmp_path):
 def test_una_parada_que_no_existe_es_desconocida():
     with pytest.raises(ParadaDesconocida):
         _vivo().parada("no_existe", pd.Timestamp("2026-11-10T10:00Z"))
+
+
+def test_las_paradas_no_esperan_al_ciclo_en_curso():
+    """Un ciclo tarda hasta 40 s con el cerrojo cogido; la lista de paradas no ha
+    de quedarse esperándolo (la UI daría «API no disponible»)."""
+    v = _vivo()
+    resultado = []
+    v._cerrojo.acquire()  # un ciclo de otra parada, en marcha
+    try:
+        hilo = threading.Thread(
+            target=lambda: resultado.append(v.paradas()), daemon=True
+        )
+        hilo.start()
+        hilo.join(timeout=10)
+        assert not hilo.is_alive(), "paradas() espera al cerrojo del ciclo"
+    finally:
+        v._cerrojo.release()
+    assert len(resultado[0]) == 20
 
 
 def test_las_paradas_son_las_del_horario_con_sus_lineas():

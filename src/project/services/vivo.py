@@ -459,9 +459,11 @@ class Vivo:
         """Las paradas con servicio hoy, en el horario que manda hoy."""
         self._comprobar()
         dia = dia_de_servicio(pd.Timestamp.now(tz="UTC"))
-        with self._cerrojo:
-            horario = self._horario_de(dia)
-            lineas = self._lineas_por_parada(horario, dia)
+        # Sin el cerrojo del ciclo: esperar a un ciclo de 40 s agotaba el timeout de
+        # la UI. `_lineas_por_parada` es idempotente y guarda por clave: dos
+        # llamadas a la vez recalculan lo mismo, sin daño.
+        horario = self._horario_de(dia)
+        lineas = self._lineas_por_parada(horario, dia)
         nombres = horario.paradas["nombre"].to_dict()
         return [
             {"stop_id": s, "nombre": str(nombres.get(s, "")), "lineas": ls}
