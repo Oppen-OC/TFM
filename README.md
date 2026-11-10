@@ -156,6 +156,67 @@ uv run streamlit run src/project/ui/app.py
 
 Docs en `http://127.0.0.1:8000/docs`, UI en `http://localhost:8501`.
 
+### 4. Demo en vivo por parada
+
+Una parada, los buses que van hacia ella y su retraso predicho, con el marcador
+de lo que se acertó (diseño en
+[`docs/superpowers/specs/2026-11-10-demo-parada-en-vivo-design.md`](docs/superpowers/specs/2026-11-10-demo-parada-en-vivo-design.md)).
+**Es una demo, no un resultado del TFM.** Corre en el PC y en una carpeta propia
+(`$demo`), para no tocar `data/`, las métricas ni nada que versione DVC. Los
+modelos sí salen de `models/`.
+
+El sesgo del tramo sale de días anteriores **con la misma versión del GTFS**: antes
+hay que traer y etiquetar los últimos días. En PowerShell:
+
+1. **Traer de la Pi a `$demo\raw`**, con WSL (Git Bash no trae `rsync`). Va
+   **antes** de arrancar el colector del PC: un `rsync` sobre ficheros que el
+   colector ya escribe los trunca (trampa 016). Trae los días que faltan, menos
+   el de hoy en UTC, y con ellos los zips del GTFS; `--verificar` no escribe,
+   enseña lo que difiere.
+
+   ```powershell
+   $demo = 'C:\Users\oppen\Code\demo'
+   New-Item -ItemType Directory -Force "$demo\raw", "$demo\metrics"
+   wsl env DESTINO=/mnt/c/Users/oppen/Code/demo/raw bash deploy_pi/pull_data.sh
+   wsl env DESTINO=/mnt/c/Users/oppen/Code/demo/raw bash deploy_pi/pull_data.sh --verificar
+   ```
+
+2. **Reprocesar y etiquetar**, con las variables de la demo. `--metricas` va
+   siempre dentro de `$demo`: `metrics/curar.json` y `metrics/prepare.json` del
+   repo son cifras versionadas. `prepare` escribe en `$demo\interim` y
+   `features --disponibilidad` deja ahí `disponibilidad/`. Sin DVC.
+
+   ```powershell
+   $env:DATA_ROOT = $demo
+   $env:GTFS_DIR  = "$demo\raw\source=gtfs_emt"
+   uv run python -m project.ingest.reprocesar --data $demo --metricas "$demo\metrics\curar.json"
+   uv run python -m project.prepare --metricas "$demo\metrics\prepare.json"
+   uv run python -m project.features --disponibilidad
+   ```
+
+3. **Colector con la carpeta de la demo, al menos una hora antes** (el ciclo
+   relee el crudo de hoy). `--minutes 0` es indefinido:
+
+   ```powershell
+   uv run python -m project.ingest.collect --out $demo --minutes 0
+   uv run python -m project.ingest.collect --out $demo --status
+   ```
+
+4. **API y UI**, en terminales separadas y con las mismas `DATA_ROOT` y
+   `GTFS_DIR` en cada una:
+
+   ```powershell
+   uv run uvicorn project.api.main:app --port 8000
+   uv run streamlit run src/project/ui/app.py
+   ```
+
+5. **Elegir una parada a mitad de ruta.** La 2277, la de más líneas, resultó casi
+   una cabecera (la 72 acaba allí) y apenas tenía buses «en camino». Un ciclo
+   tarda unos 30-40 s en hora punta (`CICLO_S = 40`, bitácora 064) y la primera
+   petición de una parada tarda eso; la UI refresca cada `REFRESCO_S = 40`, que
+   debe ir a la par. Endpoints: `GET /vivo/paradas` y `GET /vivo/parada/{stop_id}`
+   (503 sin datos u horario, 404 parada desconocida).
+
 ### Docker
 
 ```powershell

@@ -202,7 +202,19 @@ arrancar la regresión y el clasificador de cada horizonte, y `api/` los
 expone en `/modelos`, `/prediccion/retraso` y `/prediccion/mas-de-5min`, con
 Swagger en `/docs`; ambos POST aceptan `?explicar=true`, que devuelve las
 contribuciones SHAP. La entrada es el vector de variables ya calculado: el
-servido en tiempo real sigue pendiente (ADR-016).
+servido en tiempo real incremental sigue pendiente (ADR-016).
+
+**Demo en vivo por parada** (spec del 10/11, **no es un resultado**):
+`services/vivo.py` relee el crudo de hoy cada `CICLO_S = 40` s, etiqueta solo
+las líneas de la parada con el reloj de todas (trampa 022), calcula `t_disp`,
+construye con `features.construir(..., solo_con_objetivo=False)` y predice con
+el clasificador; el `Marcador` congela la primera predicción y la verifica
+contra la regla simple. `GET /vivo/paradas` y `/vivo/parada/{stop_id}` en
+`api/routers/vivo.py` (503 sin datos u horario, 404 parada desconocida) y la
+página de `ui/app.py`, cuyo `REFRESCO_S` va a la par de `CICLO_S`. Elige las
+capturas con `ingest.reprocesar.elegir_capturas`. Corre en el PC con su propia
+carpeta (`DATA_ROOT`, `GTFS_DIR` y `--metricas` de la demo, nunca los del
+repo): guion en `README.md`, medidas en la bitácora 064.
 
 Las reglas de este fichero son **prescriptivas**, no descriptivas: dicen cómo debe
 escribirse el código que falta. No asumas que ya está implementado — comprueba
@@ -241,6 +253,12 @@ antes de importar.
   la salida bruta (el residuo en la v2, el log-odds en el clasificador) y
   conservan el índice, toda variable cae en un solo grupo y el resumen solo
   cuenta la población y las figuras son deterministas. Mutantes 198-202.
+- `tests/test_vivo.py` guarda la demo en vivo: la fuga en el ciclo (ningún
+  cálculo ve un paso con `t_disp` posterior al «ahora»), el horizonte por
+  horario y la regla «en camino», el marcador congelado y su verdad, el reloj de
+  todas las líneas (trampa 022) y las guardias del historial y del crudo (un
+  payload de error no es un sondeo). Mutantes 214-227; el siguiente libre es el
+  228. `tests/test_ui.py` prueba los ayudantes puros de la página, sin red.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la

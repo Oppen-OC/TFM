@@ -457,6 +457,19 @@ medidas.
 
 Reproducir la cifra: `uv run python -m project.analysis.medir_volumen --dias 2026-09-16`.
 
+**Nota del 10/11.** El servido en vivo existe, como **demo** y sin broker:
+`services/vivo.py` y `GET /vivo/paradas` y `/vivo/parada/{stop_id}`. Cada ciclo
+(`CICLO_S = 40`) relee el crudo de hoy con la misma elección de capturas que
+`reprocesar` (`elegir_capturas`, trampas 011 y 018), etiqueta con las funciones
+del pipeline solo las líneas de la parada, con el reloj de todas (trampa 022),
+y construye las variables con `features.construir`. Es el «proceso en
+`services/`» de las alternativas, sin estado entre ciclos salvo el marcador, en
+memoria. Lo que midió la bitácora 064 es la latencia: 11-12 s a las 10:00 y
+27-32 s a las 18:00 con las líneas de una parada; todas, unos 3 min. Medido, no
+hizo falta un broker. No es un resultado del TFM ni cierra el servido en tiempo
+real: el etiquetado sigue siendo por día completo, no incremental, y la capa 192
+no entra.
+
 ---
 
 ## ADR-017 · La geometría de tráfico se guarda una vez; el crudo llega sin ella · cerrada
@@ -1112,8 +1125,9 @@ que medir, o que la prueba del ADR-024 se descarte.
 - **Cadencia de la capa 192.** Sigue en 5 min, fijada cuando la capa parecía
   estática. En periodo lectivo se anima (bitácora 031) y nadie ha vuelto a medir
   si 5 min bastan. Lo que no se capture no se recupera.
-- **Servido en tiempo real.** Broker o proceso en `services/` (ADR-016). Se
-  decide con el modelo ya entrenado.
+- **Servido en tiempo real.** Hay una demo por parada en un proceso de
+  `services/`, sin broker (ADR-016, nota del 10/11). Queda sin decidir un servido
+  incremental, y solo con una latencia medida que lo pida.
 - **Tope del índice de trampas.** `.claude/tests/test_trampas.py` lo limita a 45
   líneas y cada ficha ocupa una: con 16 fichas solo cabe uniendo párrafos. Medir
   caracteres o subir el tope.

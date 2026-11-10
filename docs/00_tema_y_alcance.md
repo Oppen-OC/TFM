@@ -55,6 +55,8 @@ Metrovalencia descartado, Renfe capturado desde el día 1 como plan B.
 - Etiquetado de retraso por paso por parada contra el GTFS estático.
 - Modelo XGBoost de regresión + variante de clasificación.
 - Servido por FastAPI, consumido por Streamlit.
+- Demo en vivo por parada, sobre el crudo que captura el PC, sin broker (ADR-016).
+  Es una demostración: **no es un resultado del TFM**.
 
 **Fuera:**
 
@@ -62,6 +64,8 @@ Metrovalencia descartado, Renfe capturado desde el día 1 como plan B.
 - Deep learning sobre secuencias (se menciona como trabajo futuro).
 - Cualquier dato privado o convenio con la EMT.
 - Metrovalencia como dato observado.
+- Servido en tiempo real como resultado: nada de lo que salga en la demo se cita
+  como cifra, y sin capa 192 ni broker.
 - Renfe Cercanías como validación cruzada entre modos: se captura como respaldo
   (ver *Plan B*) y queda como trabajo futuro.
 
