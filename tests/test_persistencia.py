@@ -20,6 +20,7 @@ import gzip
 import io
 import json
 import zipfile
+import zlib
 from collections import defaultdict, deque
 from pathlib import Path
 
@@ -394,6 +395,40 @@ def test_elegir_capturas_tolera_la_cola_a_medias(tmp_path, fix):
 
     assert len(c.elegidos) == 3
     assert c.ultimo_ok_utc == pd.Timestamp("2026-11-10T10:00:30Z")
+
+
+def test_elegir_capturas_tolera_un_miembro_corrupto_a_mitad_de_fichero(tmp_path, fix):
+    """El colector murió a la fuerza a media escritura y al volver siguió añadiendo:
+    el miembro cortado no está al final y el flujo gzip da `zlib.error`, no `EOFError`.
+    Con tolerancia se lee hasta ahí, no un 500 todo el día."""
+    f = _crudo_emt(
+        tmp_path,
+        fix,
+        [
+            (
+                f"2026-11-10T10:00:{10 * k:02d}Z",
+                _sondeo("emt_buses", fix["emt_buses"], k),
+            )
+            for k in range(2)
+        ],
+    )
+    bueno = f.stat().st_size
+    for k in (2, 3, 4):
+        sources.append_raw(
+            tmp_path,
+            "emt_buses",
+            _sondeo("emt_buses", fix["emt_buses"], k),
+            pd.Timestamp(f"2026-11-10T10:00:{10 * k:02d}Z"),
+        )
+        if k == 2:  # el tercero queda cortado y el colector sigue añadiendo
+            f.write_bytes(f.read_bytes()[: bueno + (f.stat().st_size - bueno) // 2])
+
+    c = reprocesar.elegir_capturas([f], "emt_buses", tolerar_cola=True)
+
+    assert len(c.elegidos) == 2
+    assert c.ultimo_ok_utc == pd.Timestamp("2026-11-10T10:00:10Z")
+    with pytest.raises(zlib.error):  # sin tolerancia, como siempre
+        reprocesar.elegir_capturas([f], "emt_buses")
 
 
 def test_sin_tolerar_la_cola_a_medias_falla(tmp_path, fix):

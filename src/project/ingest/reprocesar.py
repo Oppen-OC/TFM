@@ -41,6 +41,7 @@ import argparse
 import gzip
 import json
 import shutil
+import zlib
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -77,11 +78,12 @@ def _leer(fichero: Path, tolerar_cola: bool):
     """`read_raw`, y con `tolerar_cola` se para donde el fichero está cortado.
 
     El colector amplía el crudo mientras se lee: el último miembro gzip (o su
-    última línea) puede estar a medias.
+    última línea) puede estar a medias; y si el colector murió a la fuerza y siguió
+    añadiendo, un miembro cortado a mitad de fichero da `zlib.error`.
     """
     try:
         yield from read_raw(fichero)
-    except (EOFError, gzip.BadGzipFile, json.JSONDecodeError):
+    except (EOFError, gzip.BadGzipFile, json.JSONDecodeError, zlib.error):
         if not tolerar_cola:
             raise
 
