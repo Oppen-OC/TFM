@@ -7,6 +7,7 @@ la parada del tutor se busca en el horario, no entre los pasos observados.
 
 from __future__ import annotations
 
+import copy
 from datetime import date
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from test_etiquetado import IDA, PUNTA, Bus, feed_a, flota, horario_a  # noqa: F
 
 from project import etiquetado, features
 from project.config import RAIZ, settings
+from project.ingest import sources
 from project.gtfs import Horario
 from project.prepare import cargar_parametros, etiquetar_dia
 from project.services.vivo import (
@@ -614,3 +616,73 @@ def test_un_viaje_que_el_horario_no_conoce_se_salta():
     v._por_version = {}  # la versión del viaje no está: KeyError dentro de `paradas_de`
     r = _ciclo(v, "P05", T0 + pd.Timedelta(minutes=3, seconds=30), _pasos_del_viaje(3))
     assert r["filas"] == []
+
+
+# --- la fuga de futuro en lo que carga el ciclo ------------------------------
+
+
+def test_el_historial_solo_trae_lo_que_ya_se_sabia():
+    """Con `ahora` a las 04:30 del 01/10 (día de servicio 01/10) entran los días
+    anteriores, de la misma versión y de las líneas de la parada, y de esos solo los
+    pasos ya disponibles: un nocturno del 30/09 que se sabe a las 04:40 no."""
+    ahora = pd.Timestamp("2026-10-01T02:30Z")
+    dia = date(2026, 10, 1)
+
+    def paso(nombre, dia_servicio, version="F1", linea="7", t_disp="02:00"):
+        return {
+            "paso": nombre,
+            "fecha_servicio": pd.Timestamp(dia_servicio),
+            "feed_version": version,
+            "linea": linea,
+            "t_disp_utc": pd.Timestamp(f"2026-10-01T{t_disp}Z"),
+        }
+
+    v = _vivo()
+    v.historial = pd.DataFrame(
+        [
+            paso("anteayer", "2026-09-29"),
+            paso("ayer", "2026-09-30"),
+            paso("hoy", "2026-10-01"),
+            paso("mañana", "2026-10-02"),
+            paso("otra_version", "2026-09-30", version="F2"),
+            paso("otra_linea", "2026-09-30", linea="9"),
+            paso("llega_despues", "2026-09-30", t_disp="02:40"),
+        ]
+    )
+    h = v._historial_de(_horario(), dia, ["7"], ahora)
+    assert set(h["paso"]) == {"anteayer", "ayer"}
+
+
+def _payload(base, k, ts_dato):
+    """El payload real de la EMT como k-ésimo refresco, con el dato fechado en `ts_dato`."""
+    p = copy.deepcopy(base)
+    for f in p["features"]:
+        f["attributes"]["gid"] += 1000 * k
+        f["attributes"]["fecha"] = int(pd.Timestamp(ts_dato).timestamp() * 1000)
+    return p
+
+
+def test_el_crudo_posterior_a_ahora_no_entra_en_el_ciclo(tmp_path, monkeypatch, fix):
+    """Tres sondeos que llegan a 10:00:00, 10:00:30 y 10:01:30. El tercero trae el
+    dato fechado a 10:00:50: pasaría el filtro de `ts_utc <= ahora`: solo lo frena
+    haber llegado después de `ahora` (10:01:00)."""
+    monkeypatch.setattr(settings, "data_root", tmp_path)
+    for k, (llega, dato) in enumerate(
+        [
+            ("2026-10-01T10:00:00Z", "2026-10-01T09:59:50Z"),
+            ("2026-10-01T10:00:30Z", "2026-10-01T10:00:20Z"),
+            ("2026-10-01T10:01:30Z", "2026-10-01T10:00:50Z"),
+        ]
+    ):
+        sources.append_raw(
+            tmp_path,
+            "emt_buses",
+            _payload(fix["emt_buses"], k, dato),
+            pd.Timestamp(llega),
+        )
+    frame, llegadas, ultimo_ok, error = _vivo()._leer_hoy(
+        pd.Timestamp("2026-10-01T10:01:00Z")
+    )
+    assert len(llegadas) == 2 and frame["snapshot_id"].nunique() == 2
+    assert ultimo_ok == pd.Timestamp("2026-10-01T10:00:30Z")
+    assert error is None

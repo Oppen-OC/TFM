@@ -512,8 +512,13 @@ class Vivo:
         )
         return pasos
 
-    def _historial_de(self, horario: Horario, dia: date, lineas: list[str]):
-        """Los días ANTERIORES al de `ahora`, con la versión del feed que manda hoy."""
+    def _historial_de(
+        self, horario: Horario, dia: date, lineas: list[str], ahora: pd.Timestamp
+    ):
+        """Lo que ya se sabía: días ANTERIORES al de `ahora`, con la versión del feed
+        que manda hoy y solo los pasos con `t_disp_utc <= ahora`. El historial no
+        pasa por `separar`: un paso nocturno del día de servicio anterior puede
+        llegar después de las 04:00 (trampa 017)."""
         h = self.historial
         if h.empty:
             return h
@@ -521,6 +526,7 @@ class Vivo:
             (h["fecha_servicio"] < pd.Timestamp(dia))
             & (h["feed_version"] == horario.version)
             & h["linea"].isin(lineas)
+            & (h["t_disp_utc"] <= ahora)
         ]
 
     # --- la parada -------------------------------------------------------- #
@@ -551,7 +557,7 @@ class Vivo:
                 stop_id,
                 ahora,
                 self._etiquetar(frame, llegadas, lineas),
-                self._historial_de(horario, dia, lineas),
+                self._historial_de(horario, dia, lineas, ahora),
                 ultimo_ok,
                 error,
             )

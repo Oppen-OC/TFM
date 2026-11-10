@@ -2699,3 +2699,40 @@ buscar = '''    c = c[(c["h"] >= 1) & (c["h"] <= max(horizontes)) & (quedan_s > 
 reemplazar = '''    c = c[(c["h"] >= 1) & (c["h"] <= max(horizontes))]'''
 detector = ["tests/test_vivo.py::test_el_bus_que_por_horario_ya_debia_haber_llegado_no_va_en_camino"]
 sondas = []
+
+[[mutante]]
+id = "224"
+nombre = "el historial del ciclo trae los días desde el de hoy en vez de los anteriores"
+capa = "serving"
+# El sesgo del tramo del historial usaría pasos de hoy (y de mañana, con `ahora` en el
+# pasado) que `construir` ve como ya conocidos: la fuga de futuro de la trampa 017,
+# sin error y con un modelo que parece acertar más.
+fichero = "src/project/services/vivo.py"
+buscar = '''(h["fecha_servicio"] < pd.Timestamp(dia))'''
+reemplazar = '''(h["fecha_servicio"] >= pd.Timestamp(dia))'''
+detector = ["tests/test_vivo.py::test_el_historial_solo_trae_lo_que_ya_se_sabia"]
+sondas = []
+
+[[mutante]]
+id = "225"
+nombre = "el ciclo conserva los payloads del crudo que llegaron después de ahora"
+capa = "serving"
+# Con `ahora` en el pasado (el humo) el ciclo vería sondeos del futuro; en vivo, un
+# payload escrito a mitad de ciclo. Sin error: pasan el filtro de `ts_utc`.
+fichero = "src/project/services/vivo.py"
+buscar = '''frame = frame[frame["ts_ingest_utc"] <= ahora]'''
+reemplazar = '''frame = frame'''
+detector = ["tests/test_vivo.py::test_el_crudo_posterior_a_ahora_no_entra_en_el_ciclo"]
+sondas = []
+
+[[mutante]]
+id = "226"
+nombre = "el historial del ciclo conserva pasos que aún no se sabían en ahora"
+capa = "serving"
+# Un paso nocturno del día de servicio anterior puede llegar tras las 04:00 y el
+# historial no pasa por `separar`: entraría en `construir` antes de saberse (017).
+fichero = "src/project/services/vivo.py"
+buscar = '''& (h["t_disp_utc"] <= ahora)'''
+reemplazar = '''& (h["t_disp_utc"].notna())'''
+detector = ["tests/test_vivo.py::test_el_historial_solo_trae_lo_que_ya_se_sabia"]
+sondas = []
