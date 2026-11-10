@@ -24,7 +24,9 @@ Con `--comprobar-lineas` se cronometra además la variante de etiquetar todas la
 líneas cada ciclo (`etiquetar_dia_todas`, `segundos_total_todas`): `segundos` ya
 refleja esos pasos, `segundos_total` no cambia de significado.
 
-Está fuera del grafo de DVC: nada del pipeline importa de aquí.
+Comparte con la demo `con_reloj_de_todas`, `ficheros_del_dia` y `elegir_capturas`
+(`analysis/` puede importar de `services/` e `ingest/`, no al revés). Está fuera
+del grafo de DVC: nada del pipeline importa de aquí.
 """
 
 from __future__ import annotations
@@ -46,12 +48,13 @@ from project.features import (
     ventanas_flota,
 )
 from project.gtfs import cargar_horario, elegir_horario, versiones
-from project.ingest.sources import clave_sondeo, parse, read_raw
+from project.ingest.reprocesar import elegir_capturas
 from project.prepare import (
     cargar_parametros,
     etiquetar_dia,
     ventana_servicio,
 )
+from project.services.vivo import con_reloj_de_todas, ficheros_del_dia
 
 CLAVE_COMPARACION = [
     "fecha_servicio",
@@ -108,43 +111,24 @@ def parada_y_lineas(horario, dia: str, stop: str | None) -> tuple[str, list[str]
 
 
 def leer_crudo(dia: str, hasta: pd.Timestamp) -> dict:
-    """Lo que hace cada ciclo con el crudo: leer, parsear y quedarse con la captura
-    más completa de cada sondeo (el bucle de `reprocesar`), hasta `hasta`.
+    """Lo que hace cada ciclo con el crudo: `elegir_capturas`, la captura más
+    completa de cada sondeo (trampa 011) y solo payloads con filas (trampa 018),
+    hasta `hasta`.
 
     Devuelve también el frame de posiciones con el filtro de `prepare.cargar_dia`
     (ventana de servicio, lat/lon no nulos, `ts_utc <= hasta`) y las `llegadas`
     de esa misma población: frame y llegadas no pueden desencontrarse."""
     desde, fin = ventana_servicio(dia)
-    elegidos: dict = {}
-    payloads = 0
-    fechas = pd.date_range(desde.normalize(), hasta.normalize(), freq="D")
-    for f in fechas:
-        fichero = (
-            settings.raw_dir
-            / "source=emt_buses"
-            / f"date={f:%Y-%m-%d}"
-            / "payloads.ndjson.gz"
-        )
-        if not fichero.exists():
-            continue
-        for ts_ingest, payload in read_raw(fichero):
-            if ts_ingest > hasta:
-                break
-            if ts_ingest < desde:
-                continue
-            payloads += 1
-            try:
-                df = parse("emt_buses", payload, ts_ingest)
-            except Exception:  # noqa: BLE001
-                continue
-            if df.empty:
-                continue
-            clave = clave_sondeo(df, ts_ingest)
-            previo = elegidos.get(clave)
-            if previo is None or len(df) > len(previo):
-                elegidos[clave] = df
-    filas = sum(len(d) for d in elegidos.values())
-    frame = pd.concat(elegidos.values(), ignore_index=True)
+    c = elegir_capturas(
+        ficheros_del_dia(settings.raw_dir / "source=emt_buses", hasta),
+        "emt_buses",
+        tolerar_cola=True,
+    )
+    # ponytail: una captura completada tras `hasta` descarta el sondeo entero, no
+    # vuelve a la primera (como `Vivo._leer_hoy`).
+    frame = pd.concat([d for _, d in c.elegidos.values()], ignore_index=True)
+    frame = frame[frame["ts_ingest_utc"] <= hasta]
+    filas, sondeos = len(frame), int(frame["snapshot_id"].nunique())
     frame = frame[
         frame["lat"].notna()
         & frame["lon"].notna()
@@ -156,8 +140,8 @@ def leer_crudo(dia: str, hasta: pd.Timestamp) -> dict:
     g = frame.groupby("snapshot_id")["ts_ingest_utc"].min()
     llegadas = pd.Series(pd.to_datetime(g, utc=True).to_numpy(), index=g.index)
     return {
-        "payloads": payloads,
-        "sondeos": len(elegidos),
+        "payloads": c.payloads,
+        "sondeos": sondeos,
         "filas": filas,
         "llegadas": llegadas,
         "frame": frame[["snapshot_id", "linea", "trayecto", "lat", "lon", "ts_utc"]],
@@ -223,30 +207,6 @@ def comparar(todas: pd.DataFrame, recortadas: pd.DataFrame, lineas: list[str]) -
         "identico": bool(len(a) == len(b) and difieren.empty),
         "ejemplos": difieren.head(6).astype(str).to_dict("records"),
     }
-
-
-def con_reloj_de_todas(frame: pd.DataFrame, lineas: list[str]) -> pd.DataFrame:
-    """Las posiciones de `lineas` más una fila fantasma por sondeo que lleva el
-    `ts_utc` máximo de todas las líneas, en una línea que no está en el GTFS.
-
-    `rastrear` empareja dentro de (línea, trayecto), pero su reloj por sondeo es
-    el máximo `ts_utc` de TODAS las filas del sondeo, y su contador de huecos,
-    los sondeos que traen alguna fila: recortar líneas los cambia a los dos. La
-    fantasma los devuelve a lo que ve el pipeline. Solo las filas con trayecto,
-    que son las que `etiquetar_dia` pasa a `rastrear`."""
-    reloj = frame[frame["trayecto"].notna()].groupby("snapshot_id")["ts_utc"].max()
-    fantasma = pd.DataFrame(
-        {
-            "snapshot_id": reloj.index.to_numpy(),
-            "linea": "__reloj__",
-            "trayecto": "__reloj__",
-            "lat": 0.0,
-            "lon": 0.0,
-            "ts_utc": reloj.reset_index(drop=True),
-        }
-    )
-    recortado = frame[frame["linea"].isin(lineas)]
-    return pd.concat([recortado, fantasma[recortado.columns]], ignore_index=True)
 
 
 def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
