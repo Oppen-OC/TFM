@@ -218,6 +218,10 @@ corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
    uv run python -m project.ingest.collect --out $demo --status
    ```
 
+   Si el colector muere a la fuerza (no con Ctrl-C), mueve el
+   `payloads.ndjson.gz` del día antes de relanzarlo: un miembro gzip cortado a
+   mitad de fichero hace que el ciclo lea solo hasta ahí.
+
 4. **API y UI**, en terminales separadas y con las mismas `DATA_ROOT` y
    `GTFS_DIR` en cada una:
 
@@ -228,9 +232,12 @@ corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
 
 5. **Elegir una parada a mitad de ruta.** La 2277, la de más líneas, resultó casi
    una cabecera (la 72 acaba allí) y apenas tenía buses «en camino». Un ciclo
-   tarda unos 30-40 s en hora punta (`CICLO_S = 40`, bitácora 064) y la primera
-   petición de una parada tarda eso; la UI refresca cada `REFRESCO_S = 40`, que
-   debe ir a la par. Endpoints: `GET /vivo/paradas` y `GET /vivo/parada/{stop_id}`
+   tarda 35-42 s en hora punta (`CICLO_S = 40`, bitácora 064): es la cifra del
+   ciclo completo, que llama a `construir` una vez por cada horizonte con modelo,
+   no los 27-32 s de la medida de la tarea 1. La primera petición de una parada
+   tarda eso. La UI refresca cada `REFRESCO_S = 40`, que debe ir a la par; el
+   resultado se estampa al terminar, así que en punta el refresco efectivo es el
+   ciclo más 40 s. Endpoints: `GET /vivo/paradas` y `GET /vivo/parada/{stop_id}`
    (503 sin datos u horario, 404 parada desconocida).
 
 ### Docker

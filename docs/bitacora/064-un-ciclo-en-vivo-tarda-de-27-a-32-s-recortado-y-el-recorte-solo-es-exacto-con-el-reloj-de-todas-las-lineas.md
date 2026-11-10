@@ -74,6 +74,15 @@ aunque no para la comparación, que no depende de la carga. Las cifras de la tab
 son de las corridas de las 14:40-15:08. El salto de 26,6 a
 32,0 s entre corridas del mismo corte, sin ese proceso, sigue sin explicar.
 
+## Matiz: el ciclo completo no es el de la tarea 1
+
+La tarea 1 midió un ciclo con `h = 2` (una sola llamada a `construir`). El ciclo
+real llama a `construir` una vez por cada horizonte con modelo, así que la cifra
+del ciclo completo es la del humo de `parada` a las 16:00Z del 01/10 sobre la
+2277: 35,5 s y 41,9 s (la segunda con la máquina cargada), no los 27-32 s de la
+tabla. Además la caché se estampa al terminar el ciclo, no al empezar: en hora
+punta el refresco efectivo es el ciclo más `CICLO_S`, no `CICLO_S`.
+
 ## Por qué importa
 
 - El periodo de refresco de la demo sale de aquí. Etiquetando solo las líneas de
