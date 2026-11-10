@@ -10,7 +10,7 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 |---|---|---|---|---|---|
 | donde-se-arregla-el-parser | puerta · issue #4, puerta 005 | 2 | 0 | 2026-10-28 | flojo |
 | snapshot-id-minimo-del-bloque | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
-| clave-sondeo-compartida-colector-reprocesar | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
+| clave-sondeo-compartida-colector-reprocesar | ingest · examen 004, puerta 011 | 2 | 0 | 2026-11-10 | flojo |
 | ts-trafico-es-captura-desfase-suelo | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | gtfs-nuevo-no-entra-solo | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | convencion-la-pone-quien-sirve | ingest · examen 004, puertas 007 y 009 | 3 | 0 | 2026-11-09 | flojo |
