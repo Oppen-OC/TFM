@@ -204,7 +204,7 @@ FILA_SIN_MODELO = {
     "probabilidad": None,
     "umbral": None,
     "llega_tarde": None,
-    "regla_llega_tarde": False,
+    "regla_llega_tarde": None,
     "congelada": None,
     "resultado": None,
 }
@@ -270,6 +270,7 @@ def test_los_nulos_de_una_fila_sin_modelo_viajan(falso_vivo):
     assert fila["umbral"] is None
     assert fila["llega_tarde"] is None
     assert fila["retraso_actual_s"] is None
+    assert fila["regla_llega_tarde"] is None
     assert fila["congelada"] is None
     assert fila["resultado"] is None
 

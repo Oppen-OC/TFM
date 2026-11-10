@@ -66,4 +66,18 @@ def test_congelada_distinta_de_la_actual_enseña_las_dos():
 
 
 def test_retraso_actual_nulo_sale_sin_dato():
-    assert fila_tabla(_fila(retraso_actual_s=None))["Va ahora"] == "sin dato"
+    f = fila_tabla(_fila(retraso_actual_s=None, regla_llega_tarde=None))
+    assert f["Va ahora"] == "sin dato"
+    assert f["Regla simple"] == "sin dato"  # no «a tiempo»: no hay dato
+
+
+def test_la_regla_es_la_de_la_congelada_que_puntua_el_marcador():
+    # Ahora el bus va tarde (regla True) pero se congeló a tiempo (regla False).
+    f = _fila(regla_llega_tarde=True, congelada=CONGELADA)
+    assert fila_tabla(f)["Regla simple"] == "a tiempo (ahora: tarde)"
+    # Si coinciden se enseña una sola.
+    f = _fila(regla_llega_tarde=False, congelada=CONGELADA)
+    assert fila_tabla(f)["Regla simple"] == "a tiempo"
+    # Sin retraso ahora, la congelada sigue siendo la que puntúa.
+    f = _fila(regla_llega_tarde=None, congelada=CONGELADA)
+    assert fila_tabla(f)["Regla simple"] == "a tiempo"

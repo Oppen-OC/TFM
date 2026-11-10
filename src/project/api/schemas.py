@@ -132,7 +132,7 @@ class ErrorVivo(BaseModel):
 
 class FilaVivo(BaseModel):
     """Un bus en camino a la parada. Sin modelo para su horizonte, la
-    predicción es null; la regla simple se informa siempre."""
+    predicción es null; la regla simple, con retraso en el último paso sabido."""
 
     linea: str
     viaje_id: str
@@ -144,7 +144,9 @@ class FilaVivo(BaseModel):
     probabilidad: float | None = None
     umbral: float | None = None
     llega_tarde: bool | None = None
-    regla_llega_tarde: bool
+    regla_llega_tarde: bool | None = Field(
+        None, description="Null si el último paso sabido no tiene retraso"
+    )
     congelada: Congelada | None = None
     resultado: Resultado | None = Field(
         None, description="Null mientras el bus no ha pasado por la parada"

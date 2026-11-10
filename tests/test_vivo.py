@@ -613,7 +613,7 @@ def test_un_ultimo_paso_sin_retraso_sale_sin_modelo_y_no_tumba_la_parada():
     r = _ciclo(v, "P05", T0 + pd.Timedelta(minutes=3, seconds=30), pasos)
     (fila,) = r["filas"]
     assert fila["probabilidad"] is None and fila["llega_tarde"] is None
-    assert fila["congelada"] is None and fila["regla_llega_tarde"] is False
+    assert fila["congelada"] is None and fila["regla_llega_tarde"] is None
     assert servicio.vistos == []
 
 

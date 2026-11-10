@@ -728,7 +728,7 @@ def _fila(u, h: int, ahora: pd.Timestamp, umbral_s: float, m, entrada) -> dict:
         "probabilidad": None if m is None else float(m["probabilidad"]),
         "umbral": None if m is None else float(m["umbral"]),
         "llega_tarde": None if m is None else bool(m["llega_tarde"]),
-        "regla_llega_tarde": False if sin_retraso else bool(u.retraso_s > umbral_s),
+        "regla_llega_tarde": None if sin_retraso else bool(u.retraso_s > umbral_s),
         "congelada": congelada,
         "resultado": None if entrada is None else entrada["resultado"],
     }

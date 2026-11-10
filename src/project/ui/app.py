@@ -72,6 +72,19 @@ def _modelo(f: dict) -> str:
     return ahora
 
 
+def _regla(f: dict) -> str:
+    """La regla simple que puntúa el marcador: la de la congelada. Si la de ahora
+    difiere se enseña también; sin retraso en el último paso ni congelada, no hay
+    dato (no «a tiempo»)."""
+    c, ahora = f["congelada"], f["regla_llega_tarde"]
+    if c is None:
+        return "sin dato" if ahora is None else _veredicto(ahora)
+    congelada = _veredicto(c["regla_llega_tarde"])
+    if ahora is not None and ahora != c["regla_llega_tarde"]:
+        return f"{congelada} (ahora: {_veredicto(ahora)})"
+    return congelada
+
+
 def _marca(ok: bool) -> str:
     return "✅" if ok else "❌"
 
@@ -98,7 +111,7 @@ def fila_tabla(f: dict) -> dict:
                 f["paradas"],
                 va_ahora,
                 _modelo(f),
-                _veredicto(f["regla_llega_tarde"]),
+                _regla(f),
                 _resultado(f),
             ],
         )
