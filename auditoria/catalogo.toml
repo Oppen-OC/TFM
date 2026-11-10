@@ -2635,8 +2635,9 @@ capa = "serving"
 # última posición del horario: con una parada sin observar, h sale uno de menos
 # y se aplica el modelo de otro horizonte, sin error.
 fichero = "src/project/services/vivo.py"
-buscar = '''            seq_ultimo=("stop_sequence", "max"),'''
-reemplazar = '''            seq_ultimo=("stop_sequence", "count"),'''
+buscar = '''    c["h"] = c["stop_sequence"] - c["seq_ultimo"]'''
+reemplazar = '''    n = sabidos.groupby(CLAVE_VIAJE).size().rename("n").reset_index()
+    c["h"] = c["stop_sequence"] - c.merge(n, on=CLAVE_VIAJE, how="left")["n"].to_numpy()'''
 detector = ["tests/test_vivo.py::test_el_horizonte_se_cuenta_en_el_horario"]
 sondas = []
 
@@ -2749,4 +2750,112 @@ buscar = '''            if pd.notna(r.retraso_s)  # sabido pero sin etiquetar: n
 '''
 reemplazar = ""
 detector = ["tests/test_vivo.py::test_un_paso_sabido_sin_retraso_no_verifica"]
+sondas = []
+
+[[mutante]]
+id = "228"
+nombre = "el ciclo da por sabido el paso cuyo k1 es la última posición del viaje"
+capa = "serving"
+# k1+1 puede llegar y mover el paso y su `t_disp`: el ciclo congelaría una
+# predicción desde un retraso provisional que el entrenamiento nunca vio (017).
+fichero = "src/project/services/vivo.py"
+buscar = '''        ] = pd.NaT'''
+reemplazar = '''        ] = pasos["t_disp_utc"]'''
+detector = ["tests/test_vivo.py::test_un_paso_sabido_en_el_prefijo_lo_es_igual_con_el_dia_completo"]
+sondas = []
+
+[[mutante]]
+id = "229"
+nombre = "la columna «Regla simple» enseña la regla de ahora y no la congelada"
+capa = "serving"
+# El marcador puntúa la regla de la predicción congelada: la UI enseñaría otra.
+fichero = "src/project/ui/app.py"
+buscar = '''    congelada = _veredicto(c["regla_llega_tarde"])'''
+reemplazar = '''    congelada = _veredicto(ahora)'''
+detector = ["tests/test_ui.py::test_la_regla_es_la_de_la_congelada_que_puntua_el_marcador"]
+sondas = []
+
+[[mutante]]
+id = "230"
+nombre = "la regla simple de una fila sin retraso sale como a tiempo"
+capa = "serving"
+# Un paso sin retraso no es «a tiempo»: es sin dato.
+fichero = "src/project/services/vivo.py"
+buscar = '''"regla_llega_tarde": None if sin_retraso else'''
+reemplazar = '''"regla_llega_tarde": False if sin_retraso else'''
+detector = ["tests/test_vivo.py::test_un_ultimo_paso_sin_retraso_sale_sin_modelo_y_no_tumba_la_parada"]
+sondas = []
+
+[[mutante]]
+id = "231"
+nombre = "la lista de paradas espera al cerrojo del ciclo"
+capa = "serving"
+# Un ciclo de 40 s con el cerrojo cogido agota el timeout de la UI: «API no disponible».
+fichero = "src/project/services/vivo.py"
+buscar = '''        horario = self._horario_de(dia)
+        lineas = self._lineas_por_parada(horario, dia)
+        nombres'''
+reemplazar = '''        with self._cerrojo:
+            horario = self._horario_de(dia)
+            lineas = self._lineas_por_parada(horario, dia)
+        nombres'''
+detector = ["tests/test_vivo.py::test_las_paradas_no_esperan_al_ciclo_en_curso"]
+sondas = []
+
+[[mutante]]
+id = "232"
+nombre = "el crudo con un miembro gzip corrupto a mitad de fichero tumba el ciclo"
+capa = "serving"
+# `zlib.error` sale de un flujo cortado seguido de más miembros: sin tolerarlo, un
+# colector muerto a la fuerza daba 500 todo el día.
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''json.JSONDecodeError, zlib.error):'''
+reemplazar = '''json.JSONDecodeError):'''
+detector = ["tests/test_persistencia.py::test_elegir_capturas_tolera_un_miembro_corrupto_a_mitad_de_fichero"]
+sondas = []
+
+[[mutante]]
+id = "233"
+nombre = "la fila fantasma va en (0, 0) y desplaza la latitud media del frame"
+capa = "serving"
+# `_suavizar_intercambios` escala x con la latitud media: el etiquetado recortado
+# dejaría de ser el del pipeline sin error.
+fichero = "src/project/services/vivo.py"
+buscar = '''"lat": centro["lat"].to_numpy(),'''
+reemplazar = '''"lat": 0.0,'''
+detector = ["tests/test_vivo.py::test_la_fila_fantasma_no_desplaza_la_posicion_media_del_frame"]
+sondas = []
+
+[[mutante]]
+id = "234"
+nombre = "un timeout de la API se pinta como API no disponible"
+capa = "serving"
+# La API ocupada con un ciclo no está caída: el tutor reintentaría o no.
+fichero = "src/project/ui/app.py"
+buscar = '''    except requests.Timeout:'''
+reemplazar = '''    except requests.ConnectTimeout:'''
+detector = ["tests/test_ui.py::test_un_timeout_dice_que_la_api_esta_ocupada"]
+sondas = []
+
+[[mutante]]
+id = "235"
+nombre = "la edad del dato se mide contra el ahora del ciclo y no contra el reloj"
+capa = "serving"
+# Con la respuesta en caché el `ahora_utc` va hasta 40 s atrás: «Dato de hace N s»
+# se quedaría corto.
+fichero = "src/project/ui/app.py"
+buscar = '''_edad_s(estado['datos_hasta_utc'])'''
+reemplazar = '''_edad_s(estado['datos_hasta_utc'], _utc(estado['ahora_utc']))'''
+detector = ["tests/test_ui.py::test_la_edad_del_dato_se_mide_contra_el_reloj_no_contra_el_ciclo"]
+sondas = []
+
+[[mutante]]
+id = "236"
+nombre = "la hora del último sondeo bueno sale en UTC y no en local"
+capa = "serving"
+# Una o dos horas menos que la del reloj del tutor, sin error.
+fichero = "src/project/ui/app.py"
+buscar = '''.astimezone(settings.zona_horaria)'''
+reemplazar = '''.astimezone(timezone.utc)'''
+detector = ["tests/test_ui.py::test_el_error_enseña_la_hora_local_del_ultimo_sondeo_bueno"]
 sondas = []
