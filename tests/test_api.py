@@ -8,12 +8,14 @@ from fastapi.testclient import TestClient
 
 from project.api.main import app
 from project.api.routers.prediccion import servicio
+from project.api.routers.vivo import vivo
 from project.api.schemas import EJEMPLO
 from project.services.model_service import (
     HorizonteInvalido,
     ModeloNoDisponible,
     VariablesInvalidas,
 )
+from project.services.vivo import DemoNoDisponible, ParadaDesconocida
 
 # Sin `with`: no corre el `lifespan`, así que no se carga ningún modelo.
 client = TestClient(app)
@@ -164,3 +166,115 @@ def test_swagger_lleva_el_ejemplo():
     esquema = client.get("/openapi.json").json()
     vector = esquema["components"]["schemas"]["Vector"]["properties"]["variables"]
     assert vector["examples"] == [EJEMPLO]
+
+
+# --- demo en vivo ---------------------------------------------------------- #
+CONGELADA = {
+    "probabilidad": 0.61,
+    "umbral": 0.42,
+    "llega_tarde": True,
+    "regla_llega_tarde": False,
+    "h": 3,
+    "t_utc": "2026-11-10T09:00:00+00:00",
+    "stop_sequence": 12,
+}
+FILA = {
+    "linea": "92",
+    "viaje_id": "v1",
+    "paradas": 3,
+    "retraso_actual_s": 310.0,
+    "edad_s": 42.0,
+    "probabilidad": 0.61,
+    "umbral": 0.42,
+    "llega_tarde": True,
+    "regla_llega_tarde": True,
+    "congelada": CONGELADA,
+    "resultado": {
+        "retraso_real_s": 350.0,
+        "llego_tarde": True,
+        "acierta_modelo": True,
+        "acierta_regla": True,
+    },
+}
+# Sin modelo (horizonte sin clasificador) y sin retraso en el último paso sabido.
+FILA_SIN_MODELO = {
+    **FILA,
+    "viaje_id": "v2",
+    "retraso_actual_s": None,
+    "probabilidad": None,
+    "umbral": None,
+    "llega_tarde": None,
+    "regla_llega_tarde": False,
+    "congelada": None,
+    "resultado": None,
+}
+ESTADO = {
+    "stop_id": "123",
+    "nombre": "Colón",
+    "ahora_utc": "2026-11-10T09:01:00+00:00",
+    "datos_hasta_utc": "2026-11-10T09:00:50+00:00",
+    "error": None,
+    "filas": [FILA, FILA_SIN_MODELO],
+    "marcador": {
+        "verificados": 4,
+        "aciertos_modelo": 3,
+        "aciertos_regla": 2,
+        "discrepan": 1,
+    },
+}
+
+
+@pytest.fixture
+def falso_vivo():
+    v = MagicMock()
+    v.paradas.return_value = [{"stop_id": "123", "nombre": "Colón", "lineas": ["92"]}]
+    v.parada.return_value = ESTADO
+    app.dependency_overrides[vivo] = lambda: v
+    yield v
+    app.dependency_overrides.clear()
+
+
+def test_paradas_en_vivo(falso_vivo):
+    r = client.get("/vivo/paradas")
+    assert r.status_code == 200
+    assert r.json()[0] == {"stop_id": "123", "nombre": "Colón", "lineas": ["92"]}
+
+
+def test_estado_de_la_parada_pasa_tal_cual(falso_vivo):
+    r = client.get("/vivo/parada/123")
+    assert r.status_code == 200
+    assert r.json() == ESTADO
+    assert r.json()["marcador"]["discrepan"] == 1
+    falso_vivo.parada.assert_called_once_with("123")
+
+
+def test_parada_desconocida_es_404(falso_vivo):
+    falso_vivo.parada.side_effect = ParadaDesconocida("999")
+    assert client.get("/vivo/parada/999").status_code == 404
+
+
+def test_demo_sin_datos_es_503(falso_vivo):
+    falso_vivo.parada.side_effect = DemoNoDisponible("sin GTFS vigente hoy")
+    r = client.get("/vivo/parada/123")
+    assert r.status_code == 503
+    assert "GTFS" in r.json()["detail"]
+    falso_vivo.paradas.side_effect = DemoNoDisponible("sin GTFS vigente hoy")
+    r = client.get("/vivo/paradas")
+    assert r.status_code == 503
+    assert "GTFS" in r.json()["detail"]
+
+
+def test_los_nulos_de_una_fila_sin_modelo_viajan(falso_vivo):
+    fila = client.get("/vivo/parada/123").json()["filas"][1]
+    assert fila["probabilidad"] is None
+    assert fila["umbral"] is None
+    assert fila["llega_tarde"] is None
+    assert fila["retraso_actual_s"] is None
+    assert fila["congelada"] is None
+    assert fila["resultado"] is None
+
+
+def test_el_error_del_ciclo_viaja(falso_vivo):
+    error = {"mensaje": "Sin datos nuevos de la EMT desde 10:00", "desde_utc": "x"}
+    falso_vivo.parada.return_value = {**ESTADO, "error": error}
+    assert client.get("/vivo/parada/123").json()["error"] == error

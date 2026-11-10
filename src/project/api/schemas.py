@@ -98,5 +98,75 @@ class Modelo(BaseModel):
     tasa_base_validacion: float | None = None
 
 
+class ParadaVivo(BaseModel):
+    stop_id: str
+    nombre: str
+    lineas: list[str]
+
+
+class Congelada(BaseModel):
+    """La primera predicción de un (viaje, parada): no cambia aunque el bus avance."""
+
+    probabilidad: float
+    umbral: float
+    llega_tarde: bool
+    regla_llega_tarde: bool = Field(
+        ..., description="retraso del último paso sabido > 5 min"
+    )
+    h: int
+    t_utc: str
+    stop_sequence: int
+
+
+class Resultado(BaseModel):
+    retraso_real_s: float
+    llego_tarde: bool
+    acierta_modelo: bool
+    acierta_regla: bool
+
+
+class ErrorVivo(BaseModel):
+    mensaje: str
+    desde_utc: str | None
+
+
+class FilaVivo(BaseModel):
+    """Un bus en camino a la parada. Sin modelo para su horizonte, la
+    predicción es null; la regla simple se informa siempre."""
+
+    linea: str
+    viaje_id: str
+    paradas: int = Field(..., description="Paradas que le faltan hasta la elegida")
+    retraso_actual_s: float | None = Field(
+        None, description="Null si el último paso sabido no tiene retraso"
+    )
+    edad_s: float
+    probabilidad: float | None = None
+    umbral: float | None = None
+    llega_tarde: bool | None = None
+    regla_llega_tarde: bool
+    congelada: Congelada | None = None
+    resultado: Resultado | None = Field(
+        None, description="Null mientras el bus no ha pasado por la parada"
+    )
+
+
+class Marcador(BaseModel):
+    verificados: int
+    aciertos_modelo: int
+    aciertos_regla: int
+    discrepan: int
+
+
+class EstadoParada(BaseModel):
+    stop_id: str
+    nombre: str
+    ahora_utc: str
+    datos_hasta_utc: str | None
+    error: ErrorVivo | None
+    filas: list[FilaVivo]
+    marcador: Marcador
+
+
 class HealthResponse(BaseModel):
     status: str
