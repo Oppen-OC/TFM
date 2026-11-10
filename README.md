@@ -173,7 +173,7 @@ corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
 
 1. **Traer de la Pi a `$demo\raw`**, con WSL (Git Bash no trae `rsync`). Va
    **antes** de arrancar el colector del PC: un `rsync` sobre ficheros que el
-   colector ya escribe los trunca (trampa 016). Con `$demoaw` vacío copia todo lo
+   colector ya escribe los trunca (trampa 016). Con `$demo\raw` vacío copia todo lo
    que tiene la Pi, menos el día de hoy en UTC, y con ello los zips del GTFS;
    `--verificar` no escribe, enseña lo que difiere.
 
@@ -200,10 +200,10 @@ corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
    **Acotar a unos pocos días.** `reprocesar` no filtra días y `prepare` sin
    `--dias` procesa todos los capturados. Solo hacen falta los días cuya versión
    del GTFS es la vigente el día de la demo (el sesgo del tramo usa los
-   anteriores con la misma versión). Tras traer, borra de `$demoaw\source=*\`
+   anteriores con la misma versión). Tras traer, borra de `$demo\raw\source=*\`
    las carpetas `date=` que sobren, **menos las de `source=gtfs_emt`**, y deja
    también el `date=` del día siguiente a cada día elegido (el crudo se parte en
-   UTC y el día de servicio no). Es la copia de la demo, nunca `dataaw`; un
+   UTC y el día de servicio no). Es la copia de la demo, nunca `data\raw`; un
    `pull_data.sh` posterior devuelve lo borrado. Y pasa los días a `prepare`:
 
    ```powershell
