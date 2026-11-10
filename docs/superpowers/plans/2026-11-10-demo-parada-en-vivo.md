@@ -463,27 +463,28 @@ def test_los_nulos_de_una_fila_sin_modelo_viajan(falso_vivo): assert fila["proba
 
 ## Resultado de la tarea 1
 
-Medido el 01/10/2026 (feed 19-09-2026) con `uv run python -m project.analysis.medir_ciclo_vivo --dia 2026-10-01 --hasta <HH:MM> --comprobar-lineas`. Parada elegida: `2277`, la del horario vigente con más líneas (11: 10, 11, 28, 31, 59, 7, 71, 72, 73, 9, C1). Segundos por paso del ciclo y filas de entrada. La columna de 18:00 es la segunda corrida, que añade la variante «todas las líneas» (la primera dio 27,5 s para el recortado: el ruido entre corridas es de ~1 s).
+Medido sobre el crudo leído (el frame que entra en `etiquetar_dia` y las `llegadas` salen de la misma población; `t_disp_utc` sin nulos, error si los hay, y se descartan los pasos con `t_disp_utc` posterior al corte: 0 en las tres corridas). Comando: `uv run python -m project.analysis.medir_ciclo_vivo --dia <día> --hasta <HH:MM> [--stop 2277] [--comprobar-lineas]`. Parada `2277`, la del horario vigente con más líneas el 01/10 (11: 10, 11, 28, 31, 59, 7, 71, 72, 73, 9, C1), feed 19-09-2026.
 
-| paso | 10:00 s | 10:00 filas | 18:00 s | 18:00 filas |
-|---|---|---|---|---|
-| lectura del crudo | 2,68 | 711 payloads, 79.918 filas | 6,32 | 1.657 payloads, 226.332 filas |
-| `etiquetar_dia`, solo las líneas de la parada | 7,89 | 7.405 posiciones | 18,52 | 22.232 posiciones |
-| `instante_disponible` | 0,04 | 1.735 pasos | 0,07 | 5.334 pasos |
-| `construir(horizonte=2)` | 1,80 | 137.466 pasos | 1,72 | 141.065 pasos |
-| **`segundos_total` (recortado)** | **12,4** | | **26,6** | |
-| `etiquetar_dia`, todas las líneas | | | 158,80 | 226.369 posiciones |
-| `instante_disponible`, pasos de la parada con todas las posiciones | | | 0,42 | 5.335 pasos |
-| `construir`, tras etiquetar todas | | | 2,35 | 141.066 pasos |
-| **`segundos_total_todas`** | | | **167,9** | |
+| paso | 01/10 10:00 | 01/10 18:00 | 19/10 18:00 |
+|---|---|---|---|
+| días de histórico en `construir` | 17 | 17 | 34 |
+| lectura del crudo | 2,59 s (79.918 filas) | 6,35 s (226.332 filas) | 6,16 s (188.990 filas) |
+| `etiquetar_dia`, solo las líneas de la parada | 6,97 s (7.394 posiciones) | 22,97 s (22.219) | 20,32 s (20.788) |
+| `instante_disponible` | 0,02 s (1.733 pasos) | 0,06 s (5.333) | 0,06 s (4.253) |
+| `construir(horizonte=2)` | 1,76 s (137.464 pasos) | 2,58 s (141.064) | 4,83 s (240.135) |
+| **`segundos_total` (recortado)** | **11,3 s** | **32,0 s** | **31,4 s** |
+| `etiquetar_dia`, todas las líneas | | 184,66 s (226.256 posiciones) | |
+| `instante_disponible`, pasos de la parada con todas las posiciones | | 0,35 s (5.334) | |
+| `construir`, tras etiquetar todas | | 1,96 s (141.065) | |
+| **`segundos_total_todas`** | | **193,3 s** | |
 
-Aparte, una sola vez: cargar el GTFS 5,1-5,5 s y los pasos históricos con su `t_disp` 1,9-2,5 s. `cargar_dia` (curated, que hace de proxy del frame que saldría del crudo) 0,1-0,2 s, fuera del total.
+El 19/10 es el último día del corpus con pasos de esa versión (el 20/10 no tiene pasos): es el de mayor histórico, 34 días, y `construir` pasa de 2,6 a 4,8 s. Aparte, una sola vez: cargar el GTFS 5,1-5,4 s y los pasos históricos con su `t_disp` 2,0-2,4 s.
 
-El ciclo crece con las horas capturadas, sobre todo `etiquetar_dia` (el tracker): de 10:00 a 18:00 el recortado pasa de 12,4 a 26,6 s, y a 18:00 queda a unos 3 s del límite de 30 s; un corte más tardío (la demo no tiene hora fija) lo superaría.
+El ciclo crece con las horas capturadas, sobre todo `etiquetar_dia` (el tracker), y `construir` crece con el histórico. Hay ruido entre corridas: la misma medida a 18:00 del 01/10 dio 26,6 s antes de leer el frame del crudo y 32,0 s ahora, y `etiquetar_dia` con todas las líneas, 158,8 y 184,7 s; solo hay dos corridas de cada una, así que no se puede acotar.
 
-**Dos candidatos para `CICLO_S`, con la misma regla (30 s si cabe; si no, lo medido redondeado hacia arriba a 10 s):**
-- Etiquetando solo las líneas de la parada: 26,6 s a las 18:00, cabe: `CICLO_S` = 30 s. Pero ver abajo: el resultado no es idéntico al de etiquetar todas.
-- Etiquetando todas las líneas: 167,9 s a las 18:00, no cabe: `CICLO_S` = 170 s.
+**Dos candidatos para `CICLO_S`, con la misma regla (30 s si cabe; si no, lo medido redondeado hacia arriba a 10 s) y la peor cifra de las corridas:**
+- Etiquetando solo las líneas de la parada: peor 32,0 s (01/10 18:00), no cabe en 30 s: `CICLO_S` = 40 s.
+- Etiquetando todas las líneas: 193,3 s (única corrida, 01/10 18:00): `CICLO_S` = 200 s.
 No se elige entre ambos aquí.
 
-**`recorte_lineas_identico`: a 10:00 sí; a 18:00 NO.** Con 1.735 pasos coinciden las 11 líneas por completo. A 18:00, de 5.335 pasos de esas líneas etiquetando con todas, 5.334 etiquetando solo con ellas: 3 solo con todas y 2 solo recortadas (≈0,09 %), por ejemplo la línea 31 (`stop_sequence` 1) y la 72 (`stop_sequence` 11, `t_obs_utc` 13 s distinto y retraso 121,9 frente a 134,5). Etiquetar dos veces con todas las líneas da las mismas 44.253 filas: no es no-determinismo, el recorte altera algún emparejamiento del tracker. No se ha tocado el pipeline.
+**`recorte_lineas_identico`: a 18:00 NO** (no se comprobó a 10:00 tras el cambio). De 5.334 pasos de esas líneas etiquetando con todas, 5.333 etiquetando solo con ellas: 3 solo con todas y 2 solo recortadas (≈0,09 %), por ejemplo la línea 31 (`stop_sequence` 1) y la 72 (`stop_sequence` 11). Etiquetar dos veces con todas las líneas daba las mismas 44.253 filas (comprobado antes del cambio de frame): no es no-determinismo, el recorte altera algún emparejamiento del tracker. No se ha tocado el pipeline.

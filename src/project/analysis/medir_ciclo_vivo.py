@@ -37,11 +37,15 @@ import yaml
 
 from project.config import RAIZ, settings
 from project.etiquetado import HORA_CORTE
-from project.features import construir, instante_disponible, ventanas_flota
+from project.features import (
+    con_disponibilidad,
+    construir,
+    instante_disponible,
+    ventanas_flota,
+)
 from project.gtfs import cargar_horario, elegir_horario, versiones
 from project.ingest.sources import clave_sondeo, parse, read_raw
 from project.prepare import (
-    cargar_dia,
     cargar_parametros,
     etiquetar_dia,
     ventana_servicio,
@@ -103,8 +107,12 @@ def parada_y_lineas(horario, dia: str, stop: str | None) -> tuple[str, list[str]
 
 def leer_crudo(dia: str, hasta: pd.Timestamp) -> dict:
     """Lo que hace cada ciclo con el crudo: leer, parsear y quedarse con la captura
-    más completa de cada sondeo (el bucle de `reprocesar`), hasta `hasta`."""
-    desde, _ = ventana_servicio(dia)
+    más completa de cada sondeo (el bucle de `reprocesar`), hasta `hasta`.
+
+    Devuelve también el frame de posiciones con el filtro de `prepare.cargar_dia`
+    (ventana de servicio, lat/lon no nulos, `ts_utc <= hasta`) y las `llegadas`
+    de esa misma población: frame y llegadas no pueden desencontrarse."""
+    desde, fin = ventana_servicio(dia)
     elegidos: dict = {}
     payloads = 0
     fechas = pd.date_range(desde.normalize(), hasta.normalize(), freq="D")
@@ -134,18 +142,23 @@ def leer_crudo(dia: str, hasta: pd.Timestamp) -> dict:
             if previo is None or len(df) > len(previo):
                 elegidos[clave] = df
     filas = sum(len(d) for d in elegidos.values())
+    frame = pd.concat(elegidos.values(), ignore_index=True)
+    frame = frame[
+        frame["lat"].notna()
+        & frame["lon"].notna()
+        & (frame["ts_utc"] >= desde)
+        & (frame["ts_utc"] < fin)
+        & (frame["ts_utc"] <= hasta)
+    ]
     # `snapshot_id` -> cuándo llegó a nuestro disco, lo que pide `instante_disponible`.
-    llegadas = pd.Series(
-        {
-            int(d["snapshot_id"].iloc[0]): d["ts_ingest_utc"].min()
-            for d in elegidos.values()
-        }
-    )
+    g = frame.groupby("snapshot_id")["ts_ingest_utc"].min()
+    llegadas = pd.Series(pd.to_datetime(g, utc=True).to_numpy(), index=g.index)
     return {
         "payloads": payloads,
         "sondeos": len(elegidos),
         "filas": filas,
         "llegadas": llegadas,
+        "frame": frame[["snapshot_id", "linea", "trayecto", "lat", "lon", "ts_utc"]],
     }
 
 
@@ -161,14 +174,29 @@ def historico(dia: str, version: str, lineas: list[str]) -> pd.DataFrame:
         for f in d.glob("*.parquet")
     ]
     pasos = pd.concat([t for t in trozos if len(t)], ignore_index=True)
-    disp = pd.read_parquet(settings.interim_dir / "disponibilidad")
-    clave = ["fecha_servicio", "viaje_id", "stop_sequence"]
-    k = lambda df: df.assign(  # noqa: E731
-        fecha_servicio=pd.to_datetime(df["fecha_servicio"]).astype("datetime64[ns]")
+    return con_disponibilidad(
+        pasos, pd.read_parquet(settings.interim_dir / "disponibilidad")
     )
-    return k(pasos).merge(
-        k(disp)[[*clave, "t_disp_utc"]], on=clave, how="left", validate="many_to_one"
+
+
+def con_t_disp(
+    pasos: pd.DataFrame, posiciones, llegadas, cfg: dict, corte: pd.Timestamp
+) -> tuple[pd.DataFrame, int]:
+    """`pasos` con su `t_disp_utc`; error si falta alguno y se descartan los que
+    solo se sabrían después del «ahora» (`corte`). Devuelve también cuántos."""
+    pasos = pasos.reset_index(drop=True)
+    pasos["t_disp_utc"] = instante_disponible(
+        pasos,
+        posiciones,
+        llegadas,
+        max_hueco_s=cfg["prepare"]["max_hueco_cruce_s"],
+        paradas_referencia=cfg["prepare"]["paradas_referencia"],
     )
+    sin = int(pasos["t_disp_utc"].isna().sum())
+    if sin:
+        raise ValueError(f"{sin} pasos sin t_disp: frame y llegadas no coinciden")
+    futuros = pasos["t_disp_utc"] > corte
+    return pasos[~futuros].reset_index(drop=True), int(futuros.sum())
 
 
 def comparar(todas: pd.DataFrame, recortadas: pd.DataFrame, lineas: list[str]) -> dict:
@@ -213,23 +241,14 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
     with t("lectura_crudo"):
         crudo = leer_crudo(dia, corte)
     llegadas = crudo.pop("llegadas")
-    with t("cargar_curado"):  # sustituye en la medida al frame que sale del crudo
-        df = cargar_dia(dia)
-        df = df[df["ts_utc"] <= corte]
-        df = df[df["linea"].isin(lineas)]
+    frame = crudo.pop("frame")
+    df = frame[frame["linea"].isin(lineas)]
     with t("etiquetar_dia"):
         r = etiquetar_dia(df, horarios, p)
 
     posiciones = r.posiciones[r.posiciones["viaje_id"].notna() & r.posiciones["fiable"]]
-    pasos = r.pasos.reset_index(drop=True)
     with t("instante_disponible"):
-        pasos["t_disp_utc"] = instante_disponible(
-            pasos,
-            posiciones,
-            llegadas,
-            max_hueco_s=cfg["prepare"]["max_hueco_cruce_s"],
-            paradas_referencia=cfg["prepare"]["paradas_referencia"],
-        )
+        pasos, descartados = con_t_disp(r.pasos, posiciones, llegadas, cfg, corte)
     todos = pd.concat([hist, pasos], ignore_index=True)
     f = cfg["features"]
     with t("construir"):
@@ -251,12 +270,13 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
         "parada": stop,
         "lineas": lineas,
         "feed_version": horario.version,
+        "dias_historico": int(hist["fecha_servicio"].nunique()),
+        "pasos_descartados_t_disp_posterior": descartados,
         "segundos": t.s,
         "segundos_total": round(sum(t.s[k] for k in ciclo), 3),
         "pasos_del_ciclo": ciclo,
         "filas_entrada": {
             "lectura_crudo": crudo,
-            "cargar_curado": len(df),
             "etiquetar_dia": len(df),
             "instante_disponible": len(pasos),
             "construir": len(todos),
@@ -268,24 +288,18 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
         # La variante «todas las líneas»: se etiqueta todo el día y se queda con
         # los pasos de la parada; disponibilidad y construcción, sobre esos pasos
         # (con todas las posiciones fiables, que es lo que habría a mano).
-        todo = cargar_dia(dia).loc[lambda d: d["ts_utc"] <= corte]
         with t("etiquetar_dia_todas"):
-            completo = etiquetar_dia(todo, horarios, p)
-        out["filas_entrada"]["etiquetar_dia_todas"] = len(todo)
+            completo = etiquetar_dia(frame, horarios, p)
+        out["filas_entrada"]["etiquetar_dia_todas"] = len(frame)
         out["comprobacion_lineas"] = comparar(completo.pasos, r.pasos, lineas)
         out["recorte_lineas_identico"] = out["comprobacion_lineas"]["identico"]
 
         pos = completo.posiciones
         pos = pos[pos["viaje_id"].notna() & pos["fiable"]]
-        pa = completo.pasos[completo.pasos["linea"].isin(lineas)].reset_index(drop=True)
+        pa = completo.pasos[completo.pasos["linea"].isin(lineas)]
         with t("instante_disponible_todas"):
-            pa["t_disp_utc"] = instante_disponible(
-                pa,
-                pos,
-                llegadas,
-                max_hueco_s=cfg["prepare"]["max_hueco_cruce_s"],
-                paradas_referencia=cfg["prepare"]["paradas_referencia"],
-            )
+            pa, desc_todas = con_t_disp(pa, pos, llegadas, cfg, corte)
+        out["pasos_descartados_t_disp_posterior_todas"] = desc_todas
         with t("construir_todas"):
             construir(
                 pd.concat([hist, pa], ignore_index=True),
