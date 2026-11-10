@@ -55,15 +55,20 @@ def _veredicto(tarde: bool) -> str:
     return "tarde" if tarde else "a tiempo"
 
 
+SIN_MODELO = "sin modelo"
+
+
 def _modelo(f: dict) -> str:
     """La P(>5 min) de la fila; si la congelada (la que puntúa el marcador)
-    difiere, se enseñan las dos."""
-    if f["probabilidad"] is None:
-        return "sin modelo"
-    ahora = f"{f['probabilidad']:.0%} · {_veredicto(f['llega_tarde'])}"
+    difiere, se enseñan las dos. Sin modelo para el horizonte de ahora pero con
+    una congelada (el bus pasó de h con modelo a h sin él), se enseña esa."""
     c = f["congelada"]
+    congelada = c and f"{c['probabilidad']:.0%} · {_veredicto(c['llega_tarde'])}"
+    if f["probabilidad"] is None:
+        return f"ahora: sin modelo (congelada: {congelada})" if c else SIN_MODELO
+    ahora = f"{f['probabilidad']:.0%} · {_veredicto(f['llega_tarde'])}"
     if c and c["llega_tarde"] != f["llega_tarde"]:
-        return f"{ahora} (congelada: {c['probabilidad']:.0%} · {_veredicto(c['llega_tarde'])})"
+        return f"{ahora} (congelada: {congelada})"
     return ahora
 
 
@@ -101,7 +106,8 @@ def fila_tabla(f: dict) -> dict:
 
 
 def _gris(fila: pd.Series) -> list[str]:
-    estilo = "color: gray" if fila["Modelo P(>5 min)"] == "sin modelo" else ""
+    # Gris solo sin modelo y sin nada congelado: con congelada hay predicción.
+    estilo = "color: gray" if fila["Modelo P(>5 min)"] == SIN_MODELO else ""
     return [estilo] * len(fila)
 
 
@@ -175,4 +181,5 @@ def main() -> None:
         st.markdown(ANEXO)
 
 
-main()
+if __name__ == "__main__":  # `streamlit run` ejecuta el guion como __main__
+    main()
