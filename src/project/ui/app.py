@@ -36,8 +36,9 @@ ANEXO = """
    unos 80 s después del paso, cuando llega la posición siguiente y el viaje ya
    está asignado.
 6. **La predicción.** El modelo parte del retraso que el bus lleva ahora y de
-   cuánto suele ganar o perder en el tramo que le queda, y lo corrige con lo que
-   han hecho en ese mismo tramo otros buses de su línea en los últimos 5-15 min.
+   cuánto suele ganar o perder en el tramo que le queda, y lo corrige con el
+   retraso de otros buses de su línea en el último 1, 5 y 15 min y con lo que ha
+   ganado o perdido toda la flota en ese mismo tramo en los últimos 5-15 min.
    El resultado es la probabilidad de llegar a tu parada más de 5 min tarde.
 """
 
@@ -49,6 +50,29 @@ def _min(segundos: float) -> str:
 def _utc(iso: str) -> datetime:
     t = datetime.fromisoformat(iso)
     return t if t.tzinfo else t.replace(tzinfo=timezone.utc)
+
+
+def _hora_local(iso: str) -> str:
+    return _utc(iso).astimezone(settings.zona_horaria).strftime("%H:%M")
+
+
+def _edad_s(iso: str, ahora: datetime | None = None) -> float:
+    """Segundos desde `iso` hasta el reloj de ahora, no hasta el `ahora_utc` del
+    ciclo: con la respuesta en caché este se queda hasta 40 s atrás."""
+    ahora = ahora or datetime.now(timezone.utc)
+    return (ahora - _utc(iso)).total_seconds()
+
+
+def _aviso(estado: dict) -> str | None:
+    """El error del ciclo, con la hora local del último sondeo bueno si lo hubo."""
+    if not estado["error"]:
+        return None
+    aviso = estado["error"]["mensaje"]
+    if estado["datos_hasta_utc"]:
+        aviso += (
+            f" (último sondeo bueno a las {_hora_local(estado['datos_hasta_utc'])})"
+        )
+    return aviso
 
 
 def _veredicto(tarde: bool) -> str:
@@ -146,16 +170,14 @@ def pedir(ruta: str, timeout: float) -> dict | list | None:
 
 
 def pintar_parada(stop_id: str) -> None:
-    estado = pedir(f"/vivo/parada/{stop_id}", TIMEOUT_PARADA_S)
+    with st.spinner("Calculando la parada…"):
+        estado = pedir(f"/vivo/parada/{stop_id}", TIMEOUT_PARADA_S)
     if estado is None:
         return
-    if estado["error"]:
-        st.warning(estado["error"]["mensaje"])
+    if aviso := _aviso(estado):
+        st.warning(aviso)
     if estado["datos_hasta_utc"]:
-        edad = (
-            _utc(estado["ahora_utc"]) - _utc(estado["datos_hasta_utc"])
-        ).total_seconds()
-        st.caption(f"Dato de hace {edad:.0f} s")
+        st.caption(f"Dato de hace {_edad_s(estado['datos_hasta_utc']):.0f} s")
 
     if estado["filas"]:
         tabla = pd.DataFrame([fila_tabla(f) for f in estado["filas"]])

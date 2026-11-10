@@ -1,5 +1,8 @@
 """Ayudantes puros de la página de la demo: sin red, sin datos, sin API."""
 
+from contextlib import nullcontext
+from datetime import datetime, timedelta, timezone
+
 import pandas as pd
 
 from project.ui import app
@@ -104,3 +107,57 @@ def test_un_timeout_dice_que_la_api_esta_ocupada(monkeypatch):
 def test_sin_conexion_dice_que_la_api_no_esta_disponible(monkeypatch):
     mensaje = _error_al_pedir(monkeypatch, app.requests.ConnectionError())
     assert "no disponible" in mensaje
+
+
+def _pintar(monkeypatch, estado) -> dict[str, list[str]]:
+    """Pinta una parada con `st` y la API falseados y devuelve lo que se escribió."""
+    escrito = {"warning": [], "caption": []}
+    monkeypatch.setattr(app, "pedir", lambda ruta, timeout: estado)
+    monkeypatch.setattr(app.st, "spinner", lambda texto: nullcontext())
+    for nombre in ("warning", "caption", "dataframe", "info", "markdown"):
+        monkeypatch.setattr(
+            app.st,
+            nombre,
+            lambda t=None, *a, _n=nombre, **k: escrito.get(_n, []).append(t),
+        )
+    app.pintar_parada("1")
+    return escrito
+
+
+def _estado(**cambios) -> dict:
+    base = {
+        "stop_id": "1",
+        "nombre": "Colón",
+        "ahora_utc": "2026-11-10T10:00:05+00:00",
+        "datos_hasta_utc": None,
+        "error": None,
+        "filas": [],
+        "marcador": {
+            "verificados": 0,
+            "aciertos_modelo": 0,
+            "aciertos_regla": 0,
+            "discrepan": 0,
+        },
+    }
+    return base | cambios
+
+
+def test_el_error_enseña_la_hora_local_del_ultimo_sondeo_bueno(monkeypatch):
+    # 08:58 UTC del 10/11 son las 09:58 en Valencia (CET).
+    estado = _estado(
+        error={"mensaje": "Sin datos nuevos de la EMT desde 09:58", "desde_utc": "x"},
+        datos_hasta_utc="2026-11-10T08:58:00+00:00",
+    )
+    (aviso,) = _pintar(monkeypatch, estado)["warning"]
+    assert "Sin datos nuevos" in aviso and "último sondeo bueno a las 09:58" in aviso
+
+
+def test_la_edad_del_dato_se_mide_contra_el_reloj_no_contra_el_ciclo(monkeypatch):
+    """Con la respuesta en caché `ahora_utc` es del ciclo, hasta 40 s atrás."""
+    hace_100_s = datetime.now(timezone.utc) - timedelta(seconds=100)
+    estado = _estado(
+        datos_hasta_utc=hace_100_s.isoformat(),
+        ahora_utc=(hace_100_s + timedelta(seconds=5)).isoformat(),
+    )
+    (texto,) = _pintar(monkeypatch, estado)["caption"][:1]
+    assert 99 <= float(texto.split()[3]) <= 105  # «Dato de hace N s»
