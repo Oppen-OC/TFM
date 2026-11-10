@@ -2600,3 +2600,17 @@ buscar = '''"t_prog_s": pat.prog[fila[0]],'''
 reemplazar = '''"t_prog_s": pat.prog[0],'''
 detector = ["tests/test_etiquetado.py::test_paradas_del_viaje_coinciden_con_los_pasos_observados"]
 sondas = []
+
+[[mutante]]
+id = "217"
+nombre = "construir filtra siempre las filas sin objetivo"
+capa = "pipeline"
+# La demo en vivo perdería justo la fila que pide: la del bus cuya parada
+# objetivo aún no ha pasado, y construir devolvería una tabla sin ella.
+fichero = "src/project/features.py"
+buscar = '''    if solo_con_objetivo:
+        p = p[p[objetivo].notna()].copy()'''
+reemplazar = '''    if True:
+        p = p[p[objetivo].notna()].copy()'''
+detector = ["tests/test_features.py::test_sin_objetivo_la_fila_solo_se_queda_si_se_pide"]
+sondas = []
