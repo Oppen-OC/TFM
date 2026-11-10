@@ -16,7 +16,9 @@ pasos históricos con su `t_disp`) van aparte: se pagan una vez.
 `--comprobar-lineas` etiqueta el día con todas las líneas y con las de la parada
 y compara los pasos de esas líneas. La clave no es `CLAVE_PASO`: `viaje_id` lleva
 el `vehicle_id`, que se numera entre todas las líneas, así que recortar renumera
-vehículos sin cambiar ningún paso. Se compara el multiconjunto de filas.
+vehículos sin cambiar ningún paso. Se compara el multiconjunto de filas. Y se
+repite recortando con el reloj por sondeo de todas las líneas
+(`con_reloj_de_todas`): si así sale idéntico, la diferencia es solo ese reloj.
 
 Con `--comprobar-lineas` se cronometra además la variante de etiquetar todas las
 líneas cada ciclo (`etiquetar_dia_todas`, `segundos_total_todas`): `segundos` ya
@@ -223,6 +225,30 @@ def comparar(todas: pd.DataFrame, recortadas: pd.DataFrame, lineas: list[str]) -
     }
 
 
+def con_reloj_de_todas(frame: pd.DataFrame, lineas: list[str]) -> pd.DataFrame:
+    """Las posiciones de `lineas` más una fila fantasma por sondeo que lleva el
+    `ts_utc` máximo de todas las líneas, en una línea que no está en el GTFS.
+
+    `rastrear` empareja dentro de (línea, trayecto), pero su reloj por sondeo es
+    el máximo `ts_utc` de TODAS las filas del sondeo, y su contador de huecos,
+    los sondeos que traen alguna fila: recortar líneas los cambia a los dos. La
+    fantasma los devuelve a lo que ve el pipeline. Solo las filas con trayecto,
+    que son las que `etiquetar_dia` pasa a `rastrear`."""
+    reloj = frame[frame["trayecto"].notna()].groupby("snapshot_id")["ts_utc"].max()
+    fantasma = pd.DataFrame(
+        {
+            "snapshot_id": reloj.index.to_numpy(),
+            "linea": "__reloj__",
+            "trayecto": "__reloj__",
+            "lat": 0.0,
+            "lon": 0.0,
+            "ts_utc": reloj.reset_index(drop=True),
+        }
+    )
+    recortado = frame[frame["linea"].isin(lineas)]
+    return pd.concat([recortado, fantasma[recortado.columns]], ignore_index=True)
+
+
 def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
     t = Reloj()
     p = cargar_parametros()
@@ -293,6 +319,13 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
         out["filas_entrada"]["etiquetar_dia_todas"] = len(frame)
         out["comprobacion_lineas"] = comparar(completo.pasos, r.pasos, lineas)
         out["recorte_lineas_identico"] = out["comprobacion_lineas"]["identico"]
+        # ¿Es solo el reloj del sondeo? Recortado, con el de todas las líneas.
+        con_reloj = con_reloj_de_todas(frame, lineas)
+        with t("etiquetar_dia_con_reloj"):
+            rr = etiquetar_dia(con_reloj, horarios, p)
+        out["filas_entrada"]["etiquetar_dia_con_reloj"] = len(con_reloj)
+        out["comprobacion_reloj"] = comparar(completo.pasos, rr.pasos, lineas)
+        out["recorte_con_reloj_identico"] = out["comprobacion_reloj"]["identico"]
 
         pos = completo.posiciones
         pos = pos[pos["viaje_id"].notna() & pos["fiable"]]
