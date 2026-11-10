@@ -13,7 +13,14 @@ import yaml
 
 from project import features
 from project.config import RAIZ
-from project.services.vivo import candidatos, pendientes, separar, tabla
+from project.services.vivo import (
+    Marcador,
+    Prediccion,
+    candidatos,
+    pendientes,
+    separar,
+    tabla,
+)
 
 T0 = pd.Timestamp("2026-11-10 09:00", tz="UTC")
 AHORA = T0 + pd.Timedelta(minutes=30)
@@ -179,3 +186,95 @@ def test_si_la_parada_se_repite_cuenta_la_mas_cercana():
     s = _sabidos([_paso("V", 1)])
     c = candidatos(s, pendientes(s, circular), "P03", [1, 2, 3, 10])
     assert list(c["h"]) == [2]  # la del 3, no la del 9
+
+
+def _pred(llega_tarde=True, regla=False, seq=5, p=0.7):
+    return Prediccion(
+        probabilidad=p,
+        umbral=0.5,
+        llega_tarde=llega_tarde,
+        regla_llega_tarde=regla,
+        h=2,
+        t_utc=AHORA,
+        stop_sequence=seq,
+    )
+
+
+def _pasos_sabidos(*filas):
+    """(viaje, stop_id, stop_sequence, retraso_s) como pasos ya sabidos."""
+    return pd.DataFrame(
+        [
+            {
+                "fecha_servicio": DIA,
+                "viaje_id": v,
+                "stop_id": s,
+                "stop_sequence": q,
+                "retraso_s": r,
+            }
+            for v, s, q, r in filas
+        ]
+    )
+
+
+K = (DIA, "V")
+K2 = (DIA, "W")
+
+
+def test_la_primera_prediccion_queda_congelada():
+    m = Marcador()
+    p1, p2 = _pred(p=0.7), _pred(p=0.2)
+    assert m.congelar("S", K, p1) == p1
+    assert m.congelar("S", K, p2) == p1
+    assert m.entradas("S")[K]["congelada"] == p1
+
+
+def test_se_verifica_con_el_paso_sabido_en_la_parada():
+    m = Marcador()
+    m.congelar("S", K, _pred(llega_tarde=True, regla=False))
+    m.verificar("S", _pasos_sabidos(("V", "S", 5, 310.0)), 300)
+    r = m.entradas("S")[K]["resultado"]
+    assert r["llego_tarde"] is True and r["retraso_real_s"] == 310
+    assert r["acierta_modelo"] is True and r["acierta_regla"] is False
+    assert type(r["retraso_real_s"]) is float
+
+
+def test_un_paso_aun_no_sabido_no_verifica():
+    m = Marcador()
+    m.congelar("S", K, _pred())
+    m.verificar("S", _pasos_sabidos(("V", "OTRA", 5, 999.0), ("W", "S", 5, 999.0)), 300)
+    assert m.entradas("S")[K]["resultado"] is None
+    assert m.resumen("S")["verificados"] == 0
+
+
+def test_un_paso_de_la_misma_parada_en_otra_visita_no_verifica():
+    """Ruta circular: el mismo stop_id con menor stop_sequence ya es sabido."""
+    m = Marcador()
+    m.congelar("S", K, _pred(seq=9))
+    m.verificar("S", _pasos_sabidos(("V", "S", 2, 400.0)), 300)
+    assert m.entradas("S")[K]["resultado"] is None
+    m.verificar("S", _pasos_sabidos(("V", "S", 2, 400.0), ("V", "S", 9, 20.0)), 300)
+    assert m.entradas("S")[K]["resultado"]["retraso_real_s"] == 20.0
+
+
+def test_el_marcador_cuenta_las_discrepancias():
+    m = Marcador()
+    m.congelar("S", K, _pred(llega_tarde=True, regla=False))
+    m.congelar("S", K2, _pred(llega_tarde=False, regla=False))
+    m.congelar("S", (DIA, "X"), _pred())  # sin verificar: no cuenta
+    m.verificar("S", _pasos_sabidos(("V", "S", 5, 310.0), ("W", "S", 5, 10.0)), 300)
+    assert m.resumen("S") == {
+        "verificados": 2,
+        "aciertos_modelo": 2,
+        "aciertos_regla": 1,
+        "discrepan": 1,
+    }
+
+
+def test_cambiar_de_parada_no_borra_lo_congelado():
+    m = Marcador()
+    p1, p3 = _pred(p=0.7), _pred(p=0.1)
+    m.congelar("S", K, p1)
+    m.congelar("T", K2, p3)
+    assert m.entradas("S")[K]["congelada"] == p1
+    assert m.entradas("T")[K2]["congelada"] == p3
+    assert m.resumen("T")["verificados"] == 0

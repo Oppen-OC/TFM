@@ -2639,3 +2639,18 @@ buscar = '''            seq_ultimo=("stop_sequence", "max"),'''
 reemplazar = '''            seq_ultimo=("stop_sequence", "count"),'''
 detector = ["tests/test_vivo.py::test_el_horizonte_se_cuenta_en_el_horario"]
 sondas = []
+
+[[mutante]]
+id = "220"
+nombre = "congelar sustituye la predicción anterior en vez de conservar la primera"
+capa = "serving"
+# El marcador calificaría la última predicción, hecha con más información que la
+# primera: el modelo parecería mejor de lo que fue cuando el tutor lo vio.
+fichero = "src/project/services/vivo.py"
+buscar = '''        return entradas.setdefault(clave, {"congelada": p, "resultado": None})[
+            "congelada"
+        ]'''
+reemplazar = '''        entradas[clave] = {"congelada": p, "resultado": None}
+        return p'''
+detector = ["tests/test_vivo.py::test_la_primera_prediccion_queda_congelada"]
+sondas = []

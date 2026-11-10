@@ -11,6 +11,7 @@ del modelo se calcula aquí.
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 
 import pandas as pd
 
@@ -135,3 +136,80 @@ def tabla(
         soporte_min=cfg["soporte_min"],
         solo_con_objetivo=False,
     )
+
+
+@dataclass(frozen=True)
+class Prediccion:
+    """Lo que el modelo y la regla simple dijeron de un bus en una parada."""
+
+    probabilidad: float
+    umbral: float
+    llega_tarde: bool
+    regla_llega_tarde: bool  # retraso_s del último paso sabido > umbral_retraso_s
+    h: int
+    t_utc: pd.Timestamp
+    stop_sequence: int  # posición de la parada objetivo en el horario del viaje
+
+
+class Marcador:
+    """La primera predicción de cada (viaje, parada), congelada y calificada.
+
+    Vive en memoria, por parada y luego por `clave = (fecha_servicio, viaje_id)`:
+    cambiar de parada no borra lo congelado en las demás.
+    """
+
+    def __init__(self) -> None:
+        self._por_parada: dict[str, dict[tuple, dict]] = {}
+
+    def congelar(self, stop_id: str, clave: tuple, p: Prediccion) -> Prediccion:
+        """Devuelve la primera predicción de `clave`; las siguientes no la sustituyen."""
+        entradas = self._por_parada.setdefault(stop_id, {})
+        return entradas.setdefault(clave, {"congelada": p, "resultado": None})[
+            "congelada"
+        ]
+
+    def verificar(self, stop_id: str, sabidos: pd.DataFrame, umbral_s: float) -> None:
+        """Califica las congeladas cuyo paso por `stop_id` ya es sabido.
+
+        Se casa por (`fecha_servicio`, `viaje_id`, `stop_sequence`), no por
+        `stop_id`: en una ruta circular la parada sale dos veces y el primer paso,
+        ya sabido, no es el de la predicción. `sabidos` solo trae pasos con
+        `t_disp_utc <= ahora` (`separar`).
+        """
+        en_parada = sabidos[sabidos["stop_id"] == stop_id]
+        real = {
+            (r.fecha_servicio, r.viaje_id, int(r.stop_sequence)): float(r.retraso_s)
+            for r in en_parada.itertuples()
+        }
+        for clave, e in self._por_parada.get(stop_id, {}).items():
+            if e["resultado"] is not None:
+                continue
+            c = e["congelada"]
+            retraso = real.get((*clave, c.stop_sequence))
+            if retraso is None:
+                continue
+            tarde = bool(retraso > umbral_s)
+            e["resultado"] = {
+                "retraso_real_s": retraso,
+                "llego_tarde": tarde,
+                "acierta_modelo": bool(c.llega_tarde == tarde),
+                "acierta_regla": bool(c.regla_llega_tarde == tarde),
+            }
+
+    def entradas(self, stop_id: str) -> dict[tuple, dict]:
+        """`{clave: {"congelada": Prediccion, "resultado": dict | None}}`."""
+        return self._por_parada.get(stop_id, {})
+
+    def resumen(self, stop_id: str) -> dict:
+        """El marcador de la parada, sobre las predicciones ya verificadas."""
+        hechos = [
+            (e["congelada"], e["resultado"])
+            for e in self.entradas(stop_id).values()
+            if e["resultado"] is not None
+        ]
+        return {
+            "verificados": len(hechos),
+            "aciertos_modelo": sum(r["acierta_modelo"] for _, r in hechos),
+            "aciertos_regla": sum(r["acierta_regla"] for _, r in hechos),
+            "discrepan": sum(c.llega_tarde != c.regla_llega_tarde for c, _ in hechos),
+        }
