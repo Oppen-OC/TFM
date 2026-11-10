@@ -2686,3 +2686,16 @@ detector = [
     "tests/test_vivo.py::test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas"
 ]
 sondas = []
+
+[[mutante]]
+id = "223"
+nombre = "el candidato no exige que por horario aún no haya llegado a la parada"
+capa = "serving"
+# Sin el filtro de frescura, un viaje cuyo paso siguiente nunca se registra figura
+# «en camino» todo el día (en el humo del 01/10, 21 de 25 filas de la línea 72 con
+# hasta 5,7 h de edad), se congela y no se verifica nunca. Sin error.
+fichero = "src/project/services/vivo.py"
+buscar = '''    c = c[(c["h"] >= 1) & (c["h"] <= max(horizontes)) & (quedan_s > 0)]'''
+reemplazar = '''    c = c[(c["h"] >= 1) & (c["h"] <= max(horizontes))]'''
+detector = ["tests/test_vivo.py::test_el_bus_que_por_horario_ya_debia_haber_llegado_no_va_en_camino"]
+sondas = []

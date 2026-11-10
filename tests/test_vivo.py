@@ -36,6 +36,8 @@ from project.services.vivo import (
 
 T0 = pd.Timestamp("2026-11-10 09:00", tz="UTC")
 AHORA = T0 + pd.Timedelta(minutes=30)
+# El minuto del último paso sabido en cada test de `candidatos`: ni un segundo viejo.
+MIN1, MIN2, MIN3, MIN4, MIN10 = (pd.Timedelta(minutes=m) for m in (1, 2, 3, 4, 10))
 DIA = pd.Timestamp("2026-11-10")
 OBJ = "retraso_siguiente_parada_s"
 CFG = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))["features"]
@@ -152,7 +154,7 @@ def test_las_pendientes_se_concatenan_con_los_pasos_sin_perder_el_tipo():
 def test_el_horizonte_se_cuenta_en_el_horario():
     """Último sabido: 4. Parada en 6. El 3 y el 5 nunca se observaron."""
     s = _sabidos([_paso("V", q) for q in (1, 2, 4)])
-    c = candidatos(s, pendientes(s, paradas_de), "P06", [1, 2, 3, 5, 10])
+    c = candidatos(s, pendientes(s, paradas_de), "P06", [1, 2, 3, 5, 10], T0 + MIN4)
     assert c.loc[0, "h"] == 2
     assert c.loc[0, "stop_sequence"] == 4
 
@@ -162,7 +164,7 @@ def test_a_una_distancia_sin_modelo_no_hay_prediccion():
     filas += [_paso("v4", q) for q in range(1, 9)]  # último 8: h = 4
     filas += [_paso("v11", 1)]  # último 1: h = 11
     s = _sabidos(filas)
-    c = candidatos(s, pendientes(s, paradas_de), "P12", [1, 2, 3, 5, 10])
+    c = candidatos(s, pendientes(s, paradas_de), "P12", [1, 2, 3, 5, 10], T0 + MIN10)
     c = c.set_index("viaje_id")
     assert c.loc["v2", "con_modelo"]
     assert not c.loc["v4", "con_modelo"]
@@ -182,9 +184,9 @@ def test_a_una_distancia_sin_modelo_no_hay_prediccion():
 def test_una_parada_sin_buses_en_camino_da_tabla_vacia():
     s = _sabidos([_paso("V", q) for q in (1, 2, 3)])
     p = pendientes(s, paradas_de)
-    assert candidatos(s, p, "parada_sin_nadie", [1, 2]).empty
-    assert candidatos(s.iloc[0:0], p.iloc[0:0], "P05", [1, 2]).empty
-    assert candidatos(s, p, "P01", [1, 2]).empty  # ya la pasó
+    assert candidatos(s, p, "parada_sin_nadie", [1, 2], T0 + MIN3).empty
+    assert candidatos(s.iloc[0:0], p.iloc[0:0], "P05", [1, 2], T0 + MIN3).empty
+    assert candidatos(s, p, "P01", [1, 2], T0 + MIN3).empty  # ya la pasó
 
 
 def test_un_viaje_sin_pasos_sabidos_no_entra():
@@ -193,8 +195,33 @@ def test_un_viaje_sin_pasos_sabidos_no_entra():
     s, n = separar(pd.DataFrame(filas), AHORA)
     p = pendientes(s, paradas_de)
     assert set(p["viaje_id"]) == {"V"}
-    assert set(candidatos(s, p, "P04", [1, 2, 3]).viaje_id) == {"V"}
+    assert set(candidatos(s, p, "P04", [1, 2, 3], T0 + MIN2).viaje_id) == {"V"}
     assert set(n["viaje_id"]) == {"W"}
+
+
+def test_el_bus_que_por_horario_ya_debia_haber_llegado_no_va_en_camino():
+    """Último sabido: el 3, a T0+3 min. El horario tarda 240 s hasta P05. Con 239 s
+    desde el paso aún le quedan 1 s; con 241, ya debía estar y su paso siguiente no
+    llegó nunca: fuera. Justo en 240 s tampoco (`> 0`)."""
+    p = _pasos_del_viaje(3)
+
+    def en_camino(segundos):
+        ahora = T0 + MIN3 + pd.Timedelta(seconds=segundos)
+        s = separar(p, ahora)[0]
+        return candidatos(s, pendientes(s, paradas_de), "P05", [2], ahora)
+
+    dentro = en_camino(239)
+    assert list(dentro["viaje_id"]) == ["V"] and dentro.loc[0, "h"] == 2
+    assert en_camino(240).empty
+    assert en_camino(241).empty
+
+
+def test_el_retraso_del_candidato_es_el_del_ultimo_paso_aunque_sea_nulo():
+    p = _pasos_del_viaje(3, retraso=lambda s: np.nan if s == 3 else 10.0)
+    ahora = T0 + MIN3
+    s = separar(p, ahora)[0]
+    c = candidatos(s, pendientes(s, paradas_de), "P05", [2], ahora)
+    assert c["retraso_s"].isna().all()
 
 
 def test_si_la_parada_se_repite_cuenta_la_mas_cercana():
@@ -206,7 +233,7 @@ def test_si_la_parada_se_repite_cuenta_la_mas_cercana():
         return h
 
     s = _sabidos([_paso("V", 1)])
-    c = candidatos(s, pendientes(s, circular), "P03", [1, 2, 3, 10])
+    c = candidatos(s, pendientes(s, circular), "P03", [1, 2, 3, 10], T0 + MIN1)
     assert list(c["h"]) == [2]  # la del 3, no la del 9
 
 

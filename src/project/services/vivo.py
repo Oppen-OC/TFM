@@ -93,30 +93,43 @@ def pendientes(sabidos: pd.DataFrame, paradas_de: ParadasDe) -> pd.DataFrame:
 
 
 def candidatos(
-    sabidos: pd.DataFrame, pend: pd.DataFrame, stop_id: str, horizontes: list[int]
+    sabidos: pd.DataFrame,
+    pend: pd.DataFrame,
+    stop_id: str,
+    horizontes: list[int],
+    ahora: pd.Timestamp,
 ) -> pd.DataFrame:
     """Los buses que van a `stop_id`, con su horizonte `h` en posiciones del horario.
 
     `h` = `stop_sequence` de la parada − la del último paso sabido; si la parada
-    sale más de una vez (ruta circular) cuenta la más cercana. Entran los de
-    `1 <= h <= max(horizontes)`; `con_modelo` dice si hay modelo a esa distancia.
-    `stop_sequence` es la del último sabido, la fila que se predice.
+    sale más de una vez (ruta circular) cuenta la más cercana que aún no toca.
+    Entran los de `1 <= h <= max(horizontes)`; `con_modelo` dice si hay modelo a
+    esa distancia. `stop_sequence` es la del último sabido, la fila que se predice.
+
+    Solo van «en camino» los que por horario aún no han llegado: lo que el
+    horario tarda del último paso sabido a la parada, menos lo que ha pasado desde
+    ese paso hasta `ahora`, es positivo. Es `horizonte_previsto_s > 0` de
+    `features.poblacion`, con el tiempo corriendo hasta `ahora`; sin esto, un
+    viaje cuyo paso siguiente nunca se registra figuraría todo el día. Retraso y
+    `t_disp_utc` son los de la fila del último paso, nulos incluidos.
     """
     ultimo = (
         sabidos.sort_values("stop_sequence", kind="stable")
         .groupby(CLAVE_VIAJE, sort=False)
-        .agg(
-            linea=("linea", "last"),
-            seq_ultimo=("stop_sequence", "max"),
-            retraso_s=("retraso_s", "last"),
-            t_disp_utc=("t_disp_utc", "last"),
-        )
-        .reset_index()
+        .tail(1)[
+            [*CLAVE_VIAJE, "linea", "stop_sequence", "retraso_s", "t_disp_utc"]
+            + ["t_obs_utc", "t_prog_s"]
+        ]
+        .rename(columns={"stop_sequence": "seq_ultimo", "t_prog_s": "prog_ultimo"})
     )
-    destino = pend.loc[pend["stop_id"] == stop_id, [*CLAVE_VIAJE, "stop_sequence"]]
+    destino = pend.loc[
+        pend["stop_id"] == stop_id, [*CLAVE_VIAJE, "stop_sequence", "t_prog_s"]
+    ].rename(columns={"t_prog_s": "prog_destino"})
     c = ultimo.merge(destino, on=CLAVE_VIAJE, how="inner", validate="one_to_many")
     c["h"] = c["stop_sequence"] - c["seq_ultimo"]
-    c = c[(c["h"] >= 1) & (c["h"] <= max(horizontes))]
+    desde_el_paso = (ahora - c["t_obs_utc"]).dt.total_seconds()
+    quedan_s = (c["prog_destino"] - c["prog_ultimo"]) - desde_el_paso
+    c = c[(c["h"] >= 1) & (c["h"] <= max(horizontes)) & (quedan_s > 0)]
     c = c.sort_values("h", kind="stable").drop_duplicates(CLAVE_VIAJE)
     c = c.assign(stop_sequence=c["seq_ultimo"], con_modelo=c["h"].isin(horizontes))
     return c[
@@ -586,7 +599,7 @@ class Vivo:
                 fecha_servicio=pd.to_datetime(sabidos["fecha_servicio"])
             )
             pend = pendientes(sabidos, self.paradas_de)
-            cand = candidatos(sabidos, pend, stop_id, list(self._columnas))
+            cand = candidatos(sabidos, pend, stop_id, list(self._columnas), ahora)
             modelo = self._predecir(sabidos, pend, hist, cand)
             # El último paso sabido de cada viaje, tal cual: `candidatos` lo saca con
             # `last`, que se salta los nulos.
