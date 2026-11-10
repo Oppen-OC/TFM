@@ -166,13 +166,16 @@ de lo que se acertó (diseño en
 modelos sí salen de `models/`.
 
 El sesgo del tramo sale de días anteriores **con la misma versión del GTFS**: antes
-hay que traer y etiquetar los últimos días. En PowerShell:
+hay que traer y etiquetar días anteriores. **Tal cual, el guion trae y procesa el
+corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
+`reprocesar` y `prepare`, del orden de una hora para dos meses), como un
+`dvc repro`. Para acotarlo, ver el final del paso 2. En PowerShell:
 
 1. **Traer de la Pi a `$demo\raw`**, con WSL (Git Bash no trae `rsync`). Va
    **antes** de arrancar el colector del PC: un `rsync` sobre ficheros que el
-   colector ya escribe los trunca (trampa 016). Trae los días que faltan, menos
-   el de hoy en UTC, y con ellos los zips del GTFS; `--verificar` no escribe,
-   enseña lo que difiere.
+   colector ya escribe los trunca (trampa 016). Con `$demoaw` vacío copia todo lo
+   que tiene la Pi, menos el día de hoy en UTC, y con ello los zips del GTFS;
+   `--verificar` no escribe, enseña lo que difiere.
 
    ```powershell
    $demo = 'C:\Users\oppen\Code\demo'
@@ -192,6 +195,19 @@ hay que traer y etiquetar los últimos días. En PowerShell:
    uv run python -m project.ingest.reprocesar --data $demo --metricas "$demo\metrics\curar.json"
    uv run python -m project.prepare --metricas "$demo\metrics\prepare.json"
    uv run python -m project.features --disponibilidad
+   ```
+
+   **Acotar a unos pocos días.** `reprocesar` no filtra días y `prepare` sin
+   `--dias` procesa todos los capturados. Solo hacen falta los días cuya versión
+   del GTFS es la vigente el día de la demo (el sesgo del tramo usa los
+   anteriores con la misma versión). Tras traer, borra de `$demoaw\source=*\`
+   las carpetas `date=` que sobren, **menos las de `source=gtfs_emt`**, y deja
+   también el `date=` del día siguiente a cada día elegido (el crudo se parte en
+   UTC y el día de servicio no). Es la copia de la demo, nunca `dataaw`; un
+   `pull_data.sh` posterior devuelve lo borrado. Y pasa los días a `prepare`:
+
+   ```powershell
+   uv run python -m project.prepare --dias 2026-11-03 2026-11-04 2026-11-05 --metricas "$demo\metrics\prepare.json"
    ```
 
 3. **Colector con la carpeta de la demo, al menos una hora antes** (el ciclo
