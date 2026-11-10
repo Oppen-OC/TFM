@@ -91,17 +91,14 @@ son de las corridas de las 14:40-15:08. El salto de 26,6 a
 
 - Hecho: el medidor (`src/project/analysis/medir_ciclo_vivo.py`) con las dos
   comprobaciones, y la ficha de la trampa 022.
-- Abierto: el autor decide entre tres opciones:
-  - recortar con el reloj de todas las líneas;
-  - recortar sin él, aceptando el 0,09 %;
-  - etiquetar todas las líneas.
-
-  Con la decisión se fija `CICLO_S`.
+- Decidido por el autor: recortar a las líneas de la parada **con el reloj de
+  todas** (exacto, `services/vivo.con_reloj_de_todas`) y `CICLO_S = 40`
+  (`ui/app.py` lo repite en `REFRESCO_S`, porque la UI no importa `services/`).
+- Hecho: la guardia de la 022, `tests/test_vivo.py::test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas`,
+  con el mutante 222. La ficha pasa a `cerrada`.
 - Abierto: repetir los tiempos con la máquina libre y tres corridas por corte. Las
-  de la tabla son dos o tres por fila.
-- Abierto: la guardia de la 022. Cuando la demo recorte con el reloj, un test del
-  servicio en vivo (tareas 5-7 del plan) debe exigir el mismo etiquetado que con
-  todas las líneas, con su mutante.
+  de la tabla son dos o tres por fila, y 40 s no se ha comprobado a las 23:00 ni
+  con más días de la misma versión.
 
 ## Para la memoria
 
