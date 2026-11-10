@@ -507,7 +507,7 @@ def _frame_a_mano():
             "snapshot_id": snap,
             "linea": linea,
             "trayecto": trayecto,
-            "lat": 39.4,
+            "lat": 39.4 + 0.1 * (linea == "B"),
             "lon": -0.4,
             "ts_utc": ts + pd.Timedelta(seconds=seg + 30 * snap),
             "gid": 0,  # una columna que el recorte no necesita, pero no debe romper
@@ -536,6 +536,25 @@ def test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas():
     assert set(recorte["snapshot_id"]) == set(frame["snapshot_id"])
     assert len(recorte[recorte["linea"] == "A"]) == 2  # las suyas, enteras
     assert set(recorte["linea"]) == {"A", "__reloj__"}
+
+
+def test_la_fila_fantasma_no_desplaza_la_posicion_media_del_frame():
+    """`_suavizar_intercambios` escala x con la latitud media del frame: la fantasma
+    va en la posición media de su sondeo y no la aleja de la del frame completo más
+    de lo que la aleja el propio recorte."""
+    frame = _frame_a_mano()
+    completo = frame[frame["trayecto"].notna()]
+    recorte = con_reloj_de_todas(frame, ["A"])
+    propias = recorte[recorte["linea"] != "__reloj__"]
+    for col in ("lat", "lon"):
+        con = abs(recorte[col].mean() - completo[col].mean())
+        sin = abs(propias[col].mean() - completo[col].mean())
+        assert con <= sin + 1e-9, col
+        for snap, g in recorte.groupby("snapshot_id"):
+            media = completo[completo["snapshot_id"] == snap][col].mean()
+            propias_g = g[g["linea"] != "__reloj__"]
+            sin = abs(propias_g[col].mean() - media) if len(propias_g) else 0.0
+            assert abs(g[col].mean() - media) <= sin + 1e-9, (col, snap)
 
 
 def test_la_fila_fantasma_no_sale_en_los_pasos(horario_a):  # noqa: F811

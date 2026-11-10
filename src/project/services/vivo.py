@@ -302,14 +302,18 @@ def con_reloj_de_todas(frame: pd.DataFrame, lineas: list[str]) -> pd.DataFrame:
     etiquetado al del pipeline. Solo las filas con trayecto, que son las que
     `etiquetar_dia` pasa a `rastrear`.
     """
-    reloj = frame[frame["trayecto"].notna()].groupby("snapshot_id")["ts_utc"].max()
+    con_trayecto = frame[frame["trayecto"].notna()].groupby("snapshot_id")
+    reloj = con_trayecto["ts_utc"].max()
+    # En la posición media del sondeo: `tracking._suavizar_intercambios` escala x
+    # con la latitud media del frame, y un (0, 0) la desplazaría.
+    centro = con_trayecto[["lat", "lon"]].mean().reindex(reloj.index)
     fantasma = pd.DataFrame(
         {
             "snapshot_id": reloj.index.to_numpy(),
             "linea": RELOJ,
             "trayecto": RELOJ,
-            "lat": 0.0,
-            "lon": 0.0,
+            "lat": centro["lat"].to_numpy(),
+            "lon": centro["lon"].to_numpy(),
             "ts_utc": reloj.reset_index(drop=True),
         }
     )

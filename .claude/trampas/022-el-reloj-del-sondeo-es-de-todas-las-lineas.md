@@ -20,6 +20,11 @@ El reloj de cada sondeo en `rastrear` es el `ts_utc` máximo de **todas** sus
 filas (también en `_coser_alternancias` y `_suavizar_intercambios`). Entra en el
 `dt` del predictor, en el tope de huecos y en la puerta física.
 
+La fila fantasma que lo corrige también cuenta en la media de `lat` del frame, con
+la que `_suavizar_intercambios` escala x: va en la posición media de las filas con
+trayecto de su sondeo, no en (0, 0), que desplazaba esa media. Guardia:
+`test_la_fila_fantasma_no_desplaza_la_posicion_media_del_frame`.
+
 ## Por qué se vuelve a caer aquí
 
 Todo dice que el tracker es separable por línea: empareja dentro de (línea,
