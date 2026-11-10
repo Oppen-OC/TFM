@@ -105,14 +105,19 @@ def test_las_pendientes_son_las_paradas_que_quedan_con_el_viaje_copiado():
 
 
 def test_la_fila_del_ciclo_no_ve_el_paso_que_no_se_sabe():
-    """El 999 del paso 4 no aparece en ninguna variable de la fila del paso 3."""
+    """El 999 del paso 4 (llega después del ahora) no entra en ninguna fila.
+
+    Con horizonte 2 la fila del paso 2 es la que tiene por objetivo el paso 4: si
+    se filtrara, su objetivo valdría 999. La del paso 3, el último sabido, no ve
+    el 999 en ninguna variable."""
     s, _ = separar(_un_viaje_con_la_cola_pendiente(), AHORA)
     t = tabla(pd.DataFrame(), s, pendientes(s, paradas_de), 2, CFG)
-    fila = t[(t["viaje_id"] == "V") & (t["stop_sequence"] == 3)].iloc[0]
-    assert fila["retraso_s"] == 30.0  # el del último sabido
-    assert np.isnan(fila[OBJ])  # la parada objetivo (5) aún no ha pasado
-    numericas = fila[fila.map(lambda x: isinstance(x, int | float | np.number))]
-    assert not (numericas.astype(float) == 999.0).any()
+    v = t[t["viaje_id"] == "V"].set_index("stop_sequence")
+    assert np.isnan(v.loc[2, OBJ])  # su objetivo es el paso 4, aún no sabido
+    assert v.loc[3, "retraso_s"] == 30.0  # el del último sabido
+    assert np.isnan(v.loc[3, OBJ])  # la parada objetivo (5) aún no ha pasado
+    numericas = v.select_dtypes("number")
+    assert not (numericas == 999.0).any().any()
 
 
 def test_el_horizonte_se_cuenta_en_el_horario():
