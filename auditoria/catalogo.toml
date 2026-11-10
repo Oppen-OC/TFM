@@ -2562,3 +2562,29 @@ buscar = '''        elif s > tolerado:'''
 reemplazar = '''        elif s > tolerado or (k == GTFS_FUENTE and not v.get("ultima_comprobacion")):'''
 detector = ["tests/test_persistencia.py::test_gtfs_se_juzga_por_su_ultima_comprobacion"]
 sondas = []
+
+[[mutante]]
+id = "214"
+nombre = "la lectura del crudo no tolera la cola a medias"
+capa = "persistencia"
+# El colector amplía el crudo mientras la demo lo lee: el último miembro gzip
+# puede estar cortado. Sin tolerarlo, el ciclo entero cae por una cola.
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''        if not tolerar_cola:
+            raise'''
+reemplazar = '''        raise'''
+detector = ["tests/test_persistencia.py::test_elegir_capturas_tolera_la_cola_a_medias"]
+sondas = []
+
+[[mutante]]
+id = "215"
+nombre = "un ok posterior no borra el último error"
+capa = "persistencia"
+# Un fallo de la fuente que ya se ha recuperado seguiría mostrándose como
+# actual: el tutor vería un error con la fuente sana.
+fichero = "src/project/ingest/reprocesar.py"
+buscar = '''            if ultimo_error is not None and ultimo_error[0] <= ultimo_ok:
+                ultimo_error = None'''
+reemplazar = '''            pass'''
+detector = ["tests/test_persistencia.py::test_un_ok_despues_del_error_lo_borra"]
+sondas = []

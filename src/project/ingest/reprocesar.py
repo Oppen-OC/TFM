@@ -38,9 +38,12 @@ reutilice claves. En el crudo las repeticiones son siempre consecutivas (las
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import shutil
 from collections import defaultdict
+from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -55,27 +58,71 @@ from project.ingest.sources import (
 )
 
 
-def reprocesar(root: Path, source: str, dry: bool) -> dict:
-    dir_raw = root / "raw" / f"source={source}"
-    if not dir_raw.exists():
-        return {"fuente": source, "estado": "sin crudo"}
+@dataclass
+class Capturas:
+    """Lo que `elegir_capturas` saca de un conjunto de ficheros de crudo."""
 
-    # Captura elegida de cada sondeo, en el orden en que apareció por primera vez.
+    elegidos: dict[int | str, tuple[str, pd.DataFrame]]  # clave -> (día, df)
+    payloads: int
+    errores: int
+    duplicados: int
+    completados: set
+    geo: pd.DataFrame | None
+    ultimo_ok_utc: pd.Timestamp | None  # ts_ingest del último payload con filas
+    # Último payload sin filas o que no parsea, solo si es posterior al último ok.
+    ultimo_error: tuple[pd.Timestamp, str] | None
+
+
+def _leer(fichero: Path, tolerar_cola: bool):
+    """`read_raw`, y con `tolerar_cola` se para donde el fichero está cortado.
+
+    El colector amplía el crudo mientras se lee: el último miembro gzip (o su
+    última línea) puede estar a medias.
+    """
+    try:
+        yield from read_raw(fichero)
+    except (EOFError, gzip.BadGzipFile, json.JSONDecodeError):
+        if not tolerar_cola:
+            raise
+
+
+def elegir_capturas(
+    ficheros: Iterable[Path], source: str, tolerar_cola: bool = False
+) -> Capturas:
+    """Captura elegida de cada sondeo, en el orden en que apareció por primera vez.
+
+    De las de un mismo sondeo, la que más filas trae (trampa 011). Un payload sin
+    filas no es un sondeo (trampa 018): no entra, pero si es posterior al último
+    ok queda como `ultimo_error`, y un ok posterior lo borra.
+    """
     elegidos: dict[int | str, tuple[str, pd.DataFrame]] = {}
     completados: set[int | str] = set()
     geo: pd.DataFrame | None = None
     n_payloads = errores = duplicados = 0
+    ultimo_ok: pd.Timestamp | None = None
+    ultimo_error: tuple[pd.Timestamp, str] | None = None
 
-    for fichero in sorted(dir_raw.rglob("*.ndjson.gz")):
-        for ts_ingest, payload in read_raw(fichero):
+    for fichero in ficheros:
+        for ts_ingest, payload in _leer(fichero, tolerar_cola):
             n_payloads += 1
             try:
                 df = parse(source, payload, ts_ingest)
-            except Exception:  # noqa: BLE001
+            except Exception as e:  # noqa: BLE001
                 errores += 1
+                motivo = type(e).__name__
+                df = None
+            else:
+                motivo = "payload sin filas"
+            if df is None or df.empty:
+                if isinstance(payload, dict) and "error" in payload:
+                    motivo = str(payload["error"])[:200]
+                if ultimo_ok is None or ts_ingest > ultimo_ok:
+                    ultimo_error = (ts_ingest, motivo)
                 continue
-            if df.empty:
-                continue
+            if ultimo_ok is None or ts_ingest > ultimo_ok:
+                ultimo_ok = ts_ingest
+            if ultimo_error is not None and ultimo_error[0] <= ultimo_ok:
+                ultimo_error = None
             if "geom_wkt" in df.columns:
                 if geo is None:
                     cols = [c for c in COLS_GEOMETRIA if c in df.columns]
@@ -91,6 +138,28 @@ def reprocesar(root: Path, source: str, dry: bool) -> dict:
                     completados.add(clave)
                 continue
             elegidos[clave] = (dia, df)
+
+    return Capturas(
+        elegidos,
+        n_payloads,
+        errores,
+        duplicados,
+        completados,
+        geo,
+        ultimo_ok,
+        ultimo_error,
+    )
+
+
+def reprocesar(root: Path, source: str, dry: bool) -> dict:
+    dir_raw = root / "raw" / f"source={source}"
+    if not dir_raw.exists():
+        return {"fuente": source, "estado": "sin crudo"}
+
+    c = elegir_capturas(sorted(dir_raw.rglob("*.ndjson.gz")), source)
+    elegidos, geo = c.elegidos, c.geo
+    n_payloads, errores = c.payloads, c.errores
+    duplicados, completados = c.duplicados, c.completados
 
     por_dia: dict[str, list[pd.DataFrame]] = defaultdict(list)
     for dia, df in elegidos.values():

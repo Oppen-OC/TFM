@@ -357,6 +357,99 @@ def test_reprocesar_completa_el_sondeo_que_llego_a_medias(
 
 
 # --------------------------------------------------------------------------- #
+# Elegir capturas en memoria (la demo en vivo lee el crudo que el colector amplía)
+# --------------------------------------------------------------------------- #
+def _crudo_emt(raiz: Path, fix: dict, capturas: list[tuple[str, dict]]) -> Path:
+    """Escribe en `raiz` un crudo de la EMT: (instante ISO, payload) en orden."""
+    for ts, payload in capturas:
+        sources.append_raw(raiz, "emt_buses", payload, pd.Timestamp(ts))
+    (fichero,) = list((raiz / "raw").rglob("*.ndjson.gz"))
+    return fichero
+
+
+def test_elegir_capturas_tolera_la_cola_a_medias(tmp_path, fix):
+    """El colector está escribiendo: el último miembro gzip llega cortado."""
+    f = _crudo_emt(
+        tmp_path,
+        fix,
+        [
+            (
+                f"2026-11-10T10:00:{15 * k:02d}Z",
+                _sondeo("emt_buses", fix["emt_buses"], k),
+            )
+            for k in range(3)
+        ],
+    )
+    completo = f.stat().st_size
+    sources.append_raw(
+        tmp_path,
+        "emt_buses",
+        _sondeo("emt_buses", fix["emt_buses"], 3),
+        pd.Timestamp("2026-11-10T10:00:45Z"),
+    )
+    # Se corta el cuarto miembro a la mitad.
+    f.write_bytes(f.read_bytes()[: completo + (f.stat().st_size - completo) // 2])
+
+    c = reprocesar.elegir_capturas([f], "emt_buses", tolerar_cola=True)
+
+    assert len(c.elegidos) == 3
+    assert c.ultimo_ok_utc == pd.Timestamp("2026-11-10T10:00:30Z")
+
+
+def test_sin_tolerar_la_cola_a_medias_falla(tmp_path, fix):
+    f = _crudo_emt(
+        tmp_path,
+        fix,
+        [
+            (
+                f"2026-11-10T10:00:{15 * k:02d}Z",
+                _sondeo("emt_buses", fix["emt_buses"], k),
+            )
+            for k in range(4)
+        ],
+    )
+    entero = f.read_bytes()
+    f.write_bytes(entero[: len(entero) - 40])
+
+    with pytest.raises((EOFError, gzip.BadGzipFile, json.JSONDecodeError)):
+        reprocesar.elegir_capturas([f], "emt_buses")
+
+
+def test_el_error_posterior_al_ultimo_ok_se_informa(tmp_path, fix):
+    f = _crudo_emt(
+        tmp_path,
+        fix,
+        [
+            ("2026-11-10T10:00:00Z", fix["emt_buses"]),
+            ("2026-11-10T10:00:30Z", {"error": {"code": 500}}),
+        ],
+    )
+
+    c = reprocesar.elegir_capturas([f], "emt_buses")
+
+    assert c.ultimo_ok_utc == pd.Timestamp("2026-11-10T10:00:00Z")
+    assert c.ultimo_error[0] == pd.Timestamp("2026-11-10T10:00:30Z")
+    assert "500" in c.ultimo_error[1]
+    assert len(c.elegidos) == 1, "un payload de error no es un sondeo (trampa 018)"
+
+
+def test_un_ok_despues_del_error_lo_borra(tmp_path, fix):
+    f = _crudo_emt(
+        tmp_path,
+        fix,
+        [
+            ("2026-11-10T10:00:00Z", {"error": {"code": 500}}),
+            ("2026-11-10T10:00:30Z", fix["emt_buses"]),
+        ],
+    )
+
+    c = reprocesar.elegir_capturas([f], "emt_buses")
+
+    assert c.ultimo_error is None
+    assert c.ultimo_ok_utc == pd.Timestamp("2026-11-10T10:00:30Z")
+
+
+# --------------------------------------------------------------------------- #
 # GTFS estático
 # --------------------------------------------------------------------------- #
 URL_GTFS = "https://opendata.vlci.valencia.es/x/download/google_transit2026-10-04.zip"
