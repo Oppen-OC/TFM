@@ -18,6 +18,10 @@ y compara los pasos de esas líneas. La clave no es `CLAVE_PASO`: `viaje_id` lle
 el `vehicle_id`, que se numera entre todas las líneas, así que recortar renumera
 vehículos sin cambiar ningún paso. Se compara el multiconjunto de filas.
 
+Con `--comprobar-lineas` se cronometra además la variante de etiquetar todas las
+líneas cada ciclo (`etiquetar_dia_todas`, `segundos_total_todas`): `segundos` ya
+refleja esos pasos, `segundos_total` no cambia de significado.
+
 Está fuera del grafo de DVC: nada del pipeline importa de aquí.
 """
 
@@ -208,6 +212,7 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
     # --- ciclo ------------------------------------------------------------ #
     with t("lectura_crudo"):
         crudo = leer_crudo(dia, corte)
+    llegadas = crudo.pop("llegadas")
     with t("cargar_curado"):  # sustituye en la medida al frame que sale del crudo
         df = cargar_dia(dia)
         df = df[df["ts_utc"] <= corte]
@@ -221,7 +226,7 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
         pasos["t_disp_utc"] = instante_disponible(
             pasos,
             posiciones,
-            crudo.pop("llegadas"),
+            llegadas,
             max_hueco_s=cfg["prepare"]["max_hueco_cruce_s"],
             paradas_referencia=cfg["prepare"]["paradas_referencia"],
         )
@@ -250,7 +255,7 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
         "segundos_total": round(sum(t.s[k] for k in ciclo), 3),
         "pasos_del_ciclo": ciclo,
         "filas_entrada": {
-            "lectura_crudo": {k: v for k, v in crudo.items() if k != "llegadas"},
+            "lectura_crudo": crudo,
             "cargar_curado": len(df),
             "etiquetar_dia": len(df),
             "instante_disponible": len(pasos),
@@ -260,11 +265,46 @@ def main(dia: str, hasta: str, stop: str | None, comprobar: bool) -> dict:
         },
     }
     if comprobar:
-        completo = etiquetar_dia(
-            cargar_dia(dia).loc[lambda d: d["ts_utc"] <= corte], horarios, p
-        )
+        # La variante «todas las líneas»: se etiqueta todo el día y se queda con
+        # los pasos de la parada; disponibilidad y construcción, sobre esos pasos
+        # (con todas las posiciones fiables, que es lo que habría a mano).
+        todo = cargar_dia(dia).loc[lambda d: d["ts_utc"] <= corte]
+        with t("etiquetar_dia_todas"):
+            completo = etiquetar_dia(todo, horarios, p)
+        out["filas_entrada"]["etiquetar_dia_todas"] = len(todo)
         out["comprobacion_lineas"] = comparar(completo.pasos, r.pasos, lineas)
         out["recorte_lineas_identico"] = out["comprobacion_lineas"]["identico"]
+
+        pos = completo.posiciones
+        pos = pos[pos["viaje_id"].notna() & pos["fiable"]]
+        pa = completo.pasos[completo.pasos["linea"].isin(lineas)].reset_index(drop=True)
+        with t("instante_disponible_todas"):
+            pa["t_disp_utc"] = instante_disponible(
+                pa,
+                pos,
+                llegadas,
+                max_hueco_s=cfg["prepare"]["max_hueco_cruce_s"],
+                paradas_referencia=cfg["prepare"]["paradas_referencia"],
+            )
+        with t("construir_todas"):
+            construir(
+                pd.concat([hist, pa], ignore_index=True),
+                objetivo=f["objetivo"],
+                horizonte=2,
+                lags_min=tuple(f["lags_min"]),
+                umbral_s=f["umbral_retraso_s"],
+                ventanas_flota_min=ventanas_flota(f),
+                soporte_min=f["soporte_min"],
+            )
+        out["filas_entrada"]["instante_disponible_todas"] = len(pa)
+        out["filas_entrada"]["construir_todas"] = len(hist) + len(pa)
+        out["segundos_total_todas"] = round(
+            t.s["lectura_crudo"]
+            + t.s["etiquetar_dia_todas"]
+            + t.s["instante_disponible_todas"]
+            + t.s["construir_todas"],
+            3,
+        )
     return out
 
 
