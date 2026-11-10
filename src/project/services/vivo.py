@@ -319,6 +319,34 @@ def con_reloj_de_todas(frame: pd.DataFrame, lineas: list[str]) -> pd.DataFrame:
     )
 
 
+def provisionales(
+    pasos: pd.DataFrame,
+    posiciones: pd.DataFrame,
+    ahora: pd.Timestamp,
+    max_hueco_s: float,
+) -> pd.Series:
+    """Los pasos (con el índice de `pasos`) que todavía pueden cambiar de valor.
+
+    `etiquetado.cruces` interpola el paso con k1, la primera posición fiable tras
+    él, y corrige la velocidad con k1+1 si llega en `max_hueco_s`; `features.
+    instante_disponible` fecha el paso con la llegada de esa k1+1. Si k1 es la
+    última posición fiable del viaje, k1+1 puede estar por llegar y mover el paso
+    y su `t_disp` (trampa 017): hasta que `ahora` rebase `ts_utc(k1) + max_hueco_s`
+    no se sabe. Después, ninguna k1+1 futura entraría en el cálculo del pipeline.
+    `posiciones` son las fiables con viaje, como las de `instante_disponible`.
+    """
+    po = posiciones.sort_values("ts_utc", kind="stable")[[*CLAVE_VIAJE, "ts_utc"]]
+    po = po.assign(_penultima=po.groupby(CLAVE_VIAJE)["ts_utc"].shift(1))
+    # La última de cada viaje, con la que la precede: si el paso es posterior a
+    # ella, k1 es la última (o no hay otra).
+    po = po.groupby(CLAVE_VIAJE).tail(1)
+    po = po.rename(columns={"ts_utc": "_ultima"})
+    r = pasos[[*CLAVE_VIAJE, "t_obs_utc"]].merge(po, on=CLAVE_VIAJE, how="left")
+    k1_es_la_ultima = r["_penultima"].isna() | (r["t_obs_utc"] >= r["_penultima"])
+    reciente = (ahora - r["_ultima"]).dt.total_seconds() <= max_hueco_s
+    return pd.Series((k1_es_la_ultima & reciente).to_numpy(), index=pasos.index)
+
+
 def _iso(t: pd.Timestamp | None) -> str | None:
     return None if t is None else t.tz_convert("UTC").isoformat()
 
@@ -494,7 +522,9 @@ class Vivo:
             }
         return None
 
-    def _etiquetar(self, frame, llegadas, lineas: list[str]) -> pd.DataFrame:
+    def _etiquetar(
+        self, frame, llegadas, lineas: list[str], ahora: pd.Timestamp
+    ) -> pd.DataFrame:
         """Los pasos de `lineas` con su `t_disp_utc`; nulo es un paso aún no sabido."""
         if frame.empty or not frame["linea"].isin(lineas).any():
             return pd.DataFrame()
@@ -511,6 +541,12 @@ class Vivo:
             max_hueco_s=prep["max_hueco_cruce_s"],
             paradas_referencia=prep["paradas_referencia"],
         )
+        # Un paso cuyo k1 es la última posición del viaje aún puede cambiar: ni
+        # él ni su retraso existen todavía (el pipeline, con el día entero, lo
+        # fecha con k1+1). `separar` lo deja fuera.
+        pasos.loc[
+            provisionales(pasos, pos, ahora, prep["max_hueco_cruce_s"]), "t_disp_utc"
+        ] = pd.NaT
         return pasos
 
     def _historial_de(
@@ -557,7 +593,7 @@ class Vivo:
             resultado = self._resultado(
                 stop_id,
                 ahora,
-                self._etiquetar(frame, llegadas, lineas),
+                self._etiquetar(frame, llegadas, lineas, ahora),
                 self._historial_de(horario, dia, lineas, ahora),
                 ultimo_ok,
                 error,
@@ -608,8 +644,8 @@ class Vivo:
             pend = pendientes(sabidos, self.paradas_de)
             cand = candidatos(sabidos, pend, stop_id, list(self._columnas), ahora)
             modelo = self._predecir(sabidos, pend, hist, cand)
-            # El último paso sabido de cada viaje, tal cual: `candidatos` lo saca con
-            # `last`, que se salta los nulos.
+            # El último paso sabido de cada viaje, tal cual, nulos incluidos:
+            # `candidatos` también lo toma con `tail(1)`.
             ultimos = sabidos.sort_values("stop_sequence", kind="stable").groupby(
                 CLAVE_VIAJE, sort=False
             )

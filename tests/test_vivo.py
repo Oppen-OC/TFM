@@ -698,3 +698,44 @@ def test_el_crudo_posterior_a_ahora_no_entra_en_el_ciclo(tmp_path, monkeypatch, 
     assert len(llegadas) == 2 and frame["snapshot_id"].nunique() == 2
     assert ultimo_ok == pd.Timestamp("2026-10-01T10:00:30Z")
     assert error is None
+
+
+# --- el prefijo frente al día completo (ADR-022, trampa 017) ------------------
+
+
+def test_un_paso_sabido_en_el_prefijo_lo_es_igual_con_el_dia_completo(horario_a):  # noqa: F811
+    """El ciclo etiqueta un prefijo del día; el pipeline, el día entero. Todo paso
+    que el ciclo da por sabido en `ahora` ha de tener, en el día completo, el mismo
+    retraso y el mismo `t_obs_utc` y `t_disp_utc <= ahora`: con k1 la última
+    posición fiable del viaje, k1+1 puede llegar y mover el paso y su `t_disp`."""
+    frame = flota(Bus("1", "Oeste - Este", IDA, 7 * 3600 + 600 + 90, 4.0))
+    latencia = pd.Timedelta(seconds=20)
+    llegadas = frame.groupby("snapshot_id")["ts_utc"].max() + latencia
+    v = Vivo(
+        ServicioFalso(),
+        [horario_a],
+        pd.DataFrame(),
+        PARAMS_TFM,
+        etiquetado.Parametros(),
+    )
+    completo = v._etiquetar(
+        frame, llegadas, ["1"], frame["ts_utc"].max() + pd.Timedelta(days=1)
+    )
+    assert completo["t_disp_utc"].notna().all() and len(completo) >= 11
+    completo = completo.set_index("stop_sequence")
+    cortes = sorted(frame["ts_utc"].unique())[8:-3]
+    sabidos_en_algun_corte = 0
+    for corte in cortes:
+        ahora = pd.Timestamp(corte) + latencia
+        prefijo = v._etiquetar(frame[frame["ts_utc"] <= corte], llegadas, ["1"], ahora)
+        if prefijo.empty:
+            continue
+        sabidos = separar(prefijo, ahora)[0].set_index("stop_sequence")
+        sabidos_en_algun_corte += len(sabidos)
+        c = completo.loc[sabidos.index]
+        assert (c["t_disp_utc"] <= ahora).all(), (
+            f"corte {ahora}: sabido antes de tiempo"
+        )
+        assert np.allclose(c["retraso_s"], sabidos["retraso_s"], atol=1e-6)
+        assert (c["t_obs_utc"] == sabidos["t_obs_utc"]).all()
+    assert sabidos_en_algun_corte > 0
