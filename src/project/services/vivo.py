@@ -215,6 +215,7 @@ class Marcador:
         real = {
             (r.fecha_servicio, r.viaje_id, int(r.stop_sequence)): float(r.retraso_s)
             for r in en_parada.itertuples()
+            if pd.notna(r.retraso_s)  # sabido pero sin etiquetar: no se califica
         }
         for clave, e in self._por_parada.get(stop_id, {}).items():
             if e["resultado"] is not None:

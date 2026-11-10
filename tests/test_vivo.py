@@ -297,6 +297,18 @@ def test_un_paso_aun_no_sabido_no_verifica():
     assert m.resumen("S")["verificados"] == 0
 
 
+def test_un_paso_sabido_sin_retraso_no_verifica():
+    """El paso es sabido pero no se pudo etiquetar: ni NaN ni «no llegó tarde»."""
+    m = Marcador()
+    m.congelar("S", K, _pred(llega_tarde=True, regla=False))
+    antes = m.resumen("S")
+    m.verificar("S", _pasos_sabidos(("V", "S", 5, float("nan"))), 300)
+    assert m.entradas("S")[K]["resultado"] is None
+    assert m.resumen("S") == antes
+    m.verificar("S", _pasos_sabidos(("V", "S", 5, 310.0)), 300)
+    assert m.entradas("S")[K]["resultado"]["retraso_real_s"] == 310.0
+
+
 def test_un_paso_de_la_misma_parada_en_otra_visita_no_verifica():
     """Ruta circular: el mismo stop_id con menor stop_sequence ya es sabido."""
     m = Marcador()

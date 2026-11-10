@@ -2736,3 +2736,17 @@ buscar = '''& (h["t_disp_utc"] <= ahora)'''
 reemplazar = '''& (h["t_disp_utc"].notna())'''
 detector = ["tests/test_vivo.py::test_el_historial_solo_trae_lo_que_ya_se_sabia"]
 sondas = []
+
+[[mutante]]
+id = "227"
+nombre = "el marcador califica un paso sabido sin retraso"
+capa = "serving"
+# Un paso sabido en la parada objetivo con `retraso_s` nulo daría NaN como retraso
+# real y «no llegó tarde»: una verificación falsa en el marcador, y la API (JSON
+# no admite NaN) respondería 500 con la parada entera.
+fichero = "src/project/services/vivo.py"
+buscar = '''            if pd.notna(r.retraso_s)  # sabido pero sin etiquetar: no se califica
+'''
+reemplazar = ""
+detector = ["tests/test_vivo.py::test_un_paso_sabido_sin_retraso_no_verifica"]
+sondas = []
