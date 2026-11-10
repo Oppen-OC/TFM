@@ -7,16 +7,28 @@ la parada del tutor se busca en el horario, no entre los pasos observados.
 
 from __future__ import annotations
 
+from datetime import date
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
+import pytest
 import yaml
+from test_etiquetado import IDA, PUNTA, Bus, feed_a, flota, horario_a  # noqa: F401
 
-from project import features
-from project.config import RAIZ
+from project import etiquetado, features
+from project.config import RAIZ, settings
+from project.gtfs import Horario
+from project.prepare import cargar_parametros, etiquetar_dia
 from project.services.vivo import (
+    DemoNoDisponible,
     Marcador,
+    ParadaDesconocida,
     Prediccion,
+    Vivo,
     candidatos,
+    con_reloj_de_todas,
+    ficheros_del_dia,
     pendientes,
     separar,
     tabla,
@@ -125,6 +137,16 @@ def test_la_fila_del_ciclo_no_ve_el_paso_que_no_se_sabe():
     assert np.isnan(v.loc[3, OBJ])  # la parada objetivo (5) aún no ha pasado
     numericas = v.select_dtypes("number")
     assert not (numericas == 999.0).any().any()
+
+
+def test_las_pendientes_se_concatenan_con_los_pasos_sin_perder_el_tipo():
+    """Con `FUTURO` en segundos, historial + sabidos + pendientes dejaba los
+    instantes en `object` y `construir` fallaba en el primer `.dt`."""
+    s = _sabidos([_paso("V", q) for q in (1, 2, 3)])
+    p = pendientes(s, paradas_de)
+    todo = pd.concat([s, s, p], ignore_index=True)
+    for col in ("t_obs_utc", "t_disp_utc"):
+        assert p[col].dtype == s[col].dtype == todo[col].dtype
 
 
 def test_el_horizonte_se_cuenta_en_el_horario():
@@ -278,3 +300,290 @@ def test_cambiar_de_parada_no_borra_lo_congelado():
     assert m.entradas("S")[K]["congelada"] == p1
     assert m.entradas("T")[K2]["congelada"] == p3
     assert m.resumen("T")["verificados"] == 0
+
+
+# --------------------------------------------------------------------------- #
+# El ciclo completo: `Vivo`
+# --------------------------------------------------------------------------- #
+PARAMS_TFM = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
+COLUMNAS_FALSAS = ["linea", "retraso_s", "retraso_lag1_s", "hora"]
+
+
+class ServicioFalso:
+    """Un clasificador por horizonte que contesta lo mismo y anota qué vector vio."""
+
+    def __init__(self, horizontes=(2,), p=0.8):
+        self.horizontes, self.p, self.vistos = list(horizontes), p, []
+
+    def modelos(self):
+        return [
+            {
+                "modelo": "clasificador",
+                "horizonte_paradas": h,
+                "columnas": COLUMNAS_FALSAS,
+            }
+            for h in self.horizontes
+        ]
+
+    def mas_de_5min(self, variables, horizonte):
+        self.vistos.append((horizonte, variables))
+        return {"probabilidad": self.p, "umbral": 0.5, "llega_tarde": self.p >= 0.5}
+
+
+def _horario(vigencia=(date(2026, 1, 1), date(2026, 12, 31))):
+    """Un horario a mano: la línea 7 para en P01..P20 todos los días."""
+    dias = "monday tuesday wednesday thursday friday saturday sunday".split()
+    cal = pd.DataFrame(
+        [
+            {
+                "service_id": "S",
+                "start_date": f"{vigencia[0]:%Y%m%d}",
+                "end_date": f"{vigencia[1]:%Y%m%d}",
+                **dict.fromkeys(dias, "1"),
+            }
+        ]
+    )
+    return Horario(
+        ruta=Path("falso.zip"),
+        version="F1",
+        vigencia=vigencia,
+        calendario=vigencia,
+        viajes=pd.DataFrame(
+            {
+                "trip_id": ["T"],
+                "route_id": ["R"],
+                "service_id": ["S"],
+                "shape_id": ["S1"],
+                "linea": ["7"],
+            }
+        ),
+        paradas_de_viaje=pd.DataFrame(
+            {
+                "trip_id": "T",
+                "stop_sequence": np.arange(1, 21),
+                "stop_id": [f"P{s:02d}" for s in range(1, 21)],
+                "t_prog_s": 32400.0 + 120.0 * np.arange(1, 21),
+            }
+        ),
+        paradas=pd.DataFrame(
+            {"lat": 39.0, "lon": -0.4, "nombre": "Nombre"},
+            index=pd.Index([f"P{s:02d}" for s in range(1, 21)], name="stop_id"),
+        ),
+        calendar=cal,
+        calendar_dates=pd.DataFrame(columns=["service_id", "date", "exception_type"]),
+        trazados={},
+    )
+
+
+def _vivo(horario=None, servicio=None):
+    return Vivo(
+        servicio or ServicioFalso(),
+        [horario or _horario()],
+        pd.DataFrame(),
+        PARAMS_TFM,
+        cargar_parametros(),
+    )
+
+
+def test_sin_datos_la_demo_no_tumba_el_arranque(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "data_root", tmp_path / "vacio")
+    monkeypatch.setattr(settings, "gtfs_dir", tmp_path / "sin_gtfs")
+    v = Vivo.desde_disco(ServicioFalso())
+    assert v.problema
+    with pytest.raises(DemoNoDisponible):
+        v.parada("123")
+    with pytest.raises(DemoNoDisponible):
+        v.paradas()
+
+
+def test_sin_modelos_la_demo_no_tumba_el_arranque(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "data_root", tmp_path / "vacio")
+    monkeypatch.setattr(settings, "gtfs_dir", tmp_path / "sin_gtfs")
+    v = Vivo.desde_disco(ServicioFalso(horizontes=()))
+    assert "modelo" in v.problema
+
+
+def test_sin_horario_vigente_hoy_se_dice():
+    v = _vivo(_horario(vigencia=(date(2020, 1, 1), date(2020, 12, 31))))
+    with pytest.raises(DemoNoDisponible, match="horario"):
+        v.parada("P05")
+    with pytest.raises(DemoNoDisponible, match="horario"):
+        v.paradas()
+
+
+def test_de_madrugada_se_leen_dos_fechas(tmp_path):
+    """02:30 locales del 11/11: el día de servicio es el 10/11."""
+    for d in ("2026-11-09", "2026-11-10", "2026-11-11", "2026-11-12"):
+        f = tmp_path / f"date={d}" / "payloads.ndjson.gz"
+        f.parent.mkdir()
+        f.touch()
+    fs = ficheros_del_dia(tmp_path, pd.Timestamp("2026-11-11T01:30Z"))
+    assert {f.parent.name for f in fs} == {"date=2026-11-10", "date=2026-11-11"}
+    # A mediodía, la ventana de hoy solo ha entrado en una fecha UTC.
+    fs = ficheros_del_dia(tmp_path, pd.Timestamp("2026-11-10T10:00Z"))
+    assert {f.parent.name for f in fs} == {"date=2026-11-10"}
+
+
+def test_una_parada_que_no_existe_es_desconocida():
+    with pytest.raises(ParadaDesconocida):
+        _vivo().parada("no_existe", pd.Timestamp("2026-11-10T10:00Z"))
+
+
+def test_las_paradas_son_las_del_horario_con_sus_lineas():
+    p = _vivo().paradas()
+    assert p[0] == {"stop_id": "P01", "nombre": "Nombre", "lineas": ["7"]}
+    assert len(p) == 20
+
+
+# --- el reloj de todas las líneas (trampa 022) -----------------------------
+
+
+def _frame_a_mano():
+    """Tres sondeos. En cada uno manda una línea distinta; el 3 no trae la A."""
+    ts = pd.Timestamp("2026-10-01T10:00:00Z")
+
+    def f(snap, linea, seg, trayecto="Ida"):
+        return {
+            "snapshot_id": snap,
+            "linea": linea,
+            "trayecto": trayecto,
+            "lat": 39.4,
+            "lon": -0.4,
+            "ts_utc": ts + pd.Timedelta(seconds=seg + 30 * snap),
+            "gid": 0,  # una columna que el recorte no necesita, pero no debe romper
+        }
+
+    return pd.DataFrame(
+        [
+            f(1, "A", 5),
+            f(1, "B", 9),
+            f(1, "C", 20, trayecto=None),  # sin trayecto: no cuenta para el reloj
+            f(2, "A", 35),
+            f(2, "B", 31),
+            f(3, "B", 7),
+        ]
+    )
+
+
+def _reloj(df):
+    return df[df["trayecto"].notna()].groupby("snapshot_id")["ts_utc"].max()
+
+
+def test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas():
+    frame = _frame_a_mano()
+    recorte = con_reloj_de_todas(frame, ["A"])
+    assert _reloj(recorte).equals(_reloj(frame))
+    assert set(recorte["snapshot_id"]) == set(frame["snapshot_id"])
+    assert len(recorte[recorte["linea"] == "A"]) == 2  # las suyas, enteras
+    assert set(recorte["linea"]) == {"A", "__reloj__"}
+
+
+def test_la_fila_fantasma_no_sale_en_los_pasos(horario_a):  # noqa: F811
+    """Recortada a la línea 1 y con el reloj de todas, la etiqueta es la de todas."""
+    buses = [
+        Bus("1", "Oeste - Este", IDA, 7 * 3600 + 600 + 20, 4.0),
+        Bus("1", "Oeste - Este", IDA, 7 * 3600 + 1200 - 40, 4.0),
+        Bus("3", "Oeste - Este", PUNTA, 7 * 3600 + 240, 5.0),
+    ]
+    frame = flota(*buses)
+    p = etiquetado.Parametros()
+    todas = etiquetar_dia(frame, [horario_a], p)
+    cortada = etiquetar_dia(con_reloj_de_todas(frame, ["1"]), [horario_a], p)
+    assert set(cortada.pasos["linea"]) == {"1"}
+    clave = ["trip_id", "stop_sequence", "retraso_s"]
+    a = todas.pasos[todas.pasos["linea"] == "1"][clave]
+    b = cortada.pasos[clave]
+    assert len(a) > 20
+    assert (
+        a.sort_values(clave)
+        .reset_index(drop=True)
+        .equals(b.sort_values(clave).reset_index(drop=True))
+    )
+
+
+# --- congelar y verificar con las mismas claves ------------------------------
+
+
+def _pasos_del_viaje(hasta, retraso=lambda s: 100.0 * s, viaje="V"):
+    """Pasos 1..hasta de un viaje, sabido cada uno `s` minutos tras T0."""
+    filas = []
+    for s in range(1, hasta + 1):
+        f = _paso(viaje, s, retraso=retraso(s))
+        f["t_disp_utc"] = T0 + pd.Timedelta(minutes=s)
+        filas.append(f)
+    return pd.DataFrame(filas)
+
+
+def _vivo_con_paradas(servicio=None):
+    v = _vivo(servicio=servicio)
+    v.paradas_de = paradas_de
+    return v
+
+
+def _ciclo(v, stop, ahora, pasos):
+    return v._resultado(stop, ahora, pasos, pd.DataFrame())
+
+
+def test_lo_congelado_se_verifica_cuando_llega_el_paso_sabido():
+    """Dos ciclos: el primero congela (último sabido el 3, parada P05, h = 2); el
+    segundo ve el paso 5 y lo califica. Si la clave de `congelar` y la de
+    `verificar` no son la misma, no se califica nunca y no hay error."""
+    v = _vivo_con_paradas(ServicioFalso(horizontes=(2,), p=0.8))
+    pasos = _pasos_del_viaje(5)
+    t1 = T0 + pd.Timedelta(minutes=3, seconds=30)
+    r1 = _ciclo(v, "P05", t1, pasos)
+    (fila,) = r1["filas"]
+    assert fila["viaje_id"] == "V" and fila["paradas"] == 2
+    assert fila["probabilidad"] == 0.8 and fila["llega_tarde"] is True
+    assert fila["retraso_actual_s"] == 300.0
+    assert fila["regla_llega_tarde"] is False  # 300 no supera 300
+    assert fila["congelada"]["probabilidad"] == 0.8 and fila["resultado"] is None
+    assert r1["marcador"]["verificados"] == 0
+
+    r2 = _ciclo(v, "P05", T0 + pd.Timedelta(minutes=6), pasos)
+    (fila,) = r2["filas"]  # ya no está en camino, pero sigue a la vista
+    assert fila["resultado"]["retraso_real_s"] == 500.0
+    assert fila["resultado"]["llego_tarde"] is True
+    assert fila["congelada"]["t_utc"] == t1.isoformat()
+    assert r2["marcador"] == {
+        "verificados": 1,
+        "aciertos_modelo": 1,
+        "aciertos_regla": 0,
+        "discrepan": 1,
+    }
+
+
+def test_el_vector_son_las_columnas_del_modelo_en_tipos_nativos():
+    servicio = ServicioFalso(horizontes=(2,))
+    v = _vivo_con_paradas(servicio)
+    _ciclo(v, "P05", T0 + pd.Timedelta(minutes=3, seconds=30), _pasos_del_viaje(3))
+    ((h, vector),) = servicio.vistos
+    assert h == 2 and list(vector) == COLUMNAS_FALSAS
+    assert vector["linea"] == "1" and type(vector["linea"]) is str
+    assert vector["retraso_s"] == 300.0 and type(vector["retraso_s"]) is float
+    assert vector["retraso_lag1_s"] == 200.0
+    assert type(vector["hora"]) is float
+
+
+def test_un_ultimo_paso_sin_retraso_sale_sin_modelo_y_no_tumba_la_parada():
+    servicio = ServicioFalso(horizontes=(2,))
+    v = _vivo_con_paradas(servicio)
+    pasos = _pasos_del_viaje(3, retraso=lambda s: np.nan if s == 3 else 10.0)
+    r = _ciclo(v, "P05", T0 + pd.Timedelta(minutes=3, seconds=30), pasos)
+    (fila,) = r["filas"]
+    assert fila["probabilidad"] is None and fila["llega_tarde"] is None
+    assert fila["congelada"] is None and fila["regla_llega_tarde"] is False
+    assert servicio.vistos == []
+
+
+def test_una_parada_sin_buses_en_camino_no_es_un_error():
+    vacios = _pasos_del_viaje(3).iloc[0:0]
+    r = _ciclo(_vivo_con_paradas(), "P05", T0 + pd.Timedelta(minutes=3), vacios)
+    assert r["filas"] == [] and r["error"] is None
+
+
+def test_un_viaje_que_el_horario_no_conoce_se_salta():
+    v = _vivo()
+    v._por_version = {}  # la versión del viaje no está: KeyError dentro de `paradas_de`
+    r = _ciclo(v, "P05", T0 + pd.Timedelta(minutes=3, seconds=30), _pasos_del_viaje(3))
+    assert r["filas"] == []

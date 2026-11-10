@@ -2654,3 +2654,35 @@ reemplazar = '''        entradas[clave] = {"congelada": p, "resultado": None}
         return p'''
 detector = ["tests/test_vivo.py::test_la_primera_prediccion_queda_congelada"]
 sondas = []
+
+[[mutante]]
+id = "221"
+nombre = "ficheros_del_dia lee solo la primera fecha UTC del día de servicio"
+capa = "serving"
+# Antes de las 04:00 locales (y en verano, tras las 02:00 UTC) el día de servicio
+# ya cruzó la medianoche UTC: sin la segunda fecha el ciclo no ve las posiciones de
+# la madrugada y la demo sale vacía, sin error, justo cuando hay menos buses.
+fichero = "src/project/services/vivo.py"
+buscar = '''min(ahora, fin).normalize()'''
+reemplazar = '''desde.normalize()'''
+detector = ["tests/test_vivo.py::test_de_madrugada_se_leen_dos_fechas"]
+sondas = []
+
+[[mutante]]
+id = "222"
+nombre = "la fila fantasma lleva el reloj de las líneas recortadas, no el de todas"
+capa = "serving"
+# Trampa 022: el reloj por sondeo de `rastrear` es el de todas las líneas. Con el del
+# recorte, el etiquetado de la demo difiere del del pipeline en algún empate casi
+# exacto (3 de 5.334 pasos el 01/10), sin error y con aspecto normal.
+fichero = "src/project/services/vivo.py"
+buscar = '''    reloj = frame[frame["trayecto"].notna()].groupby("snapshot_id")["ts_utc"].max()'''
+reemplazar = '''    reloj = (
+        frame[frame["trayecto"].notna() & frame["linea"].isin(lineas)]
+        .groupby("snapshot_id")["ts_utc"]
+        .max()
+    )'''
+detector = [
+    "tests/test_vivo.py::test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas"
+]
+sondas = []
