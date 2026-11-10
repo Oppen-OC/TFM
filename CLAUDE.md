@@ -256,9 +256,12 @@ antes de importar.
 - `tests/test_vivo.py` guarda la demo en vivo: la fuga en el ciclo (ningún
   cálculo ve un paso con `t_disp` posterior al «ahora»), el horizonte por
   horario y la regla «en camino», el marcador congelado y su verdad, el reloj de
-  todas las líneas (trampa 022) y las guardias del historial y del crudo (un
-  payload de error no es un sondeo). Mutantes 214-227; el siguiente libre es el
-  228. `tests/test_ui.py` prueba los ayudantes puros de la página, sin red.
+  todas las líneas (trampa 022), el prefijo frente al día completo (un paso cuyo
+  k1 es la última posición del viaje aún no se sabe) y las guardias del historial
+  y del crudo (un payload de error no es un sondeo). Mutantes 218-228, 230, 231 y
+  233 (214-217 están en persistencia, etiquetado y features). `tests/test_ui.py`
+  prueba los ayudantes puros de la página, sin red: mutantes 229, 234-236. El
+  232 es de `test_persistencia`. El siguiente libre es el 237.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la
