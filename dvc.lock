@@ -30,8 +30,8 @@ stages:
       nfiles: 63
     - path: src/project/ingest/reprocesar.py
       hash: md5
-      md5: e7966e49f082056747bfef3654104b2d
-      size: 6854
+      md5: a30b18a1e569e1d3077931306307c8d9
+      size: 9396
     - path: src/project/ingest/sources.py
       hash: md5
       md5: 56faf60628d6e67670549faad8b29c10
@@ -61,12 +61,12 @@ stages:
       nfiles: 13
     - path: src/project/etiquetado.py
       hash: md5
-      md5: 33f6cba18d6ec05b9b1ffa560c120a81
-      size: 22506
+      md5: 5b8ad0293710eac9071b1d139abe0494
+      size: 24190
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/mapmatching.py
       hash: md5
       md5: fbbf9e17f110a61527ec486efd4141bf
@@ -139,8 +139,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -204,8 +204,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -261,12 +261,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -301,8 +301,8 @@ stages:
       nfiles: 63
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     params:
       params.yaml:
         prepare.max_hueco_cruce_s: 120
@@ -338,8 +338,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -412,8 +412,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -486,8 +486,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -560,8 +560,8 @@ stages:
       nfiles: 1
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/trafico.py
       hash: md5
       md5: 636af1cc583cd2c93a66aabb96768a0a
@@ -623,8 +623,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -668,8 +668,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -713,8 +713,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -758,8 +758,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -812,12 +812,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -855,12 +855,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -898,12 +898,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -941,12 +941,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -975,8 +975,8 @@ stages:
       size: 50284
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/mapmatching.py
       hash: md5
       md5: fbbf9e17f110a61527ec486efd4141bf
@@ -1008,8 +1008,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1053,8 +1053,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1098,8 +1098,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1143,8 +1143,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1188,8 +1188,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1232,8 +1232,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1278,8 +1278,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1324,8 +1324,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1370,8 +1370,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1416,8 +1416,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1469,8 +1469,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1507,8 +1507,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1545,8 +1545,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1583,8 +1583,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1621,8 +1621,8 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1663,12 +1663,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1711,12 +1711,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1759,12 +1759,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1807,12 +1807,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1855,12 +1855,12 @@ stages:
       size: 25429
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/gtfs.py
       hash: md5
-      md5: eddb6c0ab87e20c72fbdb9b835d129a9
-      size: 9426
+      md5: 03b1c518f6b1de5473722e17f4ff33a3
+      size: 9822
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1917,8 +1917,8 @@ stages:
       size: 8335
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -1979,8 +1979,8 @@ stages:
       size: 8335
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -2041,8 +2041,8 @@ stages:
       size: 8335
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -2103,8 +2103,8 @@ stages:
       size: 8335
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
@@ -2165,8 +2165,8 @@ stages:
       size: 8335
     - path: src/project/features.py
       hash: md5
-      md5: be0e60cf933bc9dff7c995f13b22e4e8
-      size: 31106
+      md5: 281d63841a3120aaa0df7750d45b6acc
+      size: 33032
     - path: src/project/predict.py
       hash: md5
       md5: ad63995353da2bbaeef83a980558a140
