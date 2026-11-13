@@ -132,8 +132,9 @@ en día UTC:
   y que el crudo conserva.
 
 Curated nuevo: EMT 10.463.752 filas en 32 días (el reprocesado sin deduplicar
-tenía 10.651.473). El sin deduplicar queda en `data/_curated_previo/`, y el del
-colector, en `data/_curated_colector/`.
+tenía 10.651.473). El sin deduplicar quedó en `data/_curated_previo/`, borrado
+el 28/10/2026: se regenera sobre el crudo con el `reprocesar` anterior a este
+arreglo. El del colector sigue en `data/_curated_colector/`.
 
 Queda abierto:
 
