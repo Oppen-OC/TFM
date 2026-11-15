@@ -330,6 +330,13 @@ Siguen abiertos H3 (partición por primera fila en `flush`), H7 (el defecto del
 tracker, ahora visible), H9 (duplicados 211 y 216) y la diferencia entre el
 2,7 % de deduplicación medido y el ~15 % del docstring del colector.
 
+> **Vigencia (13/11/2026).** El docstring del colector ya no anuncia el ~15 %, y
+> `docs/01` cita el 2,2 % medido en la primera captura. H3 sigue abierto:
+> `collect.flush` aún pone la fecha del volcado entero con su primera fila
+> (`src/project/ingest/collect.py`), y `curar` lo corrige al reprocesar (ADR-015).
+> H9 se absorbe aguas abajo: `trafico.py` deduplica por (sondeo, `idtramo`). H7
+> sigue como `xfail(strict=True)`.
+
 ## Limitaciones de esta auditoría
 
 - **El catálogo lo escribió una persona.** Mide los fallos que se previeron. Un

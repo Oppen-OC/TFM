@@ -4,6 +4,21 @@
 Todo lo que sigue está medido, no estimado. Las cifras de flota corresponden a
 un sábado por la noche: en hora punta de un día laborable serán bastante mayores.
 
+> **Vigencia (13/11/2026).** Es el informe del 15/08 y se conserva como se midió.
+> Cuatro puntos quedaron superados:
+>
+> - **El desfase horario de la EMT no es fijo** (sección 1, hallazgo ②, y el
+>   anexo): la fuente alterna UTC y hora local de un sondeo al siguiente, y
+>   corregir con `zoneinfo` por fecha deja una quinta parte de las filas dos
+>   horas desplazadas. Ver `05_hallazgos_primera_captura.md`, sección 1, y la
+>   ficha 002.
+> - **La capa 192 tiene 410 tramos, no 446.** De las 446 filas, 34 llegan vacías
+>   y dos tramos vienen duplicados (bitácora 014).
+> - **El volumen no son ~145 M de filas**: medido, ~56 M a tres meses (bitácora
+>   056).
+> - **`selftest.py` y sus 24 comprobaciones ya no existen**: el demostrador se
+>   portó a `src/project/` (ADR-009) y sus comprobaciones viven en `tests/`.
+
 ---
 
 ## Veredicto
@@ -372,8 +387,10 @@ El punto 3 es el único que no se puede saltar. Todo lo demás es reversible.
 ## Anexo · Lo que ya está resuelto en el código
 
 - Corrección de zona horaria con `zoneinfo`, válida en el cambio de hora.
-- Deduplicación por `snapshot_id`: sin ella te comes ~15 % de filas repetidas
-  sondeando a 30 s una fuente que refresca a 29,3 s.
+- Deduplicación por `snapshot_id`: sin ella entran filas repetidas al sondear a
+  30 s una fuente que refresca a 29,3 s. La primera captura midió un 2,2 % de
+  sondeos repetidos (28 de 1.265; `05_hallazgos_primera_captura.md`, sección 5),
+  no el ~15 % que se estimaba aquí.
 - Persistencia del payload crudo en NDJSON gzip **antes** de parsear, para poder
   reprocesar si Renfe cambia el esquema.
 - `lectura = -1` convertido a nulo, no a cero.

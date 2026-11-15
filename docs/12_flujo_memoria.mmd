@@ -6,11 +6,12 @@
 %%   %%| fig-cap: "Flujo de datos, de la captura al servicio, con las trampas que protege cada etapa."
 %%   ```
 flowchart TD
-    fuentes[/"Fuentes en vivo<br/>buses EMT · tráfico municipal · Valenbisi · Renfe"/]
+    fuentes[/"Fuentes en vivo<br/>buses EMT · tráfico municipal · Valenbisi · Renfe · meteorología"/]
 
-    captura["<b>1 · Captura</b><br/>guarda el crudo antes de interpretarlo<br/><i>1 trampa</i>"]:::fuera
+    captura["<b>1 · Captura</b><br/>guarda el crudo antes de interpretarlo<br/><i>3 trampas</i>"]:::fuera
     crudo[("crudo")]:::dato
     gtfs[("GTFS<br/>horario y trazados")]:::dato
+    meteo[("meteorología<br/>solo en el crudo, aún no es variable")]:::dato
 
     subgraph dvc["Pipeline reproducible (DVC)"]
         curado["<b>2 · Curado</b><br/>interpreta y deduplica cada sondeo<br/><i>7 trampas</i>"]
@@ -24,11 +25,13 @@ flowchart TD
         modelos["<b>6 · Entrenamiento y evaluación</b><br/>XGBoost frente a los baselines<br/>IC 95 % por viajes y por días"]
     end
 
-    servicio["<b>7 · Servicio</b><br/>API REST: retraso y más de 5 min"]:::fuera
+    servicio["<b>7 · Servicio</b><br/>API REST: retraso y más de 5 min<br/>demo en vivo por parada, que no es un resultado<br/><i>1 trampa</i>"]:::fuera
 
     fuentes --> captura
     captura --> crudo --> curado
     captura -.->|revisado a mano| gtfs
+    captura -.-> meteo
+    crudo -.->|el de hoy, cada 40 s| servicio
     curado --> buses --> etiquetado
     curado --> trafico
     gtfs --> etiquetado

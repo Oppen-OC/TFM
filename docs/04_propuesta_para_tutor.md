@@ -2,6 +2,14 @@
 
 **Daniel Alpeñes** · Máster en Big Data · agosto de 2026
 
+> **Vigencia (13/11/2026).** Es la propuesta tal como se envió y no se reescribe.
+> Tres cifras y una pieza de la arquitectura quedaron superadas: la capa 192
+> tiene 410 tramos, no 446 (bitácora 014); Kafka/Redpanda se valoró al inicio y
+> se descartó de la captura por no ser necesario (ADR-016); las «24
+> comprobaciones automáticas» eran las del demostrador, hoy portado a
+> `src/project/` con sus tests en `tests/` (ADR-009); y la captura de 24 horas
+> está hecha desde agosto.
+
 ---
 
 ## Título

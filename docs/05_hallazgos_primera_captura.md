@@ -55,8 +55,9 @@ codifica el desfase: lo deduce.
 
 > Esto se arregló **sin recapturar nada**, reprocesando los payloads crudos
 > guardados en `data/raw/`. Es el argumento operativo de por qué la ingesta se
-> separa del procesado, y el mismo que justifica Kafka en la memoria: capturar
-> es irreversible, procesar es reintentable.
+> separa del procesado: capturar es irreversible, procesar es reintentable.
+> Kafka se valoró al inicio con ese mismo argumento y se descartó de la captura
+> por no ser necesario (ADR-016).
 
 ---
 
@@ -83,6 +84,10 @@ desconocido: no son tramos. Contarlas como nulos inflaba artificialmente el
 porcentaje de dato ausente. El parser ahora las descarta.
 
 Tramos reales utilizables: **410**.
+
+_Medido después sobre 5.961 payloads (bitácora 014): las filas hueco son 34
+exactas, no «unas 35». Quedan 412 filas con `idtramo` y 410 identificadores
+distintos, porque los tramos 211 y 216 vienen duplicados en cada payload._
 
 ---
 

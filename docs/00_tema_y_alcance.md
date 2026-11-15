@@ -1,6 +1,6 @@
 # 00 · Tema, alcance y decisiones tomadas
 
-_Última actualización: 15/10/2026. Este archivo es el punto de entrada del
+_Última actualización: 13/11/2026. Este archivo es el punto de entrada del
 trabajo: si vuelves al proyecto después de tres semanas, o si abres una sesión
 nueva de Claude Code en VS Code, empieza aquí._
 
@@ -87,26 +87,32 @@ El detalle, con sus bitácoras, está en la sección *Estado* de
   (bitácoras 043, 045-047)
 - [x] Capa 192 y clasificador de más de 5 min, con su protocolo fijado antes de
   la prueba (ADR-024, ADR-025)
-- [ ] Prueba del 07 al 19/10: captura en curso; se evalúa una vez a partir del
-  21/10 (ADR-024, nota del 11/10)
-- [ ] Servido: `services/model_service.py` vacío y `api/schemas.py` placeholder
-- [ ] `shap` sin añadir; meteorología sin fuente capturada
-  (`features.incluir_meteo`)
+- [x] Prueba del 07 al 19/10, evaluada una sola vez sobre 12 días (el 13/10 cae
+  por el criterio de día útil, trampa 018): la capa 192 no aporta en la primaria
+  y la v2 se confirma, −3,37 s frente al listón (ADR-024, bitácora 057)
+- [x] Servido por API: `services/model_service.py` carga la regresión y el
+  clasificador de cada horizonte, y `api/` los expone
+- [x] SHAP sobre la prueba (`explicar.py`)
+- [x] Demo en vivo por parada, que no es un resultado (bitácora 064)
+- [ ] Meteorología: la capa 157 se captura desde el 09/11, pero aún no pasa por
+  `curar` (issue #8) ni es variable del modelo (`features.incluir_meteo` sigue
+  en `false`)
+- [ ] Servido en tiempo real incremental (ADR-016)
 - [ ] Correo al Ajuntament / EMT sobre condiciones de uso (para el anexo)
 - [ ] Tema cerrado con el tutor
 
 ## Lo urgente
 
-**Cerrar la prueba sin huecos.** Ninguna fuente guarda histórico: lo que no se
-capture del 07 al 19/10 no se recupera, y es la única prueba del ADR-024.
+**La prueba está cerrada.** La captura del 07 al 19/10 se evaluó una vez
+(ADR-024, bitácora 057); todo análisis posterior sobre ella es exploratorio.
 
-- **No redesplegar el colector de la Pi antes del 20/10**: un reinicio fallido
-  dejaría un hueco en la prueba (ADR-024, nota del 11/10).
-- **A partir del 21/10:** traer la captura con `deploy_pi/pull_data.sh`, nunca
-  con `rsync` sobre `data/raw/` (trampa 016); `dvc repro`; contrastar el horario
-  con `analysis/comparar_gtfs`; y ejecutar las comparaciones **una sola vez**.
-- **Después:** redesplegar el colector con la captura del GTFS, que la Pi no
-  guarda desde el 06/10 (bitácora 051).
+- **La captura no se para.** Ninguna fuente guarda histórico. Traerla siempre
+  con `deploy_pi/pull_data.sh`, nunca con `rsync` sobre `data/raw/` (trampa 016).
+- **La Pi se redesplegó el 09/11** (servicio arrancado a las 10:30 UTC, bitácora
+  063) con la rama `raspberry`, cuyo colector guarda cada versión nueva del GTFS
+  y captura la capa 157. Entre el 06/10 y esa fecha la Pi no guardó el GTFS
+  (bitácora 051): las versiones de ese tramo son las que se bajaron a mano.
+- El resto de lo pendiente son las casillas sin marcar de *Estado actual*.
 
 ---
 
@@ -114,11 +120,11 @@ capture del 07 al 19/10 no se recupera, y es la única prueba del ADR-024.
 
 | Riesgo | Probabilidad | Mitigación |
 |---|---|---|
-| La captura se cae o se degrada durante meses | media | monitorización desde el día 1; medir en la prueba de 24 h; reintentos y payload crudo siempre guardado |
+| La captura se cae o se degrada durante meses | media | `collect --status` (no dice VIVO con una fuente callada); reintentos y payload crudo siempre guardado; huecos medidos y declarados (bitácoras 021, 044, 054) |
 | El map-matching consume todo el tiempo | resuelto | casa a 4 m de mediana (bitácora 016); Renfe queda como respaldo (ver *Plan B*) |
 | El endpoint de Renfe cambia o desaparece | media | no documentado oficialmente; se guarda payload crudo para reprocesar |
 | El GTFS cambia y corrompe etiquetas antiguas | media | descargar el GTFS semanalmente y versionarlo con DVC; etiquetar cada captura con el GTFS vigente en esa fecha |
-| Intercambios de identidad en el tracking | media | asignación húngara + predicción de movimiento (100 % vs 97,8 % del vecino más cercano en el autotest) |
+| Intercambios de identidad en el tracking | media | asignación húngara + predicción de movimiento: 0 saltos de identidad frente a 4 del vecino más cercano en la flota simulada (100 % frente a 97,8 % de posiciones, bitácora 001). Con paradas y giros reales produce 2-4 saltos: defecto conocido, `test_tracking_realismo.py` (`xfail`) |
 | Convención horaria de la EMT | alta si se ignora | **la fuente alterna UTC y local naive entre sondeos**, no hay desfase fijo: se resuelve por snapshot en `resolver_convencion()`. Ficha [002](../.claude/trampas/002-emt-alterna-convencion-horaria.md) |
 
 ## Plan B
@@ -141,4 +147,21 @@ entre modos queda como trabajo futuro.
 - [`02_exploracion_de_temas.md`](02_exploracion_de_temas.md) — las diez
   propuestas evaluadas y por qué se descartaron las otras nueve. Material para
   la sección de justificación del tema en la memoria.
+- [`03_fuentes_valencia_primer_barrido.md`](03_fuentes_valencia_primer_barrido.md) —
+  primer barrido de fuentes, anterior a la exploración en vivo. Superado por el
+  01; se conserva como antecedente.
+- [`04_propuesta_para_tutor.md`](04_propuesta_para_tutor.md) — la propuesta de
+  agosto, tal como se envió.
+- [`05_hallazgos_primera_captura.md`](05_hallazgos_primera_captura.md) — calidad
+  del dato medida sobre la primera captura real.
+- [`06_veredicto_capas_trafico.md`](06_veredicto_capas_trafico.md) — las capas de
+  tráfico en agosto, y qué quedó de ese veredicto con el corpus entero.
+- [`07_decisiones.md`](07_decisiones.md) — registro canónico de decisiones (ADR).
+- [`09_gtfs_emt.md`](09_gtfs_emt.md) — qué trae el GTFS estático de la EMT y para
+  qué sirve cada fichero.
+- [`11_auditoria_tests.md`](11_auditoria_tests.md) — auditoría de validez de los
+  tests.
+- [`12_flujo_de_datos.html`](12_flujo_de_datos.html) — diagrama del flujo de datos.
+- [`bitacora/README.md`](bitacora/README.md) — bitácora de hallazgos: lo medido,
+  lo descartado y lo aceptado, con el comando que reproduce cada cifra.
 - [`../CLAUDE.md`](../CLAUDE.md) — reglas de arquitectura del repo.

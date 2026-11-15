@@ -34,6 +34,12 @@ documentado más allá de esto.
 **Qué la reabriría.** Que el pipeline pase de ~6 stages o necesite ejecución
 programada.
 
+**Nota del 13/11.** La primera condición se cumplió: `dvc.yaml` tiene 20 stages,
+la mitad repetidos por horizonte con `foreach` (ADR-023). DVC se mantiene. El
+número de stages no era el problema de fondo. Lo que justificaría Airflow o
+Prefect es la ejecución programada, y el pipeline sigue lanzándose a mano con
+`dvc repro`. La captura, que sí es continua, corre fuera de DVC (ADR-002).
+
 ---
 
 ## ADR-002 · La ingesta queda fuera de DVC · cerrada
@@ -234,11 +240,17 @@ la EMT consuma todo el tiempo disponible. Renfe trae `retrasoMin` ya calculado y
 Capturar las dos cuesta lo mismo, y **no hay histórico recuperable**: si en
 diciembre hiciera falta pivotar y no se hubiera capturado, no habría plan B.
 
-**Consecuencias.** Renfe funciona además como validación cruzada entre modos, que
-es aportación aunque el plan A salga bien.
+**Consecuencias.** Renfe podría servir además como validación cruzada entre
+modos, que sería aportación aunque el plan A salga bien.
 
 **Condición de activación.** Si en diciembre de 2026 el etiquetado de la EMT no
 está resuelto, se pivota.
+
+**Nota del 13/11.** La condición no se ha dado: el etiquetado de la EMT funciona
+de punta a punta (bitácora 024). Renfe se sigue capturando como respaldo, y la
+validación cruzada entre modos queda como **trabajo futuro**, fuera del alcance
+(`docs/00`, *Alcance* y *Plan B*). Tampoco se hizo la validación del etiquetado
+contra `retrasoMin` que proponía `docs/04`.
 
 ---
 
@@ -647,6 +659,12 @@ correr en la Pi. El despliegue del 06/10 falló por el disco (bitácora 044), y
 la Pi sigue con un colector sin `capturar_gtfs`. Desde el 06/10 no se guarda
 ninguna versión. Se bajan a mano hasta redesplegar, después de cerrar la prueba
 del ADR-024 (bitácora 051).
+
+**Nota del 09/11.** La Pi se redesplegó con la rama `raspberry`, cuyo colector
+trae `capturar_gtfs` (servicio arrancado a las 10:30 UTC, bitácora 063). Las
+versiones publicadas entre el 06/10 y el 09/11 que no se bajaron a mano están
+perdidas. El primer `--status` que registra la bitácora es el de la capa 157;
+el de la captura del GTFS no está anotado.
 
 ---
 
@@ -1129,5 +1147,6 @@ que medir, o que la prueba del ADR-024 se descarte.
   `services/`, sin broker (ADR-016, nota del 10/11). Queda sin decidir un servido
   incremental, y solo con una latencia medida que lo pida.
 - **Tope del índice de trampas.** `.claude/tests/test_trampas.py` lo limita a 45
-  líneas y cada ficha ocupa una: con 16 fichas solo cabe uniendo párrafos. Medir
-  caracteres o subir el tope.
+  líneas y cada ficha ocupa una. Con 22 fichas el índice está justo en 45 (13/11):
+  la próxima ficha rompe el test. Compactar las `cerrada`, medir caracteres o
+  subir el tope.
