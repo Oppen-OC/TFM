@@ -1,7 +1,7 @@
 # TFM — Daniel Alpeñes
 
 Proyecto ML end-to-end: entrenamiento reproducible (DVC + MLflow), servido por
-FastAPI, consumido por una UI Streamlit.
+FastAPI, consumido por una UI NiceGUI.
 
 ## Contexto
 
@@ -80,7 +80,9 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 ```
 
 - **`ui/` NO importa `services/` ni carga el modelo.** Habla con la API por HTTP
-  (`requests`). Si Streamlit necesita algo nuevo, se añade un endpoint en `api/`,
+  (`requests`, siempre dentro de `run.io_bound`: NiceGUI comparte un bucle de
+  eventos entre todos los navegadores y una petición de 40 s lo congelaría).
+  Si la UI necesita algo nuevo, se añade un endpoint en `api/`,
   no un import.
 - **`api/` no contiene lógica de negocio.** Los routers validan entrada
   (Pydantic), delegan en `services/` y devuelven la respuesta. Sin sklearn ni
@@ -293,7 +295,7 @@ uv run ruff format . && uv run ruff check --fix .
 uv run dvc repro             # reejecutar pipeline
 uv run mlflow ui
 uv run uvicorn project.api.main:app --reload --port 8000
-uv run streamlit run src/project/ui/app.py
+uv run python -m project.ui.app
 
 uv run python -m project.ingest.explore              # ¿siguen vivas las fuentes?
 uv run python -m project.ingest.collect --minutes 1440   # captura (fuera de DVC)

@@ -1,6 +1,6 @@
 ---
 name: serving
-description: API FastAPI, capa services, UI de Streamlit y tests de API. Úsalo para endpoints nuevos, cambios de esquema Pydantic, carga del modelo o pantallas de Streamlit. Guardián de la dirección de dependencias.
+description: API FastAPI, capa services, UI de NiceGUI y tests de API. Úsalo para endpoints nuevos, cambios de esquema Pydantic, carga del modelo o pantallas de la UI. Guardián de la dirección de dependencias.
 tools: Read, Edit, Write, Bash, Grep, Glob
 model: sonnet
 ---
@@ -33,7 +33,7 @@ ui/  --HTTP-->  api/  -->  services/  -->  predict.py / features.py  -->  config
 ```
 
 - **`ui/` NO importa `services/` ni carga el modelo.** Habla con la API por HTTP
-  (`requests`). Si Streamlit necesita algo nuevo, se añade un endpoint en `api/`,
+  (`requests`). Si la UI necesita algo nuevo, se añade un endpoint en `api/`,
   jamás un import.
 - **`api/` no contiene lógica de negocio.** Los routers validan entrada con
   Pydantic, delegan en `services/` y devuelven. Sin sklearn ni pandas en `api/`.
@@ -65,7 +65,7 @@ lanzan en terminales separadas.
 
 ```
 uv run uvicorn project.api.main:app --reload --port 8000
-uv run streamlit run src/project/ui/app.py
+uv run python -m project.ui.app
 ```
 
 ## Salida

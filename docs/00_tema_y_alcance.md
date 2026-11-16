@@ -54,7 +54,7 @@ Metrovalencia descartado, Renfe capturado desde el día 1 como plan B.
 - Reconstrucción de identidad de vehículo y trayectorias.
 - Etiquetado de retraso por paso por parada contra el GTFS estático.
 - Modelo XGBoost de regresión + variante de clasificación.
-- Servido por FastAPI, consumido por Streamlit.
+- Servido por FastAPI, consumido por una UI NiceGUI.
 - Demo en vivo por parada, sobre el crudo que captura el PC, sin broker (ADR-016).
   Es una demostración: **no es un resultado del TFM**.
 
