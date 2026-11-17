@@ -30,12 +30,16 @@ con los 16 días de agosto de la primera versión.
 **2. La capa 192 duplica dos tramos más.** Pares (sondeo, `idtramo`)
 repetidos:
 
-| idtramo | sondeos con copia | desde (UTC) |
-|---|---|---|
-| 211, 216 | 19.124 | 15/08 20:14, todo el corpus |
-| **364, 366** | **7.408** | **22/09 17:27** |
+| idtramo | copias con `fiwareid` | sondeos | periodo (UTC) |
+|---|---|---|---|
+| 211, 216 | las dos | 11.716 | 15/08 20:14 - 22/09 11:02 |
+| 211, 216 | una | 7.408 | 22/09 17:27 - 20/10 |
+| **364, 366** | una | **7.408** | **22/09 17:27 - 20/10** |
 
-Siempre dos copias, una sola con `fiwareid` y las dos con el mismo `estado`.
+Siempre dos copias con el mismo `estado`. A las 17:27 del 22/09 cambió el
+formato de la capa entera: aparecen dos tramos duplicados más, y desde entonces
+la copia de los cuatro llega sin `fiwareid`. Entre las 11:02 y las 17:27 de ese
+día la capa solo devolvió errores del geoportal (bitácora 060).
 
 **3. 633 posiciones fuera del área.** Fuera de la caja 39,15-39,65 N /
 0,65-0,15 W, que ningún recorrido de la EMT alcanza, hay 633 filas en 633
@@ -51,7 +55,8 @@ DATA_ROOT="$(pwd -W)/data" uv run python -m project.analysis.medir_fuentes --eda
 ```
 
 Bloque `eda_63()` de `medir_fuentes.py`: `ROLLUP` por mes sobre `emt_buses`,
-`GROUP BY (ts_ingest_utc, idtramo) HAVING count(*) > 1` sobre `trafico_estado`, y
+`GROUP BY (ts_ingest_utc, idtramo) HAVING count(*) > 1` sobre `trafico_estado`,
+partido por cuántas copias traen `fiwareid`, y
 línea, fechas y extremos de las posiciones fuera de la caja. `DATA_ROOT` tiene
 que ser absoluto si se lanza desde otro directorio (`notebooks/EDA/README.md`).
 
@@ -69,7 +74,7 @@ pipeline no la usa.
   y mucho agosto, que es entrenamiento. Por eso no se puede juzgar el filtro con
   una sola ventana.
 - **Los duplicados 364/366.** No cambian ninguna cifra: `trafico.py` deduplica
-  por `(ts_ingest_utc, idtramo)` antes de usar la capa (trampa 014). Sí lo
+  por `(ts_ingest_utc, idtramo)` antes de usar la capa (bitácora 014). Sí lo
   hace cualquier recuento de filas sobre el curated sin deduplicar. Desde el
   22/09, la capa tiene **414** filas con tramo por sondeo, no 412.
 - **Las 633.** Son el 0,003 % de las filas y caen en el map-matching, que filtra

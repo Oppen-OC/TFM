@@ -246,10 +246,10 @@ def eda_63() -> dict[str, pd.DataFrame]:
     """Lo que el EDA a 63 días encontró y agosto no enseñaba (bitácora 065).
 
     - El sur de 39,36° (trampa 006) por mes: ¿es estable o estacional?
-    - Pares (sondeo, idtramo) repetidos en la 192, por tramo, con su primer
-      sondeo y si la copia trae `fiwareid` y el mismo estado.
+    - Pares (sondeo, idtramo) repetidos en la 192, por tramo y por cuántas
+      copias traen `fiwareid`, con su primer sondeo y si repiten estado.
     - Posiciones de la EMT fuera de la caja amplia del área metropolitana, que
-      ningún recorrido alcanza: por línea y día, y cuántas por sondeo.
+      ningún recorrido alcanza: por línea, con fechas, extremos y sondeos.
     """
     sur = sql(
         """
@@ -267,10 +267,10 @@ def eda_63() -> dict[str, pd.DataFrame]:
                    count(fiwareid) AS con_fiwareid, count(DISTINCT estado) AS estados
             FROM {f} WHERE idtramo IS NOT NULL GROUP BY 1, 2 HAVING count(*) > 1
         )
-        SELECT idtramo::INT AS idtramo, count(*) AS sondeos, min(ts_ingest_utc) AS desde,
-               max(ts_ingest_utc) AS hasta, max(n) AS copias,
-               min(con_fiwareid) AS con_fiwareid_min, max(estados) AS estados_max
-        FROM g GROUP BY 1 ORDER BY 1
+        SELECT idtramo::INT AS idtramo, con_fiwareid, count(*) AS sondeos,
+               min(ts_ingest_utc) AS desde, max(ts_ingest_utc) AS hasta,
+               max(n) AS copias, max(estados) AS estados_max
+        FROM g GROUP BY 1, 2 ORDER BY 1, 2
         """,
         f="trafico_estado",
     )
