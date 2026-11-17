@@ -589,6 +589,8 @@ class Vivo:
         with self._cerrojo:
             # La edad cuenta desde que empieza el ciclo: desde el final, la UI, que
             # vuelve cada CICLO_S, vería fresco el resultado un refresco de más.
+            # ponytail: con un ciclo de más de CICLO_S, las peticiones que esperan el
+            # cerrojo recalculan una tras otra; guardar también el final si hay varias pestañas.
             inicio = time.monotonic()
             guardado = self._cache.get(stop_id)
             if real and guardado and inicio - guardado[0] < CICLO_S:

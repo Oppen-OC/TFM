@@ -513,7 +513,9 @@ def test_la_cache_cuenta_desde_que_empieza_el_ciclo(monkeypatch):
     monkeypatch.setattr(v, "_resultado", resultado)
 
     assert v.parada("P05") == {"ciclo": 1}
-    reloj[0] += mod.CICLO_S - 30  # la UI vuelve CICLO_S después de pedirlo
+    reloj[0] += 5  # otra pestaña, antes de CICLO_S: la caché responde
+    assert v.parada("P05") == {"ciclo": 1}
+    reloj[0] += mod.CICLO_S - 35  # la UI vuelve CICLO_S después de pedirlo
     assert v.parada("P05") == {"ciclo": 2}
 
 

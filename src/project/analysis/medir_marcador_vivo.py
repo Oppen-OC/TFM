@@ -27,12 +27,9 @@ import json
 from collections import Counter
 
 import pandas as pd
-import yaml
 
 from project.analysis.medir_ciclo_vivo import hasta_utc
-from project.config import RAIZ, settings
-from project.gtfs import cargar_horario, versiones
-from project.prepare import cargar_parametros, ventana_servicio
+from project.prepare import ventana_servicio
 from project.services.model_service import Servicio
 from project.services.vivo import Vivo, dia_de_servicio, separar
 
@@ -139,9 +136,10 @@ def clasificar(
 
 
 def main(dia: str, stop: str, desde: str, hasta: str, cada_min: int) -> dict:
-    cfg = yaml.safe_load((RAIZ / "params.yaml").read_text(encoding="utf-8"))
-    horarios = [cargar_horario(r) for r in versiones(settings.gtfs_dir)]
-    v = Vivo(Servicio.desde_disco(), horarios, pd.DataFrame(), cfg, cargar_parametros())
+    v = Vivo.desde_disco(Servicio.desde_disco())
+    if v.problema:
+        raise SystemExit(v.problema)
+    v.historial = pd.DataFrame()  # la identidad no lo lee y el ciclo cuesta un tercio
     visto: dict[str, pd.DataFrame] = {}
     etiquetar = v._etiquetar
 

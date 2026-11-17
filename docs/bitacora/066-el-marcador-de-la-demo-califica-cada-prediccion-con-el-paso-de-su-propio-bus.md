@@ -38,6 +38,15 @@ Reproduciendo la demo ciclo a ciclo cada 2 min sobre el 01/10:
   - 19 no llegan a la parada en el día completo: 16 de la 72 en la 2277, más una
     de la 16, una de la 26 y una de la 94 en la 773.
   - 6 tienen su verdad después del final de la ventana.
+- **Las 3 de la 773 se miraron a mano**, porque un viaje partido después del
+  ancla, con la continuación bajo otro `viaje_id`, saldría como «no llega» y
+  escondería una huérfana. No lo es ninguna:
+  - La 26 y la 16 terminan antes de la parada (secuencia 22 de 29 y 18 de 21) y
+    su `vehicle_id` no vuelve a aparecer. El paso siguiente de la línea por la 773
+    es de otro bus, que en ese momento iba varias paradas por detrás o por delante.
+  - La 94 pasa por la parada (secuencia 11), pero su viaje no tiene pasos en la
+    11 ni en la 12: es un hueco del etiquetado, no del marcador.
+  - En la demo, las tres quedan en «⏳», como las de la 72.
 - **La 72 no se verifica nunca en la 2277.** La 2277 es la última parada de 66 de
   sus 131 viajes del día. En todo el día, con el día completo, el etiquetado
   marca solo **2** pasos por la última parada de un viaje de la 72. Las
@@ -77,7 +86,10 @@ uv run python -m project.analysis.medir_marcador_vivo --dia 2026-10-01 --stop 77
 `tests/test_medir_marcador.py` construye un caso para cada clase: correcta,
 huérfana, cruzada, otro retraso, ancla perdida, fuera de ventana y no llega.
 También construye un bus renombrado al final del día con otro `trip_id`. Un
-medidor que diera «correcta» a todo no pasaría.
+medidor que diera «correcta» a todo no pasaría. El medidor repite la casación de
+`Marcador.verificar` para saber con qué paso calificó. Un test comprueba que
+coinciden en la ruta circular y en el paso sin etiquetar, con el mutante 240, para
+que un cambio en el marcador no deje al medidor midiendo otra cosa.
 
 La cifra de la 72 sale de etiquetar el día completo de la 2277 con las líneas
 de la parada y cruzar cada `trip_id` con la última parada de su patrón en el

@@ -6,7 +6,7 @@ Un instrumento que diera «correcta» a todo validaría el marcador por accident
 
 import pandas as pd
 
-from project.analysis.medir_marcador_vivo import clasificar
+from project.analysis.medir_marcador_vivo import ancla, clasificar, paso_verificador
 
 T0 = pd.Timestamp("2026-10-01T06:00Z")
 F = pd.Timestamp("2026-10-01")
@@ -100,3 +100,29 @@ def test_un_bus_que_no_llega_a_la_parada_no_cuenta_como_huerfana():
     final = FINAL[~((FINAL["viaje_id"] == "A2") & (FINAL["stop_id"] == STOP))]
     (f,) = clasificar({(F, "A"): _congelada(10)}, final, STOP, LIMITE)
     assert f["clase"] == "no_llega"
+
+
+def test_el_verificador_casa_igual_que_el_marcador():
+    """`paso_verificador` replica `Marcador.verificar`: si este cambiara su
+    casación, el medidor seguiría diciendo «0 de N» midiendo otra cosa."""
+    from project.services.vivo import Marcador, Prediccion
+
+    filas = [
+        _paso("V", 2, 1, retraso=400.0, stop=STOP),  # ruta circular: otra visita
+        _paso("V", 9, 20, retraso=20.0, stop=STOP),
+        _paso("W", 9, 20, retraso=float("nan"), stop=STOP),  # sabido, sin etiquetar
+        _paso("X", 9, 20, retraso=50.0, stop="OTRA"),
+    ]
+    sab = pd.DataFrame(filas)
+    m = Marcador()
+    for viaje in ("V", "W", "X"):
+        m.congelar(STOP, (F, viaje), Prediccion(0.5, 0.5, False, False, 7, T0, 9))
+    m.verificar(STOP, sab, 300)
+    for clave, e in m.entradas(STOP).items():
+        ver = paso_verificador(sab, clave, 9, STOP)
+        esperado = e["resultado"] and e["resultado"]["retraso_real_s"]
+        assert (ver and ver["retraso_s"]) == esperado, clave
+    assert (
+        paso_verificador(sab, (F, "V"), 9, STOP)["t_obs_utc"] == filas[1]["t_obs_utc"]
+    )
+    assert ancla(sab, (F, "V"))["stop_sequence"] == 9

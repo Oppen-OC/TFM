@@ -2898,3 +2898,16 @@ buscar = '''        fallos = 0 if contesto else fallos + 1'''
 reemplazar = '''        fallos = 0'''
 detector = ["tests/test_persistencia.py::test_un_parser_que_falla_no_espacia_el_crudo"]
 sondas = []
+
+[[mutante]]
+id = "240"
+nombre = "el medidor del marcador verifica sin mirar la visita a la parada"
+capa = "serving"
+# En una ruta circular la parada sale dos veces: sin stop_sequence, el medidor
+# toma el primer paso y deja de casar como Marcador.verificar, sin error.
+fichero = "src/project/analysis/medir_marcador_vivo.py"
+buscar = '''        & (sabidos["stop_sequence"] == seq)
+'''
+reemplazar = ''''''
+detector = ["tests/test_medir_marcador.py::test_el_verificador_casa_igual_que_el_marcador"]
+sondas = []

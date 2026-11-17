@@ -263,7 +263,8 @@ antes de importar.
   cuenta desde que empieza el ciclo. Mutantes 218-228, 230, 231, 233 y 237
   (214-217 están en persistencia, etiquetado y features). `tests/test_ui.py`
   prueba los ayudantes puros de la página, sin red: mutantes 229, 234-236. El
-  232, el 238 y el 239 son de `test_persistencia`. El siguiente libre es el 240.
+  232, el 238 y el 239 son de `test_persistencia`; el 240, de
+  `test_medir_marcador`. El siguiente libre es el 241.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la
