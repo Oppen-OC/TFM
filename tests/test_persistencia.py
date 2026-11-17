@@ -93,12 +93,7 @@ def test_un_parser_que_falla_no_espacia_el_crudo(tmp_path, colector, monkeypatch
     33 `KeyError` de `parse_renfe` del 26/09. Los dos primeros sondeos (500)
     fijan que el retroceso ante una fuente caída sigue en pie.
     """
-    p = 10
-    monkeypatch.setitem(
-        sources.SOURCES,
-        "emt_buses",
-        dataclasses.replace(sources.SOURCES["emt_buses"], period_s=p),
-    )
+    p = sources.SOURCES["emt_buses"].period_s
     servidos = iter([500, 500, 200, 200])
     esperas: list[float] = []
 
