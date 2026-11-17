@@ -8,7 +8,7 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 
 | concepto | tema | fallos | aciertos limpios | último | estado |
 |---|---|---|---|---|---|
-| donde-se-arregla-el-parser | puerta · issue #4, puerta 005 | 2 | 0 | 2026-10-28 | flojo |
+| donde-se-arregla-el-parser | puerta · issue #4, puertas 005 y 014 | 3 | 0 | 2026-11-17 | flojo |
 | snapshot-id-minimo-del-bloque | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | clave-sondeo-compartida-colector-reprocesar | ingest · examen 004, puerta 011 | 2 | 0 | 2026-11-10 | flojo |
 | ts-trafico-es-captura-desfase-suelo | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
