@@ -2677,7 +2677,7 @@ capa = "serving"
 # recorte, el etiquetado de la demo difiere del del pipeline en algún empate casi
 # exacto (3 de 5.334 pasos el 01/10), sin error y con aspecto normal.
 fichero = "src/project/services/vivo.py"
-buscar = '''    reloj = frame[frame["trayecto"].notna()].groupby("snapshot_id")["ts_utc"].max()'''
+buscar = '''    reloj = con_trayecto["ts_utc"].max()'''
 reemplazar = '''    reloj = (
         frame[frame["trayecto"].notna() & frame["linea"].isin(lineas)]
         .groupby("snapshot_id")["ts_utc"]
