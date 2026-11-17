@@ -85,6 +85,45 @@ def test_el_crudo_se_guarda_aunque_el_parser_falle(tmp_path, colector):
     assert colector.STATS["emt_buses"]["err"] >= 1, "el fallo de parseo no se contó"
 
 
+def test_un_parser_que_falla_no_espacia_el_crudo(tmp_path, colector, monkeypatch):
+    """El retroceso es para la fuente caída, no para el parser roto (issue #5).
+
+    Una fuente que contesta con un payload ya guardado no está caída. Si el fallo
+    del parser contara como uno de red, la espera se doblaría hasta 16 periodos y
+    el crudo, lo único que no se recaptura, se muestrearía a 1/16: pasó con los
+    33 `KeyError` de `parse_renfe` del 26/09. Los dos primeros sondeos (500)
+    fijan que el retroceso ante una fuente caída sigue en pie.
+    """
+    p = sources.SOURCES["emt_buses"].period_s
+    servidos = iter([500, 500, 200, 200])
+    esperas: list[float] = []
+
+    def responder(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(next(servidos), json={"features": []})
+
+    def parse_roto(*_):
+        raise KeyError("codEstDest")
+
+    async def dormir(segundos: float) -> None:
+        esperas.append(segundos)
+        if len(esperas) == 4:
+            colector.PARAR.set()
+
+    monkeypatch.setattr(colector, "parse", parse_roto)
+    monkeypatch.setattr(colector, "dormir", dormir)
+
+    async def vueltas() -> None:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(responder)) as c:
+            await colector.sondear(c, "emt_buses", tmp_path)
+
+    asyncio.run(vueltas())
+
+    assert esperas == [2 * p, 4 * p, p, p], "el fallo del parser espació el sondeo"
+    crudos = list((tmp_path / "raw").rglob("*.ndjson.gz"))
+    assert sum(len(_lineas(f)) for f in crudos) == 2
+    assert colector.STATS["emt_buses"]["err"] == 4
+
+
 def test_append_raw_anade_y_read_raw_devuelve_todo(tmp_path):
     """Tres sondeos del mismo día: tres payloads, en orden, idénticos."""
     payloads = [{"n": i, "texto": "ñ"} for i in range(3)]

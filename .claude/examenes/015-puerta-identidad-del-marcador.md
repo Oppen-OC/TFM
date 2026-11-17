@@ -1,5 +1,5 @@
 ---
-id: 014
+id: 015
 tema: puerta · clave del Marcador de la demo en vivo
 fecha: 2026-11-17
 fuentes: src/project/services/vivo.py (Marcador, _resultado), src/project/etiquetado.py (_asignar_tramo, conflictos 519-528), .claude/trampas/014

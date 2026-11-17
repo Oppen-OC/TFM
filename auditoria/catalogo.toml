@@ -2871,3 +2871,30 @@ buscar = '''                self._cache[stop_id] = (inicio, resultado)'''
 reemplazar = '''                self._cache[stop_id] = (time.monotonic(), resultado)'''
 detector = ["tests/test_vivo.py::test_la_cache_cuenta_desde_que_empieza_el_ciclo"]
 sondas = []
+
+[[mutante]]
+id = "238"
+nombre = "un parser que falla espacia el sondeo como una fuente caída"
+capa = "persistencia"
+# Issue #5: el fallo del parser doblaba la espera hasta 16 periodos y el crudo
+# de Renfe quedó a 1/16 el 26/09. La fuente contestó; el crudo no se espacia.
+fichero = "src/project/ingest/collect.py"
+buscar = '''            contesto = True
+
+            df = parse(key, payload, ts)'''
+reemplazar = '''            df = parse(key, payload, ts)
+            contesto = True'''
+detector = ["tests/test_persistencia.py::test_un_parser_que_falla_no_espacia_el_crudo"]
+sondas = []
+
+[[mutante]]
+id = "239"
+nombre = "sin retroceso ante una fuente caída"
+capa = "persistencia"
+# El arreglo del #5 más vago: no espaciar nunca. Pasaría un test que solo mire
+# el parser y martillearía una fuente caída cada periodo.
+fichero = "src/project/ingest/collect.py"
+buscar = '''        fallos = 0 if contesto else fallos + 1'''
+reemplazar = '''        fallos = 0'''
+detector = ["tests/test_persistencia.py::test_un_parser_que_falla_no_espacia_el_crudo"]
+sondas = []

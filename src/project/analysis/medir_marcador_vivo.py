@@ -7,7 +7,7 @@ Reproduce la demo ciclo a ciclo sobre un día capturado: un `Vivo` de verdad, co
 su `Marcador`, llamado con un `ahora` histórico cada `--cada-min`. La clave del
 marcador es `(fecha_servicio, viaje_id)`, y cada ciclo reetiqueta el día desde el
 principio: `rastrear` y la asignación del viaje programado pueden cambiar con lo
-que llega después (puerta 014, trampa 014). Si cambian, una predicción congelada
+que llega después (puerta 015, trampa 014). Si cambian, una predicción congelada
 se queda sin verificar o se verifica con el paso de otro bus, sin error.
 
 La identidad física no es la clave: es el último paso sabido al congelar (línea,

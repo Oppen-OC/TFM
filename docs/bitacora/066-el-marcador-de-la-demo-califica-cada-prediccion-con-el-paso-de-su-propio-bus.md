@@ -20,7 +20,7 @@ cambiar el `viaje_id` (suavizado de intercambios, cosido de la alternancia,
 trampa 014). La asignación del viaje programado también puede cambiar. Si la
 clave derivase, la predicción se quedaría sin verificar o se calificaría con el
 paso de otro bus, sin ningún error. Era el aviso Importante 1 del pre-merge de
-`feat/demo-en-vivo` (puerta 014).
+`feat/demo-en-vivo` (puerta 015).
 
 Reproduciendo la demo ciclo a ciclo cada 2 min sobre el 01/10:
 
