@@ -17,3 +17,5 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 | geometria-estatica-referencia-unica | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | shap-de-un-modelo-de-residuo | puerta · plan de SHAP, puerta 006 | 2 | 0 | 2026-10-28 | flojo |
 | dup-del-gtfs-prueba-la-captura | puerta · issue #6, puerta 008 | 2 | 0 | 2026-11-09 | flojo |
+| primera-captura-bloque-a-medias | puerta · EDA, puerta 012 | 1 | 0 | 2026-11-16 | flojo |
+| frontera-ui-solo-http | puerta · migración a NiceGUI, puerta 013 | 1 | 0 | 2026-11-16 | flojo |

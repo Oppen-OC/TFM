@@ -128,6 +128,11 @@ Abierto:
 - **Los 16 días son de agosto.** Los 111 episodios de congestión pueden ser un
   suelo estacional: en periodo lectivo cabe esperar más. La cifra hay que
   remedirla si se amplía la captura, y hasta entonces se cita con su ventana.
+  **Remedida:** con 63 días, 240 tramos llegan a `denso` o `congestionado` y
+  solo 6 no cambian nunca; los 63 y el 0,03 % son de agosto. Ver
+  [031](031-la-capa-192-se-anima-en-periodo-lectivo-la-188-sigue-congelada.md),
+  [052](052-la-mediana-lectiva-de-la-192-se-midio-con-el-18-de-septiembre-a-medias.md)
+  y [065](065-a-63-dias-el-sur-de-perellonet-es-estacional-la-192-duplica-364-y-366-y-hay-633-posiciones-fuera-del-area.md).
 - **No está comprobado si las líneas de bus pasan por los 63 tramos que varían.**
   Es la comprobación de viabilidad que corresponde a `analysis/diagnose.py`, y sin
   ella el número de 63 no dice todavía cuánta señal es utilizable.
