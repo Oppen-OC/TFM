@@ -272,11 +272,15 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
             if (root / "reference" / f"{key}_geometria.parquet").exists()
             else src.url
         )
+        contesto = False
         try:
             r = await client.get(url)
             r.raise_for_status()
             payload = r.json()
             append_raw(root, key, payload, ts)
+            # La fuente contestó y el crudo está en disco: lo que falle desde
+            # aquí (el parser, el volcado) no es una fuente caída (issue #5).
+            contesto = True
 
             df = parse(key, payload, ts)
             if not df.empty:
@@ -287,7 +291,6 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
                     STATS[key]["ok"] += 1
                     STATS[key]["filas"] += len(df)
                     STATS[key]["ultimo_ok"] = ts
-            fallos = 0
 
             filas_buf = sum(len(d) for d in BUFFER[key])
             viejo = (ts - ULTIMO_FLUSH[key]).total_seconds() > FLUSH_SEG
@@ -295,12 +298,13 @@ async def sondear(client: httpx.AsyncClient, key: str, root: Path) -> None:
                 flush(root, key)
 
         except Exception as exc:  # noqa: BLE001
-            fallos += 1
             STATS[key]["err"] += 1
             STATS[key]["ultimo_error"] = f"{type(exc).__name__}: {exc}"[:200]
             log.warning("%s: %s: %s", key, type(exc).__name__, exc)
 
         # Retroceso exponencial acotado: si la fuente cae, no la martilleamos.
+        # Un parser roto sí se sondea a su ritmo: el crudo es lo que no vuelve.
+        fallos = 0 if contesto else fallos + 1
         await dormir(src.period_s * min(2**fallos, 16) if fallos else src.period_s)
 
 
