@@ -19,3 +19,4 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 | dup-del-gtfs-prueba-la-captura | puerta · issue #6, puerta 008 | 2 | 0 | 2026-11-09 | flojo |
 | primera-captura-bloque-a-medias | puerta · EDA, puerta 012 | 1 | 0 | 2026-11-16 | flojo |
 | frontera-ui-solo-http | puerta · migración a NiceGUI, puerta 013 | 1 | 0 | 2026-11-16 | flojo |
+| trip-id-se-reasigna-cada-ciclo | puerta · clave del marcador, puerta 014 | 1 | 0 | 2026-11-17 | flojo |
