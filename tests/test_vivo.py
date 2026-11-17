@@ -489,6 +489,34 @@ def test_las_paradas_no_esperan_al_ciclo_en_curso():
     assert len(resultado[0]) == 20
 
 
+def test_la_cache_cuenta_desde_que_empieza_el_ciclo(monkeypatch):
+    """Un ciclo tarda ~30 s y la UI vuelve cada CICLO_S. Si la edad de la caché se
+    contara desde el final del cálculo, la petición siguiente la vería fresca y el
+    dato se renovaría cada dos refrescos (~80 s), sin error."""
+    import types
+
+    from project.services import vivo as mod
+
+    reloj = [1000.0]
+    monkeypatch.setattr(mod, "time", types.SimpleNamespace(monotonic=lambda: reloj[0]))
+    v = _vivo()
+    ciclos = []
+
+    def resultado(*_):
+        reloj[0] += 30  # lo que tarda el cálculo
+        ciclos.append(reloj[0])
+        return {"ciclo": len(ciclos)}
+
+    monkeypatch.setattr(v, "_leer_hoy", lambda ahora: (None, None, None, None))
+    monkeypatch.setattr(v, "_etiquetar", lambda *_: None)
+    monkeypatch.setattr(v, "_historial_de", lambda *_: None)
+    monkeypatch.setattr(v, "_resultado", resultado)
+
+    assert v.parada("P05") == {"ciclo": 1}
+    reloj[0] += mod.CICLO_S - 30  # la UI vuelve CICLO_S después de pedirlo
+    assert v.parada("P05") == {"ciclo": 2}
+
+
 def test_las_paradas_son_las_del_horario_con_sus_lineas():
     p = _vivo().paradas()
     assert p[0] == {"stop_id": "P01", "nombre": "Nombre", "lineas": ["7"]}

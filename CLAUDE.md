@@ -258,10 +258,11 @@ antes de importar.
   horario y la regla «en camino», el marcador congelado y su verdad, el reloj de
   todas las líneas (trampa 022), el prefijo frente al día completo (un paso cuyo
   k1 es la última posición del viaje aún no se sabe) y las guardias del historial
-  y del crudo (un payload de error no es un sondeo). Mutantes 218-228, 230, 231 y
-  233 (214-217 están en persistencia, etiquetado y features). `tests/test_ui.py`
+  y del crudo (un payload de error no es un sondeo), y que la edad de la caché
+  cuenta desde que empieza el ciclo. Mutantes 218-228, 230, 231, 233 y 237
+  (214-217 están en persistencia, etiquetado y features). `tests/test_ui.py`
   prueba los ayudantes puros de la página, sin red: mutantes 229, 234-236. El
-  232 es de `test_persistencia`. El siguiente libre es el 237.
+  232 es de `test_persistencia`. El siguiente libre es el 238.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la

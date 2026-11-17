@@ -2859,3 +2859,15 @@ buscar = '''.astimezone(settings.zona_horaria)'''
 reemplazar = '''.astimezone(timezone.utc)'''
 detector = ["tests/test_ui.py::test_el_error_enseña_la_hora_local_del_ultimo_sondeo_bueno"]
 sondas = []
+
+[[mutante]]
+id = "237"
+nombre = "la edad de la caché cuenta desde el final del ciclo y no desde el principio"
+capa = "serving"
+# Con un ciclo de ~30 s y la UI volviendo cada CICLO_S, la petición siguiente ve
+# fresco el resultado viejo: el dato se renueva cada ~80 s, sin error.
+fichero = "src/project/services/vivo.py"
+buscar = '''                self._cache[stop_id] = (inicio, resultado)'''
+reemplazar = '''                self._cache[stop_id] = (time.monotonic(), resultado)'''
+detector = ["tests/test_vivo.py::test_la_cache_cuenta_desde_que_empieza_el_ciclo"]
+sondas = []

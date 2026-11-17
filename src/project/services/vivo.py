@@ -587,8 +587,11 @@ class Vivo:
             ahora = pd.Timestamp(ahora)
             ahora = ahora.tz_localize("UTC") if ahora.tzinfo is None else ahora
         with self._cerrojo:
+            # La edad cuenta desde que empieza el ciclo: desde el final, la UI, que
+            # vuelve cada CICLO_S, vería fresco el resultado un refresco de más.
+            inicio = time.monotonic()
             guardado = self._cache.get(stop_id)
-            if real and guardado and time.monotonic() - guardado[0] < CICLO_S:
+            if real and guardado and inicio - guardado[0] < CICLO_S:
                 return guardado[1]
             dia = dia_de_servicio(ahora)
             horario = self._horario_de(dia)
@@ -605,7 +608,7 @@ class Vivo:
                 error,
             )
             if real:
-                self._cache[stop_id] = (time.monotonic(), resultado)
+                self._cache[stop_id] = (inicio, resultado)
             return resultado
 
     def _predecir(self, sabidos, pend, hist, cand) -> dict[tuple, dict]:
