@@ -254,8 +254,8 @@ def eda_63() -> dict[str, pd.DataFrame]:
     sur = sql(
         """
         SELECT strftime(ts_ingest_utc, '%Y-%m') AS mes, count(*) AS filas,
-               sum(CASE WHEN lat < 39.36 THEN 1 ELSE 0 END) AS al_sur,
-               100.0 * sum(CASE WHEN lat < 39.36 THEN 1 ELSE 0 END) / count(*) AS pct
+               count(*) FILTER (WHERE lat < 39.36) AS al_sur,
+               100.0 * avg((lat < 39.36)::INT) AS pct
         FROM {f} GROUP BY ROLLUP (1) ORDER BY 1 NULLS LAST
         """,
         f="emt_buses",
@@ -274,15 +274,16 @@ def eda_63() -> dict[str, pd.DataFrame]:
         """,
         f="trafico_estado",
     )
-    caja = "NOT (lat BETWEEN 39.15 AND 39.65 AND lon BETWEEN -0.65 AND -0.15)"
     lejos = sql(
-        f"""
+        """
         SELECT linea, min(CAST(ts_ingest_utc AS DATE)) AS desde,
                max(CAST(ts_ingest_utc AS DATE)) AS hasta, count(*) AS filas,
                count(DISTINCT snapshot_id) AS sondeos,
                min(lat) AS lat_min, max(lat) AS lat_max,
                min(lon) AS lon_min, max(lon) AS lon_max
-        FROM {{f}} WHERE {caja} GROUP BY 1 ORDER BY filas DESC
+        FROM {f}
+        WHERE NOT (lat BETWEEN 39.15 AND 39.65 AND lon BETWEEN -0.65 AND -0.15)
+        GROUP BY 1 ORDER BY filas DESC
         """,
         f="emt_buses",
     )
@@ -395,14 +396,7 @@ def main() -> None:
     p.add_argument("--lectivo", action="store_true")
     p.add_argument("--eda-63", action="store_true")
     a = p.parse_args()
-    todo = not (
-        a.solape
-        or a.senal_192
-        or a.union_trafico
-        or a.valenbisi
-        or a.lectivo
-        or a.eda_63
-    )
+    todo = not any(vars(a).values())
 
     pd.set_option("display.width", 160)
     pd.set_option("display.max_columns", 40)
