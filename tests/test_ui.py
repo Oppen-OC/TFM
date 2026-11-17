@@ -103,6 +103,16 @@ def test_sin_conexion_dice_que_la_api_no_esta_disponible(monkeypatch):
     assert "no disponible" in mensaje
 
 
+def test_una_respuesta_que_no_es_json_es_un_error_y_no_una_excepcion(monkeypatch):
+    """Un proxy con su página de error: sin esto, el spinner se queda girando."""
+    for codigo in (200, 503):
+        r = app.requests.Response()
+        r.status_code, r._content = codigo, b"<html>Bad Gateway</html>"
+        monkeypatch.setattr(app.requests, "get", lambda *a, _r=r, **k: _r)
+        datos, mensaje = app.pedir("/vivo/parada/1", 1)
+        assert datos is None and mensaje
+
+
 def _estado(**cambios) -> dict:
     base = {
         "stop_id": "1",

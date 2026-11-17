@@ -157,13 +157,21 @@ def pedir(ruta: str, timeout: float) -> tuple[dict | list | None, str | None]:
         )
     except requests.RequestException:
         return None, f"API no disponible en {API_URL}"
+    # Un proxy o una página de error no traen JSON: sin esto, la excepción deja
+    # el spinner girando y la página sin mensaje.
+    try:
+        cuerpo = r.json()
+    except ValueError:
+        cuerpo = None
     if r.status_code == 404:
         return None, "Parada desconocida"
     if r.status_code == 503:
-        return None, r.json().get("detail", "Demo no disponible")
+        return None, (cuerpo or {}).get("detail", "Demo no disponible")
     if not r.ok:
         return None, f"La API respondió {r.status_code}"
-    return r.json(), None
+    if cuerpo is None:
+        return None, "La API respondió algo que no es JSON"
+    return cuerpo, None
 
 
 def vista(estado: dict) -> dict:
@@ -219,27 +227,45 @@ async def pagina() -> None:
     # Las peticiones van en un hilo (`run.io_bound`): una parada en punta tarda
     # un ciclo entero y, en el bucle de eventos, congelaría la página de todos.
     await ui.context.client.connected()
-    respuesta = await run.io_bound(pedir, "/vivo/paradas", TIMEOUT_PARADAS_S)
-    if respuesta is None:  # el cliente se fue o el servidor se apaga
-        return
-    paradas, error = respuesta
-    with cabecera:
-        if error:
-            ui.label(error).classes("text-negative")
+    selector: ui.select | None = None
+
+    async def cargar_paradas() -> None:
+        # Si falla, el siguiente tic lo reintenta: la página se recupera sola
+        # cuando vuelve la API, sin recargar a mano.
+        nonlocal selector
+        respuesta = await run.io_bound(pedir, "/vivo/paradas", TIMEOUT_PARADAS_S)
+        if respuesta is None:  # la app se apaga o se canceló la llamada
             return
-        if not paradas:
-            ui.label("Hoy no hay paradas con servicio.")
-            return
-        selector = ui.select(
-            {p["stop_id"]: f"{p['nombre']} ({p['stop_id']})" for p in paradas},
-            label="Parada",
-            value=paradas[0]["stop_id"],
-            with_input=True,
-        ).classes("w-96")
+        paradas, error = respuesta
+        cabecera.clear()
+        with cabecera:
+            if error:
+                ui.label(error).classes("text-negative")
+                return
+            if not paradas:
+                ui.label("Hoy no hay paradas con servicio.")
+                return
+            selector = ui.select(
+                {p["stop_id"]: f"{p['nombre']} ({p['stop_id']})" for p in paradas},
+                label="Parada",
+                value=paradas[0]["stop_id"],
+                with_input=True,
+            ).classes("w-96")
+        selector.on_value_change(cambiar)
+        await refrescar()
+
+    async def cambiar() -> None:
+        # Cambiar de parada no espera al siguiente tic, y lo de la anterior no
+        # se queda debajo de la nueva mientras responde la API.
+        contenido.clear()
+        await refrescar()
 
     en_curso: set[str] = set()
 
     async def refrescar() -> None:
+        if selector is None:
+            await cargar_paradas()
+            return
         stop_id = selector.value
         if stop_id is None or stop_id in en_curso:  # el tic llega con la anterior
             return
@@ -258,8 +284,6 @@ async def pagina() -> None:
         with contenido:
             pintar(*respuesta)
 
-    # Cambiar de parada no espera al siguiente tic.
-    selector.on_value_change(refrescar)
     ui.timer(REFRESCO_S, refrescar)
 
 
