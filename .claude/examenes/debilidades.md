@@ -20,3 +20,4 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 | primera-captura-bloque-a-medias | puerta · EDA, puerta 012 | 1 | 0 | 2026-11-16 | flojo |
 | frontera-ui-solo-http | puerta · migración a NiceGUI, puerta 013 | 1 | 0 | 2026-11-16 | flojo |
 | trip-id-se-reasigna-cada-ciclo | puerta · clave del marcador, puerta 015 | 1 | 0 | 2026-11-17 | flojo |
+| mutante-invalido-no-es-evidencia | puerta · issues #3 y #11, puerta 016 | 2 | 0 | 2026-11-18 | flojo |
