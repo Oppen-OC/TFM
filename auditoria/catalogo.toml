@@ -363,7 +363,7 @@ buscar = '''            append_raw(root, key, payload, ts)
 reemplazar = '''            df = parse(key, payload, ts)
             append_raw(root, key, payload, ts)
             contesto = True'''
-detector = []
+detector = ["tests/test_persistencia.py::test_el_crudo_se_guarda_aunque_el_parser_falle"]
 sondas = ["persistencia"]
 
 [[mutante]]
@@ -428,7 +428,7 @@ capa = "persistencia"
 fichero = "src/project/ingest/reprocesar.py"
 buscar = '''elegir_capturas(sorted(dir_raw.rglob("*.ndjson.gz")), source)'''
 reemplazar = '''elegir_capturas(sorted(dir_raw.rglob("*.ndjson.gz"))[:1], source)'''
-detector = []
+detector = ["tests/test_persistencia.py::test_reprocesar_reconstruye_todos_los_dias"]
 sondas = ["persistencia"]
 
 [[mutante]]
