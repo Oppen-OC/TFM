@@ -85,7 +85,7 @@
 <main>
 
 <h1>Flujo de datos del TFM</h1>
-<p class="sub">Desde las APIs del Ajuntament hasta el endpoint de predicción: qué entra y qué sale de cada etapa, qué función lo hace y qué lo protege. Sacado del código el 28/10/2026 (commit <code>9fb9b5f</code>).</p>
+<p class="sub">Desde las APIs del Ajuntament hasta el endpoint de predicción: qué entra y qué sale de cada etapa, qué función lo hace y qué lo protege. Sacado del código el 28/10/2026 (commit <code>9fb9b5f</code>) y actualizado el 15/11/2026 sobre <code>02df6ae</code>: capa 157 y demo en vivo.</p>
 
 <div class="leer">
   <p><span class="chip trampa">trampa</span> un bug que no da la cara: no lanza excepción y deja un resultado plausible pero falso. Ficha en <code>.claude/trampas/</code>. A su lado, en <span class="t">azul</span>, el test que la vigila.</p>
@@ -99,11 +99,12 @@
 <figure class="mapa">
 <pre class="mermaid">
 flowchart TD
-    fuentes[/"Fuentes en vivo&lt;br/&gt;buses EMT · tráfico municipal · Valenbisi · Renfe"/]
+    fuentes[/"Fuentes en vivo&lt;br/&gt;buses EMT · tráfico municipal · Valenbisi · Renfe · meteorología"/]
 
-    captura["&lt;b&gt;1 · Captura&lt;/b&gt;&lt;br/&gt;guarda el crudo antes de interpretarlo&lt;br/&gt;&lt;i&gt;1 trampa&lt;/i&gt;"]:::fuera
+    captura["&lt;b&gt;1 · Captura&lt;/b&gt;&lt;br/&gt;guarda el crudo antes de interpretarlo&lt;br/&gt;&lt;i&gt;3 trampas&lt;/i&gt;"]:::fuera
     crudo[("crudo")]:::dato
     gtfs[("GTFS&lt;br/&gt;horario y trazados")]:::dato
+    meteo[("meteorología&lt;br/&gt;solo en el crudo, aún no es variable")]:::dato
 
     subgraph dvc["Pipeline reproducible (DVC)"]
         curado["&lt;b&gt;2 · Curado&lt;/b&gt;&lt;br/&gt;interpreta y deduplica cada sondeo&lt;br/&gt;&lt;i&gt;7 trampas&lt;/i&gt;"]
@@ -117,11 +118,13 @@ flowchart TD
         modelos["&lt;b&gt;6 · Entrenamiento y evaluación&lt;/b&gt;&lt;br/&gt;XGBoost frente a los baselines&lt;br/&gt;IC 95 % por viajes y por días"]
     end
 
-    servicio["&lt;b&gt;7 · Servicio&lt;/b&gt;&lt;br/&gt;API REST: retraso y más de 5 min"]:::fuera
+    servicio["&lt;b&gt;7 · Servicio&lt;/b&gt;&lt;br/&gt;API REST: retraso y más de 5 min&lt;br/&gt;demo en vivo por parada, que no es un resultado&lt;br/&gt;&lt;i&gt;1 trampa&lt;/i&gt;"]:::fuera
 
     fuentes --&gt; captura
     captura --&gt; crudo --&gt; curado
     captura -.-&gt;|revisado a mano| gtfs
+    captura -.-&gt; meteo
+    crudo -.-&gt;|el de hoy, cada 40 s| servicio
     curado --&gt; buses --&gt; etiquetado
     curado --&gt; trafico
     gtfs --&gt; etiquetado
@@ -137,6 +140,7 @@ flowchart TD
 
     click fuentes href "#captura"
     click captura href "#captura"
+    click meteo href "#captura"
     click curado href "#curar"
     click etiquetado href "#prepare"
     click disponibilidad href "#disponibilidad"
@@ -147,13 +151,13 @@ flowchart TD
 <figcaption>Haz clic en una etapa para ver su ficha. Las cajas discontinuas quedan fuera del pipeline de DVC.</figcaption>
 </figure>
 <nav class="tira" hidden>
-  <a href="#captura"><b>1 · Captura</b><span>1 trampa · fuera de DVC</span></a>
+  <a href="#captura"><b>1 · Captura</b><span>3 trampas · fuera de DVC</span></a>
   <a href="#curar"><b>2 · Curar</b><span>7 trampas</span></a>
   <a href="#prepare"><b>3 · Prepare</b><span>10 trampas</span></a>
   <a href="#disponibilidad"><b>4 · Disponibilidad</b><span>1 trampa</span></a>
   <a href="#features"><b>5 · Features</b><span>reglas</span></a>
   <a href="#modelos"><b>6 · Train / Evaluate</b><span>reglas</span></a>
-  <a href="#servicio"><b>7 · Servicio</b><span>reglas · fuera de DVC</span></a>
+  <a href="#servicio"><b>7 · Servicio</b><span>1 trampa · fuera de DVC</span></a>
 </nav>
 </div>
 <script type="module">
@@ -176,7 +180,7 @@ flowchart TD
   <a class="volver" href="#mapa">volver al mapa ↑</a>
   <h2>1 · Captura <span class="fuera">fuera de DVC · proceso aparte, en la Raspberry</span></h2>
   <p class="que">Pregunta a las fuentes cada pocos segundos y guarda lo que responden. Lo que no se capture hoy se pierde: ninguna fuente guarda su pasado.</p>
-  <div class="r"><div class="k">entra</div><div>ArcGIS del geoportal: buses EMT <code>384</code>, tráfico <code>192</code> (estado) y <code>188</code> (intensidad), Valenbisi <code>228</code>; <code>flota.json</code> de Renfe; el GTFS de la EMT.</div></div>
+  <div class="r"><div class="k">entra</div><div>ArcGIS del geoportal: buses EMT <code>384</code>, tráfico <code>192</code> (estado) y <code>188</code> (intensidad), Valenbisi <code>228</code> y estaciones atmosféricas <code>157</code> (<code>meteo_estaciones</code>, en la Pi desde el 09/11, bitácora 063); <code>flota.json</code> de Renfe; el GTFS de la EMT.</div></div>
   <div class="r"><div class="k">hace</div><div><pre class="arbol">ingest/collect.main(minutos, claves, root)   una tarea por fuente, a su cadencia
  ├─ sondear                     pide el payload a la fuente
  │   ├─ sources.append_raw      guarda el crudo ANTES de parsear
@@ -188,6 +192,9 @@ flowchart TD
   <div class="r"><div class="k">sale</div><div><code>data/raw/source=&lt;fuente&gt;/date=&lt;día&gt;/payloads.ndjson.gz</code> · <code>data/raw/source=gtfs_emt/date=&lt;día&gt;/</code> (cada versión nueva del feed; el pipeline lee <code>data/raw/gtfs/</code>, que se rellena a mano tras revisarla, ADR-014) · <code>data/reference/trafico_estado_geometria.parquet</code> · <code>data/curated/</code> (vista previa) · <code>_status.json</code></div></div>
   <div class="r"><div class="k">trampas</div><div>
     <div class="tr"><div class="id">016</div><div>La Pi no tiene el corpus entero: un <code>rsync</code> de la Pi sobre <code>data/raw/</code> deja días a medias sin error. <b>Mitigada, sin test:</b> traer solo con <code>bash deploy_pi/pull_data.sh --verificar</code>.</div></div>
+    <div class="tr"><div class="id">020</div><div>Capa 157: con la clave de sondeo por la marca máxima, la estación que publica con una marca anterior cuenta como repetida y se pierde. La clave es (estación, marca). <span class="t">test_la_estacion_que_llega_tarde_es_un_sondeo_nuevo</span></div></div>
+    <div class="tr"><div class="id">021</div><div>Capa 157: AEMET llega con 51-91 min de retraso y, leída en hora local como UTC, parece plausible: el sondeo queda +1 h. Deciden la convención solo W01 y W02. <span class="t">test_meteo_de_aemet_en_hora_local_no_se_lee_como_utc</span></div></div>
+    <p class="nada">La 020 y la 021 están aquí porque la capa 157 aún no pasa por <code>curar</code> (issue #8): su parser y su clave corren en la vista previa del colector y en <code>reprocesar --sources meteo_estaciones</code>.</p>
   </div></div>
   <div class="r"><div class="k">reglas</div><div>
     <div class="rg"><span class="chip regla">el crudo se guarda antes de parsear</span> <span class="t">test_el_crudo_se_guarda_aunque_el_parser_falle</span></div>
@@ -196,7 +203,7 @@ flowchart TD
     <div class="rg"><span class="chip regla">ingest/ no importa nada de aguas abajo</span> así corre en la Pi sin sklearn ni FastAPI</div>
     <div class="rg"><span class="chip regla">la ingesta no es un stage</span> capturar en vivo no es reejecutable</div>
   </div></div>
-  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_persistencia.py</code><br><code>uv run python -m project.ingest.collect --status</code></div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_persistencia.py tests/test_ingest.py</code><br><code>uv run python -m project.ingest.collect --status</code></div></div>
 </section>
 
 <div class="paso">▼ <span class="chip dato">data/raw/</span> el crudo, tal como llegó</div>
@@ -206,7 +213,7 @@ flowchart TD
   <a class="volver" href="#mapa">volver al mapa ↑</a>
   <h2>2 · Curar <span class="fuera">stage <code>curar</code></span></h2>
   <p class="que">Vuelve a leer todo el crudo, lo convierte en tablas y se queda con una sola captura (la más completa) de cada sondeo. Es determinista: el mismo crudo da siempre el mismo resultado.</p>
-  <div class="r"><div class="k">entra</div><div><code>data/raw/source=*/</code>: todos los payloads crudos de las cinco fuentes.</div></div>
+  <div class="r"><div class="k">entra</div><div><code>data/raw/source=*/</code>: todos los payloads crudos de las cinco fuentes del modelo. La capa 157 no entra (issue #8): <code>reprocesar</code> la deja fuera por defecto y el stage no depende de su crudo.</div></div>
   <div class="r"><div class="k">hace</div><div><pre class="arbol">ingest/reprocesar.main
  └─ reprocesar(root, source)          una fuente entera, payload a payload
      ├─ sources.read_raw              lee el NDJSON gzip
@@ -372,17 +379,29 @@ explicar.main                         SHAP de cada modelo sobre una muestra de l
 <section class="ficha" id="servicio">
   <a class="volver" href="#mapa">volver al mapa ↑</a>
   <h2>7 · Servicio <span class="fuera">fuera de DVC · services, api y ui</span></h2>
-  <p class="que">Carga los modelos una vez al arrancar y los expone por HTTP. La entrada es el vector de variables ya calculado: el servido en tiempo real está pendiente (ADR-016).</p>
-  <div class="r"><div class="k">entra</div><div><code>models/</code> al arrancar · una petición HTTP con el vector de variables.</div></div>
+  <p class="que">Carga los modelos una vez al arrancar y los expone por HTTP. Dos entradas: el vector de variables ya calculado, y la <b>demo en vivo por parada</b>, que relee el crudo de hoy y predice con las funciones del pipeline. La demo <b>no es un resultado del TFM</b>, y el servido en tiempo real incremental sigue pendiente (ADR-016, nota del 10/11).</p>
+  <div class="r"><div class="k">entra</div><div><code>models/</code> al arrancar · una petición HTTP con el vector de variables · para la demo, el crudo de hoy de la EMT y el GTFS vigente, con su propia carpeta (<code>DATA_ROOT</code>, <code>GTFS_DIR</code>), nunca los del repo.</div></div>
   <div class="r"><div class="k">hace</div><div><pre class="arbol">api/main.lifespan
- └─ Servicio.desde_disco              carga los modelos UNA vez, no por petición
+ ├─ Servicio.desde_disco              carga los modelos UNA vez, no por petición
+ └─ Vivo.desde_disco                  la demo; sin datos u horario no tumba el arranque
 api/routers/prediccion
  ├─ GET  /modelos                     Servicio.modelos
  ├─ POST /prediccion/retraso          Servicio.retraso      → predict.predecir
  └─ POST /prediccion/mas-de-5min      Servicio.mas_de_5min  → predict.probabilidad
-ui/app                                habla con la API por HTTP (requests)</pre></div></div>
-  <div class="r"><div class="k">sale</div><div>JSON con los segundos de retraso, o la probabilidad de llegar más de 5 min tarde y la decisión. Con <code>?explicar=true</code>, también las contribuciones SHAP. Swagger en <code>/docs</code>.</div></div>
-  <div class="r"><div class="k">trampas</div><div class="nada">Ninguna registrada.</div></div>
+api/routers/vivo                      503 sin datos u horario · 404 parada desconocida
+ ├─ GET  /vivo/paradas                Vivo.paradas          las del horario de hoy, con sus líneas
+ └─ GET  /vivo/parada/{stop_id}       Vivo.parada           un ciclo cada CICLO_S = 40 s
+     ├─ _leer_hoy                     reprocesar.elegir_capturas (trampas 011 y 018)
+     ├─ _etiquetar                    prepare.etiquetar_dia, solo las líneas de la parada
+     │   ├─ con_reloj_de_todas        con el reloj de todas las líneas (trampa 022)
+     │   └─ features.instante_disponible   t_disp de cada paso
+     ├─ _predecir → tabla             features.construir(solo_con_objetivo=False) + clasificador
+     └─ Marcador                      congela la primera predicción y la verifica después
+ui/app                                habla con la API por HTTP (requests); REFRESCO_S = 40</pre></div></div>
+  <div class="r"><div class="k">sale</div><div>JSON con los segundos de retraso, o la probabilidad de llegar más de 5 min tarde y la decisión. Con <code>?explicar=true</code>, también las contribuciones SHAP. Swagger en <code>/docs</code>. La demo devuelve los buses en camino a la parada, con su predicción congelada y su verificación (latencia medida en la bitácora 064).</div></div>
+  <div class="r"><div class="k">trampas</div><div>
+    <div class="tr"><div class="id">022</div><div><code>rastrear</code> empareja por (línea, trayecto), pero el reloj de cada sondeo es el de todas las líneas: recortar a las de una parada cambiaba 5 de 5.334 pasos, sin error. <span class="t">test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas</span></div></div>
+  </div></div>
   <div class="r"><div class="k">reglas</div><div>
     <div class="rg"><span class="chip regla">ui no importa services ni carga el modelo: solo HTTP</span></div>
     <div class="rg"><span class="chip regla">api valida (Pydantic) y delega; sin lógica de negocio</span> <span class="t">test_un_cuerpo_mal_formado_no_llega_al_servicio</span></div>
@@ -390,8 +409,13 @@ ui/app                                habla con la API por HTTP (requests)</pre>
     <div class="rg"><span class="chip regla">el vector trae exactamente las variables del modelo</span> <span class="t">test_el_vector_trae_exactamente_las_variables</span></div>
     <div class="rg"><span class="chip regla">una línea no vista predice como dato faltante</span> <span class="t">test_un_vector_con_nulos_y_una_linea_no_vista_predice</span></div>
     <div class="rg"><span class="chip regla">un modelo que falta no tumba el arranque</span> <span class="t">test_un_modelo_que_falta_no_tumba_el_arranque</span></div>
+    <div class="rg"><span class="chip regla">demo: ningún cálculo del ciclo ve un paso que aún no se sabía</span> <span class="t">test_la_fila_del_ciclo_no_ve_el_paso_que_no_se_sabe</span></div>
+    <div class="rg"><span class="chip regla">demo: el crudo posterior al «ahora» no entra</span> <span class="t">test_el_crudo_posterior_a_ahora_no_entra_en_el_ciclo</span></div>
+    <div class="rg"><span class="chip regla">demo: el prefijo del día da lo mismo que el día completo</span> <span class="t">test_un_paso_sabido_en_el_prefijo_lo_es_igual_con_el_dia_completo</span></div>
+    <div class="rg"><span class="chip regla">demo: la primera predicción queda congelada</span> <span class="t">test_la_primera_prediccion_queda_congelada</span></div>
+    <div class="rg"><span class="chip regla">demo: sin datos no tumba el arranque</span> <span class="t">test_sin_datos_la_demo_no_tumba_el_arranque</span></div>
   </div></div>
-  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_api.py tests/test_servicio.py</code></div></div>
+  <div class="r"><div class="k">compruébalo</div><div><code>uv run pytest tests/test_api.py tests/test_servicio.py tests/test_vivo.py tests/test_ui.py</code></div></div>
 </section>
 
 <h2 class="aparte">Guardias que cubren todo el flujo</h2>

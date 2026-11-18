@@ -272,6 +272,34 @@ class _Programacion:
         return patrones
 
 
+_PROGRAMACIONES: dict[str, _Programacion] = {}
+
+
+def paradas_del_viaje(h: Horario, shape_id: str, trip_id: str) -> pd.DataFrame:
+    """Paradas programadas de un viaje, en orden de `stop_sequence`.
+
+    Sale del mismo `_Patron` que `_asignar_tramo` usa al escribir los pasos:
+    la misma abscisa y el mismo `t_prog_s`, para que `features.construir`
+    encuentre por clave la parada que el bus aún no ha cruzado. `KeyError` si
+    el viaje no es de ese trazado.
+    """
+    prog = _PROGRAMACIONES.get(h.version)
+    if prog is None or prog.h is not h:  # otra carga de la misma versión
+        prog = _PROGRAMACIONES[h.version] = _Programacion(h)
+    for pat in prog.patrones(shape_id):
+        fila = np.flatnonzero(pat.trips == trip_id)
+        if len(fila):
+            return pd.DataFrame(
+                {
+                    "stop_id": pat.stop_ids,
+                    "stop_sequence": pat.stop_sequence,
+                    "abscisa_parada_m": pat.s_paradas,
+                    "t_prog_s": pat.prog[fila[0]],
+                }
+            )
+    raise KeyError((shape_id, trip_id))
+
+
 # --------------------------------------------------------------------------- #
 # La cascada
 # --------------------------------------------------------------------------- #

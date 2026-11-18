@@ -767,3 +767,86 @@ def test_la_tabla_lleva_el_trafico_del_recorrido_que_queda_y_el_modelo_no_por_de
     assert f["trafico_edad_s"] == pytest.approx(150)  # 10,5 − 8 min
     assert not set(features.TRAFICO) & set(features.variables())
     assert set(features.TRAFICO) <= set(features.variables(trafico=True))
+
+
+# --------------------------------------------------------------------------- #
+# Inferencia en vivo: la fila cuyo objetivo aún no ha pasado
+# --------------------------------------------------------------------------- #
+def _escenario_en_vivo():
+    """Línea 1, paradas P01..P05 cada 2 min, `llega` = 0,5 min; h = 2.
+
+    Un día anterior con dos viajes (da el sesgo del tramo P01 -> P03: ganado 30 y
+    60) y, hoy, siete viajes. R es (D, 1): se supo a los 9,5 min, y su objetivo,
+    P03 de D, aún no ha pasado. Ganado en el tramo, 30·k con k el índice del
+    viaje: A (k=1), B (2) y C (3) lo acabaron antes de R (a los 3,5, 6,5 y 8,5
+    min); F (4) y G (5) lo acaban después (10,5 y 12,5), y E (7) ni ha salido.
+    """
+    filas = []
+    for v, ini, k in (("X1", 0, 1), ("X2", 3, 2)):
+        filas += [
+            _paso(
+                v,
+                s,
+                ini + 2 * (s - 1) - 1440,
+                20 * k + 15 * (s - 1) * k,
+                dia="2026-09-15",
+                llega=0.5,
+            )
+            for s in range(1, 6)
+        ]
+    for v, ini, k in (
+        ("A", -1, 1),
+        ("B", 2, 2),
+        ("C", 4, 3),
+        ("F", 6, 4),
+        ("G", 8, 5),
+        ("D", 9, 6),
+        ("E", 20, 7),
+    ):
+        filas += [
+            _paso(v, s, ini + 2 * (s - 1), 20 * k + 15 * (s - 1) * k, llega=0.5)
+            for s in range(1, 6)
+        ]
+    completa = pd.DataFrame(filas)
+    ahora = _fila(completa, "D", 1)["t_disp_utc"]
+    vivo = completa.copy()
+    for c in ("t_obs_utc", "t_disp_utc"):
+        vivo[c] = vivo[c].dt.tz_convert("UTC")
+    en_curso = vivo.groupby(["fecha_servicio", "viaje_id"])["t_disp_utc"].transform(
+        "min"
+    ) <= ahora.tz_convert("UTC")
+    pendiente = vivo["t_disp_utc"] > ahora.tz_convert("UTC")
+    vivo.loc[pendiente, "retraso_s"] = np.nan
+    vivo.loc[pendiente, ["t_obs_utc", "t_disp_utc"]] = features.FUTURO
+    return completa, vivo[en_curso].reset_index(drop=True)
+
+
+def test_la_fila_en_vivo_ve_lo_mismo_que_la_del_entrenamiento():
+    """Lo que ve R con su objetivo pendiente es lo que el entrenamiento calculó en
+    el mismo `t_disp` (ADR-022): la fila pendiente no cambia ninguna variable."""
+    completa, vivo = _escenario_en_vivo()
+    kw = dict(horizonte=2, ventanas_flota_min=(5, 15))
+    a = _fila(features.construir(completa, OBJ, **kw), "D", 1)
+    en_vivo = features.construir(vivo, OBJ, solo_con_objetivo=False, **kw)
+    b = _fila(en_vivo, "D", 1)
+    # El escenario ejercita lo arriesgado: el objetivo está pendiente y las
+    # variables que lo rodean valen algo, no NaN que igualen en vacío.
+    assert np.isnan(b[OBJ]) and not np.isnan(a[OBJ])
+    assert (vivo["t_disp_utc"] == features.FUTURO).any()
+    assert b["tramo_soporte_5min"] == 2 and b["tramo_ganado_5min"] == 75.0  # B, C
+    assert b["tramo_soporte_15min"] == 3 and b["tramo_ganado_15min"] == 60.0  # A, B, C
+    assert b["tramo_sesgo_s"] == 45.0  # la víspera: 30 y 60
+    assert b["bus_anterior_retraso_s"] == 20 * 3 + 15 * 2 * 3  # C en P03
+    assert b["linea_pasos_5min"] > 0
+    cols = features.variables(lags_min=(1, 5, 15), ventanas_flota_min=(5, 15))
+    pd.testing.assert_series_equal(a[cols], b[cols], check_names=False)
+
+
+def test_sin_objetivo_la_fila_solo_se_queda_si_se_pide():
+    _, vivo = _escenario_en_vivo()
+
+    def tiene(t):
+        return ((t["viaje_id"] == "D") & (t["stop_sequence"] == 1)).any()
+
+    assert not tiene(features.construir(vivo, OBJ, horizonte=2))
+    assert tiene(features.construir(vivo, OBJ, horizonte=2, solo_con_objetivo=False))

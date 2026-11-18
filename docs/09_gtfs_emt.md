@@ -12,7 +12,8 @@ retraso.
   `a87aa72b12b2fa9c3d63bee454f8e759`, fijado en
   `data/raw/gtfs/emt_google_transit.zip.dvc`.
 - **Origen:** [Plataforma VLCi, dataset *Google Transit*](https://opendata.vlci.valencia.es/dataset/google-transit-lines-stops-bus-schedules), CC BY 4.0.
-- **Ruta esperada por el código:** `config.gtfs_zip` y `params.yaml → prepare.gtfs_zip`.
+- **Ruta esperada por el código:** `config.gtfs_zip` (feed por defecto) y
+  `config.gtfs_dir` (todas las versiones, elegidas por día de servicio, ADR-014).
 - **Versión del feed:** `01-09-2026`. Vigencia declarada 24/08/2026 – 30/09/2026.
 
 Codificación UTF-8 en los nueve ficheros. `agency_timezone = Europe/Madrid`.
@@ -201,15 +202,23 @@ Las versiones del 10 al 18/09 sí servirían para el **08-11/09**, que hoy se
 etiqueta con la `01-09-2026` porque la `19-09-2026` empieza el 12/09. No son
 descargables con la key gratuita.
 
+_Desde el 05/10 el 08-11/09 ya no se etiqueta: entra en `prepare.excluir_fechas`
+junto al 31/08-07/09 (ADR-014, «Ampliada al 11/09»; bitácora 037)._
+
 **Después del 19/09 la EMT publicó una versión casi cada día** (14 hasta el
 06/10), con el calendario corriendo: empieza unos 8 días antes de la captura y
 acaba unas 4 semanas después. La del 06/10 (`21a5e04c727f`, `05-10-2026`,
 vigente 28/09-04/11) se descargó de VLCi y está en `data/raw/gtfs_archivo/`,
 **fuera de `gtfs_dir`** para que la etiqueta no la use: quita la línea 13 y
-prolonga el horario excepcional de la 35 (bitácora 042, ADR-014). Desde el
-despliegue del ADR-020, el colector guarda cada versión nueva en
-`raw/source=gtfs_emt/`, también fuera de `gtfs_dir`. Para contrastar otra
-versión con lo etiquetado:
+prolonga el horario excepcional de la 35 (bitácora 042, ADR-014). Al lado está
+la `20-10-2026` (vigente 13/10-19/11), bajada de VLCi el 21/10 para contrastar
+la prueba (bitácora 058).
+
+El colector del ADR-020 guarda cada versión nueva en `raw/source=gtfs_emt/`,
+también fuera de `gtfs_dir`, pero en la Pi solo corre desde el redespliegue del
+09/11 (bitácora 063). Entre el 06/10 y esa fecha no guardó ninguna (bitácora
+051): de ese tramo solo están la `12-10-2026` y la `20-10-2026`, bajadas a mano.
+Para contrastar otra versión con lo etiquetado:
 
 ```bash
 uv run python -m project.analysis.comparar_gtfs data/raw/gtfs_archivo/google_transit2026-10-04.zip

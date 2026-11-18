@@ -120,7 +120,7 @@ def en_ruta(
     Dos tramos que cubren el mismo trozo (una calle y su paralela, o los dos
     sentidos) cuentan los dos.
     """
-    e = estados.drop_duplicates(["ts_ingest_utc", "idtramo"])  # trampa 014
+    e = estados.drop_duplicates(["ts_ingest_utc", "idtramo"])  # bitácora 014
     tiempos = np.unique(_ns(e["ts_ingest_utc"]))
     ids = np.unique(e["idtramo"].astype(int).to_numpy())
     matriz = np.full((len(tiempos), len(ids)), np.nan)

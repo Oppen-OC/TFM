@@ -45,6 +45,10 @@ FUERA_DE_LA_TABLA = ["desfase_s", "margen_s", "coste_s"]
 CLAVE_TRAMO = ["feed_version", "linea", "stop_id", "_stop_objetivo"]
 
 
+# El instante de una parada que el viaje aún no ha pasado (inferencia en vivo):
+# después de cualquier «ahora», así que ninguna ventana la cuenta.
+FUTURO = pd.Timestamp("2200-01-01", tz="UTC")
+
 TRAFICO = ["trafico_cubierto_m", "trafico_congestion_frac", "trafico_edad_s"]
 
 
@@ -309,11 +313,22 @@ def construir(
     soporte_min: int = 2,
     trafico: tuple[pd.DataFrame, pd.DataFrame] | None = None,
     trafico_edad_max_s: float = 900,
+    solo_con_objetivo: bool = True,
 ) -> pd.DataFrame:
     """La tabla: una fila por paso con objetivo, sus variables y sus claves.
 
     `trafico`: los intervalos de `tramos_ruta` y los sondeos de la capa 192. Sin
     él, la tabla no lleva las columnas de tráfico.
+
+    `solo_con_objetivo=False` es la inferencia en vivo: la parada objetivo de un
+    bus aún no ha pasado, y su fila es justo la que se quiere. Cada parada que el
+    viaje no ha pasado entra en `pasos` como fila con sus columnas de horario
+    (`stop_id`, `stop_sequence`, `abscisa_parada_m`, `t_prog_s` y las de viaje),
+    `retraso_s` nulo y `t_obs_utc = t_disp_utc = FUTURO`. Así el objetivo se
+    busca por clave, igual que al entrenar, y nada que ocurra después del
+    «ahora» entra en una ventana (trampa 017). Las filas sin objetivo se
+    conservan, con `{objetivo}_bin` nulo, y también las propias filas pendientes:
+    quien llama elige la suya.
     """
     # Las particiones de `pasos` no traen todas el mismo tipo de fecha (issue #2):
     # unas `datetime64`, otras `date`; concatenadas, ni siquiera se pueden ordenar.
@@ -427,11 +442,17 @@ def construir(
     p["dia_semana"] = local.dt.dayofweek
     p["fin_de_semana"] = (p["dia_semana"] >= 5).astype(int)
 
-    p = p[p[objetivo].notna()].copy()
+    if solo_con_objetivo:
+        p = p[p[objetivo].notna()].copy()
     # Clave, no variable: el tramo (par de paradas) hace falta para separar el
     # sesgo estático del horario de la congestión (bitácora 032).
     p["stop_objetivo_id"] = p["_stop_objetivo"]
-    p[objetivo + "_bin"] = (p[objetivo] > umbral_s).astype(int)
+    if solo_con_objetivo:
+        p[objetivo + "_bin"] = (p[objetivo] > umbral_s).astype(int)
+    else:  # sin objetivo no hay clase: nula, no «no tarde»
+        p[objetivo + "_bin"] = (
+            (p[objetivo] > umbral_s).astype(float).where(p[objetivo].notna())
+        )
     fuera = [c for c in p.columns if c.startswith("_") or c in FUERA_DE_LA_TABLA]
     return p.drop(columns=fuera).reset_index(drop=True)
 

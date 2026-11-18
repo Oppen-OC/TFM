@@ -156,6 +156,90 @@ uv run streamlit run src/project/ui/app.py
 
 Docs en `http://127.0.0.1:8000/docs`, UI en `http://localhost:8501`.
 
+### 4. Demo en vivo por parada
+
+Una parada, los buses que van hacia ella y su retraso predicho, con el marcador
+de lo que se acertó (diseño en
+[`docs/superpowers/specs/2026-11-10-demo-parada-en-vivo-design.md`](docs/superpowers/specs/2026-11-10-demo-parada-en-vivo-design.md)).
+**Es una demo, no un resultado del TFM.** Corre en el PC y en una carpeta propia
+(`$demo`), para no tocar `data/`, las métricas ni nada que versione DVC. Los
+modelos sí salen de `models/`.
+
+El sesgo del tramo sale de días anteriores **con la misma versión del GTFS**: antes
+hay que traer y etiquetar días anteriores. **Tal cual, el guion trae y procesa el
+corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
+`reprocesar` y `prepare`, del orden de una hora para dos meses), como un
+`dvc repro`. Para acotarlo, ver el final del paso 2. En PowerShell:
+
+1. **Traer de la Pi a `$demo\raw`**, con WSL (Git Bash no trae `rsync`). Va
+   **antes** de arrancar el colector del PC: un `rsync` sobre ficheros que el
+   colector ya escribe los trunca (trampa 016). Con `$demo\raw` vacío copia todo lo
+   que tiene la Pi, menos el día de hoy en UTC, y con ello los zips del GTFS;
+   `--verificar` no escribe, enseña lo que difiere.
+
+   ```powershell
+   $demo = 'C:\Users\oppen\Code\demo'
+   New-Item -ItemType Directory -Force "$demo\raw", "$demo\metrics"
+   wsl env DESTINO=/mnt/c/Users/oppen/Code/demo/raw bash deploy_pi/pull_data.sh
+   wsl env DESTINO=/mnt/c/Users/oppen/Code/demo/raw bash deploy_pi/pull_data.sh --verificar
+   ```
+
+2. **Reprocesar y etiquetar**, con las variables de la demo. `--metricas` va
+   siempre dentro de `$demo`: `metrics/curar.json` y `metrics/prepare.json` del
+   repo son cifras versionadas. `prepare` escribe en `$demo\interim` y
+   `features --disponibilidad` deja ahí `disponibilidad/`. Sin DVC.
+
+   ```powershell
+   $env:DATA_ROOT = $demo
+   $env:GTFS_DIR  = "$demo\raw\source=gtfs_emt"
+   uv run python -m project.ingest.reprocesar --data $demo --metricas "$demo\metrics\curar.json"
+   uv run python -m project.prepare --metricas "$demo\metrics\prepare.json"
+   uv run python -m project.features --disponibilidad
+   ```
+
+   **Acotar a unos pocos días.** `reprocesar` no filtra días y `prepare` sin
+   `--dias` procesa todos los capturados. Solo hacen falta los días cuya versión
+   del GTFS es la vigente el día de la demo (el sesgo del tramo usa los
+   anteriores con la misma versión). Tras traer, borra de `$demo\raw\source=*\`
+   las carpetas `date=` que sobren, **menos las de `source=gtfs_emt`**, y deja
+   también el `date=` del día siguiente a cada día elegido (el crudo se parte en
+   UTC y el día de servicio no). Es la copia de la demo, nunca `data\raw`; un
+   `pull_data.sh` posterior devuelve lo borrado. Y pasa los días a `prepare`:
+
+   ```powershell
+   uv run python -m project.prepare --dias 2026-11-03 2026-11-04 2026-11-05 --metricas "$demo\metrics\prepare.json"
+   ```
+
+3. **Colector con la carpeta de la demo, al menos una hora antes** (el ciclo
+   relee el crudo de hoy). `--minutes 0` es indefinido:
+
+   ```powershell
+   uv run python -m project.ingest.collect --out $demo --minutes 0
+   uv run python -m project.ingest.collect --out $demo --status
+   ```
+
+   Si el colector muere a la fuerza (no con Ctrl-C), mueve el
+   `payloads.ndjson.gz` del día antes de relanzarlo: un miembro gzip cortado a
+   mitad de fichero hace que el ciclo lea solo hasta ahí.
+
+4. **API y UI**, en terminales separadas y con las mismas `DATA_ROOT` y
+   `GTFS_DIR` en cada una:
+
+   ```powershell
+   uv run uvicorn project.api.main:app --port 8000
+   uv run streamlit run src/project/ui/app.py
+   ```
+
+5. **Elegir una parada a mitad de ruta.** La 2277, la de más líneas, resultó casi
+   una cabecera (la 72 acaba allí) y apenas tenía buses «en camino». Un ciclo
+   tarda 35-42 s en hora punta (`CICLO_S = 40`, bitácora 064): es la cifra del
+   ciclo completo, que llama a `construir` una vez por cada horizonte con modelo,
+   no los 27-32 s de la medida de la tarea 1. La primera petición de una parada
+   tarda eso. La UI refresca cada `REFRESCO_S = 40`, que debe ir a la par; el
+   resultado se estampa al terminar, así que en punta el refresco efectivo es el
+   ciclo más 40 s. Endpoints: `GET /vivo/paradas` y `GET /vivo/parada/{stop_id}`
+   (503 sin datos u horario, 404 parada desconocida).
+
 ### Docker
 
 ```powershell

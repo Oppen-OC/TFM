@@ -146,7 +146,7 @@ class Horario:
     calendario: tuple[date, date]  # lo que cubre `calendar.txt`
     viajes: pd.DataFrame  # trip_id, route_id, service_id, shape_id, linea
     paradas_de_viaje: pd.DataFrame  # trip_id, stop_sequence, stop_id, t_prog_s
-    paradas: pd.DataFrame  # stop_id -> lat, lon
+    paradas: pd.DataFrame  # stop_id -> lat, lon, nombre
     calendar: pd.DataFrame
     calendar_dates: pd.DataFrame
     trazados: dict[str, list[Trazado]]
@@ -200,8 +200,11 @@ def cargar_horario(ruta: Path) -> Horario:
     pv = pv.drop(columns="arrival_time").sort_values(
         ["trip_id", "stop_sequence"], kind="stable"
     )
+    nombres = stops["stop_name"] if "stop_name" in stops else ""
     paradas = stops[["stop_id"]].assign(
-        lat=pd.to_numeric(stops["stop_lat"]), lon=pd.to_numeric(stops["stop_lon"])
+        lat=pd.to_numeric(stops["stop_lat"]),
+        lon=pd.to_numeric(stops["stop_lon"]),
+        nombre=pd.Series(nombres, index=stops.index).fillna(""),
     )
     cal = (_fecha(calendar["start_date"].min()), _fecha(calendar["end_date"].max()))
     if info is not None and len(info):

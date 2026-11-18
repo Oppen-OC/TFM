@@ -4,8 +4,8 @@ Vive aquí y no en `src/project/` a propósito: los notebooks son exploración,
 igual que `analysis/`. Nada del pipeline importa de este módulo, y este módulo
 solo importa aguas arriba (`config.py`) para no hardcodear la ruta del corpus.
 
-El motor es DuckDB sobre los parquet particionados. `emt_buses` son 5,1 M de
-filas y 116 MB: cargarlos enteros en pandas para pintar un histograma es tirar
+El motor es DuckDB sobre los parquet particionados. `emt_buses` son 18,7 M de
+filas y 377 MB: cargarlos enteros en pandas para pintar un histograma es tirar
 memoria. Se agrega en SQL y solo el resultado agregado pasa a pandas.
 
 Todo lo que devuelve una hora la devuelve en **UTC**. La conexión fija

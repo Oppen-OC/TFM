@@ -2,6 +2,14 @@
 
 _Documento generado el 14/08/2026 a partir del repositorio `C:\Users\oppen\Code\TFM`_
 
+> **Vigencia (13/11/2026).** Es la exploración de agosto y no se reescribe. El
+> tema elegido fue la idea 3, llevada a València. Del repo que describe y de su
+> anexo quedó superado esto: el pipeline tiene hoy veinte stages en `dvc.yaml` y
+> usa Parquet, no CSV (ADR-001, ADR-003); `xgboost` y `shap` están en las
+> dependencias; la ingesta **no** es un stage de DVC, al contrario de lo que
+> recomienda el punto 4 del anexo (ADR-002); y Kafka/Redpanda se valoró al
+> inicio y se descartó de la captura por no ser necesario (ADR-016).
+
 ---
 
 ## Paso 1 · Qué tienes montado

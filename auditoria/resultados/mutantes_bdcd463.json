@@ -1,0 +1,496 @@
+{
+  "rev": "bdcd463",
+  "segundos": 2893,
+  "mutantes": [
+    {
+      "id": "000",
+      "nombre": "mutante nulo: no cambia nada",
+      "capa": "control",
+      "trampa": null,
+      "veredicto": "equivalente",
+      "caidos": [],
+      "n_caidos": 0,
+      "esperados": [],
+      "esperado_cae": null,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "f6b9146174924e65"
+        ]
+      },
+      "segundos": 130.9
+    },
+    {
+      "id": "002",
+      "nombre": "snapshot_id toma el gid máximo del bloque",
+      "capa": "fuentes",
+      "trampa": "001",
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+        "tests/test_persistencia.py::test_reprocesar_completa_el_sondeo_que_llego_a_medias"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": "tests/test_ingest.py::test_emt_snapshot_id_es_el_gid_minimo_del_bloque",
+      "guardia_ficha_cae": true,
+      "sondas": {
+        "parsers": [
+          "f6b9146174924e65",
+          "a6bd756de20da258"
+        ]
+      },
+      "segundos": 126.2
+    },
+    {
+      "id": "214",
+      "nombre": "la lectura del crudo no tolera la cola a medias",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_persistencia.py::test_elegir_capturas_tolera_la_cola_a_medias",
+        "tests/test_persistencia.py::test_elegir_capturas_tolera_un_miembro_corrupto_a_mitad_de_fichero"
+      ],
+      "n_caidos": 2,
+      "esperados": [
+        "tests/test_persistencia.py::test_elegir_capturas_tolera_la_cola_a_medias"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 106.7
+    },
+    {
+      "id": "215",
+      "nombre": "un ok posterior no borra el último error",
+      "capa": "persistencia",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_persistencia.py::test_un_ok_despues_del_error_lo_borra"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_persistencia.py::test_un_ok_despues_del_error_lo_borra"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 109.6
+    },
+    {
+      "id": "216",
+      "nombre": "paradas_del_viaje devuelve el horario del primer viaje del patrón",
+      "capa": "etiquetado",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_etiquetado.py::test_paradas_del_viaje_coinciden_con_los_pasos_observados"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_etiquetado.py::test_paradas_del_viaje_coinciden_con_los_pasos_observados"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 123.2
+    },
+    {
+      "id": "217",
+      "nombre": "construir filtra siempre las filas sin objetivo",
+      "capa": "pipeline",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_features.py::test_la_fila_en_vivo_ve_lo_mismo_que_la_del_entrenamiento",
+        "tests/test_features.py::test_sin_objetivo_la_fila_solo_se_queda_si_se_pide",
+        "tests/test_vivo.py::test_el_vector_son_las_columnas_del_modelo_en_tipos_nativos",
+        "tests/test_vivo.py::test_la_fila_del_ciclo_no_ve_el_paso_que_no_se_sabe",
+        "tests/test_vivo.py::test_lo_congelado_se_verifica_cuando_llega_el_paso_sabido"
+      ],
+      "n_caidos": 5,
+      "esperados": [
+        "tests/test_features.py::test_sin_objetivo_la_fila_solo_se_queda_si_se_pide"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 102.0
+    },
+    {
+      "id": "218",
+      "nombre": "separar da por sabido todo paso con t_disp_utc, sin compararlo con ahora",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_la_fila_del_ciclo_no_ve_el_paso_que_no_se_sabe",
+        "tests/test_vivo.py::test_lo_congelado_se_verifica_cuando_llega_el_paso_sabido",
+        "tests/test_vivo.py::test_un_paso_que_aun_no_se_sabe_queda_pendiente",
+        "tests/test_vivo.py::test_un_viaje_sin_pasos_sabidos_no_entra"
+      ],
+      "n_caidos": 4,
+      "esperados": [
+        "tests/test_vivo.py::test_un_paso_que_aun_no_se_sabe_queda_pendiente"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 99.9
+    },
+    {
+      "id": "219",
+      "nombre": "h cuenta los pasos observados en vez de las posiciones del horario",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_el_horizonte_se_cuenta_en_el_horario"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_el_horizonte_se_cuenta_en_el_horario"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 98.6
+    },
+    {
+      "id": "220",
+      "nombre": "congelar sustituye la predicción anterior en vez de conservar la primera",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_la_primera_prediccion_queda_congelada"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_la_primera_prediccion_queda_congelada"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 98.0
+    },
+    {
+      "id": "221",
+      "nombre": "ficheros_del_dia lee solo la primera fecha UTC del día de servicio",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_de_madrugada_se_leen_dos_fechas"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_de_madrugada_se_leen_dos_fechas"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 98.9
+    },
+    {
+      "id": "222",
+      "nombre": "la fila fantasma lleva el reloj de las líneas recortadas, no el de todas",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_el_recorte_conserva_el_reloj_y_los_sondeos_de_todas_las_lineas"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 97.9
+    },
+    {
+      "id": "223",
+      "nombre": "el candidato no exige que por horario aún no haya llegado a la parada",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_el_bus_que_por_horario_ya_debia_haber_llegado_no_va_en_camino"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_el_bus_que_por_horario_ya_debia_haber_llegado_no_va_en_camino"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 98.4
+    },
+    {
+      "id": "224",
+      "nombre": "el historial del ciclo trae los días desde el de hoy en vez de los anteriores",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_el_historial_solo_trae_lo_que_ya_se_sabia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_el_historial_solo_trae_lo_que_ya_se_sabia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 109.1
+    },
+    {
+      "id": "225",
+      "nombre": "el ciclo conserva los payloads del crudo que llegaron después de ahora",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_el_crudo_posterior_a_ahora_no_entra_en_el_ciclo"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_el_crudo_posterior_a_ahora_no_entra_en_el_ciclo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 134.5
+    },
+    {
+      "id": "226",
+      "nombre": "el historial del ciclo conserva pasos que aún no se sabían en ahora",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_el_historial_solo_trae_lo_que_ya_se_sabia"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_el_historial_solo_trae_lo_que_ya_se_sabia"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 105.9
+    },
+    {
+      "id": "227",
+      "nombre": "el marcador califica un paso sabido sin retraso",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_un_paso_sabido_sin_retraso_no_verifica"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_un_paso_sabido_sin_retraso_no_verifica"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 125.9
+    },
+    {
+      "id": "228",
+      "nombre": "el ciclo da por sabido el paso cuyo k1 es la última posición del viaje",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_un_paso_sabido_en_el_prefijo_lo_es_igual_con_el_dia_completo"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_un_paso_sabido_en_el_prefijo_lo_es_igual_con_el_dia_completo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 108.3
+    },
+    {
+      "id": "229",
+      "nombre": "la columna «Regla simple» enseña la regla de ahora y no la congelada",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ui.py::test_la_regla_es_la_de_la_congelada_que_puntua_el_marcador"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_ui.py::test_la_regla_es_la_de_la_congelada_que_puntua_el_marcador"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 119.1
+    },
+    {
+      "id": "230",
+      "nombre": "la regla simple de una fila sin retraso sale como a tiempo",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_un_ultimo_paso_sin_retraso_sale_sin_modelo_y_no_tumba_la_parada"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_un_ultimo_paso_sin_retraso_sale_sin_modelo_y_no_tumba_la_parada"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 110.1
+    },
+    {
+      "id": "231",
+      "nombre": "la lista de paradas espera al cerrojo del ciclo",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_las_paradas_no_esperan_al_ciclo_en_curso"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_las_paradas_no_esperan_al_ciclo_en_curso"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 118.9
+    },
+    {
+      "id": "232",
+      "nombre": "el crudo con un miembro gzip corrupto a mitad de fichero tumba el ciclo",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_persistencia.py::test_elegir_capturas_tolera_un_miembro_corrupto_a_mitad_de_fichero"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_persistencia.py::test_elegir_capturas_tolera_un_miembro_corrupto_a_mitad_de_fichero"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 109.3
+    },
+    {
+      "id": "233",
+      "nombre": "la fila fantasma va en (0, 0) y desplaza la latitud media del frame",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_vivo.py::test_la_fila_fantasma_no_desplaza_la_posicion_media_del_frame"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_vivo.py::test_la_fila_fantasma_no_desplaza_la_posicion_media_del_frame"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 110.9
+    },
+    {
+      "id": "234",
+      "nombre": "un timeout de la API se pinta como API no disponible",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ui.py::test_un_timeout_dice_que_la_api_esta_ocupada"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_ui.py::test_un_timeout_dice_que_la_api_esta_ocupada"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 110.6
+    },
+    {
+      "id": "235",
+      "nombre": "la edad del dato se mide contra el ahora del ciclo y no contra el reloj",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ui.py::test_la_edad_del_dato_se_mide_contra_el_reloj_no_contra_el_ciclo"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_ui.py::test_la_edad_del_dato_se_mide_contra_el_reloj_no_contra_el_ciclo"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 108.6
+    },
+    {
+      "id": "236",
+      "nombre": "la hora del último sondeo bueno sale en UTC y no en local",
+      "capa": "serving",
+      "trampa": null,
+      "veredicto": "detectado",
+      "caidos": [
+        "tests/test_ui.py::test_el_error_enseña_la_hora_local_del_ultimo_sondeo_bueno"
+      ],
+      "n_caidos": 1,
+      "esperados": [
+        "tests/test_ui.py::test_el_error_enseña_la_hora_local_del_ultimo_sondeo_bueno"
+      ],
+      "esperado_cae": true,
+      "guardia_ficha": null,
+      "guardia_ficha_cae": null,
+      "sondas": {},
+      "segundos": 98.8
+    }
+  ]
+}

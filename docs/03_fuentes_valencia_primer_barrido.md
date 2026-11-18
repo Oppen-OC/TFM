@@ -2,6 +2,14 @@
 
 _Verificación realizada el 15/08/2026. Todo endpoint marcado como "no documentado" puede cambiar sin aviso: confírmalo tú mismo antes de comprometer el tema._
 
+> **Vigencia (13/11/2026).** Es el primer barrido y no se reescribe; lo supera
+> el [01](01_viabilidad_fuentes_valencia.md). Cuatro cosas quedaron atrás: el
+> volumen medido es de ~32 M de filas en 57 días y ~56 M a tres meses, no ~450 M
+> (bitácora 056); la capa 192 tiene 410 tramos, no ~1.500 (bitácora 014);
+> Kafka/Redpanda se valoró al inicio y se descartó de la captura por no ser
+> necesario (ADR-016); y el colector guarda cada versión del GTFS en vez de
+> descargarlo cada semana (ADR-020).
+
 ---
 
 ## Resumen ejecutivo

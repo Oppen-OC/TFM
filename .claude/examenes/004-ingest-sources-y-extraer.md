@@ -30,6 +30,8 @@ Después sigue esa captura por `reprocesar`. Mira la trampa 011 y la bitácora 0
 
 **Respuesta (ronda 2):**
 
+
+
 ## P2 · una sola regla de sondeo repetido
 <!-- concepto: clave-sondeo-compartida-colector-reprocesar -->
 
