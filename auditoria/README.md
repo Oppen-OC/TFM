@@ -31,4 +31,6 @@ El catálogo se ata al código **solo por el texto** de `buscar`: un commit que
 repita o reescriba esa línea lo deja sin aplicar. `mutar.py` sale con código 4
 si algún `buscar` no aparece exactamente una vez, y
 `.claude/tests/test_catalogo.py` lo comprueba en cada CI (issue #11). Un
-resultado con `"completo": false` está cortado: no vale como auditoría.
+resultado con `"completo": false` está cortado; uno con `"solo"` distinto de
+`null` es un subconjunto. Solo `completo: true` y `solo: null` vale como
+auditoría entera.

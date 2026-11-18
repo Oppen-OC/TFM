@@ -90,8 +90,10 @@ def correr_suite(wt: Path, env: dict) -> dict[str, str]:
             ],
             cwd=wt,
             env=env,
-            capture_output=True,
-            text=True,
+            # La salida no se usa: el resultado sale del junit. Leerla en la
+            # codificación local (cp1252) podía cascar con la UTF-8 del hijo.
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             timeout=TIMEOUT_SUITE_S,
         )
     except subprocess.TimeoutExpired:
@@ -126,7 +128,7 @@ def correr_sondas(wt: Path, env: dict, nombres: list[str]) -> dict[str, str]:
         cwd=wt,
         env=env,
         capture_output=True,
-        text=True,
+        encoding="utf-8",  # la del hijo, por PYTHONIOENCODING
         timeout=TIMEOUT_SUITE_S,
     )
     salida = dict(
@@ -137,39 +139,38 @@ def correr_sondas(wt: Path, env: dict, nombres: list[str]) -> dict[str, str]:
     return salida
 
 
-def _leer(raiz: Path, m: dict) -> tuple[Path, bytes, str, str]:
-    """(ruta, bytes, texto, salto de línea del fichero)."""
-    ruta = raiz / m["fichero"]
-    original = ruta.read_bytes()
-    texto = original.decode("utf-8")
-    return ruta, original, texto, "\r\n" if "\r\n" in texto else "\n"
+def _saltos(texto: str, s: str) -> str:
+    """`s` con el salto de línea de `texto`: el catálogo usa \\n, el fichero quizá CRLF."""
+    return s.replace("\n", "\r\n" if "\r\n" in texto else "\n")
 
 
 def invalidos(catalogo: list[dict], raiz: Path) -> list[tuple[str, int]]:
     """(id, apariciones) de los mutantes cuyo `buscar` no sale exactamente una vez.
 
     El catálogo se ata al código solo por texto: basta un commit que repita o
-    reescriba la línea para que el mutante deje de aplicarse (issue #11).
+    reescriba la línea para que el mutante deje de aplicarse (issue #11). Un
+    fichero que ya no existe cuenta como cero apariciones.
     """
     malos = []
     for m in catalogo:
-        _, _, texto, nl = _leer(raiz, m)
-        n = texto.count(m["buscar"].replace("\n", nl))
+        ruta = raiz / m["fichero"]
+        texto = ruta.read_bytes().decode("utf-8") if ruta.exists() else ""
+        n = texto.count(_saltos(texto, m["buscar"]))
         if n != 1:
             malos.append((m["id"], n))
     return malos
 
 
 def aplicar(wt: Path, m: dict) -> tuple[Path, bytes]:
-    """Aplica el mutante. Devuelve (fichero, bytes originales)."""
-    ruta, original, texto, nl = _leer(wt, m)
-    buscar = m["buscar"].replace("\n", nl)
-    if texto.count(buscar) != 1:
-        # `main` lo comprueba antes de empezar: aquí no debería llegar.
-        raise ValueError(f"mutante {m['id']}: su buscar no aparece una sola vez")
-    ruta.write_bytes(
-        texto.replace(buscar, m["reemplazar"].replace("\n", nl)).encode("utf-8")
-    )
+    """Aplica el mutante. Devuelve (fichero, bytes originales).
+
+    `main` ya ha comprobado con `invalidos` que el `buscar` sale una sola vez.
+    """
+    ruta = wt / m["fichero"]
+    original = ruta.read_bytes()
+    texto = original.decode("utf-8")
+    mutado = texto.replace(_saltos(texto, m["buscar"]), _saltos(texto, m["reemplazar"]))
+    ruta.write_bytes(mutado.encode("utf-8"))
     return ruta, original
 
 
@@ -239,6 +240,10 @@ def main(solo: list[str] | None) -> int:
         "mutante"
     ]
     if solo:
+        # Un id mal escrito dejaría solo los controles, en verde.
+        if desconocidos := set(solo) - {m["id"] for m in catalogo}:
+            print(f"--solo con ids que no están en el catálogo: {sorted(desconocidos)}")
+            return 4
         catalogo = [m for m in catalogo if m["id"] in solo or m.get("control")]
     # Un mutante que no se aplica no mide nada: saltárselo y salir con 0 haría
     # pasar por auditada una guardia sin evidencia (issue #11).
@@ -333,6 +338,8 @@ def main(solo: list[str] | None) -> int:
                     # False si se cortó: un control fallido o una excepción
                     # dejan aquí solo los mutantes que dio tiempo a correr.
                     "completo": completo,
+                    # La auditoría entera es `solo: null`; con ids, un subconjunto.
+                    "solo": solo or None,
                     "segundos": round(time.time() - t0),
                     "mutantes": resultados,
                 },

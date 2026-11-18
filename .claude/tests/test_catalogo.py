@@ -37,5 +37,10 @@ def test_un_buscar_repetido_o_ausente_se_detecta(tmp_path):
         {"id": "uno", "fichero": "m.py", "buscar": "b = 2\na = 1"},
         {"id": "dos", "fichero": "m.py", "buscar": "a = 1"},
         {"id": "cero", "fichero": "m.py", "buscar": "c = 3"},
+        {"id": "sin_fichero", "fichero": "renombrado.py", "buscar": "a = 1"},
     ]
-    assert mutar.invalidos(catalogo, tmp_path) == [("dos", 2), ("cero", 0)]
+    assert mutar.invalidos(catalogo, tmp_path) == [
+        ("dos", 2),
+        ("cero", 0),
+        ("sin_fichero", 0),
+    ]
