@@ -234,7 +234,8 @@ antes de importar.
 - `tests/test_persistencia.py` guarda la capa que no se puede arreglar después:
   crudo antes de parsear, append, partición, deduplicación, `reprocesar`, y que
   `collect --status` no diga VIVO con una fuente callada de más (issue #1), ni
-  con la captura del GTFS sin comprobar en 12 h (issue #6).
+  con la captura del GTFS sin comprobar en 12 h (issue #6), y que un parser
+  roto no espacie el sondeo como una fuente caída (issue #5).
 - `tests/test_tracking_realismo.py` prueba el tracker con paradas y giros al
   ritmo real. Es `xfail(strict=True)`: defecto conocido, no corregido.
 - **Un test en verde no demuestra que guarde nada.** `auditoria/mutar.py` rompe a
@@ -260,10 +261,12 @@ antes de importar.
   horario y la regla «en camino», el marcador congelado y su verdad, el reloj de
   todas las líneas (trampa 022), el prefijo frente al día completo (un paso cuyo
   k1 es la última posición del viaje aún no se sabe) y las guardias del historial
-  y del crudo (un payload de error no es un sondeo). Mutantes 218-228, 230, 231 y
-  233 (214-217 están en persistencia, etiquetado y features). `tests/test_ui.py`
-  prueba los ayudantes puros de la página, sin red: mutantes 229, 234-236. El
-  232 es de `test_persistencia`. El siguiente libre es el 237.
+  y del crudo (un payload de error no es un sondeo), y que la edad de la caché
+  cuenta desde que empieza el ciclo. Mutantes 218-228, 230, 231, 233 y 237
+  (214-217 están en persistencia, etiquetado y features). `tests/test_ui.py`
+  prueba los ayudantes puros de la página, sin red: mutantes 229, 234-236 y
+  241. El 232, el 238 y el 239 son de `test_persistencia`; el 240, de
+  `test_medir_marcador`. El siguiente libre es el 242.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la
@@ -276,8 +279,10 @@ antes de importar.
 
 `tests/` es el software del TFM. El andamiaje de agentes se valida aparte, en
 `.claude/tests/`: `test_trampas.py` (frontmatter, `cerrada` sin guardia, `test:`
-que cita un node id inexistente, índice desincronizado) y `test_memoria.py` (deriva
-entre la documentación y el código). Pytest no los recoge solo — los directorios
+que cita un node id inexistente, índice desincronizado), `test_memoria.py` (deriva
+entre la documentación y el código) y `test_catalogo.py` (todo `buscar` del
+catálogo de mutantes sale una sola vez; en `tests/` caería con cada mutante,
+issue #11). Pytest no los recoge solo — los directorios
 con punto quedan fuera — así que corren con ruta explícita:
 
 ```bash
@@ -303,7 +308,7 @@ uv run python -m project.ingest.collect --status     # estado del colector
 uv run python -m project.ingest.reprocesar           # reconstruye curated/ desde raw/
 uv run python -m project.analysis.diagnose           # GO / NO-GO de la hipótesis
 uv run python -m project.analysis.dashboard_ingesta  # foto y figuras del dashboard de la defensa
-uv run python auditoria/mutar.py                     # ¿detectan los tests? (~40 min)
+uv run python auditoria/mutar.py                     # ¿detectan los tests? (~8 h, bitácora 067)
 ```
 
 **Entorno: Windows + PowerShell.** `run.sh` es bash y no funciona aquí tal cual:

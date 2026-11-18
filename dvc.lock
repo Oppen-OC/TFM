@@ -143,8 +143,8 @@ stages:
       size: 33032
     - path: src/project/trafico.py
       hash: md5
-      md5: 636af1cc583cd2c93a66aabb96768a0a
-      size: 7759
+      md5: b572c7fbdb1f960ac983312334832796
+      size: 7762
     params:
       params.yaml:
         features:
@@ -342,8 +342,8 @@ stages:
       size: 33032
     - path: src/project/trafico.py
       hash: md5
-      md5: 636af1cc583cd2c93a66aabb96768a0a
-      size: 7759
+      md5: b572c7fbdb1f960ac983312334832796
+      size: 7762
     params:
       params.yaml:
         features:
@@ -416,8 +416,8 @@ stages:
       size: 33032
     - path: src/project/trafico.py
       hash: md5
-      md5: 636af1cc583cd2c93a66aabb96768a0a
-      size: 7759
+      md5: b572c7fbdb1f960ac983312334832796
+      size: 7762
     params:
       params.yaml:
         features:
@@ -490,8 +490,8 @@ stages:
       size: 33032
     - path: src/project/trafico.py
       hash: md5
-      md5: 636af1cc583cd2c93a66aabb96768a0a
-      size: 7759
+      md5: b572c7fbdb1f960ac983312334832796
+      size: 7762
     params:
       params.yaml:
         features:
@@ -564,8 +564,8 @@ stages:
       size: 33032
     - path: src/project/trafico.py
       hash: md5
-      md5: 636af1cc583cd2c93a66aabb96768a0a
-      size: 7759
+      md5: b572c7fbdb1f960ac983312334832796
+      size: 7762
     params:
       params.yaml:
         features:
@@ -983,8 +983,8 @@ stages:
       size: 7756
     - path: src/project/trafico.py
       hash: md5
-      md5: 636af1cc583cd2c93a66aabb96768a0a
-      size: 7759
+      md5: b572c7fbdb1f960ac983312334832796
+      size: 7762
     params:
       params.yaml:
         features.trafico_dist_max_m: 25

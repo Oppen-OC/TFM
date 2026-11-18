@@ -6,6 +6,7 @@
     uv run python -m project.analysis.medir_fuentes --union-trafico
     uv run python -m project.analysis.medir_fuentes --valenbisi
     uv run python -m project.analysis.medir_fuentes --lectivo
+    uv run python -m project.analysis.medir_fuentes --eda-63
 
 Los notebooks de `notebooks/EDA/` son donde se descubrieron estas cifras, pero un
 notebook no es una evidencia cómoda: hay que abrirlo, ejecutarlo entero y leer la
@@ -241,6 +242,54 @@ def lectivo() -> dict[str, pd.DataFrame]:
     return {"estado": estado, "por_hora": por_hora, "intensidad": intensidad}
 
 
+def eda_63() -> dict[str, pd.DataFrame]:
+    """Lo que el EDA a 63 días encontró y agosto no enseñaba (bitácora 065).
+
+    - El sur de 39,36° (trampa 006) por mes: ¿es estable o estacional?
+    - Pares (sondeo, idtramo) repetidos en la 192, por tramo y por cuántas
+      copias traen `fiwareid`, con su primer sondeo y si repiten estado.
+    - Posiciones de la EMT fuera de la caja amplia del área metropolitana, que
+      ningún recorrido alcanza: por línea, con fechas, extremos y sondeos.
+    """
+    sur = sql(
+        """
+        SELECT strftime(ts_ingest_utc, '%Y-%m') AS mes, count(*) AS filas,
+               count(*) FILTER (WHERE lat < 39.36) AS al_sur,
+               100.0 * avg((lat < 39.36)::INT) AS pct
+        FROM {f} GROUP BY ROLLUP (1) ORDER BY 1 NULLS LAST
+        """,
+        f="emt_buses",
+    )
+    duplicados = sql(
+        """
+        WITH g AS (
+            SELECT ts_ingest_utc, idtramo, count(*) AS n,
+                   count(fiwareid) AS con_fiwareid, count(DISTINCT estado) AS estados
+            FROM {f} WHERE idtramo IS NOT NULL GROUP BY 1, 2 HAVING count(*) > 1
+        )
+        SELECT idtramo::INT AS idtramo, con_fiwareid, count(*) AS sondeos,
+               min(ts_ingest_utc) AS desde, max(ts_ingest_utc) AS hasta,
+               max(n) AS copias, max(estados) AS estados_max
+        FROM g GROUP BY 1, 2 ORDER BY 1, 2
+        """,
+        f="trafico_estado",
+    )
+    lejos = sql(
+        """
+        SELECT linea, min(CAST(ts_ingest_utc AS DATE)) AS desde,
+               max(CAST(ts_ingest_utc AS DATE)) AS hasta, count(*) AS filas,
+               count(DISTINCT snapshot_id) AS sondeos,
+               min(lat) AS lat_min, max(lat) AS lat_max,
+               min(lon) AS lon_min, max(lon) AS lon_max
+        FROM {f}
+        WHERE NOT (lat BETWEEN 39.15 AND 39.65 AND lon BETWEEN -0.65 AND -0.15)
+        GROUP BY 1 ORDER BY filas DESC
+        """,
+        f="emt_buses",
+    )
+    return {"sur": sur, "duplicados": duplicados, "lejos": lejos}
+
+
 # --- 3. ¿Se pueden unir las dos capas de tráfico? --------------------------
 
 
@@ -345,8 +394,9 @@ def main() -> None:
     p.add_argument("--union-trafico", action="store_true")
     p.add_argument("--valenbisi", action="store_true")
     p.add_argument("--lectivo", action="store_true")
+    p.add_argument("--eda-63", action="store_true")
     a = p.parse_args()
-    todo = not (a.solape or a.senal_192 or a.union_trafico or a.valenbisi or a.lectivo)
+    todo = not any(vars(a).values())
 
     pd.set_option("display.width", 160)
     pd.set_option("display.max_columns", 40)
@@ -427,6 +477,20 @@ def main() -> None:
         print(v["global"].round(2).to_string(index=False))
         print("\nDescuadre por estación (% de sus observaciones):")
         print(v["por_estacion"].round(1).to_string())
+
+    if todo or a.eda_63:
+        r = eda_63()
+        print("\n=== 6. Lo que agosto no enseñaba ===\n")
+        print("EMT al sur de 39,36° por mes (fila sin mes = total):")
+        print(r["sur"].round(2).to_string(index=False))
+        print("\nCapa 192, (sondeo, idtramo) repetidos:")
+        print(r["duplicados"].to_string(index=False))
+        lj = r["lejos"]
+        print(
+            f"\nEMT fuera de la caja 39,15-39,65 N / 0,65-0,15 W: "
+            f"{int(lj['filas'].sum())} filas en {int(lj['sondeos'].sum())} sondeos"
+        )
+        print(lj.round(3).to_string(index=False))
 
 
 if __name__ == "__main__":

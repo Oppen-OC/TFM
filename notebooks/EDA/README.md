@@ -37,11 +37,25 @@ en pantalla. Se comprueba con `grep -c 'Ã' notebooks/EDA/*.ipynb`, que debe dar
 cero. Ejecutándolos desde Jupyter Lab o VS Code no pasa.
 
 Los notebooks se commitean **con las salidas dentro**, para que se lean sin
-arrancar kernel. Corren tanto desde `notebooks/EDA/` como desde la raíz del repo.
+arrancar kernel.
 
-Reejecutarlos entero cuesta menos de un minuto y medio: el trabajo pesado lo hace
-DuckDB en SQL y solo el resultado agregado pasa a pandas. `emt_buses` son 5,1 M de
-filas y ninguna llega entera a memoria.
+**`DATA_ROOT` tiene que ser absoluta.** `.env.example` trae `DATA_ROOT=data`, y una
+ruta relativa se resuelve contra el directorio del kernel, que es `notebooks/EDA/`:
+la primera consulta falla con `No files found that match the pattern
+"data/curated/..."`. Desde la línea de órdenes:
+
+```bash
+DATA_ROOT="$(pwd -W)/data" PYTHONUTF8=1 uv run jupyter execute --inplace notebooks/EDA/*.ipynb
+```
+
+Reejecutarlos todos cuesta unos dos minutos (16/11/2026, 63 días): el trabajo pesado
+lo hace DuckDB en SQL y solo el resultado agregado pasa a pandas. `emt_buses` son
+18,7 M de filas y ninguna llega entera a memoria.
+
+**Corpus de la última ejecución:** `data/curated/` del stage `curar`, del 15/08 al
+20/10/2026 (63 días; 66 en Renfe). La primera versión (01/09) leía el curated del
+colector en vivo con 16 días de agosto; lo que cambió al pasar a 63 está en cada
+hallazgo.
 
 ## `eda_utils.py`
 
@@ -60,26 +74,32 @@ Dos detalles suyos que no son cosméticos:
 
 Lo que estos notebooks midieron y que no estaba escrito en ningún sitio:
 
-- la fusión buses × tráfico es **viable**: mediana de ~2 min de desfase, casi todo
+- la fusión buses × tráfico es **viable**: mediana de 2,5 min de desfase, el 98,1 %
   por debajo de 5;
 - pero las capas de tráfico **no publican timestamp propio**, así que ese desfase
   es un suelo y no el error real de alineación;
 - **`estado = 3` no es congestión, es cierre permanente** — casi absorbente, sin
   patrón horario, concentrado en vías de servicio. Es el hallazgo con más
   consecuencias para `features.py`;
-- la capa 192 tiene 410 tramos pero **solo 63 llegan a estar congestionados** en
-  dieciséis días;
+- la capa 192 tiene 410 tramos, y **agosto no la representa**: con 16 días de
+  agosto solo 63 llegaban a `denso` o `congestionado`; con 63 días llegan 240 y solo
+  6 no cambian nunca (bitácoras 031 y 052);
 - la capa 188 **no une por `idtramo`** con la 192 (intersección cero) pero **sí
-  geográficamente**: la mitad de los tramos a menos de 50 m;
+  geográficamente**: la mitad de los tramos a menos de 50 m. Pero está
+  **congelada**: su `lectura` sale idéntica al decimal con 16 y con 63 días;
+- `(snapshot_id, gid)` **es clave única en el curated de `curar`**; los 973
+  duplicados de la primera versión venían del curated en vivo (trampa 011);
+- las posiciones de El Perellonet (trampa 006) son **estacionales**: el 2,1 % en
+  agosto y el 0,1 % en octubre;
 - en Valenbisi, `total` es capacidad instalada y no anclajes operativos: la
   ocupación se calcula con `available / (available + free)`;
 - el `shape_dist_traveled` del GTFS **no es distancia, es el horario reescalado**
   ($R^2 = 1{,}00000$ contra los segundos programados): usarlo como eje habría hecho
   circular el cálculo del retraso sin lanzar un solo error;
 - la geometría de `shapes.txt` **sí** es buena — las paradas caen a 3,4 m de mediana
-  del trazado, y las posiciones reales a 1,8 m — así que la abscisa se recalcula
+  del trazado, y las posiciones reales a 2,0 m — así que la abscisa se recalcula
   proyectando;
-- **una trayectoria no es un viaje**: el vehículo del ejemplo pasa 44 de sus 94
+- **una trayectoria no es un viaje**: el vehículo del ejemplo pasa 38 de sus 83
   minutos parado en cabecera;
 - Renfe enseña **cómo se ve un retraso real**: 41 % de ceros, cola larga, y unos
   pocos valores imposibles por el cruce de medianoche — el mismo artefacto que

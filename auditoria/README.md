@@ -14,7 +14,7 @@ suite **detectaría** un fallo real. Decisión y porqué en ADR-011 de
 | `resultados/` | salidas por commit auditado, `<qué>_<hash>` |
 
 ```bash
-uv run python auditoria/mutar.py                    # ~40 min, fuera de CI
+uv run python auditoria/mutar.py                    # ~8 h (241 × ~2 min), fuera de CI
 uv run python auditoria/mutar.py --solo 016 001     # algunos (los controles corren siempre)
 uv run python auditoria/escenarios.py
 uv run python -m project.analysis.auditar_supuestos       # lee data/curated
@@ -26,3 +26,11 @@ parsers, y **tras actualizar dependencias**.
 
 Añadir un mutante: que rompa algo que importe si se rompiera de verdad. Una
 guardia nueva no se da por buena hasta que detecta su mutante.
+
+El catálogo se ata al código **solo por el texto** de `buscar`: un commit que
+repita o reescriba esa línea lo deja sin aplicar. `mutar.py` sale con código 4
+si algún `buscar` no aparece exactamente una vez, y
+`.claude/tests/test_catalogo.py` lo comprueba en cada CI (issue #11). Un
+resultado con `"completo": false` está cortado; uno con `"solo"` distinto de
+`null` es un subconjunto. Solo `completo: true` y `solo: null` vale como
+auditoría entera.

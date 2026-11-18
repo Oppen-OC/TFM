@@ -25,7 +25,11 @@ Controles antes del catálogo:
   - mutante positivo (`control = "positivo"`): lo detecta su detector.
 Si un control falla, el runner se detiene y no clasifica nada más.
 
-Salida: `auditoria/resultados/mutantes_<hash>.json` y una tabla por stdout.
+Antes de todo, cada `buscar` debe aparecer exactamente una vez en su fichero; si
+no, sale con código 4 sin ejecutar nada (issue #11).
+
+Salida: `auditoria/resultados/mutantes_<hash>.json`, con `completo: false` si la
+ejecución se cortó, y una tabla por stdout.
 """
 
 from __future__ import annotations
@@ -86,8 +90,10 @@ def correr_suite(wt: Path, env: dict) -> dict[str, str]:
             ],
             cwd=wt,
             env=env,
-            capture_output=True,
-            text=True,
+            # La salida no se usa: el resultado sale del junit. Leerla en la
+            # codificación local (cp1252) podía cascar con la UTF-8 del hijo.
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             timeout=TIMEOUT_SUITE_S,
         )
     except subprocess.TimeoutExpired:
@@ -122,7 +128,7 @@ def correr_sondas(wt: Path, env: dict, nombres: list[str]) -> dict[str, str]:
         cwd=wt,
         env=env,
         capture_output=True,
-        text=True,
+        encoding="utf-8",  # la del hijo, por PYTHONIOENCODING
         timeout=TIMEOUT_SUITE_S,
     )
     salida = dict(
@@ -133,18 +139,38 @@ def correr_sondas(wt: Path, env: dict, nombres: list[str]) -> dict[str, str]:
     return salida
 
 
-def aplicar(wt: Path, m: dict) -> tuple[Path, bytes] | None:
-    """Aplica el mutante. Devuelve (fichero, bytes originales) o None si inválido."""
+def _saltos(texto: str, s: str) -> str:
+    """`s` con el salto de línea de `texto`: el catálogo usa \\n, el fichero quizá CRLF."""
+    return s.replace("\n", "\r\n" if "\r\n" in texto else "\n")
+
+
+def invalidos(catalogo: list[dict], raiz: Path) -> list[tuple[str, int]]:
+    """(id, apariciones) de los mutantes cuyo `buscar` no sale exactamente una vez.
+
+    El catálogo se ata al código solo por texto: basta un commit que repita o
+    reescriba la línea para que el mutante deje de aplicarse (issue #11). Un
+    fichero que ya no existe cuenta como cero apariciones.
+    """
+    malos = []
+    for m in catalogo:
+        ruta = raiz / m["fichero"]
+        texto = ruta.read_bytes().decode("utf-8") if ruta.exists() else ""
+        n = texto.count(_saltos(texto, m["buscar"]))
+        if n != 1:
+            malos.append((m["id"], n))
+    return malos
+
+
+def aplicar(wt: Path, m: dict) -> tuple[Path, bytes]:
+    """Aplica el mutante. Devuelve (fichero, bytes originales).
+
+    `main` ya ha comprobado con `invalidos` que el `buscar` sale una sola vez.
+    """
     ruta = wt / m["fichero"]
     original = ruta.read_bytes()
     texto = original.decode("utf-8")
-    nl = "\r\n" if "\r\n" in texto else "\n"
-    buscar = m["buscar"].replace("\n", nl)
-    if texto.count(buscar) != 1:
-        return None
-    ruta.write_bytes(
-        texto.replace(buscar, m["reemplazar"].replace("\n", nl)).encode("utf-8")
-    )
+    mutado = texto.replace(_saltos(texto, m["buscar"]), _saltos(texto, m["reemplazar"]))
+    ruta.write_bytes(mutado.encode("utf-8"))
     return ruta, original
 
 
@@ -197,6 +223,9 @@ def clasificar(
 
 
 def main(solo: list[str] | None) -> int:
+    # Redirigido a fichero o tubería, stdout en Windows es cp1252 y no tiene la
+    # «τ» de algunos nombres: el print abortaba a mitad (issue #3).
+    sys.stdout.reconfigure(encoding="utf-8")
     # Solo cuentan los ficheros con seguimiento: uno nuevo sin commitear no está
     # en el worktree y no puede alterar lo que se audita.
     sucio = git("status", "--porcelain", "--untracked-files=no", "--", "src", "tests")
@@ -211,7 +240,19 @@ def main(solo: list[str] | None) -> int:
         "mutante"
     ]
     if solo:
+        # Un id mal escrito dejaría solo los controles, en verde.
+        if desconocidos := set(solo) - {m["id"] for m in catalogo}:
+            print(f"--solo con ids que no están en el catálogo: {sorted(desconocidos)}")
+            return 4
         catalogo = [m for m in catalogo if m["id"] in solo or m.get("control")]
+    # Un mutante que no se aplica no mide nada: saltárselo y salir con 0 haría
+    # pasar por auditada una guardia sin evidencia (issue #11).
+    malos = invalidos(catalogo, RAIZ)
+    if malos:
+        print("MUTANTES INVÁLIDOS: su buscar no aparece una sola vez en HEAD.")
+        for id_, n in malos:
+            print(f"  {id_}: {n} apariciones")
+        return 4
 
     wt = Path(tempfile.mkdtemp(prefix="tfm-mutar-"))
     shutil.rmtree(wt)
@@ -225,6 +266,7 @@ def main(solo: list[str] | None) -> int:
     )
     env = {**os.environ, "PYTHONPATH": str(wt / "src"), "PYTHONIOENCODING": "utf-8"}
     resultados: list[dict] = []
+    completo = False
     t0 = time.time()
     try:
         donde = subprocess.run(
@@ -257,31 +299,19 @@ def main(solo: list[str] | None) -> int:
         orden = sorted(catalogo, key=lambda m: (m.get("control") is None, m["id"]))
         for m in orden:
             t = time.time()
-            aplicado = aplicar(wt, m)
-            if aplicado is None:
-                r = {
-                    "id": m["id"],
-                    "nombre": m["nombre"],
-                    "capa": m["capa"],
-                    "trampa": m.get("trampa"),
-                    "veredicto": "invalido",
-                }
-            else:
-                try:
-                    mut = correr_suite(wt, env)
-                    cayo = any(
-                        e in ("failed", "error", "xpassed") for e in mut.values()
-                    )
-                    # Las sondas solo se necesitan si nada cae, y en los controles.
-                    sm = (
-                        correr_sondas(wt, env, m.get("sondas", []))
-                        if (not cayo or m.get("control"))
-                        else {}
-                    )
-                finally:
-                    ruta, original = aplicado
-                    ruta.write_bytes(original)
-                r = clasificar(m, base, mut, sondas_base, sm)
+            ruta, original = aplicar(wt, m)
+            try:
+                mut = correr_suite(wt, env)
+                cayo = any(e in ("failed", "error", "xpassed") for e in mut.values())
+                # Las sondas solo se necesitan si nada cae, y en los controles.
+                sm = (
+                    correr_sondas(wt, env, m.get("sondas", []))
+                    if (not cayo or m.get("control"))
+                    else {}
+                )
+            finally:
+                ruta.write_bytes(original)
+            r = clasificar(m, base, mut, sondas_base, sm)
             r["segundos"] = round(time.time() - t, 1)
             resultados.append(r)
             print(
@@ -296,6 +326,7 @@ def main(solo: list[str] | None) -> int:
             if m.get("control") == "positivo" and not r.get("esperado_cae"):
                 print("CONTROL FALLIDO: el mutante positivo no lo detecta su detector.")
                 return 3
+        completo = True
     finally:
         git("worktree", "remove", "--force", str(wt))
         destino = AQUI / "resultados" / f"mutantes_{rev}.json"
@@ -304,6 +335,11 @@ def main(solo: list[str] | None) -> int:
             json.dumps(
                 {
                     "rev": rev,
+                    # False si se cortó: un control fallido o una excepción
+                    # dejan aquí solo los mutantes que dio tiempo a correr.
+                    "completo": completo,
+                    # La auditoría entera es `solo: null`; con ids, un subconjunto.
+                    "solo": solo or None,
                     "segundos": round(time.time() - t0),
                     "mutantes": resultados,
                 },

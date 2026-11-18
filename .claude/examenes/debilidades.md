@@ -8,7 +8,7 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 
 | concepto | tema | fallos | aciertos limpios | último | estado |
 |---|---|---|---|---|---|
-| donde-se-arregla-el-parser | puerta · issue #4, puerta 005 | 2 | 0 | 2026-10-28 | flojo |
+| donde-se-arregla-el-parser | puerta · issue #4, puertas 005 y 014 | 3 | 0 | 2026-11-17 | flojo |
 | snapshot-id-minimo-del-bloque | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | clave-sondeo-compartida-colector-reprocesar | ingest · examen 004, puerta 011 | 2 | 0 | 2026-11-10 | flojo |
 | ts-trafico-es-captura-desfase-suelo | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
@@ -17,3 +17,7 @@ Los campos y el criterio de `dominado` están en `README.md`. Aquí solo la tabl
 | geometria-estatica-referencia-unica | ingest · examen 004 | 1 | 0 | 2026-10-28 | flojo |
 | shap-de-un-modelo-de-residuo | puerta · plan de SHAP, puerta 006 | 2 | 0 | 2026-10-28 | flojo |
 | dup-del-gtfs-prueba-la-captura | puerta · issue #6, puerta 008 | 2 | 0 | 2026-11-09 | flojo |
+| primera-captura-bloque-a-medias | puerta · EDA, puerta 012 | 1 | 0 | 2026-11-16 | flojo |
+| frontera-ui-solo-http | puerta · migración a NiceGUI, puerta 013 | 1 | 0 | 2026-11-16 | flojo |
+| trip-id-se-reasigna-cada-ciclo | puerta · clave del marcador, puerta 015 | 1 | 0 | 2026-11-17 | flojo |
+| mutante-invalido-no-es-evidencia | puerta · issues #3 y #11, puerta 016 | 2 | 0 | 2026-11-18 | flojo |
