@@ -277,8 +277,10 @@ antes de importar.
 
 `tests/` es el software del TFM. El andamiaje de agentes se valida aparte, en
 `.claude/tests/`: `test_trampas.py` (frontmatter, `cerrada` sin guardia, `test:`
-que cita un node id inexistente, índice desincronizado) y `test_memoria.py` (deriva
-entre la documentación y el código). Pytest no los recoge solo — los directorios
+que cita un node id inexistente, índice desincronizado), `test_memoria.py` (deriva
+entre la documentación y el código) y `test_catalogo.py` (todo `buscar` del
+catálogo de mutantes sale una sola vez; en `tests/` caería con cada mutante,
+issue #11). Pytest no los recoge solo — los directorios
 con punto quedan fuera — así que corren con ruta explícita:
 
 ```bash

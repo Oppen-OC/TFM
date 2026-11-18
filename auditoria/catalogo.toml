@@ -190,8 +190,12 @@ id = "013"
 nombre = "latencia_s con el signo invertido"
 capa = "fuentes"
 fichero = "src/project/ingest/sources.py"
-buscar = '''(df["ts_ingest_utc"] - df["ts_utc"]).dt.total_seconds()'''
-reemplazar = '''(df["ts_utc"] - df["ts_ingest_utc"]).dt.total_seconds()'''
+# La línea de snapshot_id la ata al parser de la EMT: la capa 157 calcula la
+# latencia con la misma expresión (issue #11).
+buscar = '''    df["snapshot_id"] = int(df["gid"].min())
+    df["latencia_s"] = (df["ts_ingest_utc"] - df["ts_utc"]).dt.total_seconds()'''
+reemplazar = '''    df["snapshot_id"] = int(df["gid"].min())
+    df["latencia_s"] = (df["ts_utc"] - df["ts_ingest_utc"]).dt.total_seconds()'''
 detector = ["tests/test_ingest.py::test_detecta_la_convencion_horaria"]
 sondas = ["parsers"]
 
@@ -351,10 +355,14 @@ nombre = "el colector parsea antes de guardar el crudo"
 capa = "persistencia"
 fichero = "src/project/ingest/collect.py"
 buscar = '''            append_raw(root, key, payload, ts)
+            # La fuente contestó y el crudo está en disco: lo que falle desde
+            # aquí (el parser, el volcado) no es una fuente caída (issue #5).
+            contesto = True
 
             df = parse(key, payload, ts)'''
 reemplazar = '''            df = parse(key, payload, ts)
-            append_raw(root, key, payload, ts)'''
+            append_raw(root, key, payload, ts)
+            contesto = True'''
 detector = []
 sondas = ["persistencia"]
 
@@ -418,8 +426,8 @@ id = "033"
 nombre = "reprocesar solo lee el primer día de crudo"
 capa = "persistencia"
 fichero = "src/project/ingest/reprocesar.py"
-buscar = '''for fichero in sorted(dir_raw.rglob("*.ndjson.gz")):'''
-reemplazar = '''for fichero in sorted(dir_raw.rglob("*.ndjson.gz"))[:1]:'''
+buscar = '''elegir_capturas(sorted(dir_raw.rglob("*.ndjson.gz")), source)'''
+reemplazar = '''elegir_capturas(sorted(dir_raw.rglob("*.ndjson.gz"))[:1], source)'''
 detector = []
 sondas = ["persistencia"]
 
@@ -1294,8 +1302,12 @@ capa = "modelo"
 # XGBoost 3.2 recodifica por valor las líneas que vio, pero una que no vio la
 # rechaza con error: la línea 8 de la prueba tira la evaluación (bitácora 040).
 fichero = "src/project/predict.py"
-buscar = '''    x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])'''
-reemplazar = '''    x = features.matriz(tabla, artefacto["columnas"], features.categorias_linea(tabla))'''
+# La segunda línea la ata a `predecir`: `probabilidad` y `contribuciones`
+# montan la matriz con la misma llamada (issue #11).
+buscar = '''    x = features.matriz(tabla, artefacto["columnas"], artefacto["categorias"])
+    pred = pd.Series(artefacto["modelo"].predict(x), index=tabla.index)'''
+reemplazar = '''    x = features.matriz(tabla, artefacto["columnas"], features.categorias_linea(tabla))
+    pred = pd.Series(artefacto["modelo"].predict(x), index=tabla.index)'''
 detector = ["tests/test_modelo.py::test_predict_reutiliza_las_categorias_guardadas_con_el_modelo"]
 sondas = []
 

@@ -25,6 +25,9 @@ Controles antes del catálogo:
   - mutante positivo (`control = "positivo"`): lo detecta su detector.
 Si un control falla, el runner se detiene y no clasifica nada más.
 
+Antes de todo, cada `buscar` debe aparecer exactamente una vez en su fichero; si
+no, sale con código 4 sin ejecutar nada (issue #11).
+
 Salida: `auditoria/resultados/mutantes_<hash>.json`, con `completo: false` si la
 ejecución se cortó, y una tabla por stdout.
 """
@@ -134,15 +137,36 @@ def correr_sondas(wt: Path, env: dict, nombres: list[str]) -> dict[str, str]:
     return salida
 
 
-def aplicar(wt: Path, m: dict) -> tuple[Path, bytes] | None:
-    """Aplica el mutante. Devuelve (fichero, bytes originales) o None si inválido."""
-    ruta = wt / m["fichero"]
+def _leer(raiz: Path, m: dict) -> tuple[Path, bytes, str, str]:
+    """(ruta, bytes, texto, salto de línea del fichero)."""
+    ruta = raiz / m["fichero"]
     original = ruta.read_bytes()
     texto = original.decode("utf-8")
-    nl = "\r\n" if "\r\n" in texto else "\n"
+    return ruta, original, texto, "\r\n" if "\r\n" in texto else "\n"
+
+
+def invalidos(catalogo: list[dict], raiz: Path) -> list[tuple[str, int]]:
+    """(id, apariciones) de los mutantes cuyo `buscar` no sale exactamente una vez.
+
+    El catálogo se ata al código solo por texto: basta un commit que repita o
+    reescriba la línea para que el mutante deje de aplicarse (issue #11).
+    """
+    malos = []
+    for m in catalogo:
+        _, _, texto, nl = _leer(raiz, m)
+        n = texto.count(m["buscar"].replace("\n", nl))
+        if n != 1:
+            malos.append((m["id"], n))
+    return malos
+
+
+def aplicar(wt: Path, m: dict) -> tuple[Path, bytes]:
+    """Aplica el mutante. Devuelve (fichero, bytes originales)."""
+    ruta, original, texto, nl = _leer(wt, m)
     buscar = m["buscar"].replace("\n", nl)
     if texto.count(buscar) != 1:
-        return None
+        # `main` lo comprueba antes de empezar: aquí no debería llegar.
+        raise ValueError(f"mutante {m['id']}: su buscar no aparece una sola vez")
     ruta.write_bytes(
         texto.replace(buscar, m["reemplazar"].replace("\n", nl)).encode("utf-8")
     )
@@ -216,6 +240,14 @@ def main(solo: list[str] | None) -> int:
     ]
     if solo:
         catalogo = [m for m in catalogo if m["id"] in solo or m.get("control")]
+    # Un mutante que no se aplica no mide nada: saltárselo y salir con 0 haría
+    # pasar por auditada una guardia sin evidencia (issue #11).
+    malos = invalidos(catalogo, RAIZ)
+    if malos:
+        print("MUTANTES INVÁLIDOS: su buscar no aparece una sola vez en HEAD.")
+        for id_, n in malos:
+            print(f"  {id_}: {n} apariciones")
+        return 4
 
     wt = Path(tempfile.mkdtemp(prefix="tfm-mutar-"))
     shutil.rmtree(wt)
@@ -262,31 +294,19 @@ def main(solo: list[str] | None) -> int:
         orden = sorted(catalogo, key=lambda m: (m.get("control") is None, m["id"]))
         for m in orden:
             t = time.time()
-            aplicado = aplicar(wt, m)
-            if aplicado is None:
-                r = {
-                    "id": m["id"],
-                    "nombre": m["nombre"],
-                    "capa": m["capa"],
-                    "trampa": m.get("trampa"),
-                    "veredicto": "invalido",
-                }
-            else:
-                try:
-                    mut = correr_suite(wt, env)
-                    cayo = any(
-                        e in ("failed", "error", "xpassed") for e in mut.values()
-                    )
-                    # Las sondas solo se necesitan si nada cae, y en los controles.
-                    sm = (
-                        correr_sondas(wt, env, m.get("sondas", []))
-                        if (not cayo or m.get("control"))
-                        else {}
-                    )
-                finally:
-                    ruta, original = aplicado
-                    ruta.write_bytes(original)
-                r = clasificar(m, base, mut, sondas_base, sm)
+            ruta, original = aplicar(wt, m)
+            try:
+                mut = correr_suite(wt, env)
+                cayo = any(e in ("failed", "error", "xpassed") for e in mut.values())
+                # Las sondas solo se necesitan si nada cae, y en los controles.
+                sm = (
+                    correr_sondas(wt, env, m.get("sondas", []))
+                    if (not cayo or m.get("control"))
+                    else {}
+                )
+            finally:
+                ruta.write_bytes(original)
+            r = clasificar(m, base, mut, sondas_base, sm)
             r["segundos"] = round(time.time() - t, 1)
             resultados.append(r)
             print(
