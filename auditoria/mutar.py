@@ -25,7 +25,8 @@ Controles antes del catálogo:
   - mutante positivo (`control = "positivo"`): lo detecta su detector.
 Si un control falla, el runner se detiene y no clasifica nada más.
 
-Salida: `auditoria/resultados/mutantes_<hash>.json` y una tabla por stdout.
+Salida: `auditoria/resultados/mutantes_<hash>.json`, con `completo: false` si la
+ejecución se cortó, y una tabla por stdout.
 """
 
 from __future__ import annotations
@@ -197,6 +198,9 @@ def clasificar(
 
 
 def main(solo: list[str] | None) -> int:
+    # Redirigido a fichero o tubería, stdout en Windows es cp1252 y no tiene la
+    # «τ» de algunos nombres: el print abortaba a mitad (issue #3).
+    sys.stdout.reconfigure(encoding="utf-8")
     # Solo cuentan los ficheros con seguimiento: uno nuevo sin commitear no está
     # en el worktree y no puede alterar lo que se audita.
     sucio = git("status", "--porcelain", "--untracked-files=no", "--", "src", "tests")
@@ -225,6 +229,7 @@ def main(solo: list[str] | None) -> int:
     )
     env = {**os.environ, "PYTHONPATH": str(wt / "src"), "PYTHONIOENCODING": "utf-8"}
     resultados: list[dict] = []
+    completo = False
     t0 = time.time()
     try:
         donde = subprocess.run(
@@ -296,6 +301,7 @@ def main(solo: list[str] | None) -> int:
             if m.get("control") == "positivo" and not r.get("esperado_cae"):
                 print("CONTROL FALLIDO: el mutante positivo no lo detecta su detector.")
                 return 3
+        completo = True
     finally:
         git("worktree", "remove", "--force", str(wt))
         destino = AQUI / "resultados" / f"mutantes_{rev}.json"
@@ -304,6 +310,9 @@ def main(solo: list[str] | None) -> int:
             json.dumps(
                 {
                     "rev": rev,
+                    # False si se cortó: un control fallido o una excepción
+                    # dejan aquí solo los mutantes que dio tiempo a correr.
+                    "completo": completo,
                     "segundos": round(time.time() - t0),
                     "mutantes": resultados,
                 },
