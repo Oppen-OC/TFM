@@ -14,7 +14,7 @@ suite **detectaría** un fallo real. Decisión y porqué en ADR-011 de
 | `resultados/` | salidas por commit auditado, `<qué>_<hash>` |
 
 ```bash
-uv run python auditoria/mutar.py                    # ~40 min, fuera de CI
+uv run python auditoria/mutar.py                    # ~8 h (241 × ~2 min), fuera de CI
 uv run python auditoria/mutar.py --solo 016 001     # algunos (los controles corren siempre)
 uv run python auditoria/escenarios.py
 uv run python -m project.analysis.auditar_supuestos       # lee data/curated
