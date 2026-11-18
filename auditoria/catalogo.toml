@@ -2923,3 +2923,16 @@ buscar = '''        & (sabidos["stop_sequence"] == seq)
 reemplazar = ''''''
 detector = ["tests/test_medir_marcador.py::test_el_verificador_casa_igual_que_el_marcador"]
 sondas = []
+
+[[mutante]]
+id = "241"
+nombre = "una respuesta que no es JSON lanza en vez de pintar el error"
+capa = "serving"
+# Detrás de un proxy, la excepción dejaba el spinner girando y la página muda.
+fichero = "src/project/ui/app.py"
+buscar = '''    except ValueError:
+        cuerpo = None'''
+reemplazar = '''    except TypeError:
+        cuerpo = None'''
+detector = ["tests/test_ui.py::test_una_respuesta_que_no_es_json_es_un_error_y_no_una_excepcion"]
+sondas = []

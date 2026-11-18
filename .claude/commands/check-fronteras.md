@@ -8,7 +8,7 @@ comprobación mecánica: córrelas todas y reporta lo que salte.
 ## Las siete comprobaciones
 
 1. **`ui/` no importa `services/` ni carga el modelo.** Habla con la API por
-   HTTP. Si Streamlit necesita algo nuevo, se añade un endpoint, no un import.
+   HTTP. Si la UI necesita algo nuevo, se añade un endpoint, no un import.
 
    ```
    grep -rnE "^\s*(from|import)\s+(project\.)?(services|predict|train|features)" src/project/ui/

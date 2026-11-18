@@ -1,7 +1,7 @@
 # TFM — Daniel Alpeñes
 
 Proyecto ML end-to-end: entrenamiento reproducible (DVC + MLflow), servido por
-FastAPI, consumido por una UI Streamlit.
+FastAPI, consumido por una UI NiceGUI.
 
 ## Contexto
 
@@ -80,7 +80,9 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 ```
 
 - **`ui/` NO importa `services/` ni carga el modelo.** Habla con la API por HTTP
-  (`requests`). Si Streamlit necesita algo nuevo, se añade un endpoint en `api/`,
+  (`requests`, siempre dentro de `run.io_bound`: NiceGUI comparte un bucle de
+  eventos entre todos los navegadores y una petición de 40 s lo congelaría).
+  Si la UI necesita algo nuevo, se añade un endpoint en `api/`,
   no un import.
 - **`api/` no contiene lógica de negocio.** Los routers validan entrada
   (Pydantic), delegan en `services/` y devuelven la respuesta. Sin sklearn ni
@@ -262,9 +264,9 @@ antes de importar.
   y del crudo (un payload de error no es un sondeo), y que la edad de la caché
   cuenta desde que empieza el ciclo. Mutantes 218-228, 230, 231, 233 y 237
   (214-217 están en persistencia, etiquetado y features). `tests/test_ui.py`
-  prueba los ayudantes puros de la página, sin red: mutantes 229, 234-236. El
-  232, el 238 y el 239 son de `test_persistencia`; el 240, de
-  `test_medir_marcador`. El siguiente libre es el 241.
+  prueba los ayudantes puros de la página, sin red: mutantes 229, 234-236 y
+  241. El 232, el 238 y el 239 son de `test_persistencia`; el 240, de
+  `test_medir_marcador`. El siguiente libre es el 242.
 - `tests/test_features.py` guarda la **fuga de futuro**, que es silenciosa:
   pasos sintéticos con instantes conocidos y variables que no pueden ver nada
   en `t_obs` o después, ni el propio viaje, ni los diagnósticos de la
@@ -298,7 +300,7 @@ uv run ruff format . && uv run ruff check --fix .
 uv run dvc repro             # reejecutar pipeline
 uv run mlflow ui
 uv run uvicorn project.api.main:app --reload --port 8000
-uv run streamlit run src/project/ui/app.py
+uv run python -m project.ui.app
 
 uv run python -m project.ingest.explore              # ¿siguen vivas las fuentes?
 uv run python -m project.ingest.collect --minutes 1440   # captura (fuera de DVC)

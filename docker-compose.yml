@@ -6,9 +6,9 @@ services:
 
   ui:
     build: .
-    command: uv run streamlit run src/project/ui/app.py --server.address 0.0.0.0 --server.port 8501
+    command: uv run python -m project.ui.app
     ports:
-      - "8501:8501"
+      - "8080:8080"
     environment:
       - API_URL=http://api:8000
     depends_on:

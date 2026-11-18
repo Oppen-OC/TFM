@@ -1,13 +1,12 @@
 from datetime import datetime, timezone
 
-import pandas as pd
 import requests
-import streamlit as st
+from nicegui import run, ui
 
 from project.config import settings
 
 # La UI habla con la API por HTTP y nada más: no importa `services/` ni carga el
-# modelo. Si Streamlit necesita un dato nuevo, se añade un endpoint.
+# modelo. Si la página necesita un dato nuevo, se añade un endpoint.
 API_URL = settings.api_url
 
 # El `CICLO_S` de `services/vivo.py`, copiado: la UI no puede importarlo.
@@ -142,82 +141,155 @@ def fila_tabla(f: dict) -> dict:
     )
 
 
-def _gris(fila: pd.Series) -> list[str]:
+def gris(fila: dict) -> bool:
     # Gris solo sin modelo y sin nada congelado: con congelada hay predicción.
-    estilo = "color: gray" if fila["Modelo P(>5 min)"] == SIN_MODELO else ""
-    return [estilo] * len(fila)
+    return fila["Modelo P(>5 min)"] == SIN_MODELO
 
 
-def pedir(ruta: str, timeout: float) -> dict | list | None:
-    """GET a la API; pinta el error y devuelve None si no hay datos."""
+def pedir(ruta: str, timeout: float) -> tuple[dict | list | None, str | None]:
+    """GET a la API: (datos, None), o (None, el error que se enseña)."""
     try:
         r = requests.get(f"{API_URL}{ruta}", timeout=timeout)
     except requests.Timeout:
-        st.error("La API está ocupada calculando; vuelve a intentarlo en unos segundos")
-        return None
+        return (
+            None,
+            "La API está ocupada calculando; vuelve a intentarlo en unos segundos",
+        )
     except requests.RequestException:
-        st.error(f"API no disponible en {API_URL}")
-        return None
+        return None, f"API no disponible en {API_URL}"
+    # Un proxy o una página de error no traen JSON: sin esto, la excepción deja
+    # el spinner girando y la página sin mensaje.
+    try:
+        cuerpo = r.json()
+    except ValueError:
+        cuerpo = None
     if r.status_code == 404:
-        st.error("Parada desconocida")
-    elif r.status_code == 503:
-        st.error(r.json().get("detail", "Demo no disponible"))
-    elif not r.ok:
-        st.error(f"La API respondió {r.status_code}")
-    else:
-        return r.json()
-    return None
+        return None, "Parada desconocida"
+    if r.status_code == 503:
+        return None, (cuerpo or {}).get("detail", "Demo no disponible")
+    if not r.ok:
+        return None, f"La API respondió {r.status_code}"
+    if cuerpo is None:
+        return None, "La API respondió algo que no es JSON"
+    return cuerpo, None
 
 
-def pintar_parada(stop_id: str) -> None:
-    with st.spinner("Calculando la parada…"):
-        estado = pedir(f"/vivo/parada/{stop_id}", TIMEOUT_PARADA_S)
-    if estado is None:
-        return
-    if aviso := _aviso(estado):
-        st.warning(aviso)
-    if estado["datos_hasta_utc"]:
-        st.caption(f"Dato de hace {_edad_s(estado['datos_hasta_utc']):.0f} s")
-
-    if estado["filas"]:
-        tabla = pd.DataFrame([fila_tabla(f) for f in estado["filas"]])
-        st.dataframe(tabla.style.apply(_gris, axis=1), hide_index=True)
-    else:
-        st.info("Ningún bus en camino a esta parada ahora mismo.")
-
+def vista(estado: dict) -> dict:
+    """Lo que se pinta de una parada, sin pintarlo."""
     m = estado["marcador"]
-    st.markdown(
-        f"**modelo {m['aciertos_modelo']}/{m['verificados']} · "
-        f"regla simple {m['aciertos_regla']}/{m['verificados']} · "
-        f"casos en que discrepan: {m['discrepan']}**"
-    )
-    st.caption(
+    return {
+        "aviso": _aviso(estado),
+        "edad": estado["datos_hasta_utc"]
+        and f"Dato de hace {_edad_s(estado['datos_hasta_utc']):.0f} s",
+        "filas": [fila_tabla(f) for f in estado["filas"]],
+        "marcador": (
+            f"**modelo {m['aciertos_modelo']}/{m['verificados']} · "
+            f"regla simple {m['aciertos_regla']}/{m['verificados']} · "
+            f"casos en que discrepan: {m['discrepan']}**"
+        ),
+    }
+
+
+TABLA = [{"name": c, "label": c, "field": c, "align": "left"} for c in COLUMNAS]
+
+
+def pintar(estado: dict | None, error: str | None) -> None:
+    if error:
+        ui.label(error).classes("text-negative")
+        return
+    v = vista(estado)
+    if v["aviso"]:
+        ui.label(v["aviso"]).classes("text-warning")
+    if v["edad"]:
+        ui.label(v["edad"]).classes("text-caption text-grey")
+    if v["filas"]:
+        filas = [{"id": i, "gris": gris(f), **f} for i, f in enumerate(v["filas"])]
+        tabla = ui.table(columns=TABLA, rows=filas)
+        tabla.props[":table-row-class-fn"] = "row => row.gris ? 'text-grey' : ''"
+    else:
+        ui.label("Ningún bus en camino a esta parada ahora mismo.")
+    ui.markdown(v["marcador"])
+    ui.label(
         "Regla simple = persistencia: «si ya va más de 5 min tarde, llegará tarde»."
-    )
+    ).classes("text-caption text-grey")
 
 
-# El fragmento se repinta solo cada ciclo del servicio; el selector queda fuera
-# para que cambiar de parada no espere al siguiente refresco.
-@st.fragment(run_every=REFRESCO_S)
-def refrescar(stop_id: str) -> None:
-    pintar_parada(stop_id)
+@ui.page("/")
+async def pagina() -> None:
+    ui.label("Retrasos de la EMT en vivo, por parada").classes("text-h4")
+    cabecera = ui.column()
+    spinner = ui.spinner(size="lg")
+    spinner.visible = False
+    contenido = ui.column()
+    with ui.expansion("¿Cómo se calcula esto?"):
+        ui.markdown(ANEXO)
+
+    # Las peticiones van en un hilo (`run.io_bound`): una parada en punta tarda
+    # un ciclo entero y, en el bucle de eventos, congelaría la página de todos.
+    await ui.context.client.connected()
+    selector: ui.select | None = None
+
+    async def cargar_paradas() -> None:
+        # Si falla, el siguiente tic lo reintenta: la página se recupera sola
+        # cuando vuelve la API, sin recargar a mano.
+        nonlocal selector
+        respuesta = await run.io_bound(pedir, "/vivo/paradas", TIMEOUT_PARADAS_S)
+        if respuesta is None:  # la app se apaga o se canceló la llamada
+            return
+        paradas, error = respuesta
+        cabecera.clear()
+        with cabecera:
+            if error:
+                ui.label(error).classes("text-negative")
+                return
+            if not paradas:
+                ui.label("Hoy no hay paradas con servicio.")
+                return
+            selector = ui.select(
+                {p["stop_id"]: f"{p['nombre']} ({p['stop_id']})" for p in paradas},
+                label="Parada",
+                value=paradas[0]["stop_id"],
+                with_input=True,
+            ).classes("w-96")
+        selector.on_value_change(cambiar)
+        await refrescar()
+
+    async def cambiar() -> None:
+        # Cambiar de parada no espera al siguiente tic, y lo de la anterior no
+        # se queda debajo de la nueva mientras responde la API.
+        contenido.clear()
+        await refrescar()
+
+    en_curso: set[str] = set()
+
+    async def refrescar() -> None:
+        if selector is None:
+            await cargar_paradas()
+            return
+        stop_id = selector.value
+        if stop_id is None or stop_id in en_curso:  # el tic llega con la anterior
+            return
+        en_curso.add(stop_id)
+        spinner.visible = True
+        try:
+            ruta = f"/vivo/parada/{stop_id}"
+            respuesta = await run.io_bound(pedir, ruta, TIMEOUT_PARADA_S)
+        finally:
+            en_curso.discard(stop_id)
+        # Si se cambió de parada mientras esperaba, la respuesta ya no toca.
+        if respuesta is None or stop_id != selector.value:
+            return
+        spinner.visible = False
+        contenido.clear()
+        with contenido:
+            pintar(*respuesta)
+
+    ui.timer(REFRESCO_S, refrescar)
 
 
 def main() -> None:
-    st.title("Retrasos de la EMT en vivo, por parada")
-    paradas = pedir("/vivo/paradas", TIMEOUT_PARADAS_S)
-    if paradas:
-        elegida = st.selectbox(
-            "Parada",
-            paradas,
-            format_func=lambda p: f"{p['nombre']} ({p['stop_id']})",
-        )
-        refrescar(elegida["stop_id"])
-    elif paradas == []:
-        st.info("Hoy no hay paradas con servicio.")
-    with st.expander("¿Cómo se calcula esto?"):
-        st.markdown(ANEXO)
+    ui.run(title="EMT en vivo", reload=False, show=False)  # 0.0.0.0:8080
 
 
-if __name__ == "__main__":  # `streamlit run` ejecuta el guion como __main__
+if __name__ in {"__main__", "__mp_main__"}:
     main()

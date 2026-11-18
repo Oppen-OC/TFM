@@ -5,7 +5,7 @@ de posiciones GPS de flota y estado del tráfico en tiempo real.**
 
 Pipeline ML end-to-end: captura continua en tiempo real de datos abiertos municipales,
 preparación y entrenamiento reproducibles (DVC + MLflow), modelo XGBoost servido
-por FastAPI y consumido por una UI Streamlit.
+por FastAPI y consumido por una UI NiceGUI.
 
 ---
 
@@ -70,7 +70,7 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
 
 | Capa | Responsabilidad | Restricción |
 |---|---|---|
-| [ui/](src/project/ui/) | Streamlit. Formularios y visualización. | No importa `services/` ni carga el modelo. Habla con la API por HTTP (`requests`). Si necesita algo nuevo, se añade un endpoint, no un import. |
+| [ui/](src/project/ui/) | NiceGUI. Formularios y visualización. | No importa `services/` ni carga el modelo. Habla con la API por HTTP (`requests`). Si necesita algo nuevo, se añade un endpoint, no un import. |
 | [api/](src/project/api/) | FastAPI. Valida entrada (Pydantic), delega, devuelve respuesta. | Sin lógica de negocio. Sin sklearn ni pandas. Endpoints nuevos en `api/routers/`, uno por dominio, montados con `include_router` en `main.py`. |
 | [services/](src/project/services/) | Única capa que carga el modelo. `model_service.py` lo mantiene en memoria: carga única al arranque, no por request. | Nunca importa nada de `api/`. |
 | `predict.py` / `train.py` / [features.py](src/project/features.py) | Lógica ML. `features.py` es **compartido entre train e inferencia**. | Duplicar la transformación en `train.py` y `predict.py` es train/serve skew. Vive en `features.py` y solo ahí. |
@@ -151,10 +151,10 @@ siempre. Sin captura acumulada no hay TFM.
 
 ```powershell
 uv run uvicorn project.api.main:app --reload --port 8000
-uv run streamlit run src/project/ui/app.py
+uv run python -m project.ui.app
 ```
 
-Docs en `http://127.0.0.1:8000/docs`, UI en `http://localhost:8501`.
+Docs en `http://127.0.0.1:8000/docs`, UI en `http://localhost:8080`.
 
 ### 4. Demo en vivo por parada
 
@@ -227,7 +227,7 @@ corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
 
    ```powershell
    uv run uvicorn project.api.main:app --port 8000
-   uv run streamlit run src/project/ui/app.py
+   uv run python -m project.ui.app
    ```
 
 5. **Elegir una parada a mitad de ruta.** La 2277, la de más líneas, resultó casi
@@ -246,7 +246,7 @@ corpus entero** (unos 2,6 GB y 63 días al 10/11, ~40 MB/día entre fuentes;
 docker compose up --build
 ```
 
-Levanta `api` (8000) y `ui` (8501). La imagen copia `models/`, así que el modelo
+Levanta `api` (8000) y `ui` (8080). La imagen copia `models/`, así que el modelo
 debe existir antes de construir.
 
 ---

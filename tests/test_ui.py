@@ -1,12 +1,9 @@
 """Ayudantes puros de la página de la demo: sin red, sin datos, sin API."""
 
-from contextlib import nullcontext
 from datetime import datetime, timedelta, timezone
 
-import pandas as pd
-
 from project.ui import app
-from project.ui.app import _gris, fila_tabla
+from project.ui.app import fila_tabla, gris
 
 CONGELADA = {
     "probabilidad": 0.4,
@@ -37,8 +34,7 @@ def _fila(**cambios) -> dict:
 
 
 def _es_gris(fila: dict) -> bool:
-    estilos = _gris(pd.Series(fila_tabla(fila)))
-    return all(e == "color: gray" for e in estilos)
+    return gris(fila_tabla(fila))
 
 
 def test_fila_con_modelo_enseña_p_y_no_es_gris():
@@ -91,11 +87,9 @@ def _error_al_pedir(monkeypatch, excepcion) -> str:
     def get(*a, **k):
         raise excepcion
 
-    mensajes = []
     monkeypatch.setattr(app.requests, "get", get)
-    monkeypatch.setattr(app.st, "error", mensajes.append)
-    assert app.pedir("/vivo/parada/1", 1) is None
-    (mensaje,) = mensajes
+    datos, mensaje = app.pedir("/vivo/parada/1", 1)
+    assert datos is None
     return mensaje
 
 
@@ -109,19 +103,14 @@ def test_sin_conexion_dice_que_la_api_no_esta_disponible(monkeypatch):
     assert "no disponible" in mensaje
 
 
-def _pintar(monkeypatch, estado) -> dict[str, list[str]]:
-    """Pinta una parada con `st` y la API falseados y devuelve lo que se escribió."""
-    escrito = {"warning": [], "caption": []}
-    monkeypatch.setattr(app, "pedir", lambda ruta, timeout: estado)
-    monkeypatch.setattr(app.st, "spinner", lambda texto: nullcontext())
-    for nombre in ("warning", "caption", "dataframe", "info", "markdown"):
-        monkeypatch.setattr(
-            app.st,
-            nombre,
-            lambda t=None, *a, _n=nombre, **k: escrito.get(_n, []).append(t),
-        )
-    app.pintar_parada("1")
-    return escrito
+def test_una_respuesta_que_no_es_json_es_un_error_y_no_una_excepcion(monkeypatch):
+    """Un proxy con su página de error: sin esto, el spinner se queda girando."""
+    for codigo in (200, 503):
+        r = app.requests.Response()
+        r.status_code, r._content = codigo, b"<html>Bad Gateway</html>"
+        monkeypatch.setattr(app.requests, "get", lambda *a, _r=r, **k: _r)
+        datos, mensaje = app.pedir("/vivo/parada/1", 1)
+        assert datos is None and mensaje
 
 
 def _estado(**cambios) -> dict:
@@ -142,22 +131,22 @@ def _estado(**cambios) -> dict:
     return base | cambios
 
 
-def test_el_error_enseña_la_hora_local_del_ultimo_sondeo_bueno(monkeypatch):
+def test_el_error_enseña_la_hora_local_del_ultimo_sondeo_bueno():
     # 08:58 UTC del 10/11 son las 09:58 en Valencia (CET).
     estado = _estado(
         error={"mensaje": "Sin datos nuevos de la EMT desde 09:58", "desde_utc": "x"},
         datos_hasta_utc="2026-11-10T08:58:00+00:00",
     )
-    (aviso,) = _pintar(monkeypatch, estado)["warning"]
+    aviso = app.vista(estado)["aviso"]
     assert "Sin datos nuevos" in aviso and "último sondeo bueno a las 09:58" in aviso
 
 
-def test_la_edad_del_dato_se_mide_contra_el_reloj_no_contra_el_ciclo(monkeypatch):
+def test_la_edad_del_dato_se_mide_contra_el_reloj_no_contra_el_ciclo():
     """Con la respuesta en caché `ahora_utc` es del ciclo, hasta 40 s atrás."""
     hace_100_s = datetime.now(timezone.utc) - timedelta(seconds=100)
     estado = _estado(
         datos_hasta_utc=hace_100_s.isoformat(),
         ahora_utc=(hace_100_s + timedelta(seconds=5)).isoformat(),
     )
-    (texto,) = _pintar(monkeypatch, estado)["caption"][:1]
+    texto = app.vista(estado)["edad"]
     assert 99 <= float(texto.split()[3]) <= 105  # «Dato de hace N s»
