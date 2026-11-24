@@ -18,7 +18,9 @@ ausente de la fuente.
 
 No son tramos con estado desconocido: no son tramos. Quedan 412 filas y **410
 tramos distintos**, porque el 211 y el 216 llegan duplicados en cada sondeo
-(`docs/bitacora/014-la-capa-192-duplica-los-tramos-211-y-216.md`).
+(`docs/bitacora/014-la-capa-192-duplica-los-tramos-211-y-216.md`). Desde el
+22/09 llegan duplicados también el 364 y el 366: 414 filas, mismos 410 tramos
+(`docs/bitacora/065-a-63-dias-el-sur-de-perellonet-es-estacional-la-192-duplica-364-y-366-y-hay-633-posiciones-fuera-del-area.md`).
 
 ## Por qué se vuelve a caer aquí
 

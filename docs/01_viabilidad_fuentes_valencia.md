@@ -277,7 +277,8 @@ EMT será claramente mayor que los 168 buses de un sábado noche:
 | | | | **~145 M filas** |
 
 > **Medido (15/10/2026):** 31,7 M de filas en 57 días, ~56 M a tres meses. La
-> capa de estado se sondea cada 5 min, no cada 60 s (bitácora 056).
+> capa de estado se sondea cada 5 min, no cada 60 s, y la de intensidad cada
+> 15 min, no cada 5 (bitácora 056).
 
 En Parquet con compresión zstd son unos pocos GB, perfectamente manejables con
 DuckDB en un portátil. En CSV, no. Ese contraste, medido y documentado, **es** la

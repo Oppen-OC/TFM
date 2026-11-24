@@ -1,6 +1,6 @@
 # 00 · Tema, alcance y decisiones tomadas
 
-_Última actualización: 13/11/2026. Este archivo es el punto de entrada del
+_Última actualización: 24/11/2026. Este archivo es el punto de entrada del
 trabajo: si vuelves al proyecto después de tres semanas, o si abres una sesión
 nueva de Claude Code en VS Code, empieza aquí._
 
@@ -94,6 +94,8 @@ El detalle, con sus bitácoras, está en la sección *Estado* de
   clasificador de cada horizonte, y `api/` los expone
 - [x] SHAP sobre la prueba (`explicar.py`)
 - [x] Demo en vivo por parada, que no es un resultado (bitácora 064)
+- [x] UI NiceGUI (`ui/app.py`): habla con la API por HTTP, sin importar
+  `services/`; la página de la demo refresca a la par del ciclo
 - [ ] Meteorología: la capa 157 se captura desde el 09/11, pero aún no pasa por
   `curar` (issue #8) ni es variable del modelo (`features.incluir_meteo` sigue
   en `false`)
@@ -123,7 +125,7 @@ El detalle, con sus bitácoras, está en la sección *Estado* de
 | La captura se cae o se degrada durante meses | media | `collect --status` (no dice VIVO con una fuente callada); reintentos y payload crudo siempre guardado; huecos medidos y declarados (bitácoras 021, 044, 054) |
 | El map-matching consume todo el tiempo | resuelto | casa a 4 m de mediana (bitácora 016); Renfe queda como respaldo (ver *Plan B*) |
 | El endpoint de Renfe cambia o desaparece | media | no documentado oficialmente; se guarda payload crudo para reprocesar |
-| El GTFS cambia y corrompe etiquetas antiguas | media | descargar el GTFS semanalmente y versionarlo con DVC; etiquetar cada captura con el GTFS vigente en esa fecha |
+| El GTFS cambia y corrompe etiquetas antiguas | media | el colector guarda cada versión nueva (ADR-020); el etiquetado elige versión por día de servicio entre las de `gtfs_dir` (ADR-014), y una versión posterior entra solo tras contrastarla: las que contradicen lo circulado se archivan fuera (bitácoras 042, 058) |
 | Intercambios de identidad en el tracking | media | asignación húngara + predicción de movimiento: 0 saltos de identidad frente a 4 del vecino más cercano en la flota simulada (100 % frente a 97,8 % de posiciones, bitácora 001). Con paradas y giros reales produce 2-4 saltos: defecto conocido, `test_tracking_realismo.py` (`xfail`) |
 | Convención horaria de la EMT | alta si se ignora | **la fuente alterna UTC y local naive entre sondeos**, no hay desfase fijo: se resuelve por snapshot en `resolver_convencion()`. Ficha [002](../.claude/trampas/002-emt-alterna-convencion-horaria.md) |
 
@@ -157,11 +159,19 @@ entre modos queda como trabajo futuro.
 - [`06_veredicto_capas_trafico.md`](06_veredicto_capas_trafico.md) — las capas de
   tráfico en agosto, y qué quedó de ese veredicto con el corpus entero.
 - [`07_decisiones.md`](07_decisiones.md) — registro canónico de decisiones (ADR).
+- [`08_correos_tutor.md`](08_correos_tutor.md) — correos de búsqueda de tutor
+  (04/09).
+- [`10_respuestas_tutor.md`](10_respuestas_tutor.md) — respuestas a las tres
+  preguntas del tutor (07/09); versión corta en
+  [`10_respuestas_tutor_correo.md`](10_respuestas_tutor_correo.md) y correo
+  enviado en [`10_correo_tutor_envio.md`](10_correo_tutor_envio.md).
 - [`09_gtfs_emt.md`](09_gtfs_emt.md) — qué trae el GTFS estático de la EMT y para
   qué sirve cada fichero.
 - [`11_auditoria_tests.md`](11_auditoria_tests.md) — auditoría de validez de los
   tests.
 - [`12_flujo_de_datos.html`](12_flujo_de_datos.html) — diagrama del flujo de datos.
+- [`12_flujo_memoria.mmd`](12_flujo_memoria.mmd) — el mismo flujo con nombres de
+  tesis, para la memoria en Quarto.
 - [`bitacora/README.md`](bitacora/README.md) — bitácora de hallazgos: lo medido,
   lo descartado y lo aceptado, con el comando que reproduce cada cifra.
 - [`../CLAUDE.md`](../CLAUDE.md) — reglas de arquitectura del repo.
