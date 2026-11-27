@@ -28,6 +28,10 @@ Otros ficheros:
   diffs propuestos (no aplicados).
 - [decisiones_pendientes.md](decisiones_pendientes.md): lo que decides tú o llevas al
   tutor.
+- [parches/LEEME.md](parches/LEEME.md): parche `.patch` con los cambios mecánicos de
+  `docs/` (no aplicado), listo para `git apply` en tu equipo principal.
+- [revision_2026-11-27.md](revision_2026-11-27.md): revisión de este material contra
+  `develop` (`d276d57`): qué se comprobó y qué no.
 - [puertas/017-puerta-convencion-horaria-emt.md](puertas/017-puerta-convencion-horaria-emt.md):
   la pregunta de comprensión previa a esta tarea, con tus respuestas y su corrección.
 

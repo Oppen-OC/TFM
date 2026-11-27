@@ -1,0 +1,211 @@
+diff --git a/.claude/trampas/002-emt-alterna-convencion-horaria.md b/.claude/trampas/002-emt-alterna-convencion-horaria.md
+index 058805d..cff12eb 100644
+--- a/.claude/trampas/002-emt-alterna-convencion-horaria.md
++++ b/.claude/trampas/002-emt-alterna-convencion-horaria.md
+@@ -47,7 +47,7 @@ Mismo riesgo con `fechaActualizacion` de Renfe, que llega como ISO naive.
+ 
+ ## Guardia
+ 
+-`resolver_convencion()` en `src/project/ingest/sources.py:69`. No asume: por cada snapshot
++`resolver_convencion()` en `src/project/ingest/sources.py`. No asume: por cada snapshot
+ prueba las dos interpretaciones y se queda con la que produce una latencia
+ plausible. Se autocalibra en el cambio de hora de octubre, porque no codifica el
+ desfase — lo deduce.
+diff --git a/.claude/trampas/003-raiz-renfe-es-objeto.md b/.claude/trampas/003-raiz-renfe-es-objeto.md
+index 08f2c74..0087d52 100644
+--- a/.claude/trampas/003-raiz-renfe-es-objeto.md
++++ b/.claude/trampas/003-raiz-renfe-es-objeto.md
+@@ -44,7 +44,7 @@ por otro camino.
+ 
+ ## Guardia
+ 
+-`parse_renfe()` en `src/project/ingest/sources.py:335`, con `nucleo="40"` por defecto.
++`parse_renfe()` en `src/project/ingest/sources.py`, con `nucleo="40"` por defecto.
+ 
+ `tests/test_ingest.py::test_renfe_filtra_solo_nucleo_40` y
+ `tests/test_ingest.py::test_renfe_retraso_min_es_numerico`.
+diff --git a/.claude/trampas/004-sort-inestable-en-snapshot.md b/.claude/trampas/004-sort-inestable-en-snapshot.md
+index 6d7d245..8156ddb 100644
+--- a/.claude/trampas/004-sort-inestable-en-snapshot.md
++++ b/.claude/trampas/004-sort-inestable-en-snapshot.md
+@@ -9,7 +9,7 @@ test: tests/test_tracking_identidad.py::test_rastrear_no_reordena_filas_dentro_d
+ 
+ ## Síntoma
+ 
+-El selftest reportaba **~11 % de precisión de tracking** cuando la real era
++El selftest del demostrador (hoy `tests/test_tracking_identidad.py`) reportaba **~11 % de precisión de tracking** cuando la real era
+ ~99 %. El tracker parecía roto de raíz.
+ 
+ ## Causa
+diff --git a/README.md b/README.md
+index 5439afc..0ea5e40 100644
+--- a/README.md
++++ b/README.md
+@@ -85,7 +85,10 @@ ui/  ──HTTP──>  api/  ──>  services/  ──>  predict.py / train.py
+ ├── docs/
+ │   ├── 00_tema_y_alcance.md # decisiones tomadas y estado del trabajo
+ │   ├── 01_viabilidad_fuentes_valencia.md
+-│   └── 02_exploracion_de_temas.md
++│   ├── 02_exploracion_de_temas.md
++│   ├── 03_… 07_decisiones.md, 09_gtfs_emt.md, 11_auditoria_tests.md
++│   ├── fig_trafico_vs_buses.html · 12_flujo_de_datos.html
++│   └── bitacora/            # lo medido, lo descartado, lo aceptado
+ ├── src/project/
+ │   ├── config.py            # Pydantic Settings (.env) — única fuente de configuración
+ │   ├── ingest/              # captura y parseo — fuera del grafo de DVC
+diff --git a/docs/00_tema_y_alcance.md b/docs/00_tema_y_alcance.md
+index 1e4a808..b97bc6a 100644
+--- a/docs/00_tema_y_alcance.md
++++ b/docs/00_tema_y_alcance.md
+@@ -172,6 +172,8 @@ entre modos queda como trabajo futuro.
+ - [`12_flujo_de_datos.html`](12_flujo_de_datos.html) — diagrama del flujo de datos.
+ - [`12_flujo_memoria.mmd`](12_flujo_memoria.mmd) — el mismo flujo con nombres de
+   tesis, para la memoria en Quarto.
++- [`fig_trafico_vs_buses.html`](fig_trafico_vs_buses.html) — tres paneles, mismo
++  día: la flota se mueve, las dos capas de tráfico no (agosto, `06_veredicto…`).
+ - [`bitacora/README.md`](bitacora/README.md) — bitácora de hallazgos: lo medido,
+   lo descartado y lo aceptado, con el comando que reproduce cada cifra.
+ - [`../CLAUDE.md`](../CLAUDE.md) — reglas de arquitectura del repo.
+diff --git a/docs/01_viabilidad_fuentes_valencia.md b/docs/01_viabilidad_fuentes_valencia.md
+index a2917c8..0bd0c02 100644
+--- a/docs/01_viabilidad_fuentes_valencia.md
++++ b/docs/01_viabilidad_fuentes_valencia.md
+@@ -64,8 +64,9 @@ te devuelve WGS84 directamente y te ahorra la reproyección desde EPSG:25830.
+ 
+ - **166-169 buses simultáneos** a las 21:15 de un sábado, **31 líneas activas**.
+ - **Refresco cada 29,3 s de media** (intervalos observados: 22, 33, 33 s).
+-- **Latencia del dato: p50 36 s, p90 44 s, máximo 80 s** una vez corregida la
+-  zona horaria. Es decir, sondear cada 30 s está bien calibrado: más rápido solo
++- **Latencia del dato: p50 36 s, p90 44 s, máximo 80 s** (superada: p50 23 s con
++  la convención resuelta por sondeo, `05_hallazgos_primera_captura.md` §2) una vez
++  corregida la zona horaria. Es decir, sondear cada 30 s está bien calibrado: más rápido solo
+   te trae duplicados, más lento pierdes refrescos.
+ - **Velocidades reconstruidas: p50 6,2 km/h, p90 29,6 km/h.** La mediana baja
+   refleja buses parados en cabecera a esa hora.
+@@ -100,7 +101,12 @@ No lo es: emparejando por rango, la línea y el trayecto solo coinciden en el
+ **32-73 %** de los casos y aparecen saltos de hasta 5 km entre sondeos.
+ Descartado.
+ 
+-**② El campo `fecha` va dos horas adelantado.**
++**② El campo `fecha` no tiene un desfase fijo: alterna dos convenciones.**
++
++> Primera lectura (15/08, 15 min de muestra): parecía +2 h en verano y +1 h en
++> invierno. Con la captura entera, la fuente **alterna** UTC y hora local sellada
++> como UTC de un sondeo al siguiente (`05_hallazgos_primera_captura.md` §1; ficha
++> 002). Un desfase fijo deja el 20 % de las filas 2 h desplazadas.
+ 
+ ```
+ fecha máx. observada, leída como UTC : 2026-08-15T21:08:52Z
+@@ -369,11 +375,12 @@ defensa en vez de sobrar.
+ 
+ ## 9. Lo que tienes que hacer esta semana
+ 
+-1. Descomprime el demostrador y ejecuta `python explore.py`. Confirma que las
++1. Ejecuta `uv run python -m project.ingest.explore`. Confirma que las
+    cinco fuentes responden **desde tu red** (yo las he probado desde tu
+    navegador, pero conviene que lo veas tú desde el script).
+-2. Ejecuta `python selftest.py`. Deben salir las 24 comprobaciones en verde.
+-3. Lanza `python collect.py --minutes 1440` y **déjalo 24 horas**. Con eso
++2. Ejecuta `uv run pytest tests/test_ingest.py tests/test_tracking.py -q`: las
++   comprobaciones del demostrador viven hoy ahí (ADR-009).
++3. Lanza `uv run python -m project.ingest.collect --minutes 1440` y **déjalo 24 horas**. Con eso
+    mides el ciclo diario completo: hora punta, valle, servicio nocturno, tamaño
+    real en disco, tasa de errores y estabilidad del servidor municipal.
+ 4. Con esos números, cierra el tema con tu tutor.
+@@ -397,4 +404,4 @@ El punto 3 es el único que no se puede saltar. Todo lo demás es reversible.
+ - `lectura = -1` convertido a nulo, no a cero.
+ - Parquet particionado por fuente y día, con compresión zstd.
+ - Tracker con asignación húngara y modelo de velocidad constante.
+-- 24 tests que corren sin red.
++- Tests que corren sin red (`tests/test_ingest.py`, `tests/test_tracking.py`).
+diff --git a/docs/02_exploracion_de_temas.md b/docs/02_exploracion_de_temas.md
+index 020dfb4..0ce8f42 100644
+--- a/docs/02_exploracion_de_temas.md
++++ b/docs/02_exploracion_de_temas.md
+@@ -8,7 +8,8 @@ _Documento generado el 14/08/2026 a partir del repositorio `C:\Users\oppen\Code\
+ > usa Parquet, no CSV (ADR-001, ADR-003); `xgboost` y `shap` están en las
+ > dependencias; la ingesta **no** es un stage de DVC, al contrario de lo que
+ > recomienda el punto 4 del anexo (ADR-002); y Kafka/Redpanda se valoró al
+-> inicio y se descartó de la captura por no ser necesario (ADR-016).
++> inicio y se descartó de la captura por no ser necesario (ADR-016). La UI ya no
++> es Streamlit sino NiceGUI (`src/project/ui/app.py`).
+ 
+ ---
+ 
+diff --git a/docs/03_fuentes_valencia_primer_barrido.md b/docs/03_fuentes_valencia_primer_barrido.md
+index 8460528..2fe24bd 100644
+--- a/docs/03_fuentes_valencia_primer_barrido.md
++++ b/docs/03_fuentes_valencia_primer_barrido.md
+@@ -8,7 +8,8 @@ _Verificación realizada el 15/08/2026. Todo endpoint marcado como "no documenta
+ > (bitácora 056); la capa 192 tiene 410 tramos, no ~1.500 (bitácora 014);
+ > Kafka/Redpanda se valoró al inicio y se descartó de la captura por no ser
+ > necesario (ADR-016); y el colector guarda cada versión del GTFS en vez de
+-> descargarlo cada semana (ADR-020).
++> descargarlo cada semana (ADR-020). Además, la UI ya no es Streamlit sino
++> NiceGUI (`src/project/ui/app.py`).
+ 
+ ---
+ 
+diff --git a/docs/04_propuesta_para_tutor.md b/docs/04_propuesta_para_tutor.md
+index 1f147a6..46f2738 100644
+--- a/docs/04_propuesta_para_tutor.md
++++ b/docs/04_propuesta_para_tutor.md
+@@ -8,7 +8,10 @@
+ > se descartó de la captura por no ser necesario (ADR-016); las «24
+ > comprobaciones automáticas» eran las del demostrador, hoy portado a
+ > `src/project/` con sus tests en `tests/` (ADR-009); y la captura de 24 horas
+-> está hecha desde agosto.
++> está hecha desde agosto. Además, la UI ya no es Streamlit sino NiceGUI
++> (`src/project/ui/app.py`) y la cadencia del tráfico no es «60 s / 5 min»: el
++> colector sondea la capa 192 cada 5 min y la 188 cada 15
++> (`src/project/ingest/sources.py`, `period_s`).
+ 
+ ---
+ 
+diff --git a/docs/05_hallazgos_primera_captura.md b/docs/05_hallazgos_primera_captura.md
+index 03a9cf3..5998822 100644
+--- a/docs/05_hallazgos_primera_captura.md
++++ b/docs/05_hallazgos_primera_captura.md
+@@ -153,8 +153,10 @@ El 74 % lo genera `raw/trafico_estado`, porque el payload crudo repite la
+ geometría completa de los 446 tramos en cada sondeo. Como esa geometría es
+ estática y ya está guardada en `reference/`, añadir `&returnGeometry=false` a
+ la consulta a partir del segundo sondeo reduciría esa fuente en torno a un 90 %,
+-dejando el total en ~2-3 GB. Pendiente de decidir: el crudo verbatim tiene valor
+-probatorio para la memoria.
++dejando el total en ~2-3 GB. Decidido: ADR-017 (`07_decisiones.md`). Los cuatro
++primeros días (15-18/08) conservan la geometría en el crudo y mantienen su valor
++probatorio. Las cifras de este apartado (~147 MB/día, ~13 GB a 90 días) son una
++proyección medida de noche y quedan superadas por la bitácora 056.
+ 
+ ---
+ 
+@@ -166,11 +168,9 @@ vectorizarlo o pasarlo a DuckDB. No es urgente, pero está identificado.
+ 
+ ---
+ 
+-## Qué falta para el go/no-go
++## Qué faltaba para el go/no-go
+ 
+-Las preguntas 2, 3 y 4 del diagnóstico **siguen sin responder**: esta ventana es
+-casi toda noche de sábado a domingo, sin hora punta de laborable. La cobertura
+-(pregunta 1) ya está medida y no depende del día.
+-
+-Repetir con una captura que incluya un lunes o martes de 07:00 a 10:00, y
+-entonces lanzar `uv run python -m project.analysis.diagnose`.
++Resuelto: las preguntas 2, 3 y 4 del diagnóstico se respondieron en
++[`06_veredicto_capas_trafico.md`](06_veredicto_capas_trafico.md) (ventana con el
++lunes 17 completo) y se revisaron con el corpus entero (ADR-024, bitácora 057). La
++cobertura (pregunta 1) ya estaba medida y no depende del día.
+diff --git a/docs/06_veredicto_capas_trafico.md b/docs/06_veredicto_capas_trafico.md
+index 761bcb8..cfe04c4 100644
+--- a/docs/06_veredicto_capas_trafico.md
++++ b/docs/06_veredicto_capas_trafico.md
+@@ -55,7 +55,7 @@ una medición de tráfico.
+ La intensidad media es **1.079 veh/h a las 03:00 y 1.079 veh/h a las 08:00**.
+ El único cambio en toda la captura ocurrió el 17/08 a las 00:16 UTC.
+ 
+-Era el plan B. También está muerto.
++Era la alternativa a la 192. También está congelada.
+ 
+ ---
+ 
